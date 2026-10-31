@@ -15,6 +15,7 @@ mod admission;
 mod cloning;
 mod comparison;
 mod formatting;
+mod growth;
 mod hot;
 mod indexing;
 mod iter_terminals;
@@ -44,6 +45,8 @@ pub use view::{
 
 #[cfg(feature = "native-code")]
 pub(crate) mod native;
+#[cfg(feature = "native-code")]
+mod native_append;
 
 #[cfg(test)]
 mod allocation_tests;
@@ -1336,15 +1339,9 @@ impl Store {
 		self.reserve_work(Self::heap_edge(new), 0)?;
 
 		if len == cap {
-			let next = cap
-				.checked_mul(2)
-				.ok_or_else(|| err(ErrorKind::Overflow))?
-				.max(1);
-			let planned = next
-				.checked_mul(size_of::<Value>())
-				.ok_or_else(|| err(ErrorKind::Overflow))?;
-			self.replacement_bytes(h, planned)?;
-			let mut replacement = Vec::try_with_capacity(next)?;
+			let growth = growth::Growth::next(cap)?;
+			self.replacement_bytes(h, growth.bytes)?;
+			let mut replacement = Vec::try_with_capacity(growth.capacity)?;
 			let Payload::List { values, .. } = self.payload(h)? else {
 				unreachable!()
 			};

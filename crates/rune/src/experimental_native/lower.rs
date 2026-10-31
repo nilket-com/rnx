@@ -149,7 +149,7 @@ pub(crate) fn collection_signature() -> Signature {
 /// bound (checked before anything is lowered).
 pub(crate) fn build(region: &Region, isa: &OwnedTargetIsa) -> Result<ir::Function, NativeRefusal> {
 	let n = region.slots.len();
-	let cells = region.cells();
+	let cells = region.cells() + usize::from(region.collection.is_some_and(|c| c.append.is_some()));
 	if n > MAX_REGION_SLOTS
 		|| cells > MAX_REGION_CELLS
 		|| region.nodes.len() > MAX_REGION_NODES
@@ -226,6 +226,19 @@ pub(crate) fn build(region: &Region, isa: &OwnedTargetIsa) -> Result<ir::Functio
 		b.def_var(next, v);
 		let end = b.ins().load(types::I64, mem, buf, slot_offset(n + 1));
 		Some((next, end))
+	} else {
+		None
+	};
+
+	// N4 only: the logical length is mutable; the ABI length remains the physical
+	// staging bound established by shared safe-Rust growth checks.
+	let append = if region.collection.is_some_and(|c| c.append.is_some()) {
+		let len = b.declare_var(types::I64);
+		let v = b
+			.ins()
+			.load(types::I64, mem, buf, slot_offset(region.cells()));
+		b.def_var(len, v);
+		Some(len)
 	} else {
 		None
 	};
@@ -370,14 +383,49 @@ pub(crate) fn build(region: &Region, isa: &OwnedTargetIsa) -> Result<ir::Functio
 			Ok(())
 		};
 		match node.op {
+			NodeOp::Push { new, alias, retry } => {
+				let (snapshot, physical) = collection.ok_or(NativeRefusal::Shape)?;
+				let logical = append.ok_or(NativeRefusal::Shape)?;
+				let index = b.use_var(logical);
+				let mut valid = b.ins().icmp(IntCC::UnsignedLessThan, index, physical);
+				if let Some(alias) = alias {
+					let marker = b.use_var(var(alias)?);
+					let active = b.ins().icmp_imm_s(IntCC::Equal, marker, 1);
+					valid = b.ins().band(valid, active);
+				}
+				let zero = b.ins().iconst(types::I64, 0);
+				// Address permission uses the physical check independently of aliases.
+				let bounded = b.ins().icmp(IntCC::UnsignedLessThan, index, physical);
+				let safe = b.ins().select_spectre_guard(bounded, index, zero);
+				let access = b.create_block();
+				b.ins().brif(valid, access, &[], exits[retry as usize], &[]);
+				b.switch_to_block(access);
+				let offset = b.ins().ishl_imm_s(safe, 3);
+				let address = b.ins().iadd(snapshot, offset);
+				let value = b.use_var(var(new)?);
+				b.ins().store(mem, value, address, 0);
+				let next = b.ins().iadd_imm_s(index, 1);
+				b.def_var(logical, next);
+			}
+
 			NodeOp::Get { index, retry, .. } | NodeOp::Set { index, retry, .. } => {
-				let (snapshot, len) = collection.ok_or(NativeRefusal::Shape)?;
+				let (snapshot, physical) = collection.ok_or(NativeRefusal::Shape)?;
+				let len = if let Some(logical) = append {
+					b.use_var(logical)
+				} else {
+					physical
+				};
 				let index = b.use_var(var(index)?);
 				// len is bounded by the allocated slice and isize::MAX / 8 at the
 				// boundary. This single unsigned check also rejects negative I64.
 				let valid = b.ins().icmp(IntCC::UnsignedLessThan, index, len);
 				let zero = b.ins().iconst(types::I64, 0);
-				let safe = b.ins().select_spectre_guard(valid, index, zero);
+				let bounded = if append.is_some() {
+					b.ins().icmp(IntCC::UnsignedLessThan, index, physical)
+				} else {
+					valid
+				};
+				let safe = b.ins().select_spectre_guard(bounded, index, zero);
 				let access = b.create_block();
 				b.ins().brif(valid, access, &[], exits[retry as usize], &[]);
 				b.switch_to_block(access);
@@ -618,6 +666,11 @@ pub(crate) fn build(region: &Region, isa: &OwnedTargetIsa) -> Result<ir::Functio
 				b.ins().store(mem, v, buf, slot_offset(l));
 			}
 		}
+		if let Some(logical) = append {
+			let v = b.use_var(logical);
+			b.ins().store(mem, v, buf, slot_offset(region.cells()));
+		}
+
 		// B1: `next` on every exit; `end` never.
 		if let Some((next, _)) = iter {
 			let v = b.use_var(next);
@@ -693,7 +746,7 @@ fn iter_out_remat(region: &Region) -> Option<u32> {
 fn r1_disqualifies(op: &NodeOp, out: u32) -> bool {
 	match *op {
 		NodeOp::Get { out: o, .. } => o == out,
-		NodeOp::Set { .. } => false,
+		NodeOp::Set { .. } | NodeOp::Push { .. } => false,
 		NodeOp::IterNext { .. } | NodeOp::VectorNext { .. } => true,
 		NodeOp::Enter { slots, .. } => out >= VIRTUAL_BASE && out - VIRTUAL_BASE < slots,
 		NodeOp::Arg { param, .. } => VIRTUAL_BASE.checked_add(param) == Some(out),
@@ -784,7 +837,7 @@ fn fuel_fold(region: &Region) -> Option<(u32, u32)> {
 /// lowering neither exits, branches nor charges. Exhaustive over `NodeOp` (no wildcard).
 fn fuel_link(op: &NodeOp) -> bool {
 	match *op {
-		NodeOp::Get { .. } | NodeOp::Set { .. } => true,
+		NodeOp::Get { .. } | NodeOp::Set { .. } | NodeOp::Push { .. } => true,
 		NodeOp::Enter { .. } => true,
 		NodeOp::Arg { .. } => true,
 		NodeOp::IterNext { .. } | NodeOp::VectorNext { .. } => false,
@@ -806,7 +859,7 @@ fn fuel_link(op: &NodeOp) -> bool {
 /// existing lowering).
 fn fuel_disqualifies(op: &NodeOp, header: bool) -> bool {
 	match *op {
-		NodeOp::Get { .. } | NodeOp::Set { .. } => true,
+		NodeOp::Get { .. } | NodeOp::Set { .. } | NodeOp::Push { .. } => true,
 		NodeOp::VectorNext { .. } => true,
 		NodeOp::IterNext { .. } => !header,
 		#[cfg(test)]
@@ -832,7 +885,9 @@ fn node_refs(region: &Region, j: u32) -> usize {
 	for node in &region.nodes {
 		refs += node.next.map_or(0, to);
 		refs += match node.op {
-			NodeOp::Get { retry, .. } | NodeOp::Set { retry, .. } => to(Target::Exit(retry)),
+			NodeOp::Get { retry, .. } | NodeOp::Set { retry, .. } | NodeOp::Push { retry, .. } => {
+				to(Target::Exit(retry))
+			}
 			NodeOp::Branch { yes, no, .. } => to(yes) + to(no),
 			NodeOp::Jump { target } => to(target),
 			NodeOp::IterNext { none, .. } | NodeOp::VectorNext { none, .. } => to(none),
@@ -940,7 +995,7 @@ pub(crate) fn compile(region: &Region, program_bytes: usize) -> Result<Compiled,
 		collection: region.collection.is_some(),
 		bytes,
 		alignment,
-		cells: region.cells(),
+		cells: region.cells() + usize::from(region.collection.is_some_and(|c| c.append.is_some())),
 		#[cfg(test)]
 		listing,
 	})

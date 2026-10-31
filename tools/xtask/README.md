@@ -13,6 +13,15 @@ whose source will be built. The runner includes `Cargo.lock` in its source
 identity. Builds use
 `--locked`. Keep that checkout unchanged until completion.
 
+Every verification run requires formatting and Clippy before starting test
+workers or preparing Miri, including runs selecting only `native` or `miri`.
+The prerequisite checks the whole workspace's formatting, xtask and all four
+Rune feature combinations from the committed manifest. A failure stops the
+run before expensive jobs are released. `PREFLIGHT.json` records the outcome
+and links the prerequisite job's receipts. The `clippy` task runs once, even
+when explicitly selected with other suites. Runner controls test both format
+and lint failures and prove that neither can start tests or Miri.
+
 The `measure-checks` suite runs synthetic controls for the measurement helper code. It does not collect measurements or read historical results.
 
 Each child has immutable stdout, stderr and a JSON process receipt with arguments,
@@ -30,7 +39,7 @@ upper bounds. A native library uses the available reserved slots as its actual
 libtest thread count, so it can start alongside Miri without waiting for all
 interpreters to finish. Explicit exclusive cases keep their full reservation.
 
-Independent jobs run longest estimated first. The local job list splits the
+After prerequisites pass, independent jobs run longest estimated first. The local job list splits the
 98 Miri rows (the same 78 parent witnesses), contract cases/bundle, native
 libraries/docs and all 60 AWFY observations. Failure/reuse sequences remain
 inside their original row. Each Miri parent shares its original deadline,

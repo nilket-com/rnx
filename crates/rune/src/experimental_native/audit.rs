@@ -97,6 +97,13 @@ impl AccessMap {
 			};
 			cells = n + 2;
 		}
+		if region.collection.is_some_and(|c| c.append.is_some()) && cells < MAX_REGION_CELLS {
+			buf[cells] = Perm {
+				load: true,
+				store: true,
+			};
+			cells += 1;
+		}
 		Self {
 			buf,
 			cells,

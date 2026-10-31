@@ -314,6 +314,8 @@ pub(crate) enum State {
 	Cold,
 	/// An invalid exit was seen: never entered again.
 	Poisoned,
+	/// Live N4 regions use a separate outlined entry. Ordinary Live checks stay unchanged.
+	Append,
 }
 
 /// Per-region counters, as read by tests.
@@ -532,9 +534,99 @@ impl Ready {
 		room: Room,
 	) -> Result<Option<(usize, usize)>> {
 		if self.state.get() != State::Live {
-			return Ok(None);
+			return self.enter_append_if_live(window, store, cancel_pending, fuel, room);
 		}
 		let outcome = commit::enter_collection(
+			&self.region,
+			window,
+			store,
+			cancel_pending,
+			fuel,
+			room,
+			|_, buf, record, snapshot, len| {
+				let status = self
+					.native
+					.call_collection(buf, record, snapshot, len)
+					.unwrap_or(0);
+				#[cfg(test)]
+				if take_injected_invalid_exit() {
+					record.status = 0;
+					return 0;
+				}
+				status
+			},
+		);
+		match outcome {
+			Ok(Ok(exited)) => {
+				self.entries.set(self.entries.get() + 1);
+				self.exits[exited.status as usize - 1]
+					.set(self.exits[exited.status as usize - 1].get() + 1);
+				self.consecutive.set(0);
+				Ok(Some((exited.pc, exited.fuel)))
+			}
+			Ok(Err(Refused::InvalidExit | Refused::Window)) => {
+				self.invalid(Refused::InvalidExit);
+				Ok(None)
+			}
+			Ok(Err(Refused::Cancel)) => {
+				self.refused_cancel.set(self.refused_cancel.get() + 1);
+				Ok(None)
+			}
+			Ok(Err(Refused::Room)) => {
+				self.refused_room.set(self.refused_room.get() + 1);
+				Ok(None)
+			}
+			Ok(Err(refused)) => {
+				let counter = match refused {
+					Refused::Tag { .. } => &self.refused_tag,
+					Refused::Iter { .. } => &self.refused_iter,
+					_ => &self.refused_store,
+				};
+				counter.set(counter.get() + 1);
+				let consecutive = self.consecutive.get() + 1;
+				self.consecutive.set(consecutive);
+				if consecutive >= COLD_AFTER_REFUSALS {
+					self.state.set(State::Cold);
+				}
+				Ok(None)
+			}
+			Err(error) => {
+				self.invalid(Refused::InvalidExit);
+				Err(error)
+			}
+		}
+	}
+
+	#[cold]
+	#[inline(never)]
+	fn enter_append_if_live(
+		&self,
+		window: &mut [Value],
+		store: &mut Store,
+		cancel_pending: bool,
+		fuel: usize,
+		room: Room,
+	) -> Result<Option<(usize, usize)>> {
+		if self.state.get() == State::Append {
+			self.enter_append(window, store, cancel_pending, fuel, room)
+		} else {
+			Ok(None)
+		}
+	}
+
+	#[inline(never)]
+	fn enter_append(
+		&self,
+		window: &mut [Value],
+		store: &mut Store,
+		cancel_pending: bool,
+		fuel: usize,
+		room: Room,
+	) -> Result<Option<(usize, usize)>> {
+		if self.state.get() != State::Append {
+			return Ok(None);
+		}
+		let outcome = commit::enter_append(
 			&self.region,
 			window,
 			store,
@@ -1296,7 +1388,9 @@ impl Build<'_> {
 			Ok(Ok(compiled)) => compiled,
 		};
 
-		if compiled.cells() != region.cells() {
+		if compiled.cells()
+			!= region.cells() + usize::from(region.collection.is_some_and(|c| c.append.is_some()))
+		{
 			summary.other += 1;
 			return None;
 		}
@@ -1369,11 +1463,16 @@ impl Build<'_> {
 		summary.mapped_bytes += mapped as u64;
 		summary.metadata_bytes += (metadata - MODULE_RESERVE_BYTES) as u64;
 		summary.reserved_bytes += MODULE_RESERVE_BYTES as u64;
+		let state = if region.collection.is_some_and(|c| c.append.is_some()) {
+			State::Append
+		} else {
+			State::Live
+		};
 		Some(Ready {
 			vector: None,
 			region,
 			native,
-			state: Cell::new(State::Live),
+			state: Cell::new(state),
 			entries: Cell::new(0),
 			exits: [Cell::new(0), Cell::new(0), Cell::new(0), Cell::new(0)],
 			refused_cancel: Cell::new(0),

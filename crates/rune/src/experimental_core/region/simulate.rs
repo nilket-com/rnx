@@ -97,7 +97,7 @@ fn run(
 	len: usize,
 ) -> u32 {
 	let n = region.slots.len();
-	let cells = region.cells();
+	let cells = region.cells() + usize::from(region.collection.is_some_and(|c| c.append.is_some()));
 	if n > MAX_REGION_SLOTS || cells > MAX_REGION_CELLS || buf.len() != cells {
 		return 0;
 	}
@@ -204,9 +204,35 @@ fn run(
 			};
 		}
 		let next = match nd.op {
+			NodeOp::Push { new, alias, retry } => {
+				let index = buf[region.cells()];
+				if index < 0
+					|| index as u64 >= len as u64
+					|| alias.is_some_and(|l| buf[l as usize] != 1)
+				{
+					let Some(f) = exit_fuel(retry, fuel, before, checkpoint) else {
+						return 0;
+					};
+					return finish(record, buf, retry, f, written, tags);
+				}
+				let value = get!(new);
+				let Some(slot) = snapshot.get_mut(index as usize) else {
+					return 0;
+				};
+				*slot = value;
+				buf[region.cells()] = index + 1;
+				nd.next
+			}
+
 			NodeOp::Get { index, retry, .. } | NodeOp::Set { index, retry, .. } => {
 				let index = get!(index);
-				if index < 0 || index as u64 >= len as u64 {
+				if index < 0
+					|| index as u64
+						>= (if region.collection.is_some_and(|c| c.append.is_some()) {
+							buf[region.cells()] as u64
+						} else {
+							len as u64
+						}) {
 					let Some(f) = exit_fuel(retry, fuel, before, checkpoint) else {
 						return 0;
 					};
@@ -275,7 +301,7 @@ fn run(
 				retry,
 				ty,
 			} => {
-				if cells != n + 2 {
+				if region.cells() != n + 2 {
 					return 0;
 				}
 				let (next, end) = (buf[n], buf[n + 1]);
@@ -300,7 +326,7 @@ fn run(
 				}
 			}
 			NodeOp::IterNext { out, none } => {
-				if cells != n + 2 {
+				if region.cells() != n + 2 {
 					return 0;
 				}
 				let (next, end) = (buf[n], buf[n + 1]);

@@ -320,6 +320,11 @@ pub(crate) enum Target {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum NodeOp {
+	Push {
+		new: u32,
+		alias: Option<u32>,
+		retry: u32,
+	},
 	Get {
 		out: u32,
 		index: u32,
@@ -423,7 +428,14 @@ pub(crate) struct Node {
 
 /// One fixed collection root and its inferred homogeneous element tag.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) struct Append {
+	pub(crate) pushes: usize,
+	pub(crate) aliases: u64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Collection {
+	pub(crate) append: Option<Append>,
 	/// N3: slot names a VectorIterator rather than a directly indexed Vec.
 	pub(crate) iteration: bool,
 	pub(crate) slot: u32,
@@ -903,7 +915,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 	) -> Result<Result<(Region, usize), RegionRefusal>, Stop> {
 		let transfers = core::cell::Cell::new(0usize);
 		let mut result = self.analyze_header(header, None, &transfers, None)?;
-		if matches!(result, Err(RegionRefusal::Op { pc }) if matches!(self.f.operation(pc as usize)?, Op::Get { .. } | Op::Set { .. }))
+		if matches!(result, Err(RegionRefusal::Op { pc }) if matches!(self.f.operation(pc as usize)?, Op::Get { .. } | Op::Set { .. } | Op::Push { .. }))
 		{
 			result = self.analyze_header(header, Some(Scalar::I64), &transfers, None)?;
 			if matches!(
@@ -1100,6 +1112,7 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 				return Ok(Err(RegionRefusal::Op { pc: header }));
 			};
 			Some(Collection {
+				append: None,
 				iteration: true,
 				slot: iterator,
 				ty,
@@ -1109,15 +1122,76 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		} else {
 			None
 		};
+		let mut append = None;
+		let mut append_root = None;
+		let mut append_pushes = 0;
+		if element.is_some() {
+			for &pc in body.iter() {
+				if let Op::Push { value, .. } = f.operation(pc as usize)? {
+					append_pushes += 1;
+					let mut root = value;
+					for &q in body.iter() {
+						if let Op::Copy { out, value: src } = f.operation(q as usize)? {
+							if out == value {
+								if root != value && root != src {
+									return Ok(Err(RegionRefusal::CollectionSlot { pc }));
+								}
+								root = src;
+							}
+						}
+					}
+					if append_root.is_some_and(|r| r != root) {
+						return Ok(Err(RegionRefusal::CollectionSlot { pc }));
+					}
+					append_root = Some(root);
+				}
+			}
+			if let Some(root) = append_root {
+				let mut aliases = 0u64;
+				for &pc in body.iter() {
+					if let Op::Copy { out, value } = f.operation(pc as usize)? {
+						if value == root && out != root && out < 64 {
+							aliases |= 1u64 << out;
+						}
+					}
+				}
+				append = Some(Append {
+					aliases,
+					pushes: append_pushes,
+				});
+			}
+		}
+		let alias =
+			|slot: u32| append.is_some_and(|a| slot < 64 && a.aliases & (1u64 << slot) != 0);
+		let normalized = |pc: u32| -> Result<Op, Error> {
+			let op = f.operation(pc as usize)?;
+			Ok(match op {
+				Op::Copy { out, value } if alias(out) && Some(value) == append_root => {
+					Op::Literal {
+						out,
+						value: Value::I64(1),
+					}
+				}
+				_ => op,
+			})
+		};
 		if let Some(ty) = element {
 			for &pc in body.iter() {
-				if let Op::Get { value, .. } | Op::Set { value, .. } = f.operation(pc as usize)? {
+				if let Op::Get { value, .. } | Op::Set { value, .. } | Op::Push { value, .. } =
+					f.operation(pc as usize)?
+				{
+					let value = if alias(value) {
+						append_root.ok_or_else(invalid)?
+					} else {
+						value
+					};
 					if collection.is_some_and(|c| c.slot != value) {
 						return Ok(Err(RegionRefusal::CollectionSlot { pc }));
 					}
 					let writes = collection.is_some_and(|c| c.writes)
-						|| matches!(f.operation(pc as usize)?, Op::Set { .. });
+						|| matches!(f.operation(pc as usize)?, Op::Set { .. } | Op::Push { .. });
 					collection = Some(Collection {
+						append,
 						iteration: false,
 						slot: value,
 						ty,
@@ -1132,16 +1206,26 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 			for &pc in body.iter() {
 				let op = f.operation(pc as usize)?;
 				let (args, fixed) = footprint(f, op)?;
+				let alias_allowed = match op {
+					Op::Copy { out, value } if alias(out) || alias(value) => {
+						alias(out) && value == c.slot
+					}
+					Op::Release { value } if alias(value) => true,
+					Op::Push { value, new } => !alias(new) && (value == c.slot || alias(value)),
+					_ => !fixed.into_iter().flatten().any(alias),
+				};
 				let allowed = match op {
 					Op::Get { out, index, .. } => out != c.slot && index != c.slot,
 					Op::Set { index, new, .. } => index != c.slot && new != c.slot,
+					Op::Push { new, .. } => new != c.slot,
+					Op::Copy { out, value } if alias(out) && value == c.slot => true,
 					_ => !args
 						.iter()
 						.copied()
 						.chain(fixed.into_iter().flatten())
 						.any(|slot| slot == c.slot),
 				};
-				if !allowed || matches!(op, Op::Call { .. }) {
+				if !allowed || !alias_allowed || matches!(op, Op::Call { .. }) {
 					return Ok(Err(RegionRefusal::CollectionSlot { pc }));
 				}
 			}
@@ -1151,10 +1235,11 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		let mut iter: Option<IterSpec> = None;
 		let mut sites: BVec<'b, SiteAnalysis> = BVec::new(budget);
 		for &pc in body.iter() {
-			let op = f.operation(pc as usize)?;
+			let op = normalized(pc)?;
 			let mut header_iterator = None;
 			match op {
-				Op::Get { .. } | Op::Set { .. } if collection.is_some_and(|c| !c.iteration) => (),
+				Op::Get { .. } | Op::Set { .. } | Op::Push { .. }
+					if collection.is_some_and(|c| !c.iteration) => {}
 				Op::IterNext { iterator, .. } => {
 					if pc == header && iter.is_none() {
 						iter = Some(IterSpec { slot: iterator });
@@ -1235,6 +1320,9 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 		}
 		slots.sort_unstable();
 		let n = slots.len();
+		if append.is_some() && n + usize::from(iter.is_some()) * 2 + 1 > MAX_REGION_CELLS {
+			return Ok(Err(RegionRefusal::Slots));
+		}
 		let local = |slot: u32| slots.binary_search(&slot).map_err(|_| invalid());
 		let header_index = index_of(&body, h).ok_or_else(invalid)?;
 		let site_of = |pc: u32| -> Result<usize, Stop> {
@@ -1269,7 +1357,14 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 						return Ok(Some(refusal));
 					}
 				}
-				if let Op::Set { new, .. } = ops[i] {
+				if let Op::Push { value, .. } = ops[i] {
+					if alias(value) {
+						if let Some(r) = each(value, Scalar::I64)? {
+							return Ok(Some(r));
+						}
+					}
+				}
+				if let Op::Set { new, .. } | Op::Push { new, .. } = ops[i] {
 					if let Some(refusal) = each(new, collection.ok_or_else(invalid)?.ty)? {
 						return Ok(Some(refusal));
 					}
@@ -1613,16 +1708,17 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 				};
 				replay_exits = Some((k, fuel_exit, fault_exit));
 			}
-			let collection_retry = if matches!(ops[i], Op::Get { .. } | Op::Set { .. })
-				|| (vector.is_some() && matches!(ops[i], Op::IterNext { .. }))
-			{
-				match push_exit(Status::Retry, pc, pc, state, charged_pc, None, false)? {
-					Ok(id) => Some(id),
-					Err(refusal) => return Ok(Err(refusal)),
-				}
-			} else {
-				None
-			};
+			let collection_retry =
+				if matches!(ops[i], Op::Get { .. } | Op::Set { .. } | Op::Push { .. })
+					|| (vector.is_some() && matches!(ops[i], Op::IterNext { .. }))
+				{
+					match push_exit(Status::Retry, pc, pc, state, charged_pc, None, false)? {
+						Ok(id) => Some(id),
+						Err(refusal) => return Ok(Err(refusal)),
+					}
+				} else {
+					None
+				};
 			scratch.copy_from_slice(state);
 			transfer_guarded_at(ops[i], &slots, &mut scratch, ret_of(ops[i], pc)?, &demand)?;
 			let mut target = |q: usize,
@@ -1651,6 +1747,18 @@ impl<'f, 'b> FunctionContext<'f, 'b> {
 			}
 			let fall = pc as usize + 1;
 			let (op, next) = match ops[i] {
+				Op::Push { value, new } => (
+					NodeOp::Push {
+						new: local(new)? as u32,
+						alias: if alias(value) {
+							Some(local(value)? as u32)
+						} else {
+							None
+						},
+						retry: collection_retry.ok_or_else(invalid)?,
+					},
+					Some(target!(fall)),
+				),
 				Op::Get { out, index, .. } => (
 					NodeOp::Get {
 						out: local(out)? as u32,
@@ -2035,6 +2143,7 @@ fn footprint(f: &Function, op: Op) -> Result<(&[u32], [Option<u32>; 3]), Error> 
 	Ok(match op {
 		Op::Get { out, value, index } => (&[], [Some(value), Some(index), Some(out)]),
 		Op::Set { value, index, new } => (&[], [Some(value), Some(index), Some(new)]),
+		Op::Push { value, new } => (&[], [Some(value), Some(new), None]),
 		Op::Literal { out, .. } => (&[], [Some(out), None, None]),
 		Op::Binary { out, lhs, rhs, .. } | Op::AssignBinary { out, lhs, rhs, .. } => {
 			(&[], [Some(lhs), Some(rhs), Some(out)])
@@ -2483,6 +2592,7 @@ fn check_parts(nodes: &[Node], exits: &[Exit], sites: &[Site], n: usize) -> Resu
 		let locals: &[u32] = match node.op {
 			NodeOp::Get { out, index, .. } => &[out, index][..],
 			NodeOp::Set { index, new, .. } => &[index, new][..],
+			NodeOp::Push { new, .. } => &[new][..],
 			NodeOp::Literal { out, .. }
 			| NodeOp::IterNext { out, .. }
 			| NodeOp::VectorNext { out, .. } => &[out][..],
@@ -2923,3 +3033,6 @@ fn function_transfer(op: Op, s: &mut [FTy]) -> Result<(), Error> {
 	*s.get_mut(out as usize).ok_or_else(invalid)? = ty;
 	Ok(())
 }
+
+#[cfg(test)]
+mod n4_tests;

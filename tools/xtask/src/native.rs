@@ -458,9 +458,22 @@ fn library(ctx: &Context, l: &Library) -> Result<Value> {
 fn clippy(ctx: &Context, m: &Manifest) -> Result<Value> {
 	let mut rows = vec![];
 	let mut cmd = ctx.cargo();
-	cmd.args(["fmt", "--check"]);
+	cmd.args(["fmt", "--all", "--check"]);
 	let r = ctx.checked("fmt", &mut cmd, 900)?;
 	rows.push(json!({"name":"fmt","receipt":r.receipt,"seconds":r.seconds}));
+	let mut cmd = ctx.cargo();
+	cmd.args([
+		"clippy",
+		"--locked",
+		"-p",
+		"xtask",
+		"--all-targets",
+		"--",
+		"-D",
+		"warnings",
+	]);
+	let r = ctx.checked("clippy-xtask", &mut cmd, 2400)?;
+	rows.push(json!({"name":"clippy-xtask","receipt":r.receipt,"seconds":r.seconds}));
 	for (i, f) in m.clippy_features.iter().enumerate() {
 		let mut cmd = ctx.cargo();
 		cmd.args([
@@ -478,6 +491,10 @@ fn clippy(ctx: &Context, m: &Manifest) -> Result<Value> {
 		let r = ctx.checked(&format!("clippy-{i}"), &mut cmd, 2400)?;
 		rows.push(json!({"features":f,"receipt":r.receipt,"seconds":r.seconds}));
 	}
+	let mut cmd = ctx.cargo();
+	cmd.args(["test", "--locked", "-p", "xtask"]);
+	let r = ctx.checked("runner-controls", &mut cmd, 900)?;
+	rows.push(json!({"name":"runner-controls","receipt":r.receipt,"seconds":r.seconds}));
 	Ok(json!({"status":"PASS","checks":rows}))
 }
 

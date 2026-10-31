@@ -294,7 +294,7 @@ pub(crate) fn install_native(code: &Code, dump: Option<&std::path::Path>) -> Nat
 
 		assert_eq!(
 			compiled.cells(),
-			region.cells(),
+			region.cells() + usize::from(region.collection.is_some_and(|c| c.append.is_some())),
 			"compiled for another region"
 		);
 		program_bytes += compiled.bytes().len();

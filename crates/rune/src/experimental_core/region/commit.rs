@@ -10,6 +10,9 @@
 //! and the fuel untouched, so any refusal there is an exact interpreter fallback. Steps 4
 //! and 5 are adjacent in [`enter`], under its exclusive borrows of the window and the
 //! store, with no callback between them.
+mod append;
+pub(crate) use append::enter as enter_append;
+
 use super::abi::ExitRecord;
 use super::{EntryClass, Region, ReplayReason, Scalar, Status, MAX_REGION_CELLS, MAX_REGION_SLOTS};
 use crate::experimental_core::error::{Error, ErrorKind, Result};
@@ -743,6 +746,11 @@ pub(crate) fn enter_collection(
 	room: Room,
 	run: impl FnOnce(&Region, &mut [i64], &mut ExitRecord, &mut [i64], usize) -> u32,
 ) -> Result<core::result::Result<Exited, Refused>> {
+	#[cfg(test)]
+	if region.collection.is_some_and(|c| c.append.is_some()) {
+		return enter_append(region, window, store, cancel_pending, fuel, room, run);
+	}
+
 	let Some(c) = region.collection else {
 		return Ok(Err(Refused::Window));
 	};

@@ -1656,14 +1656,14 @@ fn n2_collection_native_worker() {
 		"n2_nested_sieve_every_fuel",
 		&reduced,
 		vec![vec![Arg::I(0)]],
-		1,
+		2,
 		"CF",
 	);
 	run_case(&reduced_case);
 	let p = compile_source(&format!("{SIEVE}\npub fn main(x) {{ kernel(x) }}"));
 	let main = p.function(Hash::type_hash(["main"])).unwrap();
 	let install = hook::install_native(&p.code, None);
-	assert_eq!(install.loaded, 1, "{install:?}");
+	assert_eq!(install.loaded, 2, "{install:?}");
 	// The general tiny-case harness deliberately limits heap payloads to 64 KiB;
 	// the real 5000-element flags Vec needs 80 KiB plus its private snapshot.
 	let observe = || {
@@ -1697,8 +1697,11 @@ fn n2_collection_native_worker() {
 		on.outcome,
 		Outcome::Value(Some(HostScalar::I64(669)))
 	));
-	assert_eq!(stats.native_entries, 1, "one outer snapshot per sieve call");
-	assert_eq!(stats.native_continue, 1);
+	assert_eq!(
+		stats.native_entries, 2,
+		"one builder and one outer marking snapshot per sieve call"
+	);
+	assert_eq!(stats.native_continue, 2);
 	// Exercise the production cache and collection-enabled executor specialization,
 	// independently of the P1 simulator hook.
 	use crate::experimental_core::region::cache;
@@ -1706,9 +1709,9 @@ fn n2_collection_native_worker() {
 	cache::enable_for_test(true);
 	assert_eq!(off, observe());
 	let counters = cache::regions_for_test(p.code.id()).unwrap();
-	assert_eq!(counters.len(), 1);
-	assert_eq!(counters[0].entries, 1);
-	assert_eq!(counters[0].exits[0], 1);
+	assert_eq!(counters.len(), 2);
+	assert!(counters.iter().all(|c| c.entries == 1));
+	assert!(counters.iter().all(|c| c.exits[0] == 1));
 	cache::inject_invalid_exit_for_test(1);
 	assert_eq!(off, observe());
 	assert_eq!(
@@ -1795,7 +1798,7 @@ fn n3_vector_native_worker() {
 		let p = compile_source(&format!("{text}\npub fn main(x) {{ kernel(x) }}"));
 		let main = p.function(Hash::type_hash(["main"])).unwrap();
 		let install = hook::install_native(&p.code, None);
-		assert_eq!(install.loaded, if boolean { 1 } else { 2 }, "{install:?}");
+		assert_eq!(install.loaded, if boolean { 2 } else { 3 }, "{install:?}");
 		let observe = || {
 			let mut store = Store::new(Limits::default()).unwrap();
 			let arg = store.root_i64(1);
@@ -1823,13 +1826,16 @@ fn n3_vector_native_worker() {
 		let on = observe();
 		let stats = hook::uninstall().unwrap();
 		assert_eq!(off, on);
-		assert_eq!(stats.native_entries, 8, "one snapshot per iterator loop");
-		assert_eq!(stats.native_continue, 8);
+		assert_eq!(
+			stats.native_entries, 9,
+			"one builder plus eight reader entries"
+		);
+		assert_eq!(stats.native_continue, 9);
 		cache::clear_for_test();
 		cache::enable_for_test(true);
 		assert_eq!(off, observe());
 		let counters = cache::regions_for_test(p.code.id()).unwrap();
-		assert_eq!(counters.iter().map(|c| c.entries).sum::<u64>(), 8);
+		assert_eq!(counters.iter().map(|c| c.entries).sum::<u64>(), 9);
 		cache::inject_invalid_exit_for_test(1);
 		assert_eq!(off, observe());
 		assert!(cache::regions_for_test(p.code.id())
@@ -1840,6 +1846,8 @@ fn n3_vector_native_worker() {
 		if !boolean {
 			// A vector alternative is a real loaded region and compile. Neither cap
 			// may be bypassed by attaching it to a scalar primary.
+			let cap = compile_source(n3_tests::INTEGER);
+			let cap_main = cap.function(Hash::type_hash(["main"])).unwrap();
 			for compile_cap in [false, true] {
 				cache::clear_for_test();
 				let mut limits = cache::Limits::PRODUCTION;
@@ -1849,16 +1857,25 @@ fn n3_vector_native_worker() {
 					limits.program_regions = 1;
 				}
 				cache::set_limits_for_test(Some(limits));
-				let summary = cache::prepare(&p.code).unwrap();
+				let summary = cache::prepare(&cap.code).unwrap();
 				assert_eq!(summary.loaded, 1);
 				assert!(if compile_cap {
 					summary.compile_cap > 0
 				} else {
 					summary.region_cap > 0
 				});
-				assert_eq!(off, observe());
+				let mut store = Store::new(Limits::default()).unwrap();
+				let x = store.root_i64(1);
+				let result = Executor::new()
+					.unwrap()
+					.invoke_code(&cap.code, &mut store, cap_main, &[&x], BIG_FUEL)
+					.unwrap();
 				assert_eq!(
-					cache::regions_for_test(p.code.id())
+					store.root_scalar(&result).unwrap(),
+					Some(HostScalar::I64(1))
+				);
+				assert_eq!(
+					cache::regions_for_test(cap.code.id())
 						.unwrap()
 						.iter()
 						.map(|c| c.entries)
@@ -1874,4 +1891,29 @@ fn n3_vector_native_worker() {
 		cache::clear_for_test();
 		cache::enable_for_test(false);
 	}
+}
+
+#[test]
+#[cfg_attr(miri, ignore = "Miri: executes native code in an isolated process")]
+fn n4_append_native_differentials() {
+	run_child("n4_append_native_worker");
+}
+
+#[test]
+#[ignore]
+fn n4_append_native_worker() {
+	assert!(
+		std::env::var_os(CHILD_ENV).is_some(),
+		"isolated worker only"
+	);
+	for (name, source) in [
+  ("n4_integer", "pub fn main(n) { let v=[]; for i in 0..n { v.push(i); } v.len() }"),
+  ("n4_boolean", "pub fn main(n) { let v=[]; for i in 0..n { v.push(i==0); } v.len() }"),
+  ("n4_while", "pub fn main(n) { let v=[]; let i=0; while i<n { v.push(i); i+=1; } v.len() }"),
+  ("n4_alias", "pub fn main(n) { let v=[]; let alias=v; for i in 0..n { alias.push(i); } v.len() }"),
+  ("n4_two_pushes", "pub fn main(n) { let v=[]; for i in 0..n { if i<2 { v.push(i); } v.push(i); } v.len() }"),
+ ] {
+  let case=rune(name,source,vec![vec![Arg::I(0)],vec![Arg::I(7)]],1,"CF");
+  let (stats,_)=run_case(&case); assert!(stats.native_entries>0,"{name}");
+ }
 }

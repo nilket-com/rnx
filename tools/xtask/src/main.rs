@@ -244,9 +244,6 @@ fn execute(o: Options) -> Result<()> {
 		return Ok(());
 	}
 
-	if o.suites.iter().any(|suite| suite == "miri") {
-		miri::preflight(&ctx)?;
-	}
 	let graph = tasks::run_all(&ctx, &o.suites, o.workers);
 	let mut results = Vec::new();
 	let mut errors = Vec::new();

@@ -57,7 +57,16 @@ macro_rules! analysis_pod {
 	)*};
 }
 
-analysis_pod!(bool, i64, u32, u64, usize, (u32, u32), Option<u32>);
+analysis_pod!(
+	crate::experimental_core::value::Value,
+	bool,
+	i64,
+	u32,
+	u64,
+	usize,
+	(u32, u32),
+	Option<u32>
+);
 
 /// A transient-bytes budget, checked before every charged allocation.
 pub(crate) struct Budget {

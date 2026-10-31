@@ -6,6 +6,7 @@ use std::{fs, process::Command};
 
 const TESTS: &[(&str, usize)] = &[
 	("test_protocol.py", 2),
+	("test_append_diagnostic.py", 4),
 	("test_bootstrap.py", 2),
 	("test_callgrind.py", 4),
 	("test_callgrind_cell.py", 2),

@@ -34,15 +34,33 @@ impl Task {
 struct State {
 	miri: OnceLock<std::result::Result<crate::miri::Prepared, String>>,
 }
+/// Formatting and Clippy are mandatory prerequisites even for a selected suite.
+fn required_suites(suites: &[String]) -> Vec<String> {
+	let mut required = suites.to_vec();
+	if !required.iter().any(|suite| suite == "clippy") {
+		required.push("clippy".into());
+	}
+	required
+}
+
+/// No scheduler, Miri preparation or test child is started until this succeeds.
+fn preflight_then<T>(
+	preflight: impl FnOnce() -> Result<()>,
+	work: impl FnOnce() -> Result<T>,
+) -> Result<T> {
+	preflight()?;
+	work()
+}
+
 pub fn catalog(ctx: &Context, suites: &[String]) -> Result<Vec<Task>> {
 	let mut tasks = Vec::new();
-	for suite in suites {
+	for suite in required_suites(suites) {
 		match suite.as_str() {
-			"contracts" | "native" => tasks.extend(crate::native::task_specs(suite)?),
+			"contracts" | "native" => tasks.extend(crate::native::task_specs(&suite)?),
 			"awfy" => tasks.extend(crate::awfy::task_specs(ctx)?),
 			"miri" => tasks.extend(crate::miri::task_specs(ctx)?),
 			"l1" | "clippy" | "layouts" | "measure-checks" => {
-				tasks.push(Task::new(suite, "suite", "all", 300.0))
+				tasks.push(Task::new(&suite, "suite", "all", 300.0))
 			}
 			_ => bail!("unknown verification suite {suite}"),
 		}
@@ -101,27 +119,61 @@ pub fn run_all(ctx: &Context, suites: &[String], workers: usize) -> Result<Vec<V
 	ctx.verify_source()?;
 	let tasks = catalog(ctx, suites)?;
 	common::write_json(&ctx.out.join("TASKS.json"), &tasks)?;
-	let (miri, native): (Vec<_>, Vec<_>) = tasks.iter().partition(|task| task.suite == "miri");
+	let (preflight, expensive): (Vec<_>, Vec<_>) =
+		tasks.iter().partition(|task| task.suite == "clippy");
+	let state = State::default();
+	let epoch = Instant::now();
+	let mut rows = Vec::new();
+	let mut remaining = preflight_then(
+		|| {
+			let result = (|| {
+				for task in preflight {
+					let row = execute(ctx, &state, task, epoch)?;
+					let passed = row["status"] == "PASS";
+					rows.push(row);
+					ensure!(
+						passed,
+						"format/Clippy prerequisite failed; expensive jobs were not started"
+					);
+				}
+				Ok(())
+			})();
+			common::write_json(
+				&ctx.out.join("PREFLIGHT.json"),
+				&json!({"status":if result.is_ok(){"PASS"}else{"FAIL"},"jobs":rows,"expensive_jobs_released":result.is_ok()}),
+			)?;
+			result
+		},
+		|| {
+			if expensive.iter().any(|task| task.suite == "miri") {
+				crate::miri::preflight(ctx)?;
+			}
+			let (miri, native): (Vec<_>, Vec<_>) =
+				expensive.into_iter().partition(|task| task.suite == "miri");
+			let miri_workers = crate::miri::workers()?
+				.min(ctx.budget.capacity())
+				.min(workers);
+			std::thread::scope(|scope| -> Result<_> {
+				let native = scope.spawn(|| {
+					crate::scheduler::map(&native, workers.min(ctx.jobs), |task| {
+						execute(ctx, &state, task, epoch)
+					})
+				});
+				let miri = crate::scheduler::map(&miri, miri_workers, |task| {
+					execute(ctx, &state, task, epoch)
+				});
+				let mut completed = native
+					.join()
+					.map_err(|_| anyhow::anyhow!("native job worker panicked"))??;
+				completed.extend(miri?);
+				Ok(completed)
+			})
+		},
+	)?;
+	rows.append(&mut remaining);
 	let miri_workers = crate::miri::workers()?
 		.min(ctx.budget.capacity())
 		.min(workers);
-	let state = State::default();
-	let epoch = Instant::now();
-	let rows = std::thread::scope(|scope| -> Result<_> {
-		let native = scope.spawn(|| {
-			crate::scheduler::map(&native, workers.min(ctx.jobs), |task| {
-				execute(ctx, &state, task, epoch)
-			})
-		});
-		let miri = crate::scheduler::map(&miri, miri_workers, |task| {
-			execute(ctx, &state, task, epoch)
-		});
-		let mut rows = native
-			.join()
-			.map_err(|_| anyhow::anyhow!("native job worker panicked"))??;
-		rows.extend(miri?);
-		Ok(rows)
-	})?;
 	common::write_json(&ctx.out.join("TASK-RESULTS.json"), &rows)?;
 	let grouped = group(&tasks, &rows)?;
 	let mut results = Vec::new();
@@ -197,6 +249,61 @@ fn group(tasks: &[Task], rows: &[Value]) -> Result<BTreeMap<String, Vec<Value>>>
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn format_and_clippy_are_required_for_selected_suites() {
+		for selection in [
+			vec!["native"],
+			vec!["miri"],
+			vec!["awfy", "contracts"],
+			vec!["clippy"],
+			vec!["native", "clippy", "miri"],
+		] {
+			let suites =
+				required_suites(&selection.into_iter().map(String::from).collect::<Vec<_>>());
+			assert_eq!(suites.iter().filter(|s| *s == "clippy").count(), 1);
+		}
+	}
+
+	#[test]
+	fn lint_failure_prevents_test_and_miri_launch() {
+		for failure in [Some("fmt"), Some("clippy"), None] {
+			let events = std::cell::RefCell::new(Vec::new());
+			let outcome = preflight_then(
+				|| {
+					for check in ["fmt", "clippy"] {
+						events.borrow_mut().push(check);
+						ensure!(failure != Some(check), "injected {check} failure");
+					}
+					Ok(())
+				},
+				|| {
+					events
+						.borrow_mut()
+						.extend(["native-test", "miri-prepare", "miri-test"]);
+					Ok(())
+				},
+			);
+			match failure {
+				Some("fmt") => {
+					assert!(outcome.is_err());
+					assert_eq!(*events.borrow(), ["fmt"]);
+				}
+				Some("clippy") => {
+					assert!(outcome.is_err());
+					assert_eq!(*events.borrow(), ["fmt", "clippy"]);
+				}
+				None => {
+					assert!(outcome.is_ok());
+					assert_eq!(
+						*events.borrow(),
+						["fmt", "clippy", "native-test", "miri-prepare", "miri-test"]
+					);
+				}
+				_ => unreachable!(),
+			}
+		}
+	}
+
 	#[test]
 	fn grouping_rejects_missing_duplicate_and_foreign_jobs() {
 		let task = Task::new("native", "library", "native", 600.0);
