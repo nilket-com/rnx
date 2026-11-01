@@ -365,3 +365,52 @@ impl NativeRegion {
 			.next()
 	}
 }
+
+/// N5 has a distinct loadable capability and a distinct record/entry type. Reuses
+/// the mapping owner, not the scalar or collection safe call APIs.
+pub(crate) struct NativeRecursion(NativeRegion);
+impl NativeRecursion {
+	pub(crate) fn load(
+		compiled: &super::lower::recursion::CompiledRecursion,
+	) -> Result<Self, NativeRefusal> {
+		NativeRegion::load(compiled.artifact()).map(Self)
+	}
+	pub(crate) fn call(
+		&self,
+		control: &mut [i64],
+		record: &mut crate::experimental_core::region::recursion::Record,
+		scratch: &mut [i64],
+	) -> Option<u32> {
+		if control.len() != 1
+			|| self.0.module.is_none()
+			|| self.0.collection_entry.is_null()
+			|| record.reserved != 0
+			|| record.unused != 0
+			|| scratch.is_empty()
+			|| scratch.len() > isize::MAX as usize / 8
+		{
+			return None;
+		}
+		type RecursiveEntry = unsafe extern "C" fn(
+			*mut i64,
+			*mut crate::experimental_core::region::recursion::Record,
+			*mut i64,
+			u64,
+		) -> u32;
+		// SAFETY: only the sealed recursive compiler constructs this capability.
+		// The owned RX mapping outlives this call; all pointers address exclusive,
+		// initialized private buffers, length fits isize, every FULL dynamic index
+		// is checked and Spectre-clamped under both IR audits. No engine pointers,
+		// callbacks, native calls, relocations, traps, or machine recursion occur.
+		let status = unsafe {
+			let entry = core::mem::transmute::<*const u8, RecursiveEntry>(self.0.collection_entry);
+			entry(
+				control.as_mut_ptr(),
+				record,
+				scratch.as_mut_ptr(),
+				scratch.len() as u64,
+			)
+		};
+		Some(status)
+	}
+}

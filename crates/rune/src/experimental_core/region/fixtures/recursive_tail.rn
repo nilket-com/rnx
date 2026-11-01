@@ -1,0 +1,6 @@
+// A second general recursion kernel: scalar tail accumulation, without tail-call
+// charge elimination. N5 uses private continuations exactly as for branching fib.
+fn accumulate(n, total) {
+    if n <= 0 { total } else { accumulate(n - 1, total + n) }
+}
+fn kernel(seed) { accumulate(200 + seed % 7, 0) }

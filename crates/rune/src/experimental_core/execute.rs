@@ -1295,6 +1295,7 @@ impl Executor {
 	fn invoke_args<
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const NATIVE: bool,
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const COLLECTIONS: bool,
+		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const RECURSION: bool,
 	>(
 		&mut self,
 		code: &Code,
@@ -1304,11 +1305,15 @@ impl Executor {
 		mut fuel: usize,
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
 		regions: Option<&super::region::cache::ProgramRegions>,
+		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+		native_recursion: Option<&super::region::cache::RecursiveProgram>,
 	) -> core::result::Result<Root, Failure> {
 		let mut entered = false;
 		let mut setup_cleanup_error = None;
 		let mut missing_key = None;
 		let mut panic_message = None;
+		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+		let mut replay_root: Option<usize> = None;
 
 		let result = (|| {
 			if store.is_closed() {
@@ -1334,6 +1339,10 @@ impl Executor {
 					.ok_or_else(|| error(ErrorKind::InvalidCode))?;
 				// Frame metadata and the function are stable until call or return.
 				// No borrowed frame/slot reference crosses those mutations.
+				#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+				if RECURSION && replay_root.is_some_and(|root| self.frames.len() < root) {
+					replay_root = None;
+				}
 				let frame_index = self.frames.len() - 1;
 				let mut pc = frame.pc;
 				// P0 region simulator hook (tests with `native-code` only): never
@@ -1351,6 +1360,45 @@ impl Executor {
 				#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
 				let mut resume_pc = usize::MAX;
 
+				// N5 runs once at actual frame entry, before pc0's existing charge.
+				// No recursion predicate is added to the instruction/charged-pc loop.
+				#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+				if RECURSION && pc == 0 && replay_root.is_none() {
+					#[cfg(test)]
+					let armed = cancel_hook_armed_for_test();
+					#[cfg(not(test))]
+					let armed = false;
+					if !armed {
+						if let Some(ready) =
+							native_recursion.and_then(|r| r.function(frame.function))
+						{
+							let end = frame.base + function.slots as usize;
+							let room = region_room(
+								self.frames.len(),
+								self.slots.len(),
+								end,
+								self.limits,
+								self.capacities(),
+							);
+							if let Some(window) = self.slots.get_mut(frame.base..end) {
+								match ready.enter(window, store, self.canceled, fuel, room) {
+									super::region::recursion::Outcome::Complete {
+										pc: next,
+										fuel: left,
+										..
+									} => {
+										pc = next;
+										fuel = left;
+										resume_pc = next;
+									}
+									_ => {
+										replay_root = Some(self.frames.len());
+									}
+								}
+							}
+						}
+					}
+				}
 				loop {
 					let source_pc = pc;
 					let instruction = match function.cached_ref(source_pc) {
@@ -1758,6 +1806,14 @@ impl Executor {
 								args_len,
 							} => call = Some((out, callee, args_start, args_len)),
 							Op::Return { value } => {
+								#[cfg(all(test, feature = "native-code"))]
+								super::region::recursion::observe_return(
+									frame.function,
+									self.frames.len(),
+									source_pc,
+									fuel,
+									&self.slots[frame.base..frame.base + function.slots as usize],
+								);
 								let value = get(value)?;
 								store.retain(value)?;
 								let out = frame.out;
@@ -2040,7 +2096,8 @@ impl Executor {
 		use super::region::cache::{self, Checkout};
 
 		if !self.native_enabled || code.id() == self.no_region_code {
-			return self.invoke_args::<false, false>(code, store, function, args, fuel, None);
+			return self
+				.invoke_args::<false, false, false>(code, store, function, args, fuel, None, None);
 		}
 
 		match cache::checkout(code) {
@@ -2048,34 +2105,80 @@ impl Executor {
 				// N2 selects once per invocation. Scalar-only native and native-off
 				// instruction loops contain no collection dispatch or snapshot work.
 				let result = if guard.regions().is_some_and(|r| r.has_collections()) {
-					self.invoke_args::<true, true>(
+					self.invoke_args::<true, true, false>(
 						code,
 						store,
 						function,
 						args,
 						fuel,
 						guard.regions(),
+						None,
 					)
 				} else {
-					self.invoke_args::<true, false>(
+					self.invoke_args::<true, false, false>(
 						code,
 						store,
 						function,
 						args,
 						fuel,
 						guard.regions(),
+						None,
 					)
 				};
 				drop(guard);
 				result
 			}
 			Checkout::Interpret { no_regions } => {
-				if no_regions {
-					self.no_region_code = code.id();
+				if !no_regions {
+					return self.invoke_recursion_fallback(code, store, function, args, fuel);
 				}
-				self.invoke_args::<false, false>(code, store, function, args, fuel, None)
+				self.no_region_code = code.id();
+				self.invoke_args::<false, false, false>(
+					code, store, function, args, fuel, None, None,
+				)
 			}
 		}
+	}
+
+	/// Only the old `Interpret { no_regions: false }` cache fallback reaches this.
+	/// Ordinary loaded loops never inspect the recursion table or build its captures.
+	#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+	#[inline(never)]
+	fn invoke_recursion_fallback(
+		&mut self,
+		code: &Code,
+		store: &mut Store,
+		function: u32,
+		args: Args<'_>,
+		fuel: usize,
+	) -> core::result::Result<Root, Failure> {
+		let Some(guard) = super::region::cache::checkout_recursion(code) else {
+			return self
+				.invoke_args::<false, false, false>(code, store, function, args, fuel, None, None);
+		};
+		let result = if guard.regions().is_some_and(|r| r.has_collections()) {
+			self.invoke_args::<true, true, true>(
+				code,
+				store,
+				function,
+				args,
+				fuel,
+				guard.regions(),
+				guard.recursive(),
+			)
+		} else {
+			self.invoke_args::<true, false, true>(
+				code,
+				store,
+				function,
+				args,
+				fuel,
+				guard.regions(),
+				guard.recursive(),
+			)
+		};
+		drop(guard);
+		result
 	}
 
 	/// Clean-state check for callers that repeat invocations: true when no

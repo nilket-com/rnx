@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "record": "N5",
+  "baseline_milestone": "N4",
+  "candidate_commit": "f4af80a2c565f579347e9c04d87b1d9e03060ce0",
+  "tip_commit": "0fed676af917e5d66f5bde49280f550488d02d70",
+  "profile": "cgu1",
+  "plan_commit": "1be9bd3a8478e6768b4b69d4d95cfd37d498989f",
+  "entries": [
+    {
+      "rule": "exact-host-invocation-entry",
+      "symbol": "<rune::experimental_core::execute::Executor>::invoke",
+      "calls": 1000,
+      "cells": {
+        "on/while": 8000,
+        "on/numeric": 8000,
+        "on/calls": 8000,
+        "on/shared_rows": 6000
+      },
+      "diagnostic_cells": {
+        "scalar_while": 8000,
+        "range": 8000,
+        "b1_calls": 8000,
+        "n2_i64": 8000,
+        "n2_bool": 8000,
+        "n3_i64": 8000,
+        "n3_bool": 8000,
+        "n4_i64": 8000,
+        "n4_bool": 8000
+      }
+    }
+  ],
+  "proof": "n5-proof.json",
+  "proof_sha256": "cfabcdaa7885535f5465a65e11b53916dc4fbf1bddfa17586403298f9c486d6c"
+}

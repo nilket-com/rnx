@@ -2554,7 +2554,7 @@ fn child_bench_admission() {
 		("v2/while", super::p2_tests::V2_WHILE, 1),
 		("v2/numeric", super::p2_tests::V2_NUMERIC, 1),
 		("v2/calls", built::V2_CALLS, 1),
-		("v2/fib", super::p2_tests::V2_FIB, 0),
+		("v2/fib", super::p2_tests::V2_FIB, 1),
 		("v2/shared_rows", super::p2_tests::V2_SHARED_ROWS, 0),
 		("stage/calls", built::STAGE_CALLS, 1),
 	] {

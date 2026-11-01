@@ -69,6 +69,8 @@
 //!
 //! Loop-carried slots are `cranelift_frontend` variables, so they live in registers across
 //! the back edge; memory is touched only at entry and exits.
+pub(crate) mod recursion;
+
 use super::NativeRefusal;
 use crate::experimental_core::arithmetic::Binary;
 use crate::experimental_core::region::abi::ExitRecord;

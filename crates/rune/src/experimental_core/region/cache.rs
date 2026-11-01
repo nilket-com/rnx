@@ -98,6 +98,13 @@
 //! location, operation), call chains, cleanup errors, store contents and remaining fuel are
 //! those of the interpreter. The executor itself does change in non-visible ways (a code-id
 //! hint), and the cache keeps counters.
+mod recursion;
+pub(crate) use recursion::checkout as checkout_recursion;
+#[cfg(test)]
+pub(crate) use recursion::counters as recursive_counters_for_test;
+pub(crate) use recursion::RecursiveProgram;
+use recursion::RecursiveReady;
+
 use super::budget::{Budget, Held, Pool, Token};
 use super::commit::{self, Refused, Room};
 use super::{
@@ -224,6 +231,7 @@ pub(crate) fn thread_reserve_bytes(limits: &Limits) -> usize {
 		.cached_programs
 		.saturating_mul(core::mem::size_of::<Entry>())
 		.saturating_add(ISA_RESERVE_BYTES)
+		.saturating_add(recursion::table_bytes())
 }
 
 /// The process-wide mapping reservations of the native tier.
@@ -868,6 +876,8 @@ impl Cache {
 
 	fn remove(&mut self, index: usize) -> Entry {
 		let entry = self.entries.swap_remove(index);
+		// Removal is a cold path; private artifacts have no engine callbacks.
+		recursion::evict(entry.code);
 		self.mapped -= entry.mapped;
 		self.metadata -= entry.metadata;
 		entry
@@ -1099,7 +1109,7 @@ pub(crate) fn checkout(code: &Code) -> Checkout {
 		armed: true,
 	};
 	let limits = limits();
-	let regions = build(code, enabled, &limits);
+	let (regions, recursive, lookup) = build(code, enabled, &limits);
 	marker.armed = false;
 
 	CACHE.with(|cache| {
@@ -1109,15 +1119,34 @@ pub(crate) fn checkout(code: &Code) -> Checkout {
 			return Checkout::Interpret { no_regions: false };
 		};
 		let entry = &mut cache.entries[index];
-		if regions.ready.is_empty() {
+		if regions.ready.is_empty() && recursive.is_empty() {
 			let no_regions = regions.summary.regions == 0;
 			entry.resident = Resident::Empty(regions.summary);
 			Checkout::Interpret { no_regions }
-		} else {
+		} else if recursive.is_empty() {
 			entry.resident = Resident::CheckedOut;
 			Checkout::Native(Guard {
 				regions: Some(regions),
 			})
+		} else {
+			let summary = regions.summary;
+			// One fallible std allocation, bounded as native cache metadata.
+			// It cannot debit the script's allocator quota while resident.
+			let mut program = StdVec::new();
+			if program.try_reserve_exact(1).is_err() || program.capacity() != 1 {
+				entry.resident = Resident::Empty(summary);
+				return Checkout::Interpret { no_regions: false };
+			}
+			program.push(RecursiveProgram {
+				loops: regions,
+				recursive,
+				lookup,
+			});
+			entry.resident = Resident::Empty(summary);
+			// Recursion is selected only on the existing interpreted fallback.
+			// The Native checkout/guard and Resident layouts remain those of N4.
+			let _ = recursion::install(program);
+			Checkout::Interpret { no_regions: false }
 		}
 	})
 }
@@ -1212,6 +1241,9 @@ struct Build<'l> {
 	program_bytes: usize,
 	program_metadata: usize,
 	compiles: usize,
+	recursive: StdVec<RecursiveReady>,
+	recursive_lookup: StdVec<u32>,
+	function_limit: usize,
 }
 
 impl Build<'_> {
@@ -1514,7 +1546,11 @@ fn unreserve(id: u32, mapped: usize, metadata: usize) {
 /// (2) an analysis error in a header stops that function's later headers but keeps the
 /// regions already loaded from it (the batch build dropped the whole function's regions; both are
 /// fallbacks, and such errors are allocation failures or invalid code).
-fn build(code: &Code, enabled: Enabled, limits: &Limits) -> ProgramRegions {
+fn build(
+	code: &Code,
+	enabled: Enabled,
+	limits: &Limits,
+) -> (ProgramRegions, StdVec<RecursiveReady>, StdVec<u32>) {
 	let functions = code.functions();
 	let mut b = Build {
 		id: code.id(),
@@ -1528,6 +1564,9 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> ProgramRegions {
 		program_bytes: 0,
 		program_metadata: 0,
 		compiles: 0,
+		recursive: StdVec::new(),
+		recursive_lookup: StdVec::new(),
+		function_limit: functions.min(limits.program_attempted_functions),
 	};
 
 	#[cfg(test)]
@@ -1594,6 +1633,17 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> ProgramRegions {
 		}
 		work += rest;
 		b.summary.analysed_functions += 1;
+		// N5 analysis shares the same gates, transient budget and program work cap.
+		// Alternatives are bounded by 3^(parameters+1), full forward type transfer.
+		if f.parameters<=4 && f.slots<=super::recursion::MAX_SLOTS as u32 && f.len()<=super::recursion::MAX_INSTRUCTIONS && (0..f.len()).any(|pc|matches!(f.cached_ref(pc).map(|i|i.op),Some(crate::experimental_core::code::Op::Call{function:target,..}) if target==function)) {
+            let estimate=(f.len() as u64).saturating_mul(f.slots as u64).saturating_mul(3u64.pow(f.parameters+1));
+            if work.saturating_add(estimate)<=limits.program_analysis_work {
+                work+=estimate;
+                if let Some((shape,bytes))=super::recursion::analyze(code,function,&budget){
+                    let held=Held::adopt(&budget,bytes);b.summary.regions+=1;b.load_recursion(held,shape);
+                }
+            }else{b.summary.skipped_budget+=1;}
+        }
 		if headers.is_empty() {
 			continue;
 		}
@@ -1699,14 +1749,18 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> ProgramRegions {
 		}
 	}
 
-	ProgramRegions {
-		collections: ready.iter().any(|r| r.region.collection.is_some()),
-		code: b.id,
-		functions,
-		headers,
-		ready,
-		summary,
-	}
+	(
+		ProgramRegions {
+			collections: ready.iter().any(|r| r.region.collection.is_some()),
+			code: b.id,
+			functions,
+			headers,
+			ready,
+			summary,
+		},
+		b.recursive,
+		b.recursive_lookup,
+	)
 }
 
 // --------------------------------------------------------------------- test seams
@@ -1893,24 +1947,27 @@ fn take_injected_invalid_exit() -> bool {
 pub(crate) fn regions_for_test(code: u32) -> Option<StdVec<RegionCounters>> {
 	CACHE.with(|cache| {
 		let cache = cache.borrow();
-		match &cache.entries[cache.position(code)?].resident {
-			Resident::Ready(regions) => Some(
-				regions
-					.ready
-					.iter()
-					.flat_map(|r| {
-						core::iter::once(r).chain(
-							r.vector
-								.iter()
-								.flat_map(|v| [&v.integer, &v.boolean].into_iter().flatten()),
-						)
-					})
-					.map(Ready::counters)
-					.collect(),
-			),
-			Resident::Empty(_) => Some(StdVec::new()),
-			Resident::Building | Resident::CheckedOut => None,
-		}
+
+		let resident = &cache.entries[cache.position(code)?].resident;
+		let regions = match resident {
+			Resident::Ready(r) => r,
+			Resident::Empty(_) => return Some(StdVec::new()),
+			Resident::Building | Resident::CheckedOut => return None,
+		};
+		Some(
+			regions
+				.ready
+				.iter()
+				.flat_map(|r| {
+					core::iter::once(r).chain(
+						r.vector
+							.iter()
+							.flat_map(|v| [&v.integer, &v.boolean].into_iter().flatten()),
+					)
+				})
+				.map(Ready::counters)
+				.collect(),
+		)
 	})
 }
 
@@ -1953,6 +2010,7 @@ pub(crate) fn clear_for_test() {
 		core::mem::take(&mut cache.entries)
 	});
 	drop(entries);
+	recursion::clear();
 }
 
 #[cfg(test)]

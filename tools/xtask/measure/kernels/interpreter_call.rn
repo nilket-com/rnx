@@ -1,0 +1,9 @@
+// Native ON, no eligible function entry or loop: the heap-valued argument and
+// Get operations keep both the leaf inliner and N5 function entries ineligible.
+fn pair(values) { values[0] + values[1] }
+fn kernel(seed) {
+    let values = [seed, seed + 1];
+    let total = 0;
+    for i in 0..128 { total += pair(values); }
+    total
+}

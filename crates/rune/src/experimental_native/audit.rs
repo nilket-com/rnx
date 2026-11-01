@@ -72,6 +72,24 @@ pub(crate) struct AccessMap {
 }
 
 impl AccessMap {
+	/// N5 uses one read-only control cell and the same narrowly audited, physically
+	/// clamped private-cell accesses. No engine memory is reachable.
+	pub(crate) fn recursion() -> Self {
+		let mut buf = [NONE; MAX_REGION_CELLS];
+		buf[0] = Perm {
+			load: true,
+			store: false,
+		};
+		Self {
+			collection: Some(Perm {
+				load: true,
+				store: true,
+			}),
+			buf,
+			cells: 1,
+		}
+	}
+
 	pub(crate) fn of(region: &Region) -> Self {
 		let n = region.slots.len().min(MAX_REGION_CELLS);
 		let stored = region
@@ -298,6 +316,47 @@ pub(crate) fn ir(func: &ir::Function, map: &AccessMap) -> Result<(), Finding> {
 	Ok(())
 }
 
+/// Equality of the checked and clamped index. The optimizer can duplicate a
+/// pure I64 addition across a block boundary. Identical SSA/constant operands
+/// imply identical wrapped sums for every bit pattern. This is ONE expression
+/// level only: never equate loads, different bases/offsets, multiplication or
+/// recursively normalized expressions. No bounds/permissions are inferred here.
+fn same_checked_index(f: &ir::Function, a: ir::Value, b: ir::Value) -> bool {
+	let resolve = |v| f.dfg.resolve_aliases(v);
+	let constant = |v| {
+		let inst = f.dfg.value_def(resolve(v)).inst()?;
+		match f.dfg.insts[inst] {
+			InstructionData::UnaryImm {
+				opcode: Opcode::Iconst,
+				imm,
+				..
+			} if f.dfg.value_type(resolve(v)) == types::I64 => Some(imm.bits()),
+			_ => None,
+		}
+	};
+	let same =
+		|a, b| resolve(a) == resolve(b) || constant(a).is_some_and(|n| constant(b) == Some(n));
+	if same(a, b) {
+		return true;
+	}
+	let add = |v| {
+		let v = resolve(v);
+		if f.dfg.value_type(v) != types::I64 {
+			return None;
+		}
+		let inst = f.dfg.value_def(v).inst()?;
+		if f.dfg.insts[inst].opcode() != Opcode::Iadd {
+			return None;
+		}
+		let args = f.dfg.inst_args(inst);
+		Some((args[0], args[1]))
+	};
+	match (add(a), add(b)) {
+		(Some((a, b)), Some((c, d))) => (same(a, c) && same(b, d)) || (same(a, d) && same(b, c)),
+		_ => false,
+	}
+}
+
 /// Match only base + (select_spectre_guard(index < len, index, 0) << 3).
 /// The boundary supplies max(1,len) cells, so even the false arm's zero names a
 /// live sentinel. This proof is independent of CFG dominance and remains safe
@@ -363,8 +422,7 @@ fn snapshot_address(f: &ir::Function, address: ir::Value, base: ir::Value, len: 
 	};
 	// The optimizer swaps constant comparisons (1 < len becomes len > 1),
 	// and may materialize separate definitions of the same constant at the select.
-	let same =
-		|a, b| resolve(a) == resolve(b) || constant(a).is_some_and(|v| constant(b) == Some(v));
+	let same = |a, b| same_checked_index(f, a, b);
 	match f.dfg.insts[check] {
 		InstructionData::IntCompare {
 			cond: ir::condcodes::IntCC::UnsignedLessThan,

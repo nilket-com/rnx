@@ -50,6 +50,7 @@ use budget::{AnalysisPod, BVec, Budget, Grow};
 pub(crate) mod abi;
 pub(crate) mod budget;
 pub(crate) mod commit;
+pub(crate) mod recursion;
 pub(crate) mod simulate;
 
 #[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]

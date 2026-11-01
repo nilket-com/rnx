@@ -7,6 +7,8 @@ use std::{fs, process::Command};
 const TESTS: &[(&str, usize)] = &[
 	("test_protocol.py", 2),
 	("test_append_diagnostic.py", 4),
+	("test_call_diagnostic.py", 4),
+	("test_n5_qualification.py", 9),
 	("test_bootstrap.py", 2),
 	("test_callgrind.py", 4),
 	("test_callgrind_cell.py", 2),
@@ -24,6 +26,7 @@ const TESTS: &[(&str, usize)] = &[
 	("test_measurement_readiness.py", 2),
 	("test_counter_cell.py", 2),
 	("test_counter_packet.py", 2),
+	("test_counter_native_mappings.py", 4),
 	("test_counter_controller.py", 4),
 	("test_k1.py", 2),
 	("test_k1_analysis.py", 2),
@@ -35,7 +38,7 @@ const TESTS: &[(&str, usize)] = &[
 	("test_build_worker.py", 4),
 	("test_cargo_cache.py", 2),
 	("test_role_evidence.py", 4),
-	("test_seal_evidence.py", 6),
+	("test_seal_evidence.py", 7),
 	("test_seal_store.py", 2),
 	("test_input_closure.py", 3),
 	("test_input_verification.py", 2),
@@ -51,6 +54,24 @@ const TESTS: &[(&str, usize)] = &[
 ];
 
 pub fn check_manifest(ctx: &Context) -> Result<Value> {
+	// N5's new qualification helpers must follow the repository's tab style.
+	// Check before the expensive suites, alongside the selected control manifest.
+	for name in [
+		"n5_qualification.py",
+		"test_n5_qualification.py",
+		"callgrind_rules.py",
+		"counter_controller.py",
+		"counter_packet.py",
+		"test_counter_native_mappings.py",
+		"seal_evidence.py",
+		"test_seal_evidence.py",
+	] {
+		let source = fs::read_to_string(ctx.repo.join("tools/xtask/measure").join(name))?;
+		ensure!(
+			!source.lines().any(|line| line.starts_with("    ")),
+			"{name} must use tabs for indentation"
+		);
+	}
 	let mut files = Vec::new();
 	for (name, count) in TESTS {
 		let path = ctx.repo.join("tools/xtask/measure").join(name);

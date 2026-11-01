@@ -103,3 +103,19 @@ host effects and require progress prefixes in both directions. Primary
 errors and complete natural-outcome output must match. User-facing halt
 wording, location policy and exit status belong to the real CLI routing
 acceptance; these Rune probes observe typed outcomes and program streams.
+
+N5 scalar self-recursion starts at function entry, independently of loop regions.
+It admits acyclic scalar bodies with direct self calls and uses private iterative
+continuations; mutual recursion, helper calls and heap values remain interpreted.
+The physical frame/diagnostic/slot room guard forbids native engine-buffer growth.
+A nested problem discards the entire speculative function and replays it through
+the interpreter, with descendant attempts suppressed until that root returns.
+The separately typed record reports virtual calls, peak depth and replay work.
+
+The N5 proof must separate first-call replay from warm completion and include fib,
+`recursive_tail.rn`, and the small `recursive_mixed.rn` wrapper diagnostic. Report
+whole-call instructions vs native-off and locked N4, including preparation, and
+explicit mixed wrapper cost. The interpreter-only `interpreter_call.rn` diagnostic
+requires zero extra Ir/call in native-on programs without an eligible entry, just
+as the Push and unchanged loop diagnostics do. Neither diagnostic qualifies or
+normalizes the standard measurement gates.

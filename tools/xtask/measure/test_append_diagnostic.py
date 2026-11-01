@@ -21,12 +21,13 @@ class AppendDiagnostic(unittest.TestCase):
         result = append_diagnostic.assess(evidence)
         self.assertEqual(result['status'], 'PASS')
         self.assertEqual(result['incremental_growth_per_extra_1000'], 0)
+        self.assertEqual(result['cold_setup_delta'], 41)
         self.assertEqual(evidence, before)
 
-    def test_one_instruction_per_call_is_detected(self):
-        for cost in (-1, 1):
+    def test_nonpositive_passes_and_one_added_instruction_fails(self):
+        for cost in (-1, 0, 1):
             result = append_diagnostic.assess(rows(per_call=cost))
-            self.assertEqual(result['status'], 'FAIL')
+            self.assertEqual(result['status'], 'FAIL' if cost > 0 else 'PASS')
             self.assertEqual(result['instructions_per_extra_call'], cost)
 
     def test_missing_duplicate_or_native_enabled_is_rejected(self):

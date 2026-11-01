@@ -380,3 +380,71 @@ fn n3_snapshot_audit_rejects_unchecked_addresses_and_writes() {
 	assert!(lower::compile(&region, 0).is_ok());
 	snapshot_audit_rejects_unchecked_addresses(&region);
 }
+
+/// Optimizers may duplicate a pure index addition at the clamp. Only an
+/// identical sum is admitted; mutable reads and differing operands stay refused.
+#[test]
+#[cfg_attr(miri, ignore = "Miri: Cranelift IR audit")]
+fn n5_snapshot_audit_matches_only_duplicate_pure_index_adds() {
+	use cranelift_codegen::ir::condcodes::IntCC;
+	for case in 0..9 {
+		let mut func = ir::Function::with_name_signature(
+			UserFuncName::user(1, 0),
+			lower::collection_signature(),
+		);
+		let mut fctx = FunctionBuilderContext::new();
+		let mut b = FunctionBuilder::new(&mut func, &mut fctx);
+		let entry = b.create_block();
+		b.append_block_params_for_function_params(entry);
+		b.switch_to_block(entry);
+		let params = b.block_params(entry).to_vec();
+		let six = b.ins().iconst(types::I64, 6);
+		let checked = match case {
+			5 => b
+				.ins()
+				.load(types::I64, MemFlagsData::trusted(), params[0], 0),
+			6 => b.ins().imul(params[0], six),
+			7 => {
+				let inner = b.ins().iadd(params[0], six);
+				b.ins().iadd(inner, six)
+			}
+			_ => b.ins().iadd(params[0], six),
+		};
+		let bound = if case == 8 { params[0] } else { params[3] };
+		let valid = b.ins().icmp(IntCC::UnsignedLessThan, checked, bound);
+		let other = b.ins().iconst(types::I64, if case == 3 { 7 } else { 6 });
+		let guarded = match case {
+			0 => checked,
+			2 => b.ins().iadd(other, params[0]),
+			4 => b.ins().iadd(params[1], other),
+			5 => b
+				.ins()
+				.load(types::I64, MemFlagsData::trusted(), params[0], 0),
+			6 => b.ins().imul(params[0], other),
+			7 => {
+				let inner = b.ins().iadd(params[0], other);
+				b.ins().iadd(inner, other)
+			}
+			_ => b.ins().iadd(params[0], other),
+		};
+		let zero = b.ins().iconst(types::I64, 0);
+		let safe = b.ins().select_spectre_guard(valid, guarded, zero);
+		let bytes = b.ins().ishl_imm_s(safe, 3);
+		let address = b.ins().iadd(params[2], bytes);
+		b.ins().store(MemFlagsData::trusted(), zero, address, 0);
+		let status = b.ins().iconst(types::I32, 0);
+		b.ins().return_(&[status]);
+		b.seal_all_blocks();
+		b.finalize(lower::isa().unwrap().frontend_config());
+		cranelift_codegen::verify_function(&func, &*lower::isa().unwrap()).unwrap();
+		let audited = audit::ir(&func, &audit::AccessMap::recursion());
+		if case <= 2 {
+			assert_eq!(audited, Ok(()), "case{case}");
+		} else {
+			assert!(
+				matches!(audited, Err(Finding::Memory(_))),
+				"case{case}: {audited:?}"
+			);
+		}
+	}
+}

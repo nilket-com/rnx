@@ -55,3 +55,16 @@ before changing code or rules. No inherited qualification or threshold waiver.
 One signed plan and one signed implementation on main, no branches/worktrees.
 Claude review and all gates before publication; then rnx pin. Durable jobs
 notify on exit; no polling/progress watchers, read terminal receipts once.
+
+Claude seq24708 clarified condition 1: zero cost applies to programs without
+admitted recursion. In a program with admitted recursion, wrapper bookkeeping
+must be O(1) per call, with no per-instruction work or scans. Measure/report a
+mixed program's wrapper-call cost explicitly vs off and locked N4; retain a
+net whole-call win when recursion dominates. Use a bounded direct function
+lookup and execute entry checks once per actual frame, before pc0's charge.
+
+Claude seq24741 approved a narrow audit equality proof for an optimizer's
+one-level duplicate pure I64 iadd (same SSA/constant operands, commuted allowed).
+The physical len, unsigned guard, full-index Spectre clamp, zero sentinel and
+scale permissions are unchanged. Reject different operands/bounds, loads,
+other opcodes and nested nonidentical expressions; exercise these controls.

@@ -142,7 +142,12 @@ fn totals(code: &Code) -> Totals {
 		}
 		t.cancel += r.refused_cancel;
 		t.store += r.refused_store;
+
 		t.tag += r.refused_tag;
+	}
+	for (entries, completes, _, _, _, _) in cache::recursive_counters_for_test(code.id()) {
+		t.entries += entries;
+		t.exits[0] += completes;
 	}
 	t
 }
@@ -345,7 +350,7 @@ pub(super) fn bench_kernel_cases() -> Vec<Case> {
 		),
 		// B1: admitted (native IterNext, `add` inlined).
 		rune("v2_calls", V2_CALLS, ints(&[&[0], &[5], &[30]]), 1, "CF"),
-		rune("v2_fib", V2_FIB, ints(&[&[0], &[1], &[9]]), 0, ""),
+		rune("v2_fib", V2_FIB, ints(&[&[0], &[1], &[9]]), 1, ""),
 		rune(
 			"v2_shared_rows",
 			V2_SHARED_ROWS,
@@ -417,13 +422,13 @@ fn child_bench_kernel_admission() {
 		("v2/while", V2_WHILE, 1),
 		("v2/numeric", V2_NUMERIC, 1),
 		("v2/calls", V2_CALLS, 1),
-		// fib has no loop candidate; shared_rows has a side entry and is refused.
-		("v2/fib", V2_FIB, 0),
+		// N5 admits fib at function entry; shared_rows remains ineligible.
+		("v2/fib", V2_FIB, 1),
 		("v2/shared_rows", V2_SHARED_ROWS, 0),
 		("stage/while", STAGE_WHILE, 1),
 		("stage/numeric", STAGE_NUMERIC, 1),
 		("stage/calls", STAGE_CALLS, 1),
-		("stage/fib", STAGE_FIB, 0),
+		("stage/fib", STAGE_FIB, 1),
 		("stage/shared_rows", STAGE_SHARED_ROWS, 0),
 	] {
 		execution();
@@ -446,7 +451,13 @@ fn child_bench_kernel_admission() {
 		);
 		assert_eq!(s.loaded, loaded, "{name}: {s:?}");
 		assert_eq!(unexpected_refusals(&s), [0; 12], "{name}: {s:?}");
-		if loaded == 1 {
+		if name.ends_with("/fib") {
+			assert_eq!(
+				cache::recursive_counters_for_test(program.code.id()).len(),
+				1
+			);
+			assert!(counters(&program.code).is_empty());
+		} else if loaded == 1 {
 			let r = counters(&program.code);
 			assert_eq!(r.len(), 1);
 			assert_eq!(r[0].state, State::Live);
