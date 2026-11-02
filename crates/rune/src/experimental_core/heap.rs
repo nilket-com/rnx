@@ -47,6 +47,8 @@ pub use view::{
 pub(crate) mod native;
 #[cfg(feature = "native-code")]
 mod native_append;
+#[cfg(feature = "native-code")]
+pub(crate) mod native_methods;
 
 #[cfg(test)]
 mod allocation_tests;

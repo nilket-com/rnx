@@ -98,7 +98,9 @@
 //! location, operation), call chains, cleanup errors, store contents and remaining fuel are
 //! those of the interpreter. The executor itself does change in non-visible ways (a code-id
 //! hint), and the cache keeps counters.
+pub(crate) mod methods;
 mod recursion;
+use methods::{MethodProgram, MethodReady};
 pub(crate) use recursion::checkout as checkout_recursion;
 #[cfg(test)]
 pub(crate) use recursion::counters as recursive_counters_for_test;
@@ -232,6 +234,7 @@ pub(crate) fn thread_reserve_bytes(limits: &Limits) -> usize {
 		.saturating_mul(core::mem::size_of::<Entry>())
 		.saturating_add(ISA_RESERVE_BYTES)
 		.saturating_add(recursion::table_bytes())
+		.saturating_add(methods::table_bytes())
 }
 
 /// The process-wide mapping reservations of the native tier.
@@ -878,6 +881,7 @@ impl Cache {
 		let entry = self.entries.swap_remove(index);
 		// Removal is a cold path; private artifacts have no engine callbacks.
 		recursion::evict(entry.code);
+		methods::evict(entry.code);
 		self.mapped -= entry.mapped;
 		self.metadata -= entry.metadata;
 		entry
@@ -1109,7 +1113,14 @@ pub(crate) fn checkout(code: &Code) -> Checkout {
 		armed: true,
 	};
 	let limits = limits();
-	let (regions, recursive, lookup) = build(code, enabled, &limits);
+	let Built {
+		regions,
+		recursive,
+		lookup,
+		method_ready,
+		method_lookup,
+		mut method_program,
+	} = build(code, enabled, &limits);
 	marker.armed = false;
 
 	CACHE.with(|cache| {
@@ -1119,7 +1130,43 @@ pub(crate) fn checkout(code: &Code) -> Checkout {
 			return Checkout::Interpret { no_regions: false };
 		};
 		let entry = &mut cache.entries[index];
-		if regions.ready.is_empty() && recursive.is_empty() {
+		if !method_ready.is_empty() {
+			// The shell was reserved before the first method artifact was loaded.
+			// Packaging here preserves the existing scalar recursion cache layouts.
+			debug_assert_eq!(method_program.capacity(), 1);
+			let summary = regions.summary;
+			method_program.push(MethodProgram {
+				loops: regions,
+				scalar: recursive,
+				scalar_lookup: lookup,
+				methods: method_ready,
+				lookup: method_lookup,
+			});
+			entry.resident = Resident::Empty(summary);
+			if !methods::install(method_program) {
+				// A sidecar key normally shares an existing bounded cache key, so
+				// the building marker implies a free slot. Fail closed if that
+				// invariant changes: released artifacts must not leave reservations
+				// or a permanent per-invocation chain of unsuccessful lookups.
+				let mapped = entry.mapped;
+				let metadata = entry.metadata;
+				entry.mapped = 0;
+				entry.metadata = 0;
+				let mut failed = summary;
+				failed.other = failed.other.saturating_add(1);
+				failed.regions = 0;
+				failed.loaded = 0;
+				failed.code_bytes = 0;
+				failed.mapped_bytes = 0;
+				failed.metadata_bytes = 0;
+				failed.reserved_bytes = 0;
+				entry.resident = Resident::Empty(failed);
+				cache.mapped -= mapped;
+				cache.metadata -= metadata;
+				return Checkout::Interpret { no_regions: true };
+			}
+			Checkout::Interpret { no_regions: false }
+		} else if regions.ready.is_empty() && recursive.is_empty() {
 			let no_regions = regions.summary.regions == 0;
 			entry.resident = Resident::Empty(regions.summary);
 			Checkout::Interpret { no_regions }
@@ -1243,6 +1290,9 @@ struct Build<'l> {
 	compiles: usize,
 	recursive: StdVec<RecursiveReady>,
 	recursive_lookup: StdVec<u32>,
+	method_ready: StdVec<MethodReady>,
+	method_lookup: StdVec<u32>,
+	method_program: StdVec<MethodProgram>,
 	function_limit: usize,
 }
 
@@ -1546,11 +1596,16 @@ fn unreserve(id: u32, mapped: usize, metadata: usize) {
 /// (2) an analysis error in a header stops that function's later headers but keeps the
 /// regions already loaded from it (the batch build dropped the whole function's regions; both are
 /// fallbacks, and such errors are allocation failures or invalid code).
-fn build(
-	code: &Code,
-	enabled: Enabled,
-	limits: &Limits,
-) -> (ProgramRegions, StdVec<RecursiveReady>, StdVec<u32>) {
+struct Built {
+	regions: ProgramRegions,
+	recursive: StdVec<RecursiveReady>,
+	lookup: StdVec<u32>,
+	method_ready: StdVec<MethodReady>,
+	method_lookup: StdVec<u32>,
+	method_program: StdVec<MethodProgram>,
+}
+
+fn build(code: &Code, enabled: Enabled, limits: &Limits) -> Built {
 	let functions = code.functions();
 	let mut b = Build {
 		id: code.id(),
@@ -1566,6 +1621,9 @@ fn build(
 		compiles: 0,
 		recursive: StdVec::new(),
 		recursive_lookup: StdVec::new(),
+		method_ready: StdVec::new(),
+		method_lookup: StdVec::new(),
+		method_program: StdVec::new(),
 		function_limit: functions.min(limits.program_attempted_functions),
 	};
 
@@ -1644,6 +1702,18 @@ fn build(
                 }
             }else{b.summary.skipped_budget+=1;}
         }
+		// Method-closure admission is cold and charged even on refusal. It adds no test to
+		// ordinary Call/Field execution and no allocation for scalar programs.
+		let mut allowance = limits.program_analysis_work.saturating_sub(work);
+		let before = allowance;
+		if let Some((shape, bytes)) =
+			super::recursion::methods::analyze(code, function, &budget, &mut allowance)
+		{
+			let held = Held::adopt(&budget, bytes);
+			b.summary.regions += 1;
+			b.load_methods(held, shape);
+		}
+		work = work.saturating_add(before - allowance);
 		if headers.is_empty() {
 			continue;
 		}
@@ -1749,8 +1819,8 @@ fn build(
 		}
 	}
 
-	(
-		ProgramRegions {
+	Built {
+		regions: ProgramRegions {
 			collections: ready.iter().any(|r| r.region.collection.is_some()),
 			code: b.id,
 			functions,
@@ -1758,9 +1828,12 @@ fn build(
 			ready,
 			summary,
 		},
-		b.recursive,
-		b.recursive_lookup,
-	)
+		recursive: b.recursive,
+		lookup: b.recursive_lookup,
+		method_ready: b.method_ready,
+		method_lookup: b.method_lookup,
+		method_program: b.method_program,
+	}
 }
 
 // --------------------------------------------------------------------- test seams
@@ -2011,6 +2084,7 @@ pub(crate) fn clear_for_test() {
 	});
 	drop(entries);
 	recursion::clear();
+	methods::clear();
 }
 
 #[cfg(test)]

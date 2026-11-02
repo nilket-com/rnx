@@ -1,0 +1,16 @@
+struct Counter { total, enabled }
+impl Counter {
+	fn add(self, value) {
+		if self.enabled { self.total += value; }
+		self.enabled = if self.enabled { false } else { true };
+	}
+	fn run(self, n) {
+		let i = 0;
+		while i < n { self.add(i); i = i + 1; }
+		self.total
+	}
+}
+fn kernel(seed) {
+	let counter = Counter { total: 0, enabled: true };
+	counter.run(200 + seed % 7)
+}

@@ -1296,6 +1296,8 @@ impl Executor {
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const NATIVE: bool,
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const COLLECTIONS: bool,
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const RECURSION: bool,
+		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] const METHODS: bool,
+		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))] P: super::region::cache::methods::EntryProgram,
 	>(
 		&mut self,
 		code: &Code,
@@ -1306,8 +1308,16 @@ impl Executor {
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
 		regions: Option<&super::region::cache::ProgramRegions>,
 		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
-		native_recursion: Option<&super::region::cache::RecursiveProgram>,
+		native_recursion: Option<&P>,
 	) -> core::result::Result<Root, Failure> {
+		#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+		const {
+			// Exactly seven combinations: interpreted, or native with either
+			// collection setting and plain/scalar-recursive/method activation.
+			assert!(!(COLLECTIONS || RECURSION || METHODS) || NATIVE);
+			assert!(!METHODS || RECURSION);
+			assert!(P::METHODS == METHODS);
+		}
 		let mut entered = false;
 		let mut setup_cleanup_error = None;
 		let mut missing_key = None;
@@ -1340,7 +1350,9 @@ impl Executor {
 				// Frame metadata and the function are stable until call or return.
 				// No borrowed frame/slot reference crosses those mutations.
 				#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
-				if RECURSION && replay_root.is_some_and(|root| self.frames.len() < root) {
+				if (RECURSION || METHODS)
+					&& replay_root.is_some_and(|root| self.frames.len() < root)
+				{
 					replay_root = None;
 				}
 				let frame_index = self.frames.len() - 1;
@@ -1363,15 +1375,14 @@ impl Executor {
 				// N5 runs once at actual frame entry, before pc0's existing charge.
 				// No recursion predicate is added to the instruction/charged-pc loop.
 				#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
-				if RECURSION && pc == 0 && replay_root.is_none() {
+				if (RECURSION || METHODS) && pc == 0 && replay_root.is_none() {
 					#[cfg(test)]
 					let armed = cancel_hook_armed_for_test();
 					#[cfg(not(test))]
 					let armed = false;
 					if !armed {
-						if let Some(ready) =
-							native_recursion.and_then(|r| r.function(frame.function))
-						{
+						let ready = native_recursion.and_then(|r| r.entry(frame.function));
+						if let Some(ready) = ready {
 							let end = frame.base + function.slots as usize;
 							let room = region_room(
 								self.frames.len(),
@@ -1381,7 +1392,7 @@ impl Executor {
 								self.capacities(),
 							);
 							if let Some(window) = self.slots.get_mut(frame.base..end) {
-								match ready.enter(window, store, self.canceled, fuel, room) {
+								match ready.enter(code, window, store, self.canceled, fuel, room) {
 									super::region::recursion::Outcome::Complete {
 										pc: next,
 										fuel: left,
@@ -2097,7 +2108,9 @@ impl Executor {
 
 		if !self.native_enabled || code.id() == self.no_region_code {
 			return self
-				.invoke_args::<false, false, false>(code, store, function, args, fuel, None, None);
+				.invoke_args::<false, false, false, false, super::region::cache::RecursiveProgram>(
+					code, store, function, args, fuel, None, None,
+				);
 		}
 
 		match cache::checkout(code) {
@@ -2105,7 +2118,7 @@ impl Executor {
 				// N2 selects once per invocation. Scalar-only native and native-off
 				// instruction loops contain no collection dispatch or snapshot work.
 				let result = if guard.regions().is_some_and(|r| r.has_collections()) {
-					self.invoke_args::<true, true, false>(
+					self.invoke_args::<true, true, false, false, super::region::cache::RecursiveProgram>(
 						code,
 						store,
 						function,
@@ -2115,7 +2128,7 @@ impl Executor {
 						None,
 					)
 				} else {
-					self.invoke_args::<true, false, false>(
+					self.invoke_args::<true, false, false, false, super::region::cache::RecursiveProgram>(
 						code,
 						store,
 						function,
@@ -2133,7 +2146,7 @@ impl Executor {
 					return self.invoke_recursion_fallback(code, store, function, args, fuel);
 				}
 				self.no_region_code = code.id();
-				self.invoke_args::<false, false, false>(
+				self.invoke_args::<false, false, false, false, super::region::cache::RecursiveProgram>(
 					code, store, function, args, fuel, None, None,
 				)
 			}
@@ -2153,11 +2166,10 @@ impl Executor {
 		fuel: usize,
 	) -> core::result::Result<Root, Failure> {
 		let Some(guard) = super::region::cache::checkout_recursion(code) else {
-			return self
-				.invoke_args::<false, false, false>(code, store, function, args, fuel, None, None);
+			return self.invoke_methods_fallback(code, store, function, args, fuel);
 		};
 		let result = if guard.regions().is_some_and(|r| r.has_collections()) {
-			self.invoke_args::<true, true, true>(
+			self.invoke_args::<true, true, true, false, super::region::cache::RecursiveProgram>(
 				code,
 				store,
 				function,
@@ -2167,7 +2179,7 @@ impl Executor {
 				guard.recursive(),
 			)
 		} else {
-			self.invoke_args::<true, false, true>(
+			self.invoke_args::<true, false, true, false, super::region::cache::RecursiveProgram>(
 				code,
 				store,
 				function,
@@ -2175,6 +2187,47 @@ impl Executor {
 				fuel,
 				guard.regions(),
 				guard.recursive(),
+			)
+		};
+		drop(guard);
+		result
+	}
+
+	#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+	#[inline(never)]
+	fn invoke_methods_fallback(
+		&mut self,
+		code: &Code,
+		store: &mut Store,
+		function: u32,
+		args: Args<'_>,
+		fuel: usize,
+	) -> core::result::Result<Root, Failure> {
+		let Some(guard) = super::region::cache::methods::checkout(code) else {
+			return self
+				.invoke_args::<false, false, false, false, super::region::cache::RecursiveProgram>(
+					code, store, function, args, fuel, None, None,
+				);
+		};
+		let result = if guard.regions().is_some_and(|r| r.has_collections()) {
+			self.invoke_args::<true, true, true, true, super::region::cache::methods::MethodProgram>(
+				code,
+				store,
+				function,
+				args,
+				fuel,
+				guard.regions(),
+				guard.methods(),
+			)
+		} else {
+			self.invoke_args::<true, false, true, true, super::region::cache::methods::MethodProgram>(
+				code,
+				store,
+				function,
+				args,
+				fuel,
+				guard.regions(),
+				guard.methods(),
 			)
 		};
 		drop(guard);

@@ -206,6 +206,23 @@ impl Code {
 		Some(self.methods[at].function)
 	}
 
+	/// Native method closures use script bodies only. Certified native adapters preserve their
+	/// ordinary dispatch and cannot become private method-closure callees.
+	#[cfg(feature = "native-code")]
+	pub(crate) fn region_script_method(&self, hash: Hash) -> Option<u32> {
+		if !self.absent_method(hash) {
+			return None;
+		}
+		let at = self
+			.methods
+			.binary_search_by_key(&hash, |method| method.hash)
+			.ok()?;
+		self.methods[at]
+			.native
+			.is_none()
+			.then_some(self.methods[at].function)
+	}
+
 	/// A supplied runtime must retain the native handlers certified at compile.
 	/// With no runtime the core uses the compiled builtin implementations, as
 	/// for its other certified native operations.

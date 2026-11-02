@@ -119,3 +119,20 @@ explicit mixed wrapper cost. The interpreter-only `interpreter_call.rn` diagnost
 requires zero extra Ir/call in native-on programs without an eligible entry, just
 as the Push and unchanged loop diagnostics do. Neither diagnostic qualifies or
 normalizes the standard measurement gates.
+
+Guarded method closures share scalar recursion's private continuation engine.
+They bind one named receiver and at most one distinct homogeneous integer or
+Boolean list at entry. Field names resolve against actual payload positions;
+closed method targets require receiver provenance and provider absence. The
+native ABI carries only private scalar buffers and closed tokens. Safe Rust
+validates and publishes fields, list contents and root-slot ownership together.
+A nested fault discards the entire transaction and replays from root entry.
+
+The method proof covers `method_fields.rn`, `method_vector.rn` and permute on the
+locked production CLI, with first-call and warm behavior reported separately.
+Existing scalar recursion and loop costs are compared with the published
+baseline; earlier measurement qualifications are not inherited. Cold analysis
+and host-invoke costs are reported separately from native work. The targeted
+`method_closure_` controls include full store/fuel/error equivalence, receiver
+and list identity, reordered fields, ownership headroom, leases, invalid exits
+and failed cache installation. Safe publication controls also run under Miri.

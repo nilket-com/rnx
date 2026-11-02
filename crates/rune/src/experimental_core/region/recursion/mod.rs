@@ -11,6 +11,21 @@ pub(crate) const MAX_INSTRUCTIONS: usize = 1024;
 /// Bounds type alternatives as well as code/metadata. Not a recursion depth limit.
 const MAX_PARAMETERS: usize = 4;
 
+pub(crate) mod methods;
+
+/// Shared physical activation reservation. The scalar specialization keeps its
+/// original stride, including one closed continuation label per activation.
+#[inline(always)]
+pub(crate) fn activation_cells(slots: usize, maxdepth: usize) -> Option<usize> {
+	// Callers validate the shape before reserving activations.
+	debug_assert!(slots > 0 && slots <= MAX_SLOTS);
+	let stride = 2 * slots + 1;
+	maxdepth
+		.checked_add(1)?
+		.checked_mul(stride)
+		.filter(|&n| n <= isize::MAX as usize / 8)
+}
+
 pub(crate) struct Shape {
 	pub(crate) function: u32,
 	pub(crate) slots: usize,
@@ -292,6 +307,52 @@ pub(crate) enum Outcome {
 	Invalid,
 }
 
+/// Shared continuation-record contract. Receiver publication follows
+/// this validation; the zero-receiver scalar specialization uses the same checks.
+#[inline(always)]
+pub(crate) fn validate_record(
+	shape: &Shape,
+	record: &Record,
+	status: u32,
+	fuel: usize,
+	maxdepth: usize,
+) -> Outcome {
+	if record.reserved != 0
+		|| record.unused != 0
+		|| record.work > (fuel as u64 + 1).saturating_mul(shape.ops.len() as u64)
+	{
+		return Outcome::Invalid;
+	}
+	if status == 2
+		&& record.status == 2
+		&& record.fuel == fuel as u64
+		&& record.calls == 0
+		&& record.peak == 0
+		&& record.pc == 0
+	{
+		return Outcome::Replay { work: record.work };
+	}
+	let pc = record.pc as usize;
+	if status != 1
+		|| record.status != 1
+		|| record.fuel >= fuel as u64
+		|| record.calls >= fuel as u64
+		|| record.peak as usize > maxdepth
+		|| record.peak > record.calls
+		|| !shape.reached(pc)
+		|| !matches!(shape.ops.get(pc), Some(Op::Return { .. }))
+	{
+		return Outcome::Invalid;
+	}
+	Outcome::Complete {
+		pc,
+		fuel: record.fuel as usize,
+		calls: record.calls,
+		peak: record.peak,
+		work: record.work,
+	}
+}
+
 /// Transactional entry: no engine state or fuel changes until the entire record
 /// and every final scalar have passed validation. No fallible operation follows.
 #[allow(clippy::too_many_arguments)]
@@ -338,12 +399,7 @@ pub(crate) fn enter(
 		return Outcome::Refused;
 	}
 	let maxdepth = room.frames.min(room.slots / shape.slots);
-	let stride = 2 * shape.slots + 1;
-	let Some(cells) = maxdepth
-		.checked_add(1)
-		.and_then(|n| n.checked_mul(stride))
-		.filter(|&n| n <= isize::MAX as usize / 8)
-	else {
+	let Some(cells) = activation_cells(shape.slots, maxdepth) else {
 		return Outcome::Refused;
 	};
 	let budget = Budget::new(scratch_bytes);
@@ -357,33 +413,10 @@ pub(crate) fn enter(
 	let Some(status) = run(&mut control, &mut record, &mut scratch) else {
 		return Outcome::Refused;
 	};
-	if record.reserved != 0
-		|| record.unused != 0
-		|| record.work > (fuel as u64 + 1).saturating_mul(shape.ops.len() as u64)
-	{
-		return Outcome::Invalid;
-	}
-	if status == 2
-		&& record.status == 2
-		&& record.fuel == fuel as u64
-		&& record.calls == 0
-		&& record.peak == 0
-		&& record.pc == 0
-	{
-		return Outcome::Replay { work: record.work };
-	}
-	let pc = record.pc as usize;
-	if status != 1
-		|| record.status != 1
-		|| record.fuel >= fuel as u64
-		|| record.calls >= fuel as u64
-		|| record.peak as usize > maxdepth
-		|| record.peak > record.calls
-		|| !shape.reached(pc)
-		|| !matches!(shape.ops.get(pc), Some(Op::Return { .. }))
-	{
-		return Outcome::Invalid;
-	}
+	let outcome = validate_record(shape, &record, status, fuel, maxdepth);
+	let Outcome::Complete { pc, .. } = outcome else {
+		return outcome;
+	};
 	let mut output = [Value::Unit; MAX_SLOTS];
 	for j in 0..shape.slots {
 		let Ok(t) = u32::try_from(scratch[shape.slots + j]) else {
@@ -399,13 +432,7 @@ pub(crate) fn enter(
 		output[j] = v;
 	}
 	window.copy_from_slice(&output[..shape.slots]);
-	Outcome::Complete {
-		pc,
-		fuel: record.fuel as usize,
-		calls: record.calls,
-		peak: record.peak,
-		work: record.work,
-	}
+	outcome
 }
 
 #[cfg(test)]
