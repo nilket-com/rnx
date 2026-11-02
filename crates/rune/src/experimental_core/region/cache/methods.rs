@@ -1,5 +1,5 @@
 //! Method cache ownership. Continuations, record validation and native ABI are shared
-//! with scalar recursion; existing Ready/Program/checkout layouts remain unchanged.
+//! with scalar recursion; one per-code descriptor owns all retained artifacts.
 use super::super::recursion::{
 	methods::{entry, Methods},
 	Outcome,
@@ -96,24 +96,20 @@ impl Build<'_> {
 			return;
 		}
 
+		if !self.reserve_descriptor() {
+			return;
+		}
 		let metadata = shape
 			.metadata()
 			.saturating_add(core::mem::size_of::<MethodReady>())
 			.saturating_add(MODULE_RESERVE_BYTES)
 			.saturating_add(if self.method_ready.is_empty() {
-				core::mem::size_of::<MethodProgram>() + self.function_limit * 4
+				self.function_limit * 4
 			} else {
 				0
 			});
 		if self.program_metadata.saturating_add(metadata) > self.limits.program_metadata_bytes
 			|| self.method_ready.try_reserve_exact(1).is_err()
-		{
-			self.summary.metadata += 1;
-			return;
-		}
-		if self.method_ready.is_empty()
-			&& (self.method_program.try_reserve_exact(1).is_err()
-				|| self.method_program.capacity() != 1)
 		{
 			self.summary.metadata += 1;
 			return;
@@ -236,7 +232,7 @@ impl Build<'_> {
 }
 
 pub(crate) struct MethodProgram {
-	pub(super) loops: ProgramRegions,
+	pub(crate) loops: ProgramRegions,
 	pub(super) scalar: StdVec<RecursiveReady>,
 	pub(super) scalar_lookup: StdVec<u32>,
 	pub(super) methods: StdVec<MethodReady>,
@@ -298,135 +294,20 @@ impl MethodProgram {
 			.map(Entry::Scalar)
 	}
 }
-struct Slot {
-	code: u32,
-	program: Option<StdVec<MethodProgram>>,
-}
-std::thread_local! {
- static METHODS:RefCell<[Option<Slot>;MAX_CACHED_PROGRAMS]>=const{RefCell::new([const{None};MAX_CACHED_PROGRAMS])};
- #[cfg(test)] static FAIL_INSTALL:Cell<bool>=const{Cell::new(false)};
-}
-pub(super) const fn table_bytes() -> usize {
-	core::mem::size_of::<[Option<Slot>; MAX_CACHED_PROGRAMS]>()
-}
-pub(super) fn install(program: StdVec<MethodProgram>) -> bool {
-	#[cfg(test)]
-	if FAIL_INSTALL.with(|flag| flag.replace(false)) {
-		return false;
-	}
-	METHODS.with(|table| {
-		let mut table = table.borrow_mut();
-		let Some(slot) = table.iter_mut().find(|slot| slot.is_none()) else {
-			return false;
-		};
-		*slot = Some(Slot {
-			code: program[0].loops.code,
-			program: Some(program),
-		});
-		true
-	})
-}
-
-#[cfg(test)]
-pub(crate) fn fail_next_install_for_test() {
-	FAIL_INSTALL.with(|flag| flag.set(true));
-}
-pub(super) fn evict(code: u32) {
-	let removed = METHODS.try_with(|table| {
-		let mut table = table.borrow_mut();
-		table
-			.iter_mut()
-			.find(|s| s.as_ref().is_some_and(|s| s.code == code))
-			.and_then(Option::take)
-	});
-	drop(removed);
-}
-#[cfg(test)]
-pub(super) fn clear() {
-	let removed = METHODS.with(|table| {
-		core::mem::replace(
-			&mut *table.borrow_mut(),
-			[const { None }; MAX_CACHED_PROGRAMS],
-		)
-	});
-	drop(removed);
-}
-pub(crate) fn checkout(code: &Code) -> Option<MethodGuard> {
-	CACHE.with(|cache| {
-		let mut cache = cache.borrow_mut();
-		let i = cache.position(code.id())?;
-		if !matches!(cache.entries[i].resident, Resident::Empty(_)) {
-			return None;
-		}
-		let guard = METHODS.with(|table| {
-			let mut table = table.borrow_mut();
-			let (index, slot) = table
-				.iter_mut()
-				.enumerate()
-				.find_map(|(i, s)| s.as_mut().filter(|s| s.code == code.id()).map(|s| (i, s)))?;
-			Some(MethodGuard {
-				program: Some(slot.program.take()?),
-				index,
-			})
-		})?;
-		cache.entries[i].resident = Resident::CheckedOut;
-		Some(guard)
-	})
-}
-pub(crate) struct MethodGuard {
-	program: Option<StdVec<MethodProgram>>,
-	index: usize,
-}
-impl MethodGuard {
-	pub(crate) fn regions(&self) -> Option<&ProgramRegions> {
-		self.methods().map(|p| &p.loops)
-	}
-	pub(crate) fn methods(&self) -> Option<&MethodProgram> {
-		self.program.as_ref().and_then(|p| p.first())
-	}
-}
-impl Drop for MethodGuard {
-	fn drop(&mut self) {
-		let Some(program) = self.program.take() else {
-			return;
-		};
-		let _ = CACHE.try_with(|cache| {
-			if let Ok(mut cache) = cache.try_borrow_mut() {
-				let code = program[0].loops.code;
-				if let Some(i) = cache.position(code) {
-					if matches!(cache.entries[i].resident, Resident::CheckedOut) {
-						METHODS.with(|table| {
-							let mut table = table.borrow_mut();
-							if let Some(slot) = table[self.index]
-								.as_mut()
-								.filter(|s| s.code == code && s.program.is_none())
-							{
-								let summary = program[0].loops.summary;
-								slot.program = Some(program);
-								cache.tick += 1;
-								cache.entries[i].last_use = cache.tick;
-								cache.entries[i].resident = Resident::Empty(summary);
-							}
-						});
-					}
-				}
-			}
-		});
-	}
-}
 #[cfg(test)]
 pub(crate) fn counters(code: u32) -> StdVec<(u32, u64, u64, u64, u64, u64, u64, u64, u64)> {
-	METHODS.with(|table| {
-		let table = table.borrow();
-		let Some(program) = table
-			.iter()
-			.flatten()
-			.find(|s| s.code == code)
-			.and_then(|s| s.program.as_ref())
-		else {
+	CACHE.with(|cache| {
+		let cache = cache.borrow();
+		let Some(index) = cache.position(code) else {
 			return StdVec::new();
 		};
-		program[0]
+		let Resident::Ready(program) = &cache.entries[index].resident else {
+			return StdVec::new();
+		};
+		let ProgramDescriptor::Methods(program) = &program[0] else {
+			return StdVec::new();
+		};
+		program
 			.methods
 			.iter()
 			.map(|r| {

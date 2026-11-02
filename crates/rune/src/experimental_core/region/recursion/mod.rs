@@ -307,6 +307,27 @@ pub(crate) enum Outcome {
 	Invalid,
 }
 
+/// Small validation result. Large public outcomes are constructed only after
+/// final scalar or receiver publication has succeeded.
+pub(crate) enum RecordClass {
+	Invalid,
+	Replay,
+	Complete { pc: usize },
+}
+
+impl Record {
+	#[inline(always)]
+	pub(crate) fn completed(&self, pc: usize) -> Outcome {
+		Outcome::Complete {
+			pc,
+			fuel: self.fuel as usize,
+			calls: self.calls,
+			peak: self.peak,
+			work: self.work,
+		}
+	}
+}
+
 /// Shared continuation-record contract. Receiver publication follows
 /// this validation; the zero-receiver scalar specialization uses the same checks.
 #[inline(always)]
@@ -316,12 +337,12 @@ pub(crate) fn validate_record(
 	status: u32,
 	fuel: usize,
 	maxdepth: usize,
-) -> Outcome {
+) -> RecordClass {
 	if record.reserved != 0
 		|| record.unused != 0
 		|| record.work > (fuel as u64 + 1).saturating_mul(shape.ops.len() as u64)
 	{
-		return Outcome::Invalid;
+		return RecordClass::Invalid;
 	}
 	if status == 2
 		&& record.status == 2
@@ -330,7 +351,7 @@ pub(crate) fn validate_record(
 		&& record.peak == 0
 		&& record.pc == 0
 	{
-		return Outcome::Replay { work: record.work };
+		return RecordClass::Replay;
 	}
 	let pc = record.pc as usize;
 	if status != 1
@@ -342,15 +363,9 @@ pub(crate) fn validate_record(
 		|| !shape.reached(pc)
 		|| !matches!(shape.ops.get(pc), Some(Op::Return { .. }))
 	{
-		return Outcome::Invalid;
+		return RecordClass::Invalid;
 	}
-	Outcome::Complete {
-		pc,
-		fuel: record.fuel as usize,
-		calls: record.calls,
-		peak: record.peak,
-		work: record.work,
-	}
+	RecordClass::Complete { pc }
 }
 
 /// Transactional entry: no engine state or fuel changes until the entire record
@@ -413,9 +428,10 @@ pub(crate) fn enter(
 	let Some(status) = run(&mut control, &mut record, &mut scratch) else {
 		return Outcome::Refused;
 	};
-	let outcome = validate_record(shape, &record, status, fuel, maxdepth);
-	let Outcome::Complete { pc, .. } = outcome else {
-		return outcome;
+	let pc = match validate_record(shape, &record, status, fuel, maxdepth) {
+		RecordClass::Complete { pc } => pc,
+		RecordClass::Replay => return Outcome::Replay { work: record.work },
+		RecordClass::Invalid => return Outcome::Invalid,
 	};
 	let mut output = [Value::Unit; MAX_SLOTS];
 	for j in 0..shape.slots {
@@ -432,7 +448,7 @@ pub(crate) fn enter(
 		output[j] = v;
 	}
 	window.copy_from_slice(&output[..shape.slots]);
-	outcome
+	record.completed(pc)
 }
 
 #[cfg(test)]

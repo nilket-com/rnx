@@ -397,7 +397,7 @@ fn n5_cancel_and_wrong_parameter_types() {
 #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
 #[cfg_attr(miri, ignore = "Miri: observes the production native cache")]
 #[test]
-fn n5_page_refusal_and_recursive_checkout_lifetime() {
+fn activation_page_refusal_and_unified_checkout_lifetime() {
 	use super::super::cache;
 	let p = compile(FACT);
 	cache::clear_for_test();
@@ -407,11 +407,11 @@ fn n5_page_refusal_and_recursive_checkout_lifetime() {
 	assert_eq!((s.loaded, s.page_size), (0, 1));
 	cache::clear_for_test();
 	cache::set_page_size_for_test(None);
+	let guard = cache::checkout_for_test(&p.code).expect("recursive descriptor");
 	assert!(matches!(
-		cache::checkout(&p.code),
-		cache::Checkout::Interpret { no_regions: false }
+		guard.program(),
+		cache::ProgramDescriptor::Recursion(_)
 	));
-	let guard = cache::checkout_recursion(&p.code).expect("recursive side entry");
 	assert!(matches!(
 		cache::checkout(&p.code),
 		cache::Checkout::Interpret { no_regions: false }
@@ -421,7 +421,7 @@ fn n5_page_refusal_and_recursive_checkout_lifetime() {
 	assert!(cache::resident_for_test(p.code.id()));
 	assert!(cache::evict(p.code.id()));
 	// A checked-out handle remains reserved while another recursive entry is
-	// evicted/replaced. Clearing drops the side ownership as well as its charges.
+	// evicted/replaced. Clearing drops resident ownership as well as its charges.
 	cache::clear_for_test();
 	let mut limits = cache::Limits::PRODUCTION;
 	limits.cached_programs = 2;
@@ -430,14 +430,14 @@ fn n5_page_refusal_and_recursive_checkout_lifetime() {
 	let r = compile(FACT);
 	cache::prepare(&p.code).unwrap();
 	cache::prepare(&q.code).unwrap();
-	let guard = cache::checkout_recursion(&p.code).unwrap();
+	let guard = cache::checkout_for_test(&p.code).unwrap();
 	cache::prepare(&r.code).unwrap();
 	assert!(!cache::resident_for_test(q.code.id()));
 	assert!(cache::recursive_counters_for_test(q.code.id()).is_empty());
-	assert!(cache::checkout_recursion(&p.code).is_none());
-	assert!(cache::checkout_recursion(&r.code).is_some());
+	assert!(cache::checkout_for_test(&p.code).is_none());
+	assert!(cache::checkout_for_test(&r.code).is_some());
 	drop(guard);
-	assert!(cache::checkout_recursion(&p.code).is_some());
+	assert!(cache::checkout_for_test(&p.code).is_some());
 	cache::clear_for_test();
 	assert!(cache::recursive_counters_for_test(p.code.id()).is_empty());
 	assert!(cache::recursive_counters_for_test(r.code.id()).is_empty());

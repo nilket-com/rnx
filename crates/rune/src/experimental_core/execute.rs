@@ -2104,79 +2104,87 @@ impl Executor {
 		args: Args<'_>,
 		fuel: usize,
 	) -> core::result::Result<Root, Failure> {
-		use super::region::cache::{self, Checkout};
+		use super::region::cache::{
+			self, Checkout, ProgramDescriptor, RecursiveProgram as Scalars,
+		};
 
 		if !self.native_enabled || code.id() == self.no_region_code {
-			return self
-				.invoke_args::<false, false, false, false, super::region::cache::RecursiveProgram>(
-					code, store, function, args, fuel, None, None,
-				);
+			return self.invoke_args::<false, false, false, false, Scalars>(
+				code, store, function, args, fuel, None, None,
+			);
 		}
 
 		match cache::checkout(code) {
 			Checkout::Native(guard) => {
-				// N2 selects once per invocation. Scalar-only native and native-off
-				// instruction loops contain no collection dispatch or snapshot work.
-				let result = if guard.regions().is_some_and(|r| r.has_collections()) {
-					self.invoke_args::<true, true, false, false, super::region::cache::RecursiveProgram>(
-						code,
-						store,
-						function,
-						args,
-						fuel,
-						guard.regions(),
-						None,
-					)
-				} else {
-					self.invoke_args::<true, false, false, false, super::region::cache::RecursiveProgram>(
-						code,
-						store,
-						function,
-						args,
-						fuel,
-						guard.regions(),
-						None,
-					)
+				// Select once per host invocation; the opcode loop retains its
+				// statically selected metadata and collection specialization.
+				let result = match guard.program() {
+					ProgramDescriptor::Loops(regions) => {
+						if regions.has_collections() {
+							self.invoke_args::<true, true, false, false, Scalars>(
+								code,
+								store,
+								function,
+								args,
+								fuel,
+								Some(regions),
+								None,
+							)
+						} else {
+							self.invoke_args::<true, false, false, false, Scalars>(
+								code,
+								store,
+								function,
+								args,
+								fuel,
+								Some(regions),
+								None,
+							)
+						}
+					}
+					ProgramDescriptor::Recursion(program) => {
+						self.invoke_recursion(code, store, function, args, fuel, program)
+					}
+					ProgramDescriptor::Methods(program) => {
+						self.invoke_methods(code, store, function, args, fuel, program)
+					}
 				};
 				drop(guard);
 				result
 			}
 			Checkout::Interpret { no_regions } => {
-				if !no_regions {
-					return self.invoke_recursion_fallback(code, store, function, args, fuel);
+				if no_regions {
+					self.no_region_code = code.id();
 				}
-				self.no_region_code = code.id();
-				self.invoke_args::<false, false, false, false, super::region::cache::RecursiveProgram>(
+				self.invoke_args::<false, false, false, false, Scalars>(
 					code, store, function, args, fuel, None, None,
 				)
 			}
 		}
 	}
 
-	/// Only the old `Interpret { no_regions: false }` cache fallback reaches this.
-	/// Ordinary loaded loops never inspect the recursion table or build its captures.
+	/// Activation setup is cold relative to ordinary loop entry. The sole
+	/// cache checkout already selected and owns this metadata.
 	#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
 	#[inline(never)]
-	fn invoke_recursion_fallback(
+	fn invoke_recursion(
 		&mut self,
 		code: &Code,
 		store: &mut Store,
 		function: u32,
 		args: Args<'_>,
 		fuel: usize,
+		program: &super::region::cache::RecursiveProgram,
 	) -> core::result::Result<Root, Failure> {
-		let Some(guard) = super::region::cache::checkout_recursion(code) else {
-			return self.invoke_methods_fallback(code, store, function, args, fuel);
-		};
-		let result = if guard.regions().is_some_and(|r| r.has_collections()) {
+		if program.loops.has_collections() {
 			self.invoke_args::<true, true, true, false, super::region::cache::RecursiveProgram>(
 				code,
 				store,
 				function,
 				args,
 				fuel,
-				guard.regions(),
-				guard.recursive(),
+				Some(&program.loops),
+				Some(program),
 			)
 		} else {
 			self.invoke_args::<true, false, true, false, super::region::cache::RecursiveProgram>(
@@ -2185,53 +2193,32 @@ impl Executor {
 				function,
 				args,
 				fuel,
-				guard.regions(),
-				guard.recursive(),
+				Some(&program.loops),
+				Some(program),
 			)
-		};
-		drop(guard);
-		result
+		}
 	}
 
 	#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
 	#[inline(never)]
-	fn invoke_methods_fallback(
+	fn invoke_methods(
 		&mut self,
 		code: &Code,
 		store: &mut Store,
 		function: u32,
 		args: Args<'_>,
 		fuel: usize,
+		program: &super::region::cache::methods::MethodProgram,
 	) -> core::result::Result<Root, Failure> {
-		let Some(guard) = super::region::cache::methods::checkout(code) else {
-			return self
-				.invoke_args::<false, false, false, false, super::region::cache::RecursiveProgram>(
-					code, store, function, args, fuel, None, None,
-				);
-		};
-		let result = if guard.regions().is_some_and(|r| r.has_collections()) {
+		if program.loops.has_collections() {
 			self.invoke_args::<true, true, true, true, super::region::cache::methods::MethodProgram>(
-				code,
-				store,
-				function,
-				args,
-				fuel,
-				guard.regions(),
-				guard.methods(),
+				code, store, function, args, fuel, Some(&program.loops), Some(program),
 			)
 		} else {
 			self.invoke_args::<true, false, true, true, super::region::cache::methods::MethodProgram>(
-				code,
-				store,
-				function,
-				args,
-				fuel,
-				guard.regions(),
-				guard.methods(),
+				code, store, function, args, fuel, Some(&program.loops), Some(program),
 			)
-		};
-		drop(guard);
-		result
+		}
 	}
 
 	/// Clean-state check for callers that repeat invocations: true when no

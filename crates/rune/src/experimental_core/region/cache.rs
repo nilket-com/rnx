@@ -101,7 +101,6 @@
 pub(crate) mod methods;
 mod recursion;
 use methods::{MethodProgram, MethodReady};
-pub(crate) use recursion::checkout as checkout_recursion;
 #[cfg(test)]
 pub(crate) use recursion::counters as recursive_counters_for_test;
 pub(crate) use recursion::RecursiveProgram;
@@ -121,6 +120,7 @@ use crate::experimental_native::{
 	audit::Finding, boundary::NativeRegion, lower, NativeRefusal, MAX_PROGRAM_CODE_BYTES,
 };
 use core::cell::{Cell, RefCell};
+use std::boxed::Box as StdBox;
 use std::time::Instant;
 use std::vec::Vec as StdVec;
 
@@ -233,8 +233,6 @@ pub(crate) fn thread_reserve_bytes(limits: &Limits) -> usize {
 		.cached_programs
 		.saturating_mul(core::mem::size_of::<Entry>())
 		.saturating_add(ISA_RESERVE_BYTES)
-		.saturating_add(recursion::table_bytes())
-		.saturating_add(methods::table_bytes())
 }
 
 /// The process-wide mapping reservations of the native tier.
@@ -793,12 +791,32 @@ impl Ready {
 
 // ------------------------------------------------------------------------ the cache
 
+/// One owned descriptor per code. Activation variants retain their existing
+/// layouts so the execution loop still captures the same two metadata pointers.
+pub(crate) enum ProgramDescriptor {
+	Loops(ProgramRegions),
+	Recursion(RecursiveProgram),
+	Methods(MethodProgram),
+}
+
+impl ProgramDescriptor {
+	pub(crate) fn regions(&self) -> &ProgramRegions {
+		match self {
+			Self::Loops(r) => r,
+			Self::Recursion(p) => &p.loops,
+			Self::Methods(p) => &p.loops,
+		}
+	}
+}
+
+type OwnedProgram = StdBox<[ProgramDescriptor; 1]>;
+
 enum Resident {
 	/// A build in progress on this thread (in-flight marker).
 	Building,
 	/// Checked out by an invocation (in-flight marker).
 	CheckedOut,
-	Ready(ProgramRegions),
+	Ready(OwnedProgram),
 	/// No loaded region: counts only.
 	Empty(NativeSummary),
 }
@@ -879,9 +897,6 @@ impl Cache {
 
 	fn remove(&mut self, index: usize) -> Entry {
 		let entry = self.entries.swap_remove(index);
-		// Removal is a cold path; private artifacts have no engine callbacks.
-		recursion::evict(entry.code);
-		methods::evict(entry.code);
 		self.mapped -= entry.mapped;
 		self.metadata -= entry.metadata;
 		entry
@@ -943,9 +958,7 @@ impl Cache {
 	}
 }
 
-/// What one invocation runs with. A short-lived value returned once per invocation:
-/// boxing `Guard` would add an allocation to every native invocation.
-#[allow(clippy::large_enum_variant)]
+/// A short-lived ownership handle; its descriptor is allocated once per code.
 pub(crate) enum Checkout {
 	/// At least one loaded region: run the native-aware loop with these regions.
 	Native(Guard),
@@ -956,46 +969,54 @@ pub(crate) enum Checkout {
 
 /// A checked-out entry; put back when dropped (also on unwind).
 pub(crate) struct Guard {
-	regions: Option<ProgramRegions>,
+	program: Option<OwnedProgram>,
 }
 
 impl Guard {
-	pub(crate) fn regions(&self) -> Option<&ProgramRegions> {
-		self.regions.as_ref()
+	pub(crate) fn program(&self) -> &ProgramDescriptor {
+		&self.program.as_ref().expect("live checkout")[0]
+	}
+
+	#[cfg(test)]
+	pub(crate) fn methods(&self) -> Option<&MethodProgram> {
+		match self.program() {
+			ProgramDescriptor::Methods(p) => Some(p),
+			_ => None,
+		}
 	}
 }
 
 impl Drop for Guard {
 	#[inline]
 	fn drop(&mut self) {
-		let Some(regions) = self.regions.take() else {
+		let Some(program) = self.program.take() else {
 			return;
 		};
 		// If the cache is gone (thread exit) or borrowed (impossible: no borrow outlives a
 		// cache call), the regions are dropped here, which frees their code.
 		let _ = CACHE.try_with(|cache| {
 			if let Ok(mut cache) = cache.try_borrow_mut() {
-				put_back(&mut cache, regions);
+				put_back(&mut cache, program);
 			}
 		});
 	}
 }
 
 #[inline]
-fn put_back(cache: &mut Cache, regions: ProgramRegions) {
+fn put_back(cache: &mut Cache, program: OwnedProgram) {
 	cache.tick += 1;
 	let tick = cache.tick;
-	if let Some(index) = cache.position(regions.code) {
+	if let Some(index) = cache.position(program[0].regions().code) {
 		let entry = &mut cache.entries[index];
 		if matches!(entry.resident, Resident::CheckedOut) {
-			entry.resident = Resident::Ready(regions);
+			entry.resident = Resident::Ready(program);
 			entry.last_use = tick;
 			return;
 		}
 	}
 	// No marker (cannot happen: markers are never evicted): drop the regions and any
 	// charge that was left without an entry.
-	drop(regions);
+	drop(program);
 }
 
 /// Removes a `Building` marker that a build left behind by unwinding.
@@ -1057,13 +1078,13 @@ pub(crate) fn checkout(code: &Code) -> Checkout {
 				entry.last_use = tick;
 				return Err(match &mut entry.resident {
 					Resident::Ready(_) => {
-						let Resident::Ready(regions) =
+						let Resident::Ready(program) =
 							core::mem::replace(&mut entry.resident, Resident::CheckedOut)
 						else {
 							unreachable!()
 						};
 						Checkout::Native(Guard {
-							regions: Some(regions),
+							program: Some(program),
 						})
 					}
 					// In flight on this thread: run interpreted, never build a duplicate.
@@ -1119,82 +1140,48 @@ pub(crate) fn checkout(code: &Code) -> Checkout {
 		lookup,
 		method_ready,
 		method_lookup,
-		mut method_program,
+		mut descriptor,
 	} = build(code, enabled, &limits);
 	marker.armed = false;
 
 	CACHE.with(|cache| {
 		let mut cache = cache.borrow_mut();
 		let Some(index) = cache.position(id) else {
-			// Unreachable (the marker is never evicted); the regions drop here.
 			return Checkout::Interpret { no_regions: false };
 		};
 		let entry = &mut cache.entries[index];
-		if !method_ready.is_empty() {
-			// The shell was reserved before the first method artifact was loaded.
-			// Packaging here preserves the existing scalar recursion cache layouts.
-			debug_assert_eq!(method_program.capacity(), 1);
-			let summary = regions.summary;
-			method_program.push(MethodProgram {
+		if regions.summary.loaded == 0 {
+			let no_regions = regions.summary.regions == 0;
+			entry.resident = Resident::Empty(regions.summary);
+			return Checkout::Interpret { no_regions };
+		}
+		// Reserved and charged before any mapping. With length == capacity == 1,
+		// boxing and conversion to an array reuse that allocation.
+		debug_assert_eq!(descriptor.capacity(), 1);
+		descriptor.push(if !method_ready.is_empty() {
+			ProgramDescriptor::Methods(MethodProgram {
 				loops: regions,
 				scalar: recursive,
 				scalar_lookup: lookup,
 				methods: method_ready,
 				lookup: method_lookup,
-			});
-			entry.resident = Resident::Empty(summary);
-			if !methods::install(method_program) {
-				// A sidecar key normally shares an existing bounded cache key, so
-				// the building marker implies a free slot. Fail closed if that
-				// invariant changes: released artifacts must not leave reservations
-				// or a permanent per-invocation chain of unsuccessful lookups.
-				let mapped = entry.mapped;
-				let metadata = entry.metadata;
-				entry.mapped = 0;
-				entry.metadata = 0;
-				let mut failed = summary;
-				failed.other = failed.other.saturating_add(1);
-				failed.regions = 0;
-				failed.loaded = 0;
-				failed.code_bytes = 0;
-				failed.mapped_bytes = 0;
-				failed.metadata_bytes = 0;
-				failed.reserved_bytes = 0;
-				entry.resident = Resident::Empty(failed);
-				cache.mapped -= mapped;
-				cache.metadata -= metadata;
-				return Checkout::Interpret { no_regions: true };
-			}
-			Checkout::Interpret { no_regions: false }
-		} else if regions.ready.is_empty() && recursive.is_empty() {
-			let no_regions = regions.summary.regions == 0;
-			entry.resident = Resident::Empty(regions.summary);
-			Checkout::Interpret { no_regions }
-		} else if recursive.is_empty() {
-			entry.resident = Resident::CheckedOut;
-			Checkout::Native(Guard {
-				regions: Some(regions),
 			})
-		} else {
-			let summary = regions.summary;
-			// One fallible std allocation, bounded as native cache metadata.
-			// It cannot debit the script's allocator quota while resident.
-			let mut program = StdVec::new();
-			if program.try_reserve_exact(1).is_err() || program.capacity() != 1 {
-				entry.resident = Resident::Empty(summary);
-				return Checkout::Interpret { no_regions: false };
-			}
-			program.push(RecursiveProgram {
+		} else if !recursive.is_empty() {
+			ProgramDescriptor::Recursion(RecursiveProgram {
 				loops: regions,
 				recursive,
 				lookup,
-			});
-			entry.resident = Resident::Empty(summary);
-			// Recursion is selected only on the existing interpreted fallback.
-			// The Native checkout/guard and Resident layouts remain those of N4.
-			let _ = recursion::install(program);
-			Checkout::Interpret { no_regions: false }
-		}
+			})
+		} else {
+			ProgramDescriptor::Loops(regions)
+		});
+		let Ok(program) = descriptor.into_boxed_slice().try_into() else {
+			unreachable!("one descriptor")
+		};
+		entry.resident = Resident::CheckedOut;
+		Checkout::Native(Guard {
+			program: Some(program),
+		})
 	})
 }
 
@@ -1233,7 +1220,7 @@ pub(crate) fn summary(code: u32) -> Option<NativeSummary> {
 		let cache = cache.borrow();
 		let entry = &cache.entries[cache.position(code)?];
 		match &entry.resident {
-			Resident::Ready(regions) => Some(regions.summary),
+			Resident::Ready(program) => Some(program[0].regions().summary),
 			Resident::Empty(summary) => Some(*summary),
 			Resident::Building | Resident::CheckedOut => None,
 		}
@@ -1292,11 +1279,51 @@ struct Build<'l> {
 	recursive_lookup: StdVec<u32>,
 	method_ready: StdVec<MethodReady>,
 	method_lookup: StdVec<u32>,
-	method_program: StdVec<MethodProgram>,
+	descriptor: StdVec<ProgramDescriptor>,
+	descriptor_attempted: bool,
 	function_limit: usize,
 }
 
 impl Build<'_> {
+	/// Reserve the sole owned shell before the first artifact is loaded. Failure
+	/// stays within the tier and cannot debit the interpreter's allocator quota.
+	fn reserve_descriptor(&mut self) -> bool {
+		if self.descriptor_attempted {
+			return self.descriptor.capacity() == 1;
+		}
+		self.descriptor_attempted = true;
+		let bytes = core::mem::size_of::<ProgramDescriptor>();
+		if self.program_metadata.saturating_add(bytes) > self.limits.program_metadata_bytes {
+			self.summary.metadata += 1;
+			return false;
+		}
+		#[cfg(test)]
+		if FAIL_DESCRIPTOR.with(|flag| flag.replace(false)) {
+			self.summary.metadata += 1;
+			return false;
+		}
+		if self.descriptor.try_reserve_exact(1).is_err() || self.descriptor.capacity() != 1 {
+			self.descriptor = StdVec::new();
+			self.summary.metadata += 1;
+			return false;
+		}
+		let mut evicted = StdVec::new();
+		let reserved = CACHE.with(|cache| {
+			cache
+				.borrow_mut()
+				.reserve(self.limits, self.id, 0, bytes, &mut evicted)
+		});
+		drop(evicted);
+		if !reserved {
+			self.descriptor = StdVec::new();
+			self.summary.thread_bound += 1;
+			return false;
+		}
+		self.program_metadata += bytes;
+		self.summary.metadata_bytes += bytes as u64;
+		true
+	}
+
 	/// Whether the region or compile cap stops the build (checked before every header).
 	fn capped(&mut self) -> bool {
 		if self.enabled != Enabled::Yes {
@@ -1416,6 +1443,9 @@ impl Build<'_> {
 			}
 		}
 
+		if !self.reserve_descriptor() {
+			return None;
+		}
 		let summary = &mut self.summary;
 		let metadata = region_metadata(&region).saturating_add(MODULE_RESERVE_BYTES);
 		if self
@@ -1602,7 +1632,7 @@ struct Built {
 	lookup: StdVec<u32>,
 	method_ready: StdVec<MethodReady>,
 	method_lookup: StdVec<u32>,
-	method_program: StdVec<MethodProgram>,
+	descriptor: StdVec<ProgramDescriptor>,
 }
 
 fn build(code: &Code, enabled: Enabled, limits: &Limits) -> Built {
@@ -1623,7 +1653,8 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> Built {
 		recursive_lookup: StdVec::new(),
 		method_ready: StdVec::new(),
 		method_lookup: StdVec::new(),
-		method_program: StdVec::new(),
+		descriptor: StdVec::new(),
+		descriptor_attempted: false,
 		function_limit: functions.min(limits.program_attempted_functions),
 	};
 
@@ -1790,6 +1821,14 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> Built {
 		}
 	}
 
+	// Empty entries retain counts only. Failed compiles/loads must not leave
+	// a shell allocation or a metadata charge without an owned descriptor.
+	if b.summary.loaded == 0 && b.descriptor.capacity() == 1 {
+		b.descriptor = StdVec::new();
+		let bytes = core::mem::size_of::<ProgramDescriptor>();
+		unreserve(b.id, 0, bytes);
+		b.summary.metadata_bytes -= bytes as u64;
+	}
 	let mut summary = b.summary;
 	summary.analysis_peak_bytes = budget.peak() as u64;
 	summary.accounting_invariant = budget.violations();
@@ -1832,7 +1871,7 @@ fn build(code: &Code, enabled: Enabled, limits: &Limits) -> Built {
 		lookup: b.recursive_lookup,
 		method_ready: b.method_ready,
 		method_lookup: b.method_lookup,
-		method_program: b.method_program,
+		descriptor: b.descriptor,
 	}
 }
 
@@ -2023,7 +2062,7 @@ pub(crate) fn regions_for_test(code: u32) -> Option<StdVec<RegionCounters>> {
 
 		let resident = &cache.entries[cache.position(code)?].resident;
 		let regions = match resident {
-			Resident::Ready(r) => r,
+			Resident::Ready(p) => p[0].regions(),
 			Resident::Empty(_) => return Some(StdVec::new()),
 			Resident::Building | Resident::CheckedOut => return None,
 		};
@@ -2083,9 +2122,25 @@ pub(crate) fn clear_for_test() {
 		core::mem::take(&mut cache.entries)
 	});
 	drop(entries);
-	recursion::clear();
-	methods::clear();
 }
 
 #[cfg(test)]
 mod miri_fallback_tests;
+
+#[cfg(test)]
+std::thread_local! {
+	static FAIL_DESCRIPTOR: Cell<bool> = const { Cell::new(false) };
+}
+
+#[cfg(test)]
+pub(crate) fn fail_next_descriptor_for_test() {
+	FAIL_DESCRIPTOR.with(|flag| flag.set(true));
+}
+
+#[cfg(test)]
+pub(crate) fn checkout_for_test(code: &Code) -> Option<Guard> {
+	match checkout(code) {
+		Checkout::Native(guard) => Some(guard),
+		Checkout::Interpret { .. } => None,
+	}
+}

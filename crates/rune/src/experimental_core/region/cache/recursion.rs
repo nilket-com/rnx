@@ -1,4 +1,4 @@
-//! N5 cache loading and counters; old Ready and loop entry remain unchanged.
+//! Scalar activation loading and counters owned by the per-code descriptor.
 use super::super::recursion::{self, Outcome, Shape};
 use super::*;
 use crate::experimental_native::boundary::NativeRecursion;
@@ -81,12 +81,15 @@ impl Build<'_> {
 			return;
 		}
 
+		if !self.reserve_descriptor() {
+			return;
+		}
 		let metadata = shape
 			.metadata()
 			.saturating_add(core::mem::size_of::<RecursiveReady>())
 			.saturating_add(MODULE_RESERVE_BYTES)
 			.saturating_add(if self.recursive.is_empty() {
-				core::mem::size_of::<RecursiveProgram>() + self.function_limit * 4
+				self.function_limit * 4
 			} else {
 				0
 			});
@@ -213,18 +216,20 @@ impl Build<'_> {
 
 #[cfg(test)]
 pub(crate) fn counters(code: u32) -> StdVec<(u64, u64, u64, u64, u64, u64)> {
-	RECURSIVE.with(|table| {
-		let table = table.borrow();
-		let Some(program) = table
-			.iter()
-			.flatten()
-			.find(|s| s.code == code)
-			.and_then(|s| s.program.as_ref())
-		else {
+	CACHE.with(|cache| {
+		let cache = cache.borrow();
+		let Some(index) = cache.position(code) else {
 			return StdVec::new();
 		};
-		program[0]
-			.recursive
+		let Resident::Ready(program) = &cache.entries[index].resident else {
+			return StdVec::new();
+		};
+		let recursive = match &program[0] {
+			ProgramDescriptor::Recursion(p) => &p.recursive,
+			ProgramDescriptor::Methods(p) => &p.scalar,
+			ProgramDescriptor::Loops(_) => return StdVec::new(),
+		};
+		recursive
 			.iter()
 			.map(|r| {
 				(
@@ -240,10 +245,9 @@ pub(crate) fn counters(code: u32) -> StdVec<(u64, u64, u64, u64, u64, u64)> {
 	})
 }
 
-/// Ordinary ProgramRegions, Guard and Ready retain their N4 layouts. Only an
-/// admitted recursive program owns this extra allocation and checkout path.
+/// Scalar activation metadata; its layout is independent of cache ownership.
 pub(crate) struct RecursiveProgram {
-	pub(super) loops: ProgramRegions,
+	pub(crate) loops: ProgramRegions,
 	pub(super) recursive: StdVec<RecursiveReady>,
 	pub(super) lookup: StdVec<u32>,
 }
@@ -252,118 +256,5 @@ impl RecursiveProgram {
 		self.lookup
 			.get(id as usize)
 			.and_then(|&i| self.recursive.get(i as usize))
-	}
-}
-
-// Fixed handles share the existing cache's maximum program bound. Program
-// allocations remain fallible and charged by load_recursion. A checked-out slot
-// keeps its code key, so nested calls cannot reuse another guard's slot.
-struct Slot {
-	code: u32,
-	program: Option<StdVec<RecursiveProgram>>,
-}
-std::thread_local! {
-	static RECURSIVE: RefCell<[Option<Slot>; MAX_CACHED_PROGRAMS]> = const {
-		RefCell::new([const { None }; MAX_CACHED_PROGRAMS])
-	};
-}
-pub(super) const fn table_bytes() -> usize {
-	core::mem::size_of::<[Option<Slot>; MAX_CACHED_PROGRAMS]>()
-}
-pub(super) fn install(program: StdVec<RecursiveProgram>) -> bool {
-	RECURSIVE.with(|table| {
-		let mut table = table.borrow_mut();
-		let Some(slot) = table.iter_mut().find(|slot| slot.is_none()) else {
-			return false;
-		};
-		*slot = Some(Slot {
-			code: program[0].loops.code,
-			program: Some(program),
-		});
-		true
-	})
-}
-pub(super) fn evict(code: u32) {
-	let removed = RECURSIVE.try_with(|table| {
-		let mut table = table.borrow_mut();
-		table
-			.iter_mut()
-			.find(|s| s.as_ref().is_some_and(|s| s.code == code))
-			.and_then(Option::take)
-	});
-	// Dropping private executable buffers never calls the engine or this cache.
-	drop(removed);
-}
-#[cfg(test)]
-pub(super) fn clear() {
-	let removed = RECURSIVE.with(|table| {
-		core::mem::replace(
-			&mut *table.borrow_mut(),
-			[const { None }; MAX_CACHED_PROGRAMS],
-		)
-	});
-	drop(removed);
-}
-pub(crate) fn checkout(code: &Code) -> Option<RecursiveGuard> {
-	CACHE.with(|cache| {
-		let mut cache = cache.borrow_mut();
-		let i = cache.position(code.id())?;
-		if !matches!(cache.entries[i].resident, Resident::Empty(_)) {
-			return None;
-		}
-		let guard = RECURSIVE.with(|table| {
-			let mut table = table.borrow_mut();
-			let (index, slot) = table
-				.iter_mut()
-				.enumerate()
-				.find_map(|(i, s)| s.as_mut().filter(|s| s.code == code.id()).map(|s| (i, s)))?;
-			Some(RecursiveGuard {
-				program: Some(slot.program.take()?),
-				index,
-			})
-		})?;
-		cache.entries[i].resident = Resident::CheckedOut;
-		Some(guard)
-	})
-}
-pub(crate) struct RecursiveGuard {
-	program: Option<StdVec<RecursiveProgram>>,
-	index: usize,
-}
-impl RecursiveGuard {
-	pub(crate) fn regions(&self) -> Option<&ProgramRegions> {
-		self.recursive().map(|p| &p.loops)
-	}
-	pub(crate) fn recursive(&self) -> Option<&RecursiveProgram> {
-		self.program.as_ref().and_then(|p| p.first())
-	}
-}
-impl Drop for RecursiveGuard {
-	fn drop(&mut self) {
-		let Some(program) = self.program.take() else {
-			return;
-		};
-		let _ = CACHE.try_with(|cache| {
-			if let Ok(mut cache) = cache.try_borrow_mut() {
-				let code = program[0].loops.code;
-				if let Some(i) = cache.position(code) {
-					if matches!(cache.entries[i].resident, Resident::CheckedOut) {
-						RECURSIVE.with(|table| {
-							let mut table = table.borrow_mut();
-							if let Some(slot) = table[self.index]
-								.as_mut()
-								.filter(|s| s.code == code && s.program.is_none())
-							{
-								let summary = program[0].loops.summary;
-								slot.program = Some(program);
-								cache.tick += 1;
-								cache.entries[i].last_use = cache.tick;
-								cache.entries[i].resident = Resident::Empty(summary);
-							}
-						});
-					}
-				}
-			}
-		});
 	}
 }

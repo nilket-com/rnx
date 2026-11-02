@@ -949,7 +949,7 @@ mod tests {
 			heap::{Limits, Store},
 			region::cache,
 		};
-		let p=compile("struct Bag{left,right,total} impl Bag{fn update(self){self.total+=1;self.left[0]=self.left[0]+1;self.right[0]=self.right[0]+10;self.total}} pub fn main(n){let v=[1];let w=if n==0{v}else{[3]};let bag=Bag{left:v,right:w,total:0};let alias=bag;bag.update();alias.total*100+v[0]*10+w[0]}");
+		let p=compile("fn fact(n){if n<=1{1}else{n*fact(n-1)}} fn scan(v){let sum=0;for x in v{sum+=x;}sum} fn plain(n){let sum=0;for i in 0..n{sum+=i;}sum} fn indexed(v){for i in 0..2{v[i]=v[i]+1;}v[0]+v[1]} struct Bag{left,right,total} impl Bag{fn update(self){self.total+=1;self.left[0]=self.left[0]+1;self.right[0]=self.right[0]+10;self.total}} pub fn main(n){let v=[1];let w=if n==0{v}else{[3]};let bag=Bag{left:v,right:w,total:0};let alias=bag;bag.update();alias.total*100+v[0]*10+w[0]+fact(3)-6+scan([1,2])-3+plain(3)-3+indexed([1,2])-5}");
 		cache::clear_for_test();
 		cache::enable_for_test(true);
 		cache::prepare(&p.code).unwrap();
@@ -982,16 +982,30 @@ mod tests {
 				"distinct Vecs refuse at entry; shared aliases share one buffer"
 			);
 		}
-		let guard = cache::methods::checkout(&p.code).unwrap();
-		assert!(cache::methods::checkout(&p.code).is_none());
-		assert!(cache::checkout_recursion(&p.code).is_none());
+		assert!(cache::recursive_counters_for_test(p.code.id())
+			.iter()
+			.any(|r| r.0 > 0));
+		let guard = cache::checkout_for_test(&p.code).unwrap();
+		assert!(guard.methods().unwrap().loops.has_collections());
+		let address = core::ptr::from_ref(guard.program()) as usize;
+		assert!(cache::checkout_for_test(&p.code).is_none());
+		drop(guard);
+		let unwind = std::panic::catch_unwind(|| {
+			let guard = cache::checkout_for_test(&p.code).unwrap();
+			assert_eq!(core::ptr::from_ref(guard.program()) as usize, address);
+			std::panic!("unwind checked-out mixed descriptor");
+		});
+		assert!(unwind.is_err());
+		assert!(cache::resident_for_test(p.code.id()));
+		let guard = cache::checkout_for_test(&p.code).unwrap();
+		assert_eq!(core::ptr::from_ref(guard.program()) as usize, address);
 		cache::clear_for_test();
 		assert!(guard.methods().is_some());
 		assert!(!cache::resident_for_test(p.code.id()));
 		assert_eq!(cache::cache_state_for_test(), (0, 0, 0, 0));
 		drop(guard);
 		assert!(cache::prepare(&p.code).unwrap().loaded > 0);
-		let restored = cache::methods::checkout(&p.code).unwrap();
+		let restored = cache::checkout_for_test(&p.code).unwrap();
 		assert!(restored.methods().is_some());
 		drop(restored);
 		cache::clear_for_test();
@@ -1080,7 +1094,7 @@ mod tests {
 		miri,
 		ignore = "native mapping installation; no unsafe transaction in this test"
 	)]
-	fn method_closure_failed_install_releases_accounting_and_caches_interpretation() {
+	fn method_closure_descriptor_allocation_failure_is_cached_and_invisible() {
 		use crate::experimental_core::{
 			execute::Executor,
 			heap::{Limits, Store},
@@ -1089,17 +1103,17 @@ mod tests {
 		let p = compile("struct Tally{sum} fn bump(p){p.sum+1} pub fn main(n){bump(Tally{sum:n})}");
 		cache::clear_for_test();
 		cache::enable_for_test(true);
-		cache::methods::fail_next_install_for_test();
+		cache::fail_next_descriptor_for_test();
 		let summary = cache::prepare(&p.code).unwrap();
-		assert_eq!(summary.regions, 0);
+		assert_eq!(summary.regions, 1);
 		assert_eq!(summary.loaded, 0);
-		assert_eq!(summary.other, 1);
+		assert_eq!(summary.metadata, 1);
 		assert_eq!(cache::cache_state_for_test(), (1, 0, 0, 0));
 		assert!(matches!(
 			cache::checkout(&p.code),
-			cache::Checkout::Interpret { no_regions: true }
+			cache::Checkout::Interpret { no_regions: false }
 		));
-		assert!(cache::methods::checkout(&p.code).is_none());
+		assert!(cache::checkout_for_test(&p.code).is_none());
 		let mut store = Store::new(Limits::default()).unwrap();
 		let arg = store.root_i64(3);
 		let mut e = Executor::new().unwrap();
@@ -1116,6 +1130,7 @@ mod tests {
 			assert_eq!(store.live_entries(), 0);
 		}
 		store.root_release(arg).unwrap();
+		assert_eq!(cache::summary(p.code.id()).unwrap(), summary);
 		assert_eq!(cache::cache_state_for_test(), (1, 0, 0, 0));
 		cache::clear_for_test();
 		cache::enable_for_test(false);

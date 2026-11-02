@@ -1258,7 +1258,8 @@ fn child_program_metadata() {
 	// Real constant (1 MiB): exit-heavy, code-light regions.
 	let heavy = || fat_loop(1, 129);
 	let m = charged_metadata(heavy);
-	let fit = cache::MAX_PROGRAM_METADATA_BYTES / m;
+	let shell = core::mem::size_of::<cache::ProgramDescriptor>();
+	let fit = (cache::MAX_PROGRAM_METADATA_BYTES - shell) / m;
 	assert!(
 		fit * code_bytes(1, 129) <= MAX_PROGRAM_CODE_BYTES,
 		"the code bound does not bind first"
@@ -1275,9 +1276,11 @@ fn child_program_metadata() {
 			(s.loaded as usize, s.metadata as usize, s.size),
 			(loaded, count - loaded, 0)
 		);
-		assert!(
-			(s.metadata_bytes + s.reserved_bytes) as usize <= cache::MAX_PROGRAM_METADATA_BYTES
+		assert_eq!(
+			(s.metadata_bytes + s.reserved_bytes) as usize,
+			shell + loaded * m
 		);
+		assert!(shell + loaded * m <= cache::MAX_PROGRAM_METADATA_BYTES);
 		if count == fit + 1 {
 			same(&code, 0, &[Arg::I(3)], "program metadata real");
 		}
@@ -1287,15 +1290,28 @@ fn child_program_metadata() {
 		cache::MAX_PROGRAM_METADATA_BYTES
 	);
 
-	// Scaled: three regions, limit 2m - 1, 2m, 2m + 1.
+	// Scaled: one owned shell plus three regions, on either side of two regions.
 	let small = || fat_loop(2, 2);
 	let m = charged_metadata(small);
 	let code = copies(3, small);
 	for (limit, loaded) in [(2 * m - 1, 1u32), (2 * m, 2), (2 * m + 1, 2)] {
-		let s = prep_with(Some(scaled(|l| l.program_metadata_bytes = limit)), &code);
+		let s = prep_with(
+			Some(scaled(|l| l.program_metadata_bytes = shell + limit)),
+			&code,
+		);
 		row(&format!("a5_program_metadata_scaled_{limit}"), &s);
 		assert_eq!((s.loaded, s.metadata), (loaded, 3 - loaded));
+		assert_eq!(
+			(s.metadata_bytes + s.reserved_bytes) as usize,
+			shell + loaded as usize * m
+		);
 		same(&code, 0, &[Arg::I(3)], "program metadata scaled");
+	}
+	// A retained shell without a loaded artifact must be released and uncharged.
+	for limit in [shell - 1, shell, shell + m - 1] {
+		let s = prep_with(Some(scaled(|l| l.program_metadata_bytes = limit)), &code);
+		assert_eq!((s.loaded, s.metadata_bytes, s.reserved_bytes), (0, 0, 0));
+		assert_eq!(cache::cache_state_for_test(), (1, 0, 0, 0));
 	}
 	cache::set_limits_for_test(None);
 }
@@ -1316,8 +1332,9 @@ fn child_thread_metadata() {
 	// Real constant (4 MiB): programs of just under 1 MiB metadata each, built in order.
 	let heavy = || fat_loop(1, 129);
 	let m = charged_metadata(heavy);
-	let per = cache::MAX_PROGRAM_METADATA_BYTES / m;
-	let fit = (cache::MAX_THREAD_METADATA_BYTES - base) / (per * m);
+	let shell = core::mem::size_of::<cache::ProgramDescriptor>();
+	let per = (cache::MAX_PROGRAM_METADATA_BYTES - shell) / m;
+	let fit = (cache::MAX_THREAD_METADATA_BYTES - base) / (shell + per * m);
 	let codes: Vec<Code> = (0..fit + 1).map(|_| copies(per, heavy)).collect();
 	cache::clear_for_test();
 	for (k, code) in codes.iter().enumerate() {
@@ -1335,9 +1352,9 @@ fn child_thread_metadata() {
 	same(&codes[fit], 0, &[Arg::I(3)], "thread metadata real");
 	println!("P3ATMETA\tthread: base {base} + {fit} programs of {per} regions x {m} bytes fit in {}; program {} evicts the first", cache::MAX_THREAD_METADATA_BYTES, fit + 1);
 
-	// Scaled: limit base + 2m + {-1, 0, +1} with one-region programs P1..P3.
+	// Scaled: m includes each program's owned shell, with the same thread ceiling.
 	let small = || fat_loop(2, 2);
-	let m = charged_metadata(small);
+	let m = shell + charged_metadata(small);
 	for (extra, evicted) in [(2 * m - 1, true), (2 * m, false), (2 * m + 1, false)] {
 		let limits = scaled(|l| l.thread_metadata_bytes = base + extra);
 		cache::set_limits_for_test(Some(limits));

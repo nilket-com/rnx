@@ -111,9 +111,10 @@ pub(crate) fn enter(
 	let Some(status) = run(&mut control, &mut record, &mut scratch) else {
 		return (Outcome::Refused, none);
 	};
-	let outcome = recursion::validate_record(&shape.engine, &record, status, fuel, maxdepth);
-	let Outcome::Complete { pc, .. } = outcome else {
-		return (outcome, none);
+	let pc = match recursion::validate_record(&shape.engine, &record, status, fuel, maxdepth) {
+		recursion::RecordClass::Complete { pc } => pc,
+		recursion::RecordClass::Replay => return (Outcome::Replay { work: record.work }, none),
+		recursion::RecordClass::Invalid => return (Outcome::Invalid, none),
 	};
 	if pc >= root.end
 		|| control[0] != maxdepth as i64
@@ -162,7 +163,7 @@ pub(crate) fn enter(
 	) {
 		return (Outcome::Invalid, none);
 	}
-	(outcome, Counts { helpers, recursive })
+	(record.completed(pc), Counts { helpers, recursive })
 }
 
 #[cfg(test)]
