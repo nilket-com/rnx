@@ -1,0 +1,94 @@
+N6: guarded named-receiver method closures using shared private activations
+
+Authority: user GO via Claude rune-native25012, scope ruling25023.
+Base Rune2565a2a4563a915d49de061931f2951fd5dede31; rnx0203 83d94173;
+rnx-bench1575a8d5. Read-only Step0 report/evidence:
+../target/n6-step0-2565a2a4/{STEP0.txt,RECEIPT-v3.json,listing-v3.log}.
+
+Admit one guarded named nominal root receiver, zero or one distinct fixed-length
+homogeneous I64/Bool Vec reachable through its named fields, scalar fields and
+parameters/results, statically closed same-receiver script methods/helpers,
+intraprocedural loops and direct self recursion. No name/benchmark whitelist.
+Defer anonymous Objects, tuples/protocol fields, strings/rows, multiple distinct
+receivers/Vecs, heap-field replacement/results, construction, append/resize,
+closures, host callbacks, unresolved providers, mutual recursion and arbitrary
+cyclic object graphs. Setup, outer dispatch and verification may stay interpreted.
+
+Share the N5 iterative continuation engine, closed return-site IDs, frame/slot
+room accounting, whole-root replay and descendant suppression. Generalize its
+cold shape/lowering interface and specialize the same engine for the existing
+zero-receiver/zero-Vec N5 case; do not implement a parallel recursion engine.
+Preserve the old scalar ABI and measured N1-N5 paths. Any actual cost is brought
+with exact counts for ruling, not waived or assigned an inherited qualification.
+
+Compile a bounded closure with closed function/return labels. Prove that every
+method lookup is the certified INSTANCE_METHOD + adjacent CallValue pair and
+receives the root's self token; all participating frames preserve their rooted
+self parameter. Resolve each name once at root entry against the actual Code.id,
+receiver nominal hash and Code.method target, including the existing provider
+validation, and compare with the analyzed closure. No per-site native method
+guard, mutable inline cache, per-op interpreter test or adaptive rnx retry.
+Polymorphic apply(x) must refuse or stay interpreted.
+
+Analyze field names, not engine offsets. Resolve actual Record payload positions
+once per entry; validate exact nominal/shape/types/alias identity. Both field
+orders of the same nominal must execute native correctly. One private snapshot
+per root, shared by every helper/recursive activation. Alias references to the
+same Vec share one buffer. No arbitrary Vec length ceiling; engine/native
+memory limits bound snapshots, with preparation allocation failure invisible.
+
+Only private i64 scratch, integer metadata/closed labels and the audited exit
+record cross the ABI. Receiver/Vec/function tokens are private table indices;
+engine handles, Value representations, Store/object/field pointers and callable
+engine pointers never cross. Bind real identities entirely in safe Rust. Keep
+existing sealing, pre/post IR verification, full-index unsigned physical bounds,
+Spectre clamps including empty sentinels, and the unchanged machine gate.
+
+Root frame owns self throughout; self retains the unchanged Vec edge. Every
+internal heap reference denotes one of these rooted identities; heap results and
+heap-field replacement remain excluded. Prefer a conservative bytecode-derived
+static peak ownership bound per activation, plus transient retain headroom:
+initial_strong + k * (bounded activation room) <= u32::MAX. Check both handles at
+entry. Prove no internal last release/destructor or work-queue growth is possible.
+If some admitted operation lacks this proof, refuse it or bring the exact
+tracked-delta design for review. Validate final root-slot ownership delta before
+mutation; preserve exact refcounts/edges/capacities, not just output values.
+
+Use one prevalidated infallible safe-Rust publication of scalar fields, Vec
+elements, final root window and ownership. Guard an open idle Store, generations,
+unmoved payloads, field positions/tags, Vec identity/length/capacity and leases.
+No allocation, callbacks or fallible setters after the first mutation. Invalid
+records poison their entry and leave state unchanged.
+
+Check every original charged PC including loop headers and virtual function
+entries. Bound physical and logical frame/diagnostic/slot room, using actual
+callee footprints, without growing engine buffers. On nested overflow, type,
+index, fuel or room fault discard the entire private transaction and replay from
+original root pc0/window/heap/fuel. Suppress descendant attempts until the root
+returns. The interpreter produces the identical error, partial state and call
+chain. Report first-call replay and warm completion separately.
+
+Choose the additional specialization once per admitted program through the
+existing frame-entry path. No change to ordinary Call/Field/SetField dispatch.
+Keep native-off core exactly zero extra instructions and existing N1-N5 controls
+unchanged. Report any host-invoke/old-path delta exactly before changing rules.
+
+Required tests include full state/fuel/error equivalence at all small-fixture
+stopping points; index/type/arithmetic/nested faults after private mutation;
+frame/slot/quota/scratch refusal; near-overflow strong counts, leases/moved
+payloads; exact nominal/target/provenance identity; reordered fields native in
+both orders; distinct/shared aliases; invalid records; bounded replay attempts.
+Add at least two non-AWFY fixtures: an I64/Bool scalar-field method loop, and a
+one-Vec receiver with helper plus recursion unrelated to permutation/swapping.
+Real locked CLI witnesses cover those and permute: root/virtual helper/recursive
+work/completion, off0, first/warm separately, off/legacy/Lua parity. Full-call
+measurements include snapshot, setup and publication, no aggregate gain claim.
+
+Committed runner fmt/Clippy and Python-tab controls precede expensive checks.
+One signed plan plus one signed implementation on main, no branches/worktrees.
+Review implementation, then CGU1 for affected hot paths, K1/counter2/seals,
+fresh cold-all and Miri, and production witnesses. Attribute failed captured
+profiles read-only and bring numbers before source/rule changes. Durable jobs
+block on exit and report terminal receipts only, never poll/progress watchers.
+Publish Rune only after all PASS and acceptance, then a separate rnx pin/checks,
+then a full current_matrix.py rerun and coverage/table refresh for permute.
