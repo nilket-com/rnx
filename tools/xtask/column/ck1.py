@@ -21,10 +21,11 @@ def main():
 	parser.add_argument("--probe", action="store_true", help="build and validate the production column measurement probe after prerequisites")
 	parser.add_argument("--full", action="store_true", help="run the full Rune library suite after prerequisites")
 	parser.add_argument("--notify", action="store_true", help="send only the terminal receipt to Codex via chatd")
+	parser.add_argument("--ck2", action="store_true", help="CK2 validity-aware primitive record")
 	parser.add_argument("--budget", action="store_true", help="B1 ambient-budget controls before the optional full suite")
 	parser.add_argument("--budget-halt", action="store_true", help="B2 terminal host budget errors before the optional full suite")
 	args = parser.parse_args()
-	record = "B2" if args.budget_halt else "B1" if args.budget else "CK1"
+	record = "B2" if args.budget_halt else "B1" if args.budget else "CK2" if args.ck2 else "CK1"
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
 	started = time.monotonic()
@@ -56,12 +57,18 @@ def main():
 					if token.type == tokenize.INDENT and " " in token.string:
 						raise ValueError(f"Python indentation must use tabs: {source}:{token.start[0]}")
 		result["checks"].append({"name": "python-syntax-indentation", "exit": 0})
+		if args.ck2:
+			run("cli-cache-controls", ["python3", "-B", str(HERE / "test_cli_cache.py")])
+			run("cli-capture-controls", ["python3", "-B", str(HERE / "test_cli_rules.py")])
+		run("adr-records", ["python3", "-B", str(HERE / "records.py"), "--repo", str(ROOT)])
 		run("fmt", ["cargo", "+1.98.1", "fmt", "--all", "--", "--check"])
 		run("dependencies", ["python3", "-B", str(HERE / "dependencies.py")])
 		# Tests exercise every public safe wrapper; no --extern links are allowed.
 		run("isolated-primitives-build", ["rustc", "+1.98.1", "--edition=2021", "--test", "-Dwarnings", "crates/rune/src/experimental_column_primitives.rs", "-o", str(out / "primitive-tests")])
 		run("isolated-primitives", [str(out / "primitive-tests")])
 		run("clippy", ["cargo", "+1.98.1", "clippy", "--locked", "-p", "rune", "--all-features", "--lib", "--tests", "--", "-D", "warnings"])
+		if args.ck2:
+			run("clippy-xtask", ["cargo", "+1.98.1", "clippy", "--locked", "-p", "xtask", "--all-targets", "--", "-D", "warnings"])
 		run("column-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "experimental_core::column"])
 		if args.budget:
 			run("budget-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "runtime::budget::tests"])
@@ -74,7 +81,8 @@ def main():
 			run("probe-build", ["cargo", "+1.98.1", "build", "--locked", "--release", "--manifest-path", manifest])
 			binary = HERE / "probe/target/release/ck1-column-probe"
 			result["probe"] = {"path": str(binary), "sha256": hashlib.sha256(binary.read_bytes()).hexdigest()}
-			for operation in ("i64add", "axpy", "f64add", "boolnot"):
+			operations = ("i64add", "axpy", "f64add", "boolnot", "f64pair", "mul3") if args.ck2 else ("i64add", "axpy", "f64add", "boolnot")
+			for operation in operations:
 				for rows in (0, 37, 4096, 1000000):
 					for path in ("scalar", "auto"):
 						run(f"probe-{operation}-{rows}-{path}", [str(binary), operation, str(rows), path])

@@ -457,6 +457,12 @@ fn library(ctx: &Context, l: &Library) -> Result<Value> {
 
 fn clippy(ctx: &Context, m: &Manifest) -> Result<Value> {
 	let mut rows = vec![];
+	let mut cmd = Command::new("python3");
+	cmd.current_dir(&ctx.repo)
+		.args(["-B", "tools/xtask/column/records.py", "--repo"])
+		.arg(&ctx.repo);
+	let r = ctx.checked("adr-records", &mut cmd, 120)?;
+	rows.push(json!({"name":"adr-records","receipt":r.receipt,"seconds":r.seconds}));
 	let mut cmd = ctx.cargo();
 	cmd.args(["fmt", "--all", "--check"]);
 	let r = ctx.checked("fmt", &mut cmd, 900)?;

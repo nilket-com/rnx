@@ -28,6 +28,9 @@ pub(super) enum Fast {
 	F64Add(usize, f64),
 	BoolNot(usize),
 	Fused(usize, usize),
+	F64PairAdd(usize, usize),
+	F64PairSub(usize, usize),
+	F64PairMul(usize, usize),
 }
 
 fn fast(nodes: &[Node], result: usize) -> Option<Fast> {
@@ -35,6 +38,18 @@ fn fast(nodes: &[Node], result: usize) -> Option<Fast> {
 		.iter()
 		.filter(|n| matches!(n.step, Step::Binary(..) | Step::Not(..)))
 		.count();
+	if count == 1 && nodes[result].ty == ColumnType::F64 {
+		if let Step::Binary(op, a, b) = nodes[result].step {
+			if let (Step::Input(a), Step::Input(b)) = (nodes[a].step, nodes[b].step) {
+				return match op {
+					Binary::Add => Some(Fast::F64PairAdd(a, b)),
+					Binary::Sub => Some(Fast::F64PairSub(a, b)),
+					Binary::Mul => Some(Fast::F64PairMul(a, b)),
+					_ => None,
+				};
+			}
+		}
+	}
 	match nodes[result].step {
 		Step::Binary(Binary::Add, a, b) if count == 1 => {
 			let (Step::Input(i), Step::Constant(c)) = (nodes[a].step, nodes[b].step) else {

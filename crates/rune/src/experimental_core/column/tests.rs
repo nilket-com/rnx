@@ -788,3 +788,354 @@ fn actual_frontend_functions_admit_and_refuse_without_source_patterns() {
 		assert_eq!(plan.is_ok(), admitted, "{body}: {plan:?}");
 	}
 }
+
+#[test]
+fn ck2_masks_chunks_offsets_and_every_fuel_stop() {
+	let p = axpy();
+	let plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::I64; 2],
+		ColumnType::I64,
+		Limits::default(),
+	)
+	.unwrap();
+	let len: usize = if cfg!(miri) { 67 } else { 1031 };
+	for force in [true, false] {
+		for offset in 0..8 {
+			for pattern in 0..4 {
+				let mut a_bits = std::vec![0; (len + offset).div_ceil(8)];
+				let mut b_bits = std::vec![0; (len + 7 - offset).div_ceil(8)];
+				let valid_a = |i: usize| match pattern {
+					0 => false,
+					1 => i.is_multiple_of(2),
+					2 => i.wrapping_mul(7919) % 17 < 9,
+					_ => i >= len / 2,
+				};
+				let valid_b = |i: usize| i % 11 != 3;
+				for i in 0..len {
+					a_bits[(i + offset) / 8] |= u8::from(valid_a(i)) << ((i + offset) % 8);
+					b_bits[(i + 7 - offset) / 8] |= u8::from(valid_b(i)) << ((i + 7 - offset) % 8);
+				}
+				let x: Vec<_> = (0..len)
+					.map(|i| {
+						if valid_a(i) && valid_b(i) {
+							i as i64
+						} else {
+							i64::MAX
+						}
+					})
+					.collect();
+				let y: Vec<_> = (0..len)
+					.map(|i| {
+						if valid_a(i) && valid_b(i) {
+							1
+						} else {
+							i64::MAX
+						}
+					})
+					.collect();
+				let a_ends = [0, 1, 63.min(len), 64.min(len), len];
+				let b_ends = [0, 7, 65.min(len), len];
+				let a: Vec<_> = a_ends
+					.windows(2)
+					.map(|w| {
+						ColumnChunk::new(
+							ColumnSlice::I64(&x[w[0]..w[1]]),
+							Some(BitSlice::new(&a_bits, offset + w[0], w[1] - w[0]).unwrap()),
+						)
+						.unwrap()
+					})
+					.collect();
+				let b: Vec<_> = b_ends
+					.windows(2)
+					.map(|w| {
+						ColumnChunk::new(
+							ColumnSlice::I64(&y[w[0]..w[1]]),
+							Some(BitSlice::new(&b_bits, 7 - offset + w[0], w[1] - w[0]).unwrap()),
+						)
+						.unwrap()
+					})
+					.collect();
+				let columns = [
+					Column::new(ColumnType::I64, &a).unwrap(),
+					Column::new(ColumnType::I64, &b).unwrap(),
+				];
+				let valid = (0..len).filter(|&i| valid_a(i) && valid_b(i)).count();
+				let charge = valid * plan.row_charge();
+				// Every stopping fuel value for a bounded mixed-mask batch, plus
+				// both sides of the exact charge for all larger layouts.
+				let budgets: Vec<_> = if offset == 0 && pattern == 1 {
+					(0..=charge + 1).collect()
+				} else {
+					std::vec![0, charge.saturating_sub(1), charge, charge + 1]
+				};
+				for work in budgets {
+					match plan.execute(&columns, options(work, force), || false) {
+						ColumnOutcome::Replay { reason, fault } => {
+							assert!(work < charge);
+							assert_eq!(reason, ColumnRefusal::Fuel);
+							assert_eq!(fault, None);
+						}
+						ColumnOutcome::Complete(result) => {
+							assert_eq!(result.remaining_work, work - charge);
+							let ColumnValues::I64(values) = result.values else {
+								panic!("type")
+							};
+							let bits =
+								BitSlice::new(result.validity.as_ref().unwrap(), 0, len).unwrap();
+							for (i, &value) in values.iter().enumerate() {
+								let present = valid_a(i) && valid_b(i);
+								assert_eq!(bits.bit(i), present);
+								assert_eq!(value, if present { i as i64 * 2 + 1 } else { 0 });
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn ck2_null_constant_overflow_and_first_valid_fault() {
+	// The overflowing expression does not depend on the input. Replacing null
+	// inputs with zero cannot suppress this fault; flags themselves must be masked.
+	let p = program(
+		1,
+		4,
+		&[
+			Op::Literal {
+				out: 1,
+				value: Value::I64(i64::MAX),
+			},
+			Op::Literal {
+				out: 2,
+				value: Value::I64(3),
+			},
+			Op::Binary {
+				out: 3,
+				op: Binary::Mul,
+				lhs: 1,
+				rhs: 2,
+			},
+			Op::Return { value: 3 },
+		],
+	);
+	let plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::I64],
+		ColumnType::I64,
+		Limits::default(),
+	)
+	.unwrap();
+	for force in [true, false] {
+		let x = [0; 67];
+		for valid in 0..=67 {
+			let mut bits = [0; 9];
+			if valid < 67 {
+				bits[valid / 8] = 1 << (valid % 8);
+			}
+			let chunks = [ColumnChunk::new(
+				ColumnSlice::I64(&x),
+				Some(BitSlice::new(&bits, 0, 67).unwrap()),
+			)
+			.unwrap()];
+			let columns = [Column::new(ColumnType::I64, &chunks).unwrap()];
+			match plan.execute(&columns, options(100, force), || false) {
+				ColumnOutcome::Complete(out) => {
+					assert_eq!(valid, 67);
+					assert_eq!(out.remaining_work, 100);
+					let ColumnValues::I64(out) = out.values else {
+						panic!("type")
+					};
+					assert!(out.iter().all(|&v| v == 0));
+				}
+				ColumnOutcome::Replay { reason, fault } => {
+					assert_eq!(reason, ColumnRefusal::Arithmetic);
+					assert_eq!(fault, Some(Fault { row: valid, pc: 2 }));
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn ck2_nullable_typed_pairs_and_general_multiply() {
+	let mask_bytes = [0xa6; 10];
+	let len = 67;
+	for force in [true, false] {
+		for ty in [ColumnType::I64, ColumnType::F64] {
+			for op in [Binary::Add, Binary::Sub, Binary::Mul] {
+				let p = program(
+					2,
+					3,
+					&[
+						Op::Binary {
+							out: 2,
+							op,
+							lhs: 0,
+							rhs: 1,
+						},
+						Op::Return { value: 2 },
+					],
+				);
+				let plan = PreparedColumn::prepare(&p, 0, &[ty; 2], ty, Limits::default()).unwrap();
+				for offset in 0..8 {
+					let mask = BitSlice::new(&mask_bytes, offset, len).unwrap();
+					let ints: Vec<_> = (0..len)
+						.map(|i| if mask.bit(i) { i as i64 - 33 } else { i64::MIN })
+						.collect();
+					let floats: Vec<_> = (0..len)
+						.map(|i| {
+							if mask.bit(i) {
+								(i as f64 - 33.0) / 4.0
+							} else {
+								f64::NAN
+							}
+						})
+						.collect();
+					let int_y = [-1; 67];
+					let float_y = [0.125; 67];
+					let a = [ColumnChunk::new(
+						match ty {
+							ColumnType::I64 => ColumnSlice::I64(&ints),
+							_ => ColumnSlice::F64(&floats),
+						},
+						Some(mask),
+					)
+					.unwrap()];
+					let b: Vec<_> = [0, 3, 64, 67]
+						.windows(2)
+						.map(|w| {
+							ColumnChunk::new(
+								match ty {
+									ColumnType::I64 => ColumnSlice::I64(&int_y[w[0]..w[1]]),
+									_ => ColumnSlice::F64(&float_y[w[0]..w[1]]),
+								},
+								None,
+							)
+							.unwrap()
+						})
+						.collect();
+					let columns = [Column::new(ty, &a).unwrap(), Column::new(ty, &b).unwrap()];
+					let ColumnOutcome::Complete(result) =
+						plan.execute(&columns, options(1000, force), || false)
+					else {
+						panic!("nullable operation refused")
+					};
+					assert_eq!(
+						result.remaining_work,
+						1000 - (0..len).filter(|&i| mask.bit(i)).count() * plan.row_charge()
+					);
+					for i in 0..len {
+						match &result.values {
+							ColumnValues::I64(out) => {
+								let expected = if !mask.bit(i) {
+									0
+								} else {
+									match op {
+										Binary::Add => ints[i] + int_y[i],
+										Binary::Sub => ints[i] - int_y[i],
+										Binary::Mul => ints[i] * int_y[i],
+										_ => unreachable!(),
+									}
+								};
+								assert_eq!(out[i], expected);
+							}
+							ColumnValues::F64(out) => {
+								let expected = if !mask.bit(i) {
+									0.0
+								} else {
+									match op {
+										Binary::Add => floats[i] + float_y[i],
+										Binary::Sub => floats[i] - float_y[i],
+										Binary::Mul => floats[i] * float_y[i],
+										_ => unreachable!(),
+									}
+								};
+								assert_eq!(out[i].to_bits(), expected.to_bits());
+							}
+							_ => panic!("numeric result"),
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn ck2_optimistic_flags_ignore_nulls_and_replay_first_valid_boundary_fault() {
+	let p = axpy();
+	let plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::I64; 2],
+		ColumnType::I64,
+		Limits::default(),
+	)
+	.unwrap();
+	let len: usize = 1031;
+	for force in [true, false] {
+		for random in [false, true] {
+			for fault in [0, 63, 64, 1023, 1024, 1030] {
+				for valid_fault in [false, true] {
+					let mut bits = std::vec![0u8; len.div_ceil(8)];
+					let mut x = std::vec![1; len];
+					let y = std::vec![1; len];
+					for (i, value) in x.iter_mut().enumerate() {
+						let valid = if i == fault {
+							valid_fault
+						} else if random {
+							i * 73 % 251 < 127
+						} else {
+							i % 2 == 0
+						};
+						bits[i / 8] |= u8::from(valid) << (i % 8);
+						if !valid || i == fault {
+							*value = i64::MAX;
+						}
+					}
+					let validity = Some(BitSlice::new(&bits, 0, len).unwrap());
+					let a = [ColumnChunk::new(ColumnSlice::I64(&x), validity).unwrap()];
+					let b = [ColumnChunk::new(ColumnSlice::I64(&y), validity).unwrap()];
+					let columns = [
+						Column::new(ColumnType::I64, &a).unwrap(),
+						Column::new(ColumnType::I64, &b).unwrap(),
+					];
+					let work = 100000;
+					match plan.execute(&columns, options(work, force), || false) {
+						ColumnOutcome::Replay {
+							reason,
+							fault: actual,
+						} => {
+							assert!(valid_fault);
+							assert_eq!(reason, ColumnRefusal::Arithmetic);
+							assert_eq!(actual, Some(Fault { row: fault, pc: 1 }));
+						}
+						ColumnOutcome::Complete(result) => {
+							assert!(!valid_fault);
+							let valid = bits.iter().map(|b| b.count_ones() as usize).sum::<usize>();
+							assert_eq!(result.remaining_work, work - valid * plan.row_charge());
+							let ColumnValues::I64(values) = result.values else {
+								panic!("type")
+							};
+							for (i, value) in values.iter().enumerate() {
+								assert_eq!(
+									*value,
+									if bits[i / 8] >> (i % 8) & 1 != 0 {
+										3
+									} else {
+										0
+									}
+								);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

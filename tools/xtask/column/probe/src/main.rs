@@ -74,6 +74,8 @@ fn main() {
 	let (source, ty, arity) = match op {
 		"i64add" => ("pub fn map(x) { x + 1 }", ColumnType::I64, 1),
 		"axpy" => ("pub fn map(x, y) { x * 2 + y }", ColumnType::I64, 2),
+		"mul3" => ("pub fn map(x, y) { x * 3 + y }", ColumnType::I64, 2),
+		"f64pair" => ("pub fn map(x, y) { x + y }", ColumnType::F64, 2),
 		"f64add" => ("pub fn map(x) { x + 1.0 }", ColumnType::F64, 1),
 		"boolnot" => ("pub fn map(x) { !x }", ColumnType::Bool, 1),
 		_ => panic!("operation"),
@@ -100,13 +102,18 @@ fn main() {
 	} else {
 		vec![]
 	};
-	let y: Vec<_> = if arity == 2 {
+	let y: Vec<_> = if arity == 2 && ty == ColumnType::I64 {
 		(0..n).map(|i| (i % 997) as i64 - 300).collect()
 	} else {
 		vec![]
 	};
 	let floats: Vec<_> = if ty == ColumnType::F64 {
 		(0..n).map(|i| ((i % 1009) as f64 - 500.0) * 0.25).collect()
+	} else {
+		vec![]
+	};
+	let float_y: Vec<_> = if arity == 2 && ty == ColumnType::F64 {
+		(0..n).map(|i| ((i % 997) as f64 - 300.0) * 0.125).collect()
 	} else {
 		vec![]
 	};
@@ -121,7 +128,15 @@ fn main() {
 		ColumnType::Bool => ColumnSlice::Bool(BitSlice::new(&bits, 0, n).unwrap()),
 	};
 	let a = [ColumnChunk::new(values, None).unwrap()];
-	let b = [ColumnChunk::new(ColumnSlice::I64(&y), None).unwrap()];
+	let b = [ColumnChunk::new(
+		if ty == ColumnType::F64 {
+			ColumnSlice::F64(&float_y)
+		} else {
+			ColumnSlice::I64(&y)
+		},
+		None,
+	)
+	.unwrap()];
 	let mut columns = vec![Column::new(ty, &a).unwrap()];
 	if arity == 2 {
 		columns.push(Column::new(ty, &b).unwrap());
@@ -168,7 +183,11 @@ fn main() {
 		ColumnValues::I64(out) => {
 			for (i, v) in out.into_iter().enumerate() {
 				let expected = if arity == 2 {
-					ints[i].checked_mul(2).unwrap().checked_add(y[i]).unwrap()
+					ints[i]
+						.checked_mul(if op == "mul3" { 3 } else { 2 })
+						.unwrap()
+						.checked_add(y[i])
+						.unwrap()
 				} else {
 					ints[i].checked_add(1).unwrap()
 				};
@@ -178,7 +197,10 @@ fn main() {
 		}
 		ColumnValues::F64(out) => {
 			for (i, v) in out.into_iter().enumerate() {
-				assert_eq!(v.to_bits(), (floats[i] + 1.0).to_bits());
+				assert_eq!(
+					v.to_bits(),
+					(floats[i] + if arity == 2 { float_y[i] } else { 1.0 }).to_bits()
+				);
 				checksum = checksum.wrapping_add(v.to_bits());
 			}
 		}

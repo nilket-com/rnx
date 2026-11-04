@@ -136,3 +136,10 @@ and host-invoke costs are reported separately from native work. The targeted
 `method_closure_` controls include full store/fuel/error equivalence, receiver
 and list identity, reordered fields, ownership headroom, leases, invalid exits
 and failed cache installation. Safe publication controls also run under Miri.
+
+New records after the published B2 adoption boundary use signed subject-only
+`plan: adr XXXX ...` and `impl: adr XXXX ...` commits. Decisions live under
+`plans/adr/`, implementation plans under `plans/impl/`, both as numbered Markdown
+files. The mandatory prerequisite runs `column/records.py` (including rejection
+controls) before formatting and Clippy. It checks committed objects and the
+complete first-parent chain, leaving historical plans and commits untouched.

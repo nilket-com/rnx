@@ -59,3 +59,23 @@ B2 adds terminal host-budget-error controls with the same ordered prerequisites:
 
 The budget-halt flag adds constructor/predicate, actual VM equivalence and
 uncatchable host error controls. Existing VM and budget paths are unchanged.
+
+CK2 implements ADR 0206. Its whole-map ceilings are in CK2.json; they are not
+CK1's preallocated kernel ceilings. Start with:
+
+    python3 -B tools/xtask/column/ck1.py --ck2 --out target/ck2-development-NEW --notify
+
+Both this command and the general xtask verification prerequisite run records.py
+before formatting, Clippy or expensive tests. Starting after the fixed published
+B2 adoption boundary, it checks every first-parent commit's signature and
+subject-only `plan: adr XXXX ...` / `impl: adr XXXX ...` form, the referenced
+committed ADR, and plan-only changes under plans/adr or plans/impl for that
+number. Fifteen rejection controls cover malformed subjects, trailers, wrong paths,
+missing/duplicate decisions, missing or ambiguous Status lines, and code hidden in a plan. Published older plans
+and history are untouched. The shared sequence starts with 0206 across Rune,
+rnx and rnx-bench. ADR 0207 fixes the nominal concurrency defect, 0208 migrates
+the monorepo, and 0209 ports the complete ket checker at its root. Before migration, the
+rnx pin and benchmark records must bind their 0206 implementation plans to the
+accepted Rune ADR at its published commit, without a duplicate decision file.
+The rnx reference must match Cargo.lock; until 0209 these followers are checked
+by review. New ADRs require a nonempty Status: line in the opening ten lines.

@@ -55,6 +55,9 @@ def require_ready(observation, *, max_load, min_available_bytes):
             or type(min_available_bytes) is not int or min_available_bytes <= 0):
         raise ValueError('readiness limits must be declared and positive')
     if observation['busy'] or observation['load'] > max_load or observation['mem_available_bytes'] < min_available_bytes:
-        raise ValueError('measurement host is not ready')
+        error = ValueError('measurement host is not ready')
+        error.receipt = {'status': 'NOT_READY', 'observation': observation,
+                         'limits': {'max_load': max_load, 'min_available_bytes': min_available_bytes}}
+        raise error
     return {'status': 'READY', 'observation': observation,
             'limits': {'max_load': max_load, 'min_available_bytes': min_available_bytes}}
