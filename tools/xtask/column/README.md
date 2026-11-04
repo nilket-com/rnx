@@ -52,3 +52,10 @@ No column kernel measurement is added by this flag. B1 receipts identify record
 B1 and require its signed-source regression and fresh-clone/Miri checks before
 publication. Launch services with an explicit Cargo PATH; remote controllers
 also carry SSH_AUTH_SOCK and preflight BatchMode access before transfer.
+
+B2 adds terminal host-budget-error controls with the same ordered prerequisites:
+
+    python3 -B tools/xtask/column/ck1.py --budget --budget-halt --full --out target/b2-development-NEW --notify
+
+The budget-halt flag adds constructor/predicate, actual VM equivalence and
+uncatchable host error controls. Existing VM and budget paths are unchanged.

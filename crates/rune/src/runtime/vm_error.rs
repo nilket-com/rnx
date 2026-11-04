@@ -61,6 +61,30 @@ impl MissingInstanceFunction<'_> {
 }
 
 impl VmError {
+	/// The host-side equivalent of the VM halting on its budget.
+	///
+	/// Return this through a native function's VM error channel, not as a script
+	/// `Result::Err`. It consumes no permits and adds no synthetic source frame;
+	/// ordinary propagation records the actual host callsite.
+	#[inline]
+	pub fn budget_exhausted() -> Self {
+		Self::from(VmErrorKind::Halted {
+			halt: VmHaltInfo::Limited,
+		})
+	}
+
+	/// Whether the root cause is the VM's budget halt, including one returned
+	/// by a native host. Other halts and panic messages are not budget errors.
+	#[inline]
+	pub fn is_budget_exhausted(&self) -> bool {
+		matches!(
+			self.inner.error.kind,
+			VmErrorKind::Halted {
+				halt: VmHaltInfo::Limited
+			}
+		)
+	}
+
 	/// Inspect typed argument context without conflating it with caller frames.
 	#[cold]
 	#[inline(never)]
@@ -1481,6 +1505,9 @@ fn fmt_global(f: &mut fmt::Formatter<'_>, slot: usize, name: Option<&Item>) -> f
 		None => write!(f, "in slot {slot}"),
 	}
 }
+
+#[cfg(all(test, feature = "std"))]
+mod budget_tests;
 
 #[cfg(test)]
 mod logical_frame_tests {

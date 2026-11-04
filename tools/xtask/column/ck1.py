@@ -22,8 +22,9 @@ def main():
 	parser.add_argument("--full", action="store_true", help="run the full Rune library suite after prerequisites")
 	parser.add_argument("--notify", action="store_true", help="send only the terminal receipt to Codex via chatd")
 	parser.add_argument("--budget", action="store_true", help="B1 ambient-budget controls before the optional full suite")
+	parser.add_argument("--budget-halt", action="store_true", help="B2 terminal host budget errors before the optional full suite")
 	args = parser.parse_args()
-	record = "B1" if args.budget else "CK1"
+	record = "B2" if args.budget_halt else "B1" if args.budget else "CK1"
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
 	started = time.monotonic()
@@ -64,6 +65,8 @@ def main():
 		run("column-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "experimental_core::column"])
 		if args.budget:
 			run("budget-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "runtime::budget::tests"])
+		if args.budget_halt:
+			run("budget-halt-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "runtime::vm_error::budget_tests"])
 		if args.probe:
 			manifest = str(HERE / "probe/Cargo.toml")
 			run("probe-fmt", ["cargo", "+1.98.1", "fmt", "--manifest-path", manifest, "--", "--check"])
