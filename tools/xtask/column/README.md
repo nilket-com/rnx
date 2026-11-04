@@ -42,3 +42,13 @@ inter-sample cooldown are declared, with no readiness polling/retry. Valid cycle
 are userspace cycles; elapsed logical GB/s counts inputs plus output, not physical
 DRAM traffic. Allocation/preparation metrics are recorded separately. These
 kernel measurements do not replace the rnx script end-to-end headline.
+
+The B1 ambient-budget record reuses these prerequisites and adds focused budget
+controls before the full suite:
+
+    python3 -B tools/xtask/column/ck1.py --budget --full --out target/b1-development-NEW --notify
+
+No column kernel measurement is added by this flag. B1 receipts identify record
+B1 and require its signed-source regression and fresh-clone/Miri checks before
+publication. Launch services with an explicit Cargo PATH; remote controllers
+also carry SSH_AUTH_SOCK and preflight BatchMode access before transfer.

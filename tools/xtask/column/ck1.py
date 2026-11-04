@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""One CK1 prerequisite command; serial, fail-fast, exit notification and receipt."""
+"""One CK1/B1 prerequisite command; serial, fail-fast, exit notification and receipt."""
 import argparse
 import hashlib
 import json
@@ -21,17 +21,19 @@ def main():
 	parser.add_argument("--probe", action="store_true", help="build and validate the production column measurement probe after prerequisites")
 	parser.add_argument("--full", action="store_true", help="run the full Rune library suite after prerequisites")
 	parser.add_argument("--notify", action="store_true", help="send only the terminal receipt to Codex via chatd")
+	parser.add_argument("--budget", action="store_true", help="B1 ambient-budget controls before the optional full suite")
 	args = parser.parse_args()
+	record = "B1" if args.budget else "CK1"
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
 	started = time.monotonic()
 	files = subprocess.check_output(["git", "ls-files", "--cached", "--others", "--exclude-standard"], cwd=ROOT, text=True).splitlines()
 	pins = {}
-	result = {"record": "CK1", "status": "FAIL", "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(), "source_pins": pins, "checks": []}
+	result = {"record": record, "status": "FAIL", "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(), "source_pins": pins, "checks": []}
 	env = dict(os.environ, CARGO_BUILD_JOBS="4", PYTHONDONTWRITEBYTECODE="1")
 	def exact():
 		for name, digest in pins.items():
-			assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest, f"source changed during CK1 job: {name}"
+			assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest, f"source changed during {record} job: {name}"
 	def run(name, command):
 		exact()
 		with (out / (name + ".stdout")).open("x") as stdout, (out / (name + ".stderr")).open("x") as stderr:
@@ -60,6 +62,8 @@ def main():
 		run("isolated-primitives", [str(out / "primitive-tests")])
 		run("clippy", ["cargo", "+1.98.1", "clippy", "--locked", "-p", "rune", "--all-features", "--lib", "--tests", "--", "-D", "warnings"])
 		run("column-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "experimental_core::column"])
+		if args.budget:
+			run("budget-tests", ["cargo", "+1.98.1", "test", "--locked", "-p", "rune", "--all-features", "--lib", "runtime::budget::tests"])
 		if args.probe:
 			manifest = str(HERE / "probe/Cargo.toml")
 			run("probe-fmt", ["cargo", "+1.98.1", "fmt", "--manifest-path", manifest, "--", "--check"])
@@ -82,9 +86,9 @@ def main():
 		receipt = out / "RESULT.json"
 		receipt.write_text(json.dumps(result, indent=2) + "\n")
 		notice = out / "NOTICE.txt"
-		notice.write_text(f'CK1 development prerequisites/column controls EXIT {result["status"]}. Receipt: {receipt}\n')
+		notice.write_text(f'{record} development prerequisites/focused controls EXIT {result["status"]}. Receipt: {receipt}\n')
 		if args.notify:
-			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", f'CK1 development prerequisites/column controls EXIT {result["status"]}', "--body-file", str(notice)], check=True)
+			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", f'{record} development prerequisites/focused controls EXIT {result["status"]}', "--body-file", str(notice)], check=True)
 		print(notice.read_text().strip())
 	return 0 if result["status"] == "PASS" else 1
 

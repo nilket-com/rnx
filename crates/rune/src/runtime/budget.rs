@@ -16,6 +16,48 @@ use core::task::{Context, Poll};
 use pin_project::pin_project;
 use rune_alloc::callable::Callable;
 
+#[cfg(all(test, feature = "std"))]
+mod tests;
+
+/// The ambient budget cannot cover a requested debit. No permits were taken.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BudgetExhausted;
+
+impl core::fmt::Display for BudgetExhausted {
+	fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+		f.write_str("budget exhausted")
+	}
+}
+
+impl core::error::Error for BudgetExhausted {}
+
+/// Debit exactly `n` permits from the ambient budget in constant time.
+///
+/// An insufficient finite allowance returns [`BudgetExhausted`] without taking
+/// any permits. Zero always succeeds. Without an installed budget this succeeds
+/// without changing the unlimited state, even when `n` is [`usize::MAX`].
+///
+/// This debits the innermost active [`with`] or [`replace`] scope; those scopes
+/// restore their outer allowance as usual, including on unwind. An outstanding
+/// [`acquire`] guard removes its allowance from the ambient state, so this then
+/// observes unlimited, just like [`take`]. Callers requiring a finite budget
+/// must check [`remaining`] before starting work.
+///
+/// This does not change a `with_slice` soft threshold or yield by itself. The
+/// VM observes the decreased hard allowance at its next instruction boundary.
+/// Budgets are thread-local under `std`; transfer worker allowances explicitly.
+/// This does not debit an execution engine's separately owned work counter.
+#[inline]
+pub fn consume(n: usize) -> Result<(), BudgetExhausted> {
+	let budget = self::no_std::rune_budget_get();
+	if budget == usize::MAX {
+		return Ok(());
+	}
+	let left = budget.checked_sub(n).ok_or(BudgetExhausted)?;
+	self::no_std::rune_budget_replace(left);
+	Ok(())
+}
+
 /// Wrapper for something being [budgeted].
 ///
 /// See [with].
