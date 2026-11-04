@@ -37,12 +37,24 @@ fn result(v: Value) -> Result<Value, String> {
 		.map_err(|e| rune::from_value::<String>(e).unwrap())
 }
 
-/// The call's peak above the live bytes when it started, and its outcome.
+/// Measure the call while its borrowed input stays alive. Input destruction is
+/// a separate diagnostic: Rune may grow a worklist to dismantle a wide list.
 fn observe(vm: &mut Vm, df: &Value, cols: Value, dtype: &str) -> (usize, Result<Value, String>) {
 	reset_peak();
 	let base = peak();
-	let out = result(vm.call(["to_dense"], (df.clone(), cols, dtype)).unwrap());
-	(peak() - base, out)
+	let out = result(
+		vm.call(["to_dense"], (df.clone(), cols.clone(), dtype))
+			.unwrap(),
+	);
+	let call_peak = peak() - base;
+	// Keep last-owner teardown outside the refusal/export measurement. Report
+	// it separately without requiring teardown to retain its current cost.
+	reset_peak();
+	let teardown_base = peak();
+	drop(cols);
+	let teardown_peak = peak() - teardown_base;
+	eprintln!("allocation phases: call={call_peak}, input_teardown={teardown_peak}");
+	(call_peak, out)
 }
 
 #[test]

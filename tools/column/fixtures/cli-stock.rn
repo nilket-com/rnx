@@ -1,0 +1,11 @@
+pub fn main(args) {
+	let input = polars::Series::from_iter_option_str([Some("1")])?
+		.cast(polars::DataType::Int64())?.new_from_index(0, 10000)?;
+	let k = polars::column_kernel("pub fn map(x) { if x > 0 { x } else { -x } }", "map", ["i64"], "i64")?;
+	println!("COLUMN_ENTER");
+	let output = k.map([input])?;
+	assert!(output.equals(input));
+	assert_eq!(output.len()?, 10000);
+	println!("COLUMN_OK {}", k.last_path());
+	Ok(())
+}

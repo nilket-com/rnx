@@ -158,7 +158,7 @@ fn the_claims_hold(manifest: &str, whose: &str) {
 	);
 	assert_eq!(
 		rune_pin(manifest).as_deref(),
-		Some("a68e739e6213dd02877258503f16df7ddaae6fc7"),
+		Some("1b4b66bd3657868ecb1d49f8b3f355585b3ec98d"),
 		"{whose}: the rune pin"
 	);
 }

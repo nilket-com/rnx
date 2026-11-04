@@ -10,6 +10,73 @@ the four narrow integer dtypes `dtype-i8`, `dtype-i16`, `dtype-u8` and
 inventory they are generated from (`probes/0072/out/0.55.2-adapter-json`, record 0125)
 all describe that one build.
 
+## Prepared column kernels (record 0205)
+
+The explicit handle prepares a named Rune function once:
+
+```rune
+let k = polars::column_kernel("pub fn map(x) { x + 1 }", "map", ["i64"], "i64")?;
+let result = k.map([series])?;
+k.last_path()
+```
+
+The signature accepts one to three inputs and one output, each exactly `i64`,
+`f64` or `bool`. Input Series must have the corresponding physical dtype and
+equal lengths. The default is null-in/null-out: a row with any null input
+produces null without invoking the function or consuming its row work. The
+outer script uses the stock VM because the handle and Series are opaque host
+objects; admitted column work runs through the prepared primitives. Unsupported
+functions use the scalar fallback. Preparing a handle never executes its body.
+
+`map` uses the enclosing script's finite work allowance and commits the actual
+consumption once after its synchronous worker joins. A failed speculative
+attempt is not charged in addition to scalar replay. Budget exhaustion halts
+the script; matching on `Err` or using `?` cannot catch it. Signature, input and
+ordinary scalar errors remain catchable results. Calls without a finite script
+budget return the ordinary error `column kernel map requires a finite script
+budget; none is installed` before starting work or consuming fuel; an explicitly unlimited invocation is
+available only through the Rust host API. Output buffers are owned, and input
+Series remain borrowed without rechunking or copying their contents.
+
+For an admitted function, each valid row costs exactly the scalar-equivalent
+`row_charge` shown by `explain()`; stock fallback uses its actual VM instruction
+consumption. The default one-shot allowance is 2,000,000 work units, shared with
+the rest of the script. Large columns need an explicit allowance, for example
+`rnx-polars run --budget 1000000000 program.rn` for the 100M-row benchmark; the
+benchmark report records the actual value used. This does not change the default.
+
+`explain()` describes the signature, null policy, preparation result and
+available implementations. Its descriptive text is not a parsing contract.
+`last_path()` reports what actually ran, including failed or canceled attempts;
+it does not infer execution from CPU capabilities. State resets before every
+map invocation, including invalid inputs.
+
+The `last_path()` string has this stable field order and spelling, separated by
+exactly `; `, with no trailing delimiter or newline:
+
+```text
+path=none; completed=false; rows=0; valid_rows=0; attempts=0; replays=0; refusal=None
+```
+
+- `path`: `none`, `scalar-primitives`, `avx2`, `scalar-fallback`, `replay`, or
+  `canceled`. `none` means no execution path was entered.
+- `completed`: `true` only when the invocation completed successfully; otherwise
+  `false`.
+- `rows`, `valid_rows`, `attempts`, `replays`: unsigned decimal integers without
+  separators. `rows` is the validated logical batch length (zero before input
+  validation succeeds). `valid_rows` counts successfully evaluated non-null rows
+  in the completed primitive result or scalar prefix; it excludes the failing
+  row and discarded speculative work. Attempts and replays count optional
+  primitive attempts and whole-prefix scalar replays, respectively.
+- `refusal`: `None` or `Some(reason)`, where `reason` is `Unsupported`,
+  `EntryAuthority`, `Type`, `Bounds`, `Memory`, `Fuel`, `Canceled`, or `Arithmetic`.
+  It describes why an optional primitive attempt was declined, not a replacement
+  for the original scalar error.
+
+Before the first invocation, the exact string is the example above. Errors
+publish no partial output. Kernel methods borrow the handle; aliases share its
+last-invocation state under Rune's ordinary borrow rules.
+
 Borrowed slices (record 0082): a Polars method that returns or iterates
 `&[T]`, or hands a callback `&[u8]`, gives the script an owned vector
 copied under the materialize bound; the vector outlives its source and

@@ -9,12 +9,14 @@
 //!   Polars' own clone: columns are shared until either side is written
 //!   (copy-on-write), never a deep copy.
 //! - Builders, readers, writers and expression namespaces are consumed by
-//!   their by-value methods (catalogue text "consumes the receiver"); a
+//!   their by-value methods (catalog text "consumes the receiver"); a
 //!   second use is Rune's access error ("Cannot take, value is …").
 use p::IntoLazy;
 use polars::prelude as p;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, runtime::Vec as RuneVec};
+#[cfg(feature = "generated")]
+pub mod column;
 mod dense;
 mod engine;
 mod files;
@@ -387,6 +389,7 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	// ones so a hand-written name always wins.
 	#[cfg(feature = "generated")]
 	{
+		column::install(m)?;
 		generated::support::install(m).map_err(err)?;
 		generated::types::install(m).map_err(err)?;
 		generated::functions::install(m).map_err(err)?;
@@ -459,6 +462,13 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		"polars::Series::clone".into(),
 		"clone() -> Series: an independent series; data shared copy-on-write, so in-place methods on either side never change the other",
 	));
+	#[cfg(feature = "generated")]
+	catalogue.extend([
+		("polars::column_kernel".into(), "column_kernel(source, entry, inputs, output) -> Result<ColumnKernel>: prepare a named Rune function with one to three exact i64/f64/bool inputs and one output; preparation does not execute it"),
+		("polars::ColumnKernel::explain".into(), "explain() -> String: signature, null policy, scalar engine, primitive availability and preparation refusal"),
+		("polars::ColumnKernel::map".into(), "map([series, ...]) -> Result<Series>: equal-length exact i64/f64/bool columns, null-in/null-out without row work; borrows inputs, returns owned output; finite enclosing stock-VM budget required, fuel exhaustion halts the script"),
+		("polars::ColumnKernel::last_path".into(), "last_path() -> String: stable path, completed, rows, valid_rows, attempts, replays, refusal fields separated by '; '; format and values documented in the adapter README"),
+	]);
 	#[cfg(feature = "generated")]
 	catalogue.extend(
 		generated::catalogue::CATALOGUE
