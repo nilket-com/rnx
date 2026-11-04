@@ -436,6 +436,22 @@ fn entries() -> Vec<Entry> {
 	use Route::*;
 	vec![
 		Entry {
+			name: "column-preparation-validation",
+			route: Blocked,
+			file: "src/column/prepare.rs",
+			owner: "compile",
+			call: "CALL Vm::new",
+			needs: "stock entry/arity validation without resuming or executing the function body",
+		},
+		Entry {
+			name: "column-stock-scalar-fallback",
+			route: Blocked,
+			file: "src/column/scalar.rs",
+			owner: "new",
+			call: "CALL Vm::new",
+			needs: "explicit worker budget, one caller debit after join; opaque outer scripts remain legacy with no host certificate",
+		},
+		Entry {
 			name: "file-run",
 			route: Fallback,
 			file: "src/runner.rs",
@@ -656,6 +672,8 @@ fn policy_rows(root: &Path) -> Result<Json> {
 	// adding a file or alias cannot silently inherit a one-shot verdict.
 	let constructors = syntax::vm_constructors(root)?;
 	let allowed: BTreeSet<_> = [
+		("src/column/prepare.rs", "compile"),
+		("src/column/scalar.rs", "new"),
 		("src/config.rs", "evaluate_selected"),
 		("src/lib.rs", "call"),
 		("src/runner.rs", "run_loaded"),

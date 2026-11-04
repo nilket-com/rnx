@@ -17,6 +17,7 @@ fn main() {
 }
 
 pub use rune;
+pub mod column;
 mod dep_startup;
 mod dep_transition;
 #[cfg(unix)]
@@ -142,7 +143,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Git revision the manifest pins. Written here rather than read from the
 /// crate, which exposes no such constant, so a gate reads the manifest's `rev`
 /// and the lockfile's version and refuses to let them drift apart.
-const RUNE_VERSION: &str = "0.15.0 (git a68e739e6213dd02877258503f16df7ddaae6fc7)";
+const RUNE_VERSION: &str = "0.15.0 (git 1b4b66bd3657868ecb1d49f8b3f355585b3ec98d)";
 
 /// What rnx does, for someone who asked or who mistyped.
 const USAGE: &str = "\

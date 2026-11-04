@@ -2,7 +2,7 @@
 # Produce rustdoc JSON for the polars facade and every polars-* crate it
 # activates, for one (release, configuration) pair.
 #
-#   doc.sh <release> <adapter|adapter-narrow|adapter-json|full>
+#   doc.sh <release> <adapter|adapter-narrow|adapter-json|full> [--fetch-only]
 #
 # Output: probes/0072/out/<release>-<cfg>/<crate>.json plus pins.json. The
 # output directory is cleared first so nothing stale can be reused. The
@@ -10,6 +10,8 @@
 # replay so the dependency graph is reproducible.
 set -euo pipefail
 release="$1"; cfg="$2"
+mode="${3:-document}"
+case "$mode" in document|--fetch-only) ;; *) echo "unknown mode $mode" >&2; exit 2 ;; esac
 here="$(cd "$(dirname "$0")" && pwd)"; root="$(cd "$here/../../.." && pwd)"
 NIGHTLY="nightly-2026-09-20"          # pinned by date; the evidence quotes it
 host="$root/target/0072/host-$release-$cfg"
@@ -64,6 +66,13 @@ cd "$host"
 # lock is created only for a configuration that has none yet.
 if [ -f "$lock" ]; then cp "$lock" Cargo.lock; else cargo +$NIGHTLY generate-lockfile -q; cp Cargo.lock "$lock"; echo "new configuration: lock saved to $lock"; fi
 LOCKED="--locked"
+# Acceptance separates the only network phase from offline documentation.
+# Reuse exactly this manifest/feature selection for the locked fetch.
+if [ "$mode" = --fetch-only ]; then
+  cargo +$NIGHTLY fetch $LOCKED
+  cmp -s Cargo.lock "$lock" || { echo "FAIL: fetch changed $lock"; exit 1; }
+  exit 0
+fi
 # Crates activated by this feature set. `cargo tree` respects features.
 crates=$(cargo +$NIGHTLY tree $LOCKED -e normal --prefix none -q | awk '{print $1}' | sort -u | grep -E '^polars(-|$)' | tr '\n' ' ')
 echo "documenting: $crates"

@@ -63,7 +63,7 @@ Rust-written `COMPLETE.json`, after suite, source, binary and host-file checks.
 
 `--suite all` also runs the R1b embedding inventory and writes
 `R1B-INVENTORY.json`. It enumerates production Rust syntax, live host handlers,
-closed host argument/output policies, the 18 entry policies (including the explicit project-run boundary) and VM
+closed host argument/output policies, the 20 entry policies (including the explicit project-run boundary and the two legacy-only column preparation/fallback boundaries) and VM
 construction boundaries. It asserts the session mutation-before-failure witness,
 HTTP Bytes and async/runtime blockers, and the synchronous executor API.
 Record 0197 routes one-shot paths through typed compile/prepare selection,

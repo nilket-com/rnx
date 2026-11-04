@@ -284,3 +284,25 @@ allocator hook, global allocator instrumentation or upstream API change here.
 Cancellation before or during an optional primitive attempt preserves the
 original work. Cancellation after scalar rows retains the already-spent row
 work, including effects in refused scalar functions. Test these separately.
+
+Fresh-acceptance correction (Claude reviews 26213, 26239)
+
+The newly added full Polars suite exposed a preexisting dense_alloc test-interval
+bug. On the same machine and recipe, published c32a6ba and candidate cb3199b each
+failed three repetitions at exactly 2,097,363 peak bytes. The prior 0204 fresh
+controller ran execution_routing only, not this allocation test. A debugger
+trace attributed 2,097,152 bytes to Rune's worklist while destroying the rejected
+100,000-name input list on VM return, after the refusal had already happened.
+
+Keep the input owner alive until the call's peak is sampled, then measure its
+teardown separately. Retain the 262,144-byte refusal ceiling and the accepted
+2 MiB output-buffer positive control. Three isolated corrected runs measured
+211 bytes for the long-list refusal and 2,097,152 bytes for its separate teardown;
+the accepted export remained visible at 2,097,420 bytes. No production code or
+allocator behavior changes. This corrects the test interval, not the threshold.
+
+Report clarification: the CLI matrix's F64 kernel is two-input x+y, which uses
+the portable block primitives. CK1's AVX2 F64 kernel is single-input x+1.0.
+An actual production CLI witness confirms x+1.0 selects AVX2 and checks its full
+output on first and warm calls. Backlog: a two-input F64 add specialization is a
+separate small follow-up; no admission or dispatch change belongs in 0205.

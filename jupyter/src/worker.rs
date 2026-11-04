@@ -23,7 +23,7 @@ use tokio::{
 	time::{Duration, Instant, timeout},
 };
 
-pub(crate) const RUNE_VERSION: &str = "0.15.0 (git a68e739e6213dd02877258503f16df7ddaae6fc7)";
+pub(crate) const RUNE_VERSION: &str = "0.15.0 (git 1b4b66bd3657868ecb1d49f8b3f355585b3ec98d)";
 
 fn identity_matches(ready: &Value) -> bool {
 	ready["type"] == "ready"
