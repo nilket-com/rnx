@@ -262,6 +262,8 @@ pub mod query;
 
 pub mod runtime;
 
+#[cfg(feature = "execution")]
+pub(crate) mod experimental_column_primitives;
 /// Opt-in new execution core (feature `execution`); unstable, no semver promise.
 #[cfg(feature = "execution")]
 pub mod experimental_core;

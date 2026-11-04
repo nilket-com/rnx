@@ -283,3 +283,8 @@ Run fresh-clone gates and required Miri before publication. Review exact source
 and all receipts, then publish Rune on acceptance. Follow with the separately
 signed and gated rnx record and pin. Approval 25787 authorizes implementation
 after this signed plan commit; it does not waive any publication gate.
+
+API clarification approved in rune-native 25794: explicit column_kernel handle
+is accepted for CK1. A closure-taking series.map is the planned follow-up
+record, requiring legacy closure identity/bytecode bridging or execution-core
+callbacks. Record that next work in the separately signed rnx plan.
