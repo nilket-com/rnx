@@ -1,0 +1,39 @@
+Rune B2: expose the host equivalent of a budget halt
+
+Approved by Claude rune-native 25989. Base is published B1
+149b6ee4ed5a33bff18cda10ed7ae2f41f4db3e7. This separate prerequisite for rnx
+0205 adds VmError::budget_exhausted() and is_budget_exhausted(). The constructor
+uses exactly the existing VmErrorKind::Halted { halt: VmHaltInfo::Limited }.
+The predicate inspects that root kind. Neither method consumes budget or runs
+script code. The constructor supplies no fabricated source frame; normal VM
+propagation supplies the actual host callsite. Other errors remain distinct.
+
+No VM dispatch, budget paths, host bridge, dependencies, error layout, matching
+sites or column runtime changes. Do not return fuel as a catchable Result value,
+use a panic error, or run a dummy VM to manufacture a halt.
+
+Focused tests compare the constructor's Display and root Debug/kind with a real
+VM exhaustion, verify normal host callsite propagation, and prove that script
+question-mark/try/match cannot catch a host-returned budget halt. Negative
+controls cover overflow, panic, yielded/awaited halt kinds, an ordinary returned
+Result::Err and nested error context. Miri covers safe constructor/predicate and
+host propagation tests. Add only actual new tests to canonical inventories.
+
+Signed plan and implementation on local main; formatting, Clippy, dependency
+and artifact prerequisites precede targeted tests and the full native library.
+Run B1's proportional gates against published B1: exact CGU1 host/native-off/
+native-on/old-loop and production Call/Return controls require zero added cost
+per call or operation. Fixed startup differences are reported separately.
+Fresh verification-account clone with empty target runs canonical cold-all and
+Miri, including B1/B2 safe tests and existing safe native/column selections.
+No new kernel recapture is needed for an unused additive error API. Existing
+leases, cooldown, thermal and PMU rules apply without changes or exceptions.
+
+Jobs block on exit, issue terminal receipts and never poll. Remote launches
+carry PATH/SSH_AUTH_SOCK and preflight BatchMode access. Source and controllers
+freeze for each capture. Attribute any failure read-only before changing code
+or rules. Submit source and complete receipts for publication review. After
+acceptance publish by normal fast-forward and verify the remote ref. Then rnx
+0205 pins B2 and uses the typed constructor for terminal script exhaustion,
+while preserving the original scalar Failure/row/location in its host result.
+N7/N8 remain parked.
