@@ -1,0 +1,286 @@
+rnx 0205: apply prepared Rune functions to borrowed Polars columns
+
+Status: approved by Claude rune-native 25913 and budget audit 25931.
+Rune B1 published at 149b6ee4ed5a33bff18cda10ed7ae2f41f4db3e7 (25978).
+Claude 25989 adds Rune B2's typed host budget halt as a separate prerequisite.
+The final pin will be B2 after its own gates and publication; development uses
+published B1 until then. No unpublished pin is final evidence.
+Authority: CK1 coordinated plan and rune-native 25787/25794; Rune publication
+acceptance 25904. Rune CK1 is published at
+b4088528083eed006c4f9a79618220ec176d5f1d, confirmed on origin/main. Base rnx is
+c32a6ba77e8318a8c763b0c2eaac336cdebfde48. N7/N8 remain parked.
+
+This record follows publication of the separate Rune B1 budget-consume API.
+It adds the host wrapper and Polars adapter, pins CK1 plus B1, and
+measures the actual script path. It does not add VM hooks, alter old callback
+behavior, upgrade Polars, or add closure-taking Series.map. That closure bridge
+is the planned follow-up record. Use a signed plan then signed implementation
+on local main. Rune is already published; rnx publication needs its own review
+and passing receipts. The rnx-bench report is a separate repository commit.
+
+Surface and ownership
+
+    let kernel = polars::column_kernel(
+        "pub fn map(x) { x + 1 }", "map", ["i64"], "i64")?;
+    let result = kernel.map([series])?;
+    kernel.explain();
+    kernel.last_path();
+
+The entry is a named function compiled through the ordinary Rune frontend.
+Validate one to three declared input types and one output type, each exactly
+i64, f64 or bool. Refuse unknown type names, invalid entry names and mismatched
+arity explicitly. Compilation errors remain compilation errors. No expression
+text recognition, arbitrary callable pointers or source substitution.
+
+The handle owns sources, diagnostics, immutable code, signature, an optional
+CK1 plan and the selected scalar implementation. It retains no Series, borrowed
+slice, output or per-call Store after map. A host module in src/column.rs exposes
+the same preparation and invocation contract through rnx::column. Arrow and
+Polars types stay in adapters/polars/src/column.rs. Existing generated Series
+wrappers are borrowed; do not edit generated bindings to add this API. Install
+the new handle alongside handwritten adapter bindings when generated Series
+bindings are enabled. Builds without generated bindings keep their current
+surface. There is no global plan cache or process-wide mutable batch budget.
+
+explain() reports admitted primitive chain or preparation refusal, signature,
+null policy and available implementation. last_path() reports the last completed
+attempt: scalar-primitives, avx2, scalar-fallback, replay or canceled, with row,
+valid-row, attempt and replay counts and a refusal reason where relevant. Reset
+this state at each invocation, including validation failures; never leave a
+stale successful path. Actual SIMD execution, not CPU availability, selects avx2.
+A handle uses exclusive mutation for per-call state; aliasing follows Rune's
+ordinary access rules. Different handles do not share budgets or observations.
+
+Borrowed columns and output transfer
+
+Accept equal-length physical Int64, Float64 and Boolean Series corresponding to
+the declared signature. Other dtypes require an explicit caller conversion;
+this record adds no implicit cast. Hold immutable owners and guards until all
+synchronous processing and output construction finish. Borrow the existing
+Arrow chunks with adjusted numeric slices and independently offset Boolean
+values and validity. Fallibly allocate only chunk descriptors, bounded scratch,
+validity and output; never concatenate/rechunk or copy whole input columns.
+Empty chunks and independent boundaries remain visible to the Rune zipper.
+Handle zero rows, many chunks, offsets, tails, all-null and mixed-null inputs.
+
+Use the intersection of all input validities. Null rows do not call the scalar
+function and consume no scalar-row work. Never evaluate null payloads. Transfer
+successful owned Vec buffers into Arrow arrays without another full values
+copy, including packed Boolean output and zeroed padding. Use checked safe Arrow
+constructors; verify both capacity/offset invariants and pointer identity in
+controls. Construct one output Series only after complete success. Required
+output construction failure returns an adapter error with no published prefix.
+Optional CK1 preparation/allocation failure selects scalar execution, rather
+than inventing an interpreter allocation error.
+
+Fallible descriptor/plan/output allocations and actual retained capacity count
+against supplied engine limits. Host configuration provides work, Store limits,
+Executor limits and a cancellation predicate. Deduct adapter-owned descriptor
+and retained-code/plan storage before giving CK1 its remaining allowance;
+avoid double-counting its already-accounted plan and batch. Document separately
+what the existing process allocator ceiling does and does not enforce. No new
+arbitrary row cap. A script uses the enclosing work allowance and documented
+engine defaults; no silently unlimited per-row callback budget.
+
+Scalar execution and exactly one replay
+
+For an admitted CK1 graph, preserve its finalized execution Program as the scalar
+reference. A forced scalar-reference control invokes Executor with native code
+disabled, releases every argument/result Root, and reads the declared scalar
+result. Its successful per-row charge is the exact CK1 verified row_charge;
+a Failure supplies the actual remaining_work and original source/call trace.
+It must not reconstruct a public overflow or fuel error from CK1 Fault.
+
+If the graph is refused before any attempt, compile/retain a stock VM scalar
+implementation through the ordinary frontend. This covers branches, calls,
+strings used internally and effects outside CK1's pure subset. Use its actual
+VM budget accounting and public VM errors. A preparation refusal cannot execute
+a prefix or effects. Compile once, call in logical row order, and preserve
+null-skip and declared output validation. Record which scalar engine is used;
+stock-VM instruction permits and execution-engine work units are not asserted
+to be numerically equivalent for arbitrary refused programs.
+
+After a CK1 attempt refuses, discard speculative output and invoke the original
+admitted Program over the entire batch from its original work allowance and
+inputs, with the column attempt disabled for the whole replay. At most one
+attempt and one replay per batch; no retry per row or repeated-prefix loop.
+Compare the first error row, source location, call chain and remaining allowance
+with a direct scalar-reference run. Preserve the original error structure in
+the host result; script formatting may add the batch row but must not replace
+the cause or trace. A late fault must cost at most one complete attempt plus
+one scalar prefix, with a counter-based negative control for runaway retries.
+
+Fuel integration: reviewed B1 prerequisite
+
+The script bridge snapshots runtime::budget::remaining() once. For admitted
+plans, reserve CK1 work by value, commit its exact charge only after output
+construction succeeds, and leave the ambient allowance unchanged before replay.
+No per-row permit loop on successful primitive execution. On scalar replay,
+commit successful verified row charges and the failing call's remaining_work;
+never charge the abandoned attempt. For refused stock-VM programs, let the VM
+draw from the original ambient allowance while it runs; do not debit twice.
+Unlimited ambient mode stays unlimited and is explicitly observable.
+
+Claude 25913 declined committing by forgetting a restoring guard. The separate
+Rune B1 record adds public budget::consume(n), an O(1), all-or-nothing ambient
+debit with explicit nested-scope semantics. Publish and pin that record first.
+Use consume(checked row_charge * valid_rows) only after admitted success and
+output construction. An exhausted debit leaves the allowance unchanged; select
+the same scalar replay with original inputs and allowance. No per-row debit loop
+or forgotten guard. The caller's budget must still match its snapshot before
+committing a joined worker's result; keep structured failure and cancellation
+separate. For admitted replay, debit the interpreter's actual spent work once,
+using verified successful-row charges and Failure.remaining_work. For refused
+stock-VM programs, commit only the worker's actual VM consumption, or let the
+same-thread VM account directly; never both. Verify nested scopes, exact and
+insufficient fuel, unwind restoration and the real CLI/native-host bridge.
+
+Cancellation and threading
+
+Use the host cancellation predicate at CK1's existing boundaries (at most 1024
+logical rows of primitive work between checks), and between scalar-reference
+rows/at executor cancellation points. A canceled attempt publishes nothing and
+preserves the existing cancellation policy; do not replay a canceled batch to
+completion. Carry a typed cancellation outcome through the adapter. Cancellation
+and budget exhaustion stay distinct. The synchronous script call does not gain
+an undocumented asynchronously callable cancel method or a wall-clock bound;
+ordinary CLI interruption keeps its existing policy. Tests supply a deterministic
+host cancellation predicate and verify no output and exact budget restoration.
+
+Keep the existing joined Polars engine-thread and callback reentry contracts.
+Explicitly transfer the batch budget snapshot/options into the joined worker;
+thread-local ambient permits do not automatically follow it. Return work and
+structured failures to the calling thread for commit. All source owners and
+leases remain live until join. No detached worker or surviving borrowed pointer.
+For stock-VM fallback on a worker, install a scoped copy of the snapshot and
+return its remainder before that scope drops; commit once on the caller. Do not
+reuse the process-wide generated set_callback_budget setting for this API.
+
+Pin and verification
+
+Update the two direct Rune manifests, all eight live lock graphs, both version
+constants and release metadata expectations to the published Rune B1 revision
+(descending from b4088528). Record the exact hash before implementation. Preserve
+all unrelated package versions/features; keep Polars 0.55.2. Existing pin guards
+must prove the complete live graph agrees. No Cargo patch in final CLI evidence.
+Core gains no new dependency; adapter uses its existing Arrow/Polars libraries.
+
+Commit one ordered controller for this record. Before expensive work it checks
+unique destinations, exact source/pin identity, executable paths, SSH agent and
+BatchMode remote access, formatting, Python syntax/indentation, pin guards,
+Clippy and focused host/adapter tests. Long stages block on exit and emit only
+terminal receipts. Propagate PATH and SSH_AUTH_SOCK explicitly to services.
+Use separate stdout/stderr files; freeze source and tools for a capture. Tests
+must fail on a wrong path witness, skipped rows, copied inputs, second replay,
+wrong bit offset, null-payload evaluation or silently reset fuel. Include forced
+scalar primitives, actual AVX2 where available and scalar interpreter controls.
+
+Differential coverage includes all admitted types/operations and representative
+chains, unsupported/effectful scalar fallback exactly once, every bounded fuel
+stop, integer extremes/late faults, first error order, F64 special values, every
+bit offset, independent chunk boundaries/empties, null intersections, aliases,
+owner drop/unwind, allocation and configured-limit failures, cancellation and
+output nonpublication. Test the actual compiled script handle with explain and
+last_path, plus invalid signature/dtype/length and wrong result type. Run safe
+lease/host scalar paths under Miri where the foreign adapter dependency permits;
+keep native SIMD controls separate and state any Miri boundary explicitly.
+
+Run the existing 23 fresh-clone rnx acceptance checks under the verification
+account and adapter suites, plus the new batch controls. Preserve old routing,
+callback and full-state/error oracles; update inventories only for declared new
+registrations/VM construction sites with explicit negative controls. Measure old
+non-column CLI/callback/host paths for zero added per-call/per-operation cost.
+No regression qualification is inherited from parked N7/N8.
+
+Actual script evidence and report
+
+Use the signed locked production rnx-polars executable. Verify actual selected
+path and output for checked x+1, fused x*2+y, F64 addition, packed Boolean not and
+a generic admitted chain. Include 4096, 10M and 100M rows, sliced/nullable/multichunk
+cases, portable selection and forced scalar-reference/replay controls. Separate
+preparation/first call, validity/descriptors, primitive execution, output transfer
+and total map. Prove no whole-input copy and no per-row VM/Root or allocation on
+successful primitive paths. Record allocations/bytes, Ir, valid user cycles and
+elapsed logical GB/s. Input construction and result verification must be outside
+the named map interval, and whole-script cost must be labeled separately.
+
+Headline: actual script kernel.map checked x+1 on 100M all-valid single-chunk I64
+rows, total map Ir/element and elapsed logical GB/s beside pinned Polars
+py-2.1.0 and scalar per-row Rune. Report both preparation and warm-call numbers.
+Use actual sizes, never linearly extrapolate a smaller scalar run without an
+explicit separately labeled estimate. Integer wrapping comparators are labeled;
+CK1 checked semantics are not interchangeable. Report generic multiplication
+separately from the multiply-by-two fusion. Retain the four Rune kernel ceilings
+as kernel-only proof; full adapter/headline totals are report-only, not judged
+against preallocated-kernel limits. Apply unchanged lease, affinity, cooldown,
+thermal and PMU validity rules; invalid cycle samples are unavailable.
+
+Update the rnx-bench README column section and archived machine-readable evidence
+for 10M/100M across the four headline kernels, with script/path witnesses,
+comparators, null/chunk costs and semantic distinctions. Keep the existing
+cross-runtime matrix and historical archives intact. Publication sequence is
+reviewed rnx implementation after all gates, then the separately reviewed report
+commit. Bring failures and exact numbers read-only before changing code or rules.
+
+Script-host routing and fuel clarification (Claude review 25922)
+
+The outer Polars script remains on the stock VM. Default one-shot routing must
+refuse the opaque handle/Series program before effects and fall back; explicit
+--engine=legacy selects the same VM. Register these as ordinary bindings, with
+no execution-host certificate. Add a negative admission/routing test so a future
+bridge change cannot silently admit an unmetered call. The execution core keeps
+fuel locally and its current host bridge exposes no work interface; ambient
+consume is not a substitute for one. Supporting opaque column calls directly
+from that engine requires a separate reviewed fuel bridge, outside this record.
+
+The stock VM currently uses ambient budget::take per instruction and calls
+handlers without an outstanding acquire guard. Require a finite Some allowance
+at script binding entry anyway: None, including an explicit acquire guard hiding
+the allowance, refuses before worker launch. Only the direct Rust host API may
+request unlimited explicitly. Transfer the snapshot across the worker join and
+return actual remaining work; commit on the caller with consume. Validate that
+its allowance still equals the snapshot and never charge an abandoned attempt.
+
+Add actual-CLI small-budget/large-column controls for both default and legacy
+policies, plus a forced admitted scalar-row reference. Require correct routing,
+the same exhaustion kind, first failing row/location and remaining-work relation:
+entry B minus successful valid rows times verified row_charge minus the failing
+row's interpreter-reported debit. Preserve typed exhaustion at the script
+boundary. A successful primitive batch commits its full verified charge once.
+Do not call default-policy fallback execution-core coverage. The inner row
+Executor always receives explicit work, separately from the outer stock VM.
+
+Backlog: direct opaque column calls from execution-core scripts need an explicit
+host-call fuel interface tied to Executor work, together with ownership and
+closed-shape admission. This is a separate future record, not part of 0205.
+Do not replace it with ambient TLS assumptions or extend the hot VM loop here.
+
+Implementation clarifications approved at 26007 and 26022
+
+B2 exposes VmError::budget_exhausted() and is_budget_exhausted(), preserving
+the existing Halted{Limited} kind. The script bridge uses this terminal error
+channel, never a catchable Result::Err, panic kind or dummy VM. Core scalar
+failures remain structured in the host result. Publish B2 before the final pin.
+
+The committed Clippy check compares full JSON diagnostics with a clean export
+of published rnx c32a6ba under the same recipe and fails on added or changed
+diagnostics. Compare file/lint/message after path normalization; line movement
+alone is not a new diagnostic. New column modules deny warnings, with one
+documented result_large_err exception to retain Rune's complete Failure without
+an allocation on an error path. Existing diagnostics have a separate cleanup
+backlog; do not broadly suppress them or rewrite unrelated production code.
+
+Owned code/plans/descriptors/scratch and bulk output/validity buffers remain
+fallibly allocated and checked against configured limits. Polars0.55.2 owner
+allocations inside Buffer/SharedStorage conversion and Series::from_arrow use
+Polars' existing infallible allocator behavior. PrimitiveArray::try_new,
+BooleanArray::try_new and Bitmap::try_new validate shapes, not OOM. This is a
+known limitation of the Arrow owner boundary, superseding any claim above that
+all third-party metadata allocations return allocation errors. Preserve every
+validation failure transactionally. Add a configured output-limit refusal
+control proving it fires before any Polars output owner allocation. No unsafe
+allocator hook, global allocator instrumentation or upstream API change here.
+
+Cancellation before or during an optional primitive attempt preserves the
+original work. Cancellation after scalar rows retains the already-spent row
+work, including effects in refused scalar functions. Test these separately.
