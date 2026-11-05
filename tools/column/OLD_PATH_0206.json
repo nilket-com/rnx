@@ -1,0 +1,169 @@
+{
+  "review": "rune-native27056 (program constants, observed envelopes, exact per-routine layout)",
+  "binaries": {
+    "candidate": "75a8905e96a2370481c1a8e430b4a5d23f8f1bd0b36a8ca1123435b0575b5182",
+    "published": "c979aa34247dae1332af59ba7e16d8a679f163c612338d96545c6e735b47cbca"
+  },
+  "cases": [
+    [
+      "awfy_permute",
+      "execution-off"
+    ],
+    [
+      "awfy_permute",
+      "execution-on"
+    ],
+    [
+      "awfy_permute",
+      "legacy"
+    ],
+    [
+      "awfy_sieve",
+      "execution-on"
+    ],
+    [
+      "awfy_sieve",
+      "legacy"
+    ],
+    [
+      "fib",
+      "execution-on"
+    ],
+    [
+      "numeric_calls",
+      "execution-on"
+    ],
+    [
+      "shared_rows",
+      "execution-off"
+    ],
+    [
+      "shared_rows",
+      "execution-on"
+    ],
+    [
+      "vec_iter_bool",
+      "execution-on"
+    ]
+  ],
+  "evidence": {
+    "old-path-repeats/TABLE.json": "38fd78fadeffb01889eaaf9e45a1516c697b7052cc2ddcdaa6dfaecf984b4b67",
+    "old-path-repeats/FUNCTION-REPEATS.json": "2fb8b17b7b4eb82f1683dc125aa133cff8430eb96292b26cd76d4502278d49df"
+  },
+  "constants": {
+    "fib/execution-on": {
+      "functions": {
+        "<cranelift_entity::list::EntityList<cranelift_codegen::ir::entities::Value>>::extend::<core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<cranelift_codegen::ir::instructions::BlockArg>>, <cranelift_codegen::ir::instructions::BlockCall>::new<core::iter::adapters::copied::Copied<core::slice::iter::Iter<cranelift_codegen::ir::instructions::BlockArg>>>::{closure#0}>>": 4887,
+        "<rune::experimental_native::lower::recursion::Memory>::address": 146,
+        "rune::experimental_native::lower::recursion::compile_shared::<false>": 84,
+        "core::ptr::drop_glue::<cranelift_codegen::verifier::Verifier>": -62,
+        "<cranelift_frontend::frontend::FuncInstBuilder as cranelift_codegen::ir::builder::InstBuilder>::brif::<&[cranelift_codegen::ir::instructions::BlockArg; 1], &[cranelift_codegen::ir::instructions::BlockArg; 0]>": -59,
+        "core::ptr::drop_glue::<cranelift_codegen::dominator_tree::DominatorTree>": 41,
+        "<cranelift_frontend::frontend::FuncInstBuilder as cranelift_codegen::ir::builder::InstBuilder>::jump::<&[cranelift_codegen::ir::instructions::BlockArg; 1]>": -40,
+        "cranelift_codegen::verifier::verify_function::<&dyn cranelift_codegen::isa::TargetIsa>": 21,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::Function>": 4,
+        "<std::sync::once_lock::OnceLock<usize>>::initialize::<<std::sync::once_lock::OnceLock<usize>>::get_or_init<region::page::size>::{closure#0}, !>": -1,
+        "rune::experimental_core::region::cache::checkout": 1
+      },
+      "evidence": {
+        "old-path-controlled/capture-v2/ATTRIBUTION.json": "f659247b161bccc7215ab3df90b65db1aa04e9b404d8be44090987a51465d546",
+        "old-path-repeats/FUNCTION-REPEATS.json": "2fb8b17b7b4eb82f1683dc125aa133cff8430eb96292b26cd76d4502278d49df"
+      }
+    },
+    "numeric_calls/execution-on": {
+      "functions": {
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::Function>": -230,
+        "core::ptr::drop_glue::<cranelift_codegen::dominator_tree::DominatorTree>": 41,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::FunctionStencil>": 66,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::dfg::DataFlowGraph>": 161,
+        "<std::sync::once_lock::OnceLock<usize>>::initialize::<<std::sync::once_lock::OnceLock<usize>>::get_or_init<region::page::size>::{closure#0}, !>": -1,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::memflags::AliasRegionSet>": 22,
+        "rune::experimental_native::lower::compile": 3,
+        "core::ptr::drop_glue::<regalloc2::ion::data_structures::Ctx>": -2,
+        "core::ptr::drop_glue::<cranelift_codegen::verifier::Verifier>": -62,
+        "cranelift_codegen::verifier::verify_function::<&dyn cranelift_codegen::isa::TargetIsa>": 21,
+        "rune::experimental_core::region::cache::checkout": 1,
+        "core::ptr::drop_glue::<cranelift_codegen::context::Context>": 10
+      },
+      "evidence": {
+        "old-path-controlled/capture-v2/ATTRIBUTION.json": "f659247b161bccc7215ab3df90b65db1aa04e9b404d8be44090987a51465d546",
+        "old-path-repeats/FUNCTION-REPEATS.json": "2fb8b17b7b4eb82f1683dc125aa133cff8430eb96292b26cd76d4502278d49df"
+      }
+    },
+    "awfy_sieve/execution-on": {
+      "functions": {
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::Function>": -460,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::dfg::DataFlowGraph>": 322,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::FunctionStencil>": 132,
+        "core::ptr::drop_glue::<cranelift_codegen::verifier::Verifier>": -124,
+        "core::ptr::drop_glue::<cranelift_codegen::dominator_tree::DominatorTree>": 82,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::memflags::AliasRegionSet>": 44,
+        "cranelift_codegen::verifier::verify_function::<&dyn cranelift_codegen::isa::TargetIsa>": 42,
+        "core::ptr::drop_glue::<cranelift_codegen::context::Context>": 20,
+        "rune::experimental_native::lower::compile": 6,
+        "core::ptr::drop_glue::<regalloc2::ion::data_structures::Ctx>": -4,
+        "<std::sync::once_lock::OnceLock<usize>>::initialize::<<std::sync::once_lock::OnceLock<usize>>::get_or_init<region::page::size>::{closure#0}, !>": -1,
+        "rune::experimental_core::region::cache::checkout": 1
+      },
+      "evidence": {
+        "old-path-controlled/capture-v2/ATTRIBUTION.json": "f659247b161bccc7215ab3df90b65db1aa04e9b404d8be44090987a51465d546",
+        "old-path-repeats/FUNCTION-REPEATS.json": "2fb8b17b7b4eb82f1683dc125aa133cff8430eb96292b26cd76d4502278d49df"
+      }
+    },
+    "awfy_permute/execution-on": {
+      "functions": {
+        "<cranelift_entity::list::EntityList<cranelift_codegen::ir::entities::Value>>::extend::<core::iter::adapters::map::Map<core::iter::adapters::copied::Copied<core::slice::iter::Iter<cranelift_codegen::ir::instructions::BlockArg>>, <cranelift_codegen::ir::instructions::BlockCall>::new<core::iter::adapters::copied::Copied<core::slice::iter::Iter<cranelift_codegen::ir::instructions::BlockArg>>>::{closure#0}>>": 17832,
+        "<rune::experimental_native::lower::recursion::Memory>::address": 480,
+        "rune::experimental_native::lower::recursion::build::<true>": 226,
+        "<cranelift_frontend::frontend::FuncInstBuilder as cranelift_codegen::ir::builder::InstBuilder>::brif::<&[cranelift_codegen::ir::instructions::BlockArg; 1], &[cranelift_codegen::ir::instructions::BlockArg; 0]>": -177,
+        "core::ptr::drop_glue::<cranelift_codegen::verifier::Verifier>": -124,
+        "core::ptr::drop_glue::<cranelift_codegen::dominator_tree::DominatorTree>": 82,
+        "cranelift_codegen::verifier::verify_function::<&dyn cranelift_codegen::isa::TargetIsa>": 42,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::Function>": 8,
+        "<std::sync::once_lock::OnceLock<usize>>::initialize::<<std::sync::once_lock::OnceLock<usize>>::get_or_init<region::page::size>::{closure#0}, !>": -1,
+        "rune::experimental_core::region::cache::checkout": 1
+      },
+      "evidence": {
+        "old-path-controlled/capture-v2/ATTRIBUTION.json": "f659247b161bccc7215ab3df90b65db1aa04e9b404d8be44090987a51465d546",
+        "old-path-repeats/FUNCTION-REPEATS.json": "2fb8b17b7b4eb82f1683dc125aa133cff8430eb96292b26cd76d4502278d49df",
+        "old-path-repeats/ENTITYLIST-CALLERS.json": "c6c93077d7362e4bf822dfe007bd3cfcb4ce2ba22e261adf276b36b02680528b"
+      }
+    },
+    "vec_iter_bool/execution-on": {
+      "functions": {
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::Function>": -460,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::dfg::DataFlowGraph>": 322,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::function::FunctionStencil>": 132,
+        "core::ptr::drop_glue::<cranelift_codegen::verifier::Verifier>": -124,
+        "core::ptr::drop_glue::<cranelift_codegen::dominator_tree::DominatorTree>": 82,
+        "core::ptr::drop_glue::<cranelift_codegen::ir::memflags::AliasRegionSet>": 44,
+        "cranelift_codegen::verifier::verify_function::<&dyn cranelift_codegen::isa::TargetIsa>": 42,
+        "core::ptr::drop_glue::<cranelift_codegen::context::Context>": 20,
+        "rune::experimental_native::lower::compile": 6,
+        "core::ptr::drop_glue::<regalloc2::ion::data_structures::Ctx>": -4,
+        "<std::sync::once_lock::OnceLock<usize>>::initialize::<<std::sync::once_lock::OnceLock<usize>>::get_or_init<region::page::size>::{closure#0}, !>": -1,
+        "rune::experimental_core::region::cache::checkout": 1
+      },
+      "evidence": {
+        "old-path-controlled/capture-v2/ATTRIBUTION.json": "f659247b161bccc7215ab3df90b65db1aa04e9b404d8be44090987a51465d546",
+        "old-path-repeats/FUNCTION-REPEATS.json": "2fb8b17b7b4eb82f1683dc125aa133cff8430eb96292b26cd76d4502278d49df"
+      }
+    }
+  },
+  "layout": {
+    "case": [
+      "awfy_permute",
+      "execution-off"
+    ],
+    "function": "__memcmp_avx2_movbe",
+    "branch": "0x197593",
+    "extra_Ir_per_taken": 8,
+    "evidence": {
+      "old-path-repeats/MEMCMP-DISASSEMBLY.txt": "55b41ac7b912dedf818b629b30dcfabe32c772aa40e607ff2d20593f1ac807e1",
+      "old-path-repeats/PERMUTE-OFF-CALLERS.json": "b699d106ea3248668b36ff728e7c198dbe7d56cdb717fd12ebf1464b05f373d2",
+      "old-path-repeats/memcmp-published.txt": "e99672255ce298ea54c6b9f17cda164a368fb23b39d0cb3578bbe1d346ce595a",
+      "old-path-repeats/memcmp-candidate.txt": "ad1e21b3c63654dd8b3e11560e75fc9e15f04e2a51f64d9308276ea6735b73eb",
+      "old-path-repeats/LIBC-IDENTITY.json": "e2a25ff95cfcbb456bb5108058db0af36507408b6991ce06363f0ff7f353a779"
+    }
+  }
+}
