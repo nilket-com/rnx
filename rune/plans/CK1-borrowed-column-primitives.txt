@@ -1,0 +1,290 @@
+CK1: borrowed-column execution with precompiled Rust primitives
+
+Status: approved for implementation by Claude rune-native 25787.
+Authority: user choice via rune-native 25752; design approval 25754; dependency
+preference clarified 25776; concrete scope and ceilings approved 25787. Baseline Rune main is N7a 1ccb9426. N7/N8 remain
+parked; this record does not restore their interpreter hooks. Step0 evidence:
+/home/me/work/target/column-step0-report/REPORT.txt and
+/home/me/work/target/column-primitives-step0/REPORT.txt, with pinned receipts.
+This is the coordinated design and the Rune CK1 record. Per-repository records
+remain separate: signed Rune plan then signed Rune implementation (primitives,
+verifier, lease, fuel and dependency guard); separately signed rnx plan and
+implementation (API, adapter and matrix refresh), pinned to the accepted CK1 Rune
+revision. Each repository gets its own review and gates. Publish Rune first,
+then rnx. The coordinated design is not permission to combine their commits.
+The Polars upgrade is a separate record; the adapter uses its current pinned
+version and keeps the documented py-2.1.0 migration boundary explicit.
+
+Outcome and admission
+
+A host can prepare one pure scalar Rune function and apply it to equal-length,
+typed columns without constructing a Root, invoking the VM or copying an input
+column per row. Output allocation is still required. No VM-loop hook, extra
+normal-call branch, global interpreter mode or runtime compiler is introduced.
+The existing scalar Program/Executor/Store path remains the fallback.
+
+Admit straight-line expression functions over I64, F64 and Bool arguments and
+constants, including local bindings and reused subexpressions. The initial
+closed operation set is homogeneous checked I64 add/subtract/multiply; F64
+add/subtract/multiply with existing Rune semantics and no reassociation or
+fast-math; homogeneous numeric comparisons; Bool equality/inequality and not,
+and/or/xor only where the finalized code proves eager pure semantics. Return
+one I64, F64 or Bool column. Preserve source operation order. No mixed-type
+implicit casts, integer division/remainder/shifts/power, user calls, branches,
+short-circuit control flow, loops, recursion, strings, objects, mutation,
+callbacks or externally visible effects. Unrepresented operations or uncertain
+proofs refuse admission and use the existing interpreter adapter. A scalar CPU
+implementation of an admitted primitive is valid; unavailable SIMD is not a
+script error. General I64 multiplication may initially use a checked scalar
+primitive where no proven SIMD implementation exists. Its cost must not be
+represented by the measured multiply-by-two fast path.
+
+Lower finalized execution code to a typed acyclic primitive chain, rather than
+recognizing unverified source strings. Validate argument/result types, constant
+representations, slot definitions and uses, operation order, lengths, output
+shape, work charges and scratch liveness. A closed enum selects trusted Rust
+functions; untrusted data supplies no code pointer. Unsupported graphs return
+an explicit refusal. Prepared plans are immutable, bound to exact code/function
+identity and type/null-policy contracts, and never retain borrowed columns.
+No per-row analysis or allocation. Do not add an unbounded global plan cache;
+start with caller-owned prepared plans and fallible preparation.
+
+Execution, blocks and fusion
+
+Use a maximum of 1024 logical rows per block, shortened at input chunk and
+validity-run boundaries. Reuse bounded scratch slots according to verified
+liveness; compute and check all size/capacity arithmetic. Charge actual scratch
+and plan storage against existing engine limits; no fictional free bytes and
+no arbitrary whole-column element ceiling. Retain 4096 as a measurement control,
+not a new public tuning setting. Step0 measured only about 1% instruction savings
+from larger blocks for checked add, while 1024 bounds latency and keeps the
+simple two-input/output working set at 24 KiB.
+
+The general mechanism dispatches primitives once per block. Add a fixed fused
+I64 x*2+y primitive only when the verified graph is exactly checked multiplication
+by two followed by checked addition, with compatible slot liveness. Preserve
+both overflow conditions even when the wrapping final sum would fit. Do not
+reassociate operations, swallow an earlier overflow, or silently apply a float
+FMA. Step0 supports this fusion: at 100M rows and 1024 blocks, fused execution
+used 4.034 Ir/element versus 5.802 for separate primitives within each block.
+Other fusions require their own correctness proof and evidence; they are not
+needed to complete this record.
+
+Default to std/core-only code. Runtime CPU detection uses the standard library;
+AVX2 functions use target_feature and are entered only after detection. Keep a
+portable scalar fallback and require equivalence with the SIMD path. Use safe
+slice loops when the measured target-feature form matches intrinsic quality;
+F64 addition and packed Bool not are initial candidates. Confine unavoidable
+unsafe intrinsics to a small audited module with explicit slice-length, bounds,
+alignment, tail and alias invariants plus debug assertions. Execute no SIMD
+load/store beyond an accessible slice. Exclude AVX-512 from this record because
+it cannot be tested on the available host. There is no generated machine code,
+JIT mapping or runtime machine-code auditor/loader in the column tier. Review
+focuses on the typed chain verifier and ordinary Rust/unsafe-module invariants.
+
+Checked arithmetic and first-fault behavior
+
+Accumulate overflow flags during speculative block execution, reducing flags
+at block boundaries rather than branching on every element. For composed
+chains, a later operation on an earlier row must not be hidden by an earlier
+operation failing on a later row. Never abort a primitive chain solely on the
+first operation-wide overflow flag. Continue only nontrapping internal wrapping
+operations, combine all relevant flags, and identify the first fault by a scalar
+rescan of that block in original row and operation order. A fused primitive
+must have the same first-fault result. Invalid suffix values are private and
+never published. Division and other potentially trapping operations are outside
+this record's admitted set.
+
+On any native/primitive refusal or arithmetic fault after an attempt, discard
+the speculative result, release the work reservation and execute the original
+scalar function from the original inputs and budget with this column attempt
+disabled. The interpreter supplies the visible error, first failing row, PC,
+remaining fuel and call trace. The block rescan is internal diagnostic evidence,
+not an independently fabricated public error. At most one speculative attempt
+per host batch; no per-row retry loop and no quadratic repeated-prefix replay.
+Verify the combined attempt plus replay bound on adversarial late failures.
+
+Fuel, cancellation and allocation
+
+Derive the exact fixed per-valid-row charge from finalized Rune execution code,
+including its entry/path charging rules; do not count source arithmetic
+operators as fuel. Require the charge to be input-independent for admitted
+functions. Compute valid-row count and checked total charge before execution,
+reserve it without visible consumption, and commit only with successful result
+publication. If the fixed-charge proof, reservation or size arithmetic fails,
+run the ordinary adapter from the original budget. Null-skip rows do not invoke
+the function or consume scalar-call fuel under this explicit new batch contract.
+
+Observe cancellation at bounded block boundaries; document this new batch API's
+maximum extra work rather than claiming timing-identical asynchronous
+cancellation to independent scalar calls. Keep cancellation separate from fuel.
+On cancellation, publish no partial output and preserve the existing error and
+cleanup policy through the adapter. Deterministic cancellation controls must
+verify state and budget at the specified boundaries.
+
+Allocation for preparation, validity, scratch and output is fallible. A failed
+optional fast-path preparation becomes a refusal, not a new visible script
+failure. Required output/adapter allocation failures follow the existing
+adapter's policy; specify and test that policy without inventing interpreter
+allocation events. Cap live memory using existing configured limits, account
+actual retained capacity, and include one-million-element and larger measured
+cases. Restore all reservations and release owners exactly once on refusal,
+error, cancellation or unwind.
+
+Borrowed inputs, nulls and outputs
+
+Rune core's interface uses typed borrowed slices and bit ranges; no Polars or
+Arrow type or owner enters the Store/Root representation. Safe constructors
+validate equal logical lengths, dtype/physical compatibility in the adapter,
+checked byte/bit offsets, capacity and disjoint writable output. Keep immutable
+input owners alive for the entire synchronous execution; retain no input pointer
+in the prepared plan or after return. Numeric sliced arrays use their already
+adjusted slice; never apply their offset twice. Boolean values and validity have
+independent byte slices, residual bit offsets and lengths. Handle unaligned
+numeric slices and byte/bit tails correctly.
+
+Default null-in/null-out uses the intersection of argument validities and skips
+the scalar function on null rows. Do not turn unspecified null payloads into
+semantic inputs or permit their arithmetic to raise a false fault. Start with
+validity runs/all-valid segments or another explicitly proven masked primitive
+path. Unit/Option/error-on-null policies are separate APIs and are not added in
+this record. Bool outputs are packed directly, with initialized tail bits and
+separate validity; numeric output transfers owned initialized storage to the
+adapter without an extra full copy. Publish length, validity and values only
+after full success. Do not recycle sliced bitmap storage through an unsafe
+assumption about into_mut; the py-2.1.0 API explicitly declines nonzero offsets.
+
+Align independently chunked input columns by advancing to the next smallest
+remaining chunk boundary. Borrow original buffers; never concatenate/rechunk
+just to enter a kernel. Handle empty chunks, zero rows and different sliced
+bit offsets. Shorten blocks to aligned ranges while preserving logical row
+order. The Step0 flat-array benchmark did not prove this adapter: test actual
+independent chunk layouts and measure their setup cost in this record.
+
+Public boundaries and dependency guard
+
+Rune owns admission, prepared typed chains, primitives, exact fuel reservation,
+refusal/fallback outcomes and validation. rnx exposes preparation/execution and
+the ordinary scalar fallback while keeping ownership explicit. rnx-polars owns
+dtype mapping, borrowed owners, masks, chunk alignment and checked output
+construction. No automatic per-row UDF replacement is promised; expose an
+explicit prepared column path first. Match current adapter and planned
+py-2.1.0 buffer/bitmap APIs without upgrading Polars in this record.
+
+Concrete host and script surface
+
+Rune exposes experimental_core::column::{ColumnType, BitSlice, Column,
+PreparedColumn, ColumnOutcome, ColumnRefusal}. PreparedColumn::prepare takes a
+Program, function id, 1-3 input types and one output type, plus the configured
+memory limit. It returns an immutable caller-owned plan or typed refusal.
+PreparedColumn::execute borrows equal-length typed columns, an output owner,
+and batch fuel/cancellation state; Complete publishes the owned output and
+charged work, while Replay returns a reason with original budget and no output.
+Refusals distinguish unsupported code/type, entry authority, bounds, memory,
+fuel and cancellation. They are observability, not fabricated script errors.
+The adapter performs at most one ordinary scalar replay and owns its error.
+The exact code identity is sealed into the plan; inputs are never retained.
+
+The first explicit script surface uses a prepared handle:
+  let k = polars::column_kernel("pub fn map(x) { x + 1 }",
+                               "map", ["i64"], "i64")?;
+  let out = k.map([series])?;
+Two/three-input functions use the same map with two/three Series and return one
+Series. k.explain() reports admission or the scalar refusal; k.last_path()
+reports the most recent actual primitive-scalar, AVX2, scalar-fallback or replay
+path with batch/row counters. These are also exposed to host diagnostics, so
+benchmarks verify the path rather than infer it from timing. The rnx record
+reviews spelling and error presentation before implementation.
+
+The source goes through the ordinary Rune compiler to finalized code, never
+expression-text recognition. The handle owns code, signature and scalar
+fallback; preparation refusal preserves its scalar implementation. Unsupported
+execution-core programs use the existing legacy scalar engine. Compilation
+errors remain compilation errors. Null-in/null-out and the declared output type
+are identical across paths. This deliberately explicit preparation surface
+avoids assuming that existing legacy SyncFunction callbacks carry execution
+Program metadata: existing apply_mut and callback budget APIs remain as they
+are. Adding an implicit closure bridge is not needed for this record.
+
+Zero new kernel dependencies is a strong default, not an absolute ban. No helper
+crate is proposed for this record. Commit a locked Cargo-metadata dependency-set
+check for the core-rooted normal/build closure over supported features/targets,
+including enabled dependency features. Reject silent growth. A future exception
+requires explicit plan review and a committed entry naming crate, exact version,
+features and a one-line reason, backed by measured benefit or substantial unsafe
+reduction. Do not automatically regenerate the accepted baseline. Keep adapter
+dependencies outside the core-rooted traversal without concealing shared edges.
+Add a negative control for an unapproved dependency and feature edge. Compile
+the primitive module in isolation with rustc and no --extern arguments to prove
+the std/core-only first-record implementation does not borrow an incidental
+engine dependency. Record how an approved future exception would alter that
+proof rather than silently disabling it.
+
+Required verification and measurements
+
+One committed prerequisite/controller entry point enforces formatting, Clippy,
+dependency guards, isolated primitive compilation and focused correctness before
+expensive gates. Plans and output paths are checked for uniqueness before any
+launch; machine-readable output and diagnostics use separate streams. Controllers
+pin exact code/tool/input identities, enforce lock/affinity/memory/readiness,
+block on job exit, and produce terminal receipts. No progress polling or ad hoc
+per-stage launch requirements should be left to session memory.
+
+Differential tests compare scalar adapter, forced scalar primitives and AVX2
+for every admitted operation/type and representative chains. Cover all stopping
+fuel points for bounded programs; first-error row/operation and trace; multiply
+and add failures in different row orders; every fault position through block
+boundaries; integer extremes and constants; F64 signed zero/infinities/NaNs
+under the existing engine policy; Bool bit offsets, tails and output validity;
+all-null/mixed-null/multiple-input masks; unequal-length/dtype refusal; actual
+independent chunks; cancellation; allocation/limit failures; cleanup; replay
+suppression; input immutability; and output nonpublication on failure.
+Miri exercises safe lease/plan/buffer/scalar fallback paths. SIMD-specific tests
+run natively with forced path selection and canaries/tail controls; do not claim
+that scalar Miri validates an unexecuted AVX2 intrinsic. Test absence of AVX2 via
+forced portable dispatch. Existing Rune semantic, full-state and budget suites
+remain mandatory; no rule relaxation is inherited from the parked records.
+
+Measure end to end through the actual rnx column API and rnx-polars adapter,
+separating preparation/first call, warm block execution, validity/zipper work and
+output construction. Include 4096,10M,100M rows, sliced/nullable/multichunk cases,
+checked x+c, generic chains, fused x*2+y, F64 and packed Bool. Report instruction
+counts, Rust allocation calls/bytes, valid user-cycle counts and elapsed logical
+GB/s separately. Compare scalar UDF calls, ownedVec batching, Rust checked and
+wrapping controls, and both pinned Polars comparator versions with integer
+semantic differences explicit. The measured checked-add target is about 2.54
+Ir/element, not one; approved warm all-valid kernel-plus-block-dispatch ceilings at 100M rows are
+3.0 Ir/element for checked x+c, 4.75 for fused x*2+y, 1.25 for F64 x+1 and
+0.10 per logical packed Bool for not, with preallocated output. These are
+record-keyed committed thresholds approved in rune-native 25787. Report full adapter allocation/validity/chunk/output costs separately
+and require no added per-row Root/VM path or whole-input copy; do not disguise
+those costs by applying a kernel-only ceiling to an end-to-end total. No per-row
+VM dispatch, input-column copy or warm per-row allocation is permitted.
+
+Headline end-to-end result is report-only: actual script k.map checked x+1,
+all-valid single-chunk I64 at 100M rows, total Ir/element and elapsed logical
+GB/s, beside Polars py-2.1.0 and scalar per-row Rune. Do not apply a kernel-only
+ceiling to that total. The rnx record refreshes the rnx-bench README column
+matrix for x+1, x*2+y, F64 and packed Bool at 10M-100M, including both these
+comparators, semantic differences and path witnesses.
+
+Retain the approved tight in-process thermal counter sampling around timed
+kernels, fixed cooldowns and unchanged rejection of throttle increments or
+multiplexed counters. Report rejected samples unavailable; do not substitute
+elapsed time for valid CPU cycles. The earlier 51 GB/s copy run is a reference,
+not a hard bandwidth ceiling. Small cache-oriented cases cannot establish
+large-column DRAM behavior or confidence intervals from one capture.
+
+Run the existing production native-off/on host/loop/Call/Return controls against
+published N7a, with zero added per-operation/per-call slope on unrelated paths.
+Do not modify interpreter hot opcode handlers to make this path available.
+Bring saved failure evidence read-only before changing source or thresholds.
+Run fresh-clone gates and required Miri before publication. Review exact source
+and all receipts, then publish Rune on acceptance. Follow with the separately
+signed and gated rnx record and pin. Approval 25787 authorizes implementation
+after this signed plan commit; it does not waive any publication gate.
+
+API clarification approved in rune-native 25794: explicit column_kernel handle
+is accepted for CK1. A closure-taking series.map is the planned follow-up
+record, requiring legacy closure identity/bytecode bridging or execution-core
+callbacks. Record that next work in the separately signed rnx plan.

@@ -1,0 +1,29 @@
+{
+ "rule": "C17e admits a direct map chain over Object.iter() with a destructuring literal closure: each entry pins the whole disposition it replaces and carries the admitted rule.",
+ "rows": [
+  {
+   "index": 52,
+   "legacy": {
+    "index": 52,
+    "label": "iter/iter-map",
+    "source_sha256": "72a29933b01acf597e6dd2bff72da3e18e49577c58f3d2d7a716333b5ba26031",
+    "stock_canonical_sha256": "9b6d2833724d0f06c7f6c7bca321fb348aee323041a43d6716eb347a1e9bb3f6",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 127,
+      "source": 0,
+      "start": 72
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 72, end: 127 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 72:127, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  }
+ ]
+}

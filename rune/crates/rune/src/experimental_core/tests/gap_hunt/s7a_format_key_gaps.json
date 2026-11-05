@@ -1,0 +1,52 @@
+{
+	"schema": 1,
+	"source_head": "22d30c71615de9a4e76b0cd1a0f766453568b012",
+	"approval": "01a16f0a-7c0e-7185-9728-053a571df4b3",
+	"policy": "Known-gap",
+	"closure_record": "S7b host-boundary certificate",
+	"default_switch_prerequisite_complete": false,
+	"scope": "The S7a guard covers ordinary protocol-kind formatter registrations. Actual-key aliases through other kinds/hashes/containers, and foreign nominal host roots, are not detected. No Exact claim in these Contexts. The unmodified default and empty Contexts are separate controls.",
+	"rows": [
+		{
+			"name": "field-key-debug",
+			"setup": "field",
+			"policy": "Known-gap",
+			"source": "pub fn main(){format!(\"{:?}\",1..3)}",
+			"source_sha256": "e421d8e995e3b2ea87db00a0e393a7d89ebae9d665955c10cc823bf78664c5fe"
+		},
+		{
+			"name": "field-key-nested",
+			"setup": "field",
+			"policy": "Known-gap",
+			"source": "pub fn main(){format!(\"{:?}\",[1..3])}",
+			"source_sha256": "39402b79b2bbfc12ab2bcf9ce151f828add6e53e5fbd35bfe451f177fe9ac69f"
+		},
+		{
+			"name": "cross-container-debug",
+			"setup": "raw-range",
+			"policy": "Known-gap",
+			"source": "pub fn main(){format!(\"{:?}\",1..3)}",
+			"source_sha256": "e421d8e995e3b2ea87db00a0e393a7d89ebae9d665955c10cc823bf78664c5fe"
+		},
+		{
+			"name": "script-nominal-display",
+			"setup": "raw-nominal",
+			"policy": "Known-gap",
+			"source": "struct S;pub fn main(){format!(\"{}\",S)}",
+			"source_sha256": "6cd588c13f50897a028e7c19d5a3f4b418fbf24736a45a826c3c15de0c4481d1"
+		},
+		{
+			"name": "late-foreign-nominal-display",
+			"setup": "raw-late-nominal",
+			"policy": "Known-gap",
+			"source": "pub fn main(x){format!(\"{}\",x)}",
+			"source_sha256": "de8d5f40be84bfddc737114a3282a182346c7294b84b334cca4a909517321adb",
+			"producer_source": "struct LateOnly;pub fn main(){LateOnly}",
+			"producer_sha256": "36b69f1bef6842da9ea0eac6d0c2537e560597dc82afb89113b5910d511d13bc",
+			"compile_order": [
+				"renderer",
+				"producer"
+			]
+		}
+	]
+}

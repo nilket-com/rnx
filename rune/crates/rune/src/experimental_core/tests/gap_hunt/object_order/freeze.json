@@ -1,0 +1,12 @@
+{
+  "rows": 74,
+  "production_changes": false,
+  "files": {
+    "cases.json": "aebdd166d66844761dd3bb45fdfcce2a216b2dd02585644ba3919c33b5cbdd03",
+    "constructors/graph.rs": "0e7e64bb198f6f00de691758220a2995bd280f49219f315df3f4b203453d1d28"
+  },
+  "P1": {
+    "rule": "Only AnyTypeInfo::full_name process-local function addresses in class, kind and chain kinds; every other byte, type hash and typed primary/chain shape exact; raw observations retained unmasked",
+    "rows": []
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "rows": 463,
+  "production_changes": false,
+  "files": {
+    "cases.json": "7808ead8767600acd55bf2282d432b46e4961f86a07a28f6d272fd476d456cae",
+    "constructors/graph.rs": "0e7e64bb198f6f00de691758220a2995bd280f49219f315df3f4b203453d1d28"
+  },
+  "P1": {
+    "rule": "Only AnyTypeInfo::full_name process-local function addresses in class, kind and chain kinds; every other byte exact; raw observations retained unmasked",
+    "rows": [
+      {
+        "index": 256,
+        "label": "errors/type-error-in-method",
+        "source_sha256": "32b6406800bb4807ed4dac1db4f64d1c64e61194ce2b2ffc0e9558c403623a7c"
+      },
+      {
+        "index": 257,
+        "label": "errors/type-error-three-deep",
+        "source_sha256": "7f192acf94715d3ca547330f8a86c88b930950ed131c8df65d6b83b086a9481c"
+      },
+      {
+        "index": 266,
+        "label": "errors/error-in-arg-before-call",
+        "source_sha256": "7fd5aa60c97f7fc15c8727427f5aac5dcaccd38a55f824d625591119eb01d381"
+      },
+      {
+        "index": 269,
+        "label": "errors/error-in-loop-iteration",
+        "source_sha256": "c259ccab5d744fe95aed294a010ebdbd410fd5eb38a8b5867e54c75f7ba4a08e"
+      },
+      {
+        "index": 439,
+        "label": "uncertain/integer-receiver",
+        "source_sha256": "2bd81c4e8d31c0bc8aa3ae61096e60b9a810d5734fcfd621777d7f4c6eb839ea"
+      }
+    ]
+  }
+}

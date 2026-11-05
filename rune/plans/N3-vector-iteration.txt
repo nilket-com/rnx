@@ -1,0 +1,63 @@
+N3: native iteration over homogeneous scalar vectors
+
+Authority: user confirmation and Claude rune-native seq24519. Base ee28ecf2.
+Step 0: target/n3-step0-ee28ecf2/STEP0.txt in the enclosing workspace.
+
+Compute budgeted entry reachability once per function. Ignore unreachable
+predecessor sources in the side-entry check; retain all reachable alternate
+entries and preserve bytecode, PCs and charges. This corrects the Jump after
+Return case without compiler DCE.
+
+Admit fixed-length VectorIterator sources containing only I64 or only Bool.
+Keep the iterator's own mutation guard distinct from its source's shared
+reader lease. Snapshot items into private budgeted i64 cells; no Store, Value,
+payload or handle pointer enters generated code. Derive size from existing
+byte budgets, with no arbitrary item limit. Native iteration checks/clamps
+every snapshot index, advances the cursor only on Some, and preserves the
+output on None. Reject corrupt cursors beyond the source length.
+
+Preserve the old successful scalar/range entry and generated-loop paths.
+Use proven iterator provenance where available; an ambiguous vector variant
+is reached only after the existing range-iterator guard refuses. Give Bool
+iteration its own guarded typing variant. Charge alternate analysis, code,
+metadata and mappings to the existing bounds. Keep all snapshot allocation
+and vector checks off successful scalar/range execution.
+
+Validate scalar masks, Bool canonical values, fuel, exit PC, iterator/source
+identity, generation, length, lease and reachable cursor before any mutation.
+Commit cursor and scalar window as one prevalidated safe-Rust transaction,
+with no allocation or fallible ownership operation after its first write.
+Invalid exits discard private work and poison the relevant native entry.
+Pending cancel and precise overflow/fuel Retry behavior remain unchanged.
+
+Shared_rows stays interpreted. Its unreachable predecessor is corrected, but
+its varying heap row and String comparison remain unsupported. Do not add
+row-key projection, heap-value tokens, strings, fields, growth, Push, Len,
+Clone, new calls or recursion. Do not change legacy behavior or runtime
+failure no-retry policy.
+
+Add integer-sum and Boolean-count direct-list benchmark programs, sized with
+the current corpus. Exercise general list arguments, not a source-name fast
+path. Include matching engine fixtures; ship the rnx benchmark sources and
+catalog entries with the subsequent product pin. Prove actual native entry
+and return on the real production binary, with disabled-policy controls,
+identical results, and measured instructions/cycles including preparation.
+
+Witness reachability and genuine side entries; I64/Bool, empty and large
+lists, end/resumed/corrupt cursors, None preserving the previous output,
+mixed tags, moved/stale/closed stores, shared leases, every fuel/error and
+cancel boundary, allocation/budget refusal, invalid records and atomic
+rollback. Run native/simulator/interpreter full-state differentials, Miri,
+pre/post IR and machine audits and their negative controls. Retain N2 Sieve
+and shared_rows as controls.
+
+Use fresh exact-hash correctness checks and unchanged per-record CGU1
+Callgrind, K1, counter2 and seal rules. Scalar/range per-call cost must stay
+zero; one-time setup remains subject to ordinary bounds. Bring small
+entry-only deltas to Claude with exact numbers instead of repeated tuning.
+No inherited qualification, CGU16 or full-controller claim.
+
+One signed plan and one signed implementation on local main, no branches or
+worktrees. Block on durable job exits and report terminal receipts only.
+Notifications use Sluice directly to Codex. Publish after acceptance, then
+make the separately scoped rnx pin; N4 starts afterward.

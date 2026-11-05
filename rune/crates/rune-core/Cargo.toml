@@ -1,0 +1,34 @@
+[package]
+name = "rune-core"
+version = "0.15.0"
+authors = ["John-John Tedro <udoprog@tedro.se>"]
+edition = "2021"
+rust-version = "1.95"
+description = "Core components for the Rune Language, an embeddable dynamic programming language for Rust."
+documentation = "https://docs.rs/rune"
+readme = "README.md"
+homepage = "https://github.com/rune-rs/rune"
+repository = "https://github.com/rune-rs/rune"
+license = "MIT OR Apache-2.0"
+keywords = ["language", "scripting", "scripting-language"]
+categories = ["parser-implementations"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(rune_nightly)'] }
+
+[features]
+default = ["alloc"]
+doc = []
+std = ["alloc", "rune-alloc/std"]
+alloc = ["serde/alloc", "rune-alloc/alloc"]
+musli = ["dep:musli-core"]
+
+[dependencies]
+rune-alloc = { version = "0.15.0", path = "../rune-alloc", default-features = false, features = ["serde", "musli"] }
+
+twox-hash = { version = "2.0.0", default-features = false, features = ["xxhash64"] }
+serde = { version = "1.0.163", default-features = false, features = ["derive"] }
+musli-core = { version = "0.1.0", default-features = false, optional = true }
+
+[dev-dependencies]
+rune = { path = "../rune", features = ["alloc"] }

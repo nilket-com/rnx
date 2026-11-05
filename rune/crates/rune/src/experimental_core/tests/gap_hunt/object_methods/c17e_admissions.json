@@ -1,0 +1,64 @@
+{
+ "rule": "C17e admits a direct map chain whose literal closure calls a C17b Object method: each entry pins the whole disposition it replaces and carries the admitted rule.",
+ "rows": [
+  {
+   "index": 15,
+   "legacy": {
+    "index": 15,
+    "label": "get/key-from-vec",
+    "source_sha256": "d6250798ff5ce6c96c2b767d29fbd48e42bb3ac713695dfc992785ea0cee4514",
+    "stock_row_sha256": "e6a848122ddadc7d4cf935a437c53aa21d0fa3b9a54cf85581bb2cd61899264c",
+    "fresh": {
+     "location": {
+      "end": 137,
+      "source": 0,
+      "start": 94
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 94, end: 137 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 94:137, kind: Custom { error: \"Method\" } }) })]",
+    "classification": "Inherited-refusal"
+   },
+   "admitted": {
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 119,
+      "source": 0,
+      "start": 111
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 111, end: 119 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 111:119, kind: Custom { error: \"Method\" } }) })]"
+   }
+  },
+  {
+   "index": 46,
+   "legacy": {
+    "index": 46,
+    "label": "contains_key/closure",
+    "source_sha256": "40386275c281f47e3cf36c6b74639350375cc2cd1dcd429d69d9e957e35dab58",
+    "stock_row_sha256": "4012699bed1144cf5dab7ce918a20828dc614f810287d666cf7b87a6e17f524b",
+    "fresh": {
+     "location": {
+      "end": 136,
+      "source": 0,
+      "start": 77
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 77, end: 136 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 77:136, kind: Custom { error: \"Method\" } }) })]",
+    "classification": "Inherited-refusal"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  }
+ ]
+}

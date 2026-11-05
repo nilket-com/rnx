@@ -1,0 +1,216 @@
+{
+	"schema": 1,
+	"before_head": "f03cfd5528b1df5284255014dd99fbd17630a702",
+	"context": "default modules plus custom Range DEBUG_FMT/DISPLAY_FMT returning Unit, incrementing CALLS, writing no text",
+	"classification": "Modified-provider Context refuses every formatting ingress, including unwrap/expect diagnostic formatting and numeric to_string; finer call/receiver provenance is deferred. Existing non-admissions and neutral non-formatting controls are retained.",
+	"rows": [
+		{
+			"name": "assert-message",
+			"source": "pub fn main(){assert!(false,\"{:?}\",1..3)}",
+			"source_sha256": "4dc3967f26283707ceaea1f3f0e42dd3cb8956f36e82a4492df727b61b5cae21",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": false
+		},
+		{
+			"name": "assert-eq",
+			"source": "pub fn main(){assert_eq!(1,2)}",
+			"source_sha256": "14b857c6dbaee5d8784515b8d27a5dd64fa653c22849a36e93dc3da353dfdaa2",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		},
+		{
+			"name": "assert-ne",
+			"source": "pub fn main(){assert_ne!(1,1)}",
+			"source_sha256": "37ae58d779e61ab73adb7ac139afb918094339704d3999c2dd7ce9313dd32dc0",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		},
+		{
+			"name": "panic-format",
+			"source": "pub fn main(){panic!(\"{:?}\",1..3)}",
+			"source_sha256": "165bf95fea2d71aa754dcaf1d03dbab7cfb4ac904b3701c298ae7e91448b0107",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": false
+		},
+		{
+			"name": "unreachable",
+			"source": "pub fn main(){unreachable!(\"{:?}\",1..3)}",
+			"source_sha256": "56303e86d205f3bf706b5e67bb478ba65e722745f94c9af024995895fe4085eb",
+			"policy": "FrontendDiagnostic",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		},
+		{
+			"name": "todo",
+			"source": "pub fn main(){todo!(\"{:?}\",1..3)}",
+			"source_sha256": "d442a85a300850648c4c5511157c20fe5ad80b2ee16f1f7b0e76d5e8f5187e68",
+			"policy": "FrontendDiagnostic",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		},
+		{
+			"name": "dbg",
+			"source": "pub fn main(){dbg!(1..3)}",
+			"source_sha256": "5d0957fd7ba5a77b1139ecd2d51e6358234ccd5bddd3db89eb8cc7600bde20a4",
+			"policy": "FrontendDiagnostic",
+			"expected_stock_calls": 1,
+			"default_admitted": false
+		},
+		{
+			"name": "to-string-i64",
+			"source": "pub fn main(){(3i64).to_string()}",
+			"source_sha256": "5b06fad9f1774cb80b5e5a2d9e4a4264d210f87909c3d4ededfb1a1da951f5f1",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "to-string-u64",
+			"source": "pub fn main(){(3u64).to_string()}",
+			"source_sha256": "9aa975300461f98a3ab88b1db57d44f91cdbee2cda0e26d59a3da6880300bce6",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "to-string-f64",
+			"source": "pub fn main(){(3.5).to_string()}",
+			"source_sha256": "78f558f2249378d9079ea3e29e22ff32ecd44a6ad976a5b4e9f94a9f16c99c64",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "to-string-path",
+			"source": "pub fn main(){i64::to_string(3)}",
+			"source_sha256": "ee51cc998c6cbf67fe7c468f267a0155d9419c69fa10bcee4d338173450d8c2f",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "result-unwrap",
+			"source": "pub fn main(){Err(1..3).unwrap()}",
+			"source_sha256": "75fc61dfaa5183b301c30fb2cc7f6f9a54249dce6439cb3f1f120d70e34bd644",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": true
+		},
+		{
+			"name": "result-expect",
+			"source": "pub fn main(){Err(1..3).expect(\"failed\")}",
+			"source_sha256": "e01f4069dfcc3a2b6399720c63de744aa423ac8591c6b10e6aeefb7ac9e14087",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": true
+		},
+		{
+			"name": "option-expect",
+			"source": "pub fn main(){None.expect(\"failed\")}",
+			"source_sha256": "a0dc1b8378978a6ead86ae0e31f264ef0af8ec69d0ea40c294d1efd850ae6e6d",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "ok-unwrap",
+			"source": "pub fn main(){Ok(1).unwrap()}",
+			"source_sha256": "352f838cfeea78f53eda898b8a7d35c2a62ad65032eeceae1186e7295bff5545",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "format-args",
+			"source": "pub fn main(){format_args!(\"{:?}\",1..3)}",
+			"source_sha256": "4f73274d43fbc4e51abd07621caaa9ec844af7619091ff4356ecb8030bec8c52",
+			"policy": "FrontendDiagnostic",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		},
+		{
+			"name": "fmt-function",
+			"source": "pub fn main(){std::fmt::format(1..3)}",
+			"source_sha256": "ff4dbf1579dedcd91e49b950095a2bffcae2162f3e05f0e3e0f8a9c6a8052ade",
+			"policy": "FrontendDiagnostic",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		},
+		{
+			"name": "concat",
+			"source": "pub fn main(){\"a\"+\"b\"}",
+			"source_sha256": "284f07e0a3321927734740e70bcf98b6620361364ce402efaa0c3beb72e3dddf",
+			"policy": "Retained-neutral",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "direct-panic",
+			"source": "pub fn main(){panic(\"message\")}",
+			"source_sha256": "ea002fc49c4ab4d6fecc5a53cd172945ecea252219e0357e86349ef0d6cbcc41",
+			"policy": "Retained-neutral",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "panic-type-error",
+			"source": "pub fn main(){panic(1..3)}",
+			"source_sha256": "d7cbdd0dd84760308d7042d43a61cc991fb717001683f42176a1da8c6d1d7d46",
+			"policy": "Retained-neutral",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "dynamic-unwrap",
+			"source": "struct S;impl S{fn unwrap(self){1}}fn f(x){x.unwrap()}pub fn main(){f(Err(1..3))}",
+			"source_sha256": "0cfd2ab5486931d2aa23df0c6b67dece7fda49b5237f23cd3f077b2b562a8ccf",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": true
+		},
+		{
+			"name": "dynamic-expect",
+			"source": "struct S;impl S{fn expect(self,m){m}}fn f(x){x.expect(\"failed\")}pub fn main(){f(Err(1..3))}",
+			"source_sha256": "a87e8eb8dd19fb49cad2cf576f51fc62a675df8d2c0768df524d5d0f89d9b5ce",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": true
+		},
+		{
+			"name": "dynamic-to-string",
+			"source": "struct S;impl S{fn to_string(self){\"s\"}}fn f(x){x.to_string()}pub fn main(){f(3i64)}",
+			"source_sha256": "27c66fbd0102f05615ee8be86a4437375cd89dace1e8f8340df527bd2a93fe7f",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": true
+		},
+		{
+			"name": "result-path",
+			"source": "pub fn main(){Result::unwrap(Err(1..3))}",
+			"source_sha256": "10d9692f92bf4170b49dc5f2059590773a065b80f452a5e2013da8bfb57c5d4d",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": false
+		},
+		{
+			"name": "result-function-value",
+			"source": "pub fn main(){let f=Result::unwrap;f(Err(1..3))}",
+			"source_sha256": "0fa3fda834031801c3936cce317cb7f82e001dd1276ed71afd1c75e94c1284c0",
+			"policy": "Native",
+			"expected_stock_calls": 1,
+			"default_admitted": false
+		},
+		{
+			"name": "number-function-value",
+			"source": "pub fn main(){let f=i64::to_string;f(3)}",
+			"source_sha256": "f3cda1b5fb2ca8d8ee030ff4593ca8f52eb7e5acbeb329b644f5d60c29a3bd84",
+			"policy": "Native",
+			"expected_stock_calls": 0,
+			"default_admitted": false
+		}
+	]
+}

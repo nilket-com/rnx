@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.35.4/src-min/ace.js" integrity="sha256-Bd8+jyjInZJnqpfV76IqiyackXEvhXBV/8tbSgLlFjo=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.35.4/src-min/ext-language_tools.js" integrity="sha256-8/WWMrbIl/j2/igDtzDsQnWKouiaoxTziAMcV+uYsUw=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.35.4/src-min/mode-text.js" integrity="sha256-XBKhA4TG5AxpdXaNTIlbEQ7Qc/r42jjOOGw3p5Oe8WI=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.35.4/src-min/mode-c_cpp.js" integrity="sha256-xORy+Qy/mJDg8CIHWxiAdKCrzCKTR2PsJzvxiFK5V1o=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/ace-builds@1.35.4/src-min/theme-monokai.js" integrity="sha256-2KFkudTravG9kVvHM2WLJvWzr90TX+DGc6T2QxoG1k8=" crossorigin="anonymous"></script>
+
+        <script src="rune-mode.js"></script>
+        <script src="rune-highlight-rules.js"></script>
+        <script src="rune-autocomplete.js"></script>
+
+        <style>
+            #editor {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="editor">println!("Hello World!");</div>
+        <script>
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/monokai");
+            editor.getSession().setMode("ace/mode/rune");
+
+            editor.setOptions({
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true
+            });
+
+            let langTools = ace.require("ace/ext/language_tools");
+            let runeCompleter = ace.require("ace/autocomplete/rune").Completer;
+            langTools.addCompleter(runeCompleter);
+        </script>
+    </body>
+</html>

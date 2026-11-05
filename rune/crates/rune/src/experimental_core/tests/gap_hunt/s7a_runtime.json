@@ -1,0 +1,474 @@
+{
+	"record": "S7a",
+	"base": "9b894bfd287c71e3ff933fd61c8aade475d23e6b",
+	"rows": [
+		{
+			"name": "0185-s7-step0-fmt-debug-range",
+			"source": "pub fn main(){format!(\"{:?}\",(1..3))}\n",
+			"source_sha256": "e133ea80946452d0687034f9d53829448e39bb7d6a2870b4282350ebf2b55cbd",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-range",
+			"source": "pub fn main(){format!(\"{}\",(1..3))}\n",
+			"source_sha256": "0ce5d0c1d8a6c68b51a99c1c36b7c7bf167d325787527f315d1ce550d0339663",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-inclusive",
+			"source": "pub fn main(){format!(\"{:?}\",(1..=3))}\n",
+			"source_sha256": "54104d1cebc6286f4f3bc79d910e7e90df1f6d177decc4a53c5d20eaeba19f0d",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-inclusive",
+			"source": "pub fn main(){format!(\"{}\",(1..=3))}\n",
+			"source_sha256": "509daaae6e89da83095bfe1ec530ef86abc325fed03013e8873eb3b682e012d7",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-from",
+			"source": "pub fn main(){format!(\"{:?}\",(1..))}\n",
+			"source_sha256": "06b91224df751a3ee15e1a27d1d5568458c5a296ef6b3f5964eb7295f3b501a6",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-from",
+			"source": "pub fn main(){format!(\"{}\",(1..))}\n",
+			"source_sha256": "bec1c702a2b062ac73a4973ba3770a5fa5ab6b599413ba78368c7df158370302",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-to",
+			"source": "pub fn main(){format!(\"{:?}\",(..3))}\n",
+			"source_sha256": "3fe18f5992ed7f939395a0a20eedd8ee9944424a995f917e3945b13f6d847324",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-to",
+			"source": "pub fn main(){format!(\"{}\",(..3))}\n",
+			"source_sha256": "81922c749bff6a280099485b9c1ff0539e9d6760f4c947f99f055ca92bd3a0f0",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-to-inclusive",
+			"source": "pub fn main(){format!(\"{:?}\",(..=3))}\n",
+			"source_sha256": "96edc684a6e5414b9d5806f7b3eebb58e09a3cd3db0998b39fc0f09d691185b5",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-to-inclusive",
+			"source": "pub fn main(){format!(\"{}\",(..=3))}\n",
+			"source_sha256": "9980c00af682ac04278bcd49fe2d32c77f7744969896429120e7f59b43ad342b",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-full",
+			"source": "pub fn main(){format!(\"{:?}\",(..))}\n",
+			"source_sha256": "2e2bfa8eda329d17e97cfbb850e7963b61b6bcb3998f7efc51b6bfe3621b5f65",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-full",
+			"source": "pub fn main(){format!(\"{}\",(..))}\n",
+			"source_sha256": "d7c2dec8cac572f1bdce2e5261f7e545367eb469d4bb8325d9c3616f94e997a4",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-vec-iter",
+			"source": "pub fn main(){format!(\"{:?}\",[1,2].iter())}\n",
+			"source_sha256": "005f9c8895713839c0d230bdd9ebfe3cae4840e8f9ec61d4042a78cfd5824a29",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-vec-iter",
+			"source": "pub fn main(){format!(\"{}\",[1,2].iter())}\n",
+			"source_sha256": "9fe66244d3b64ad37309c13b79c897cd39038166b9104322dcdcbc89a55dc48b",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-range-iter",
+			"source": "pub fn main(){format!(\"{:?}\",(1..3).iter())}\n",
+			"source_sha256": "d19e75697b0699f2ca22055dad08cf24b87a6085fea21f2a81b1cb5b5cb29da5",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-range-iter",
+			"source": "pub fn main(){format!(\"{}\",(1..3).iter())}\n",
+			"source_sha256": "0ec49740cd47c10290011f0d870d8f1a562ac36557b8ec3932d4abd791c777bf",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-function",
+			"source": "fn f(){1} pub fn main(){format!(\"{}\",f)}\n",
+			"source_sha256": "3b2b3251b9273dd54a66046ed82aad745fb8bfff84c8a3cdf27eaea73f5d48f8",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-display-closure",
+			"source": "pub fn main(){let n=1;let f=|x|x+n;format!(\"{}\",f)}\n",
+			"source_sha256": "874457f9bd5bdb592d9059e3bc461bb76f1671395773aaca0294f2ddb04ab1dd",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-debug-range-in-vec",
+			"source": "pub fn main(){format!(\"{:?}\",[1..3])}\n",
+			"source_sha256": "dd511de20815b69179f4baec750d95af8b2ee775f515002c11597884a69263fe",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-step0-sort-tuple",
+			"source": "pub fn main(){(1,2).sort_by(|a,b|a.cmp(b));0}\n",
+			"source_sha256": "2aa53ef82afe69109a206447b1256eb5512e860affd7254a603393a97d658c9c",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-sort-unit",
+			"source": "pub fn main(){().sort_by(|a,b|a.cmp(b));0}\n",
+			"source_sha256": "38911e48e52f72b09ba3326ff69f428632d544f6f9925d9f2f9958aa4bb70b23",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-sort-direct-unit",
+			"source": "pub fn main(){std::vec::Vec::sort_by((),|a,b|a.cmp(b));0}\n",
+			"source_sha256": "962a48a21a9fc4f44e5f6ac05b62fa17c91c34f399601c6e3b97dcca7c0e922a",
+			"policy": "Compile-refused Native"
+		},
+		{
+			"name": "0185-s7-step0-format-moved",
+			"source": "pub fn main(){let s=\"a\";let alias=s;drop(s);format!(\"{:?}\",alias)}\n",
+			"source_sha256": "1dd76c1cc973f2614e79e1633181df70bb65252c5b44c215082f831e898ab251",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-struct-name-255",
+			"source": "struct Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x}pub fn main(){format!(\"{:?}\",Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x:1})}\n",
+			"source_sha256": "cd0ebb943d21d3e3d0bd464826f759dc9146095bfc7681494d1ec0b8f8ef0f46",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-struct-name-256",
+			"source": "struct Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x}pub fn main(){format!(\"{:?}\",Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x:1})}\n",
+			"source_sha256": "f57425ab5d1ae4a6ba13b7b0dd750150e514b40ce105666a1ca64bced2a86fde",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "0185-s7-step0-fmt-struct-name-257",
+			"source": "struct Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x}pub fn main(){format!(\"{:?}\",Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x:1})}\n",
+			"source_sha256": "87e59e5ae862f732664415742bd9d15389895331ff7b9397810a2a73fdacb3ad",
+			"policy": "Compile-refused TypeTable"
+		},
+		{
+			"name": "0185-s7-step0-fmt-struct-name-300",
+			"source": "struct Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x}pub fn main(){format!(\"{:?}\",Saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{x:1})}\n",
+			"source_sha256": "d3992a1b1a83c1579b699598acdecc55a924bb842a93bd4513a935f207e7481b",
+			"policy": "Compile-refused TypeTable"
+		},
+		{
+			"name": "0185-s7-probe2-format-24",
+			"source": "pub fn main(){format!(\"{:?}\",Some(1).iter())}",
+			"source_sha256": "a5b1f87d1cedffaf008156faae5cfac7edd34f15935997f1f3b89a007001108e",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-probe2-format-25",
+			"source": "pub fn main(){format!(\"{:?}\",#{x:1}.iter())}",
+			"source_sha256": "3060626d0116f3c2314d471aece53e3ecfd110826a2e94c0cd1aa8268c245149",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-probe2-format-26",
+			"source": "pub fn main(){format!(\"{:?}\",(1,2).iter())}",
+			"source_sha256": "17690f19a985fc6a841b4711dfd42a25c620456fa68c9a39e5071b7142914692",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "0185-s7-probe2-format-27",
+			"source": "pub fn main(){format!(\"{:?}\",(1..=3).iter())}",
+			"source_sha256": "5e410b92392e8ac9e6688f04d3697e4410b2426d3397122eca832339ba5d82c2",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-33",
+			"source": "pub fn main(){format!(\"{}\",\"a b\".split(\" \"))}",
+			"source_sha256": "3ce2acbc130e813b3a2999a203d9fdc0085c9390a784c359ba3ac9f7da10b5e4",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-34",
+			"source": "pub fn main(){format!(\"{:?}\",\"a b\".split(\" \"))}",
+			"source_sha256": "31755ce3498e93f9ebd2ff517c7de753487f393ac9ee9c545564f2f253a3f794",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-35",
+			"source": "pub fn main(){format!(\"{}\",\"ab\".split('a'))}",
+			"source_sha256": "62d59f4ca599deb78af08e469bf8aa09e5695152941f2356c60b8f60b56c0845",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-36",
+			"source": "pub fn main(){format!(\"{:?}\",\"ab\".split('a'))}",
+			"source_sha256": "72451c8c79456296ddb95602dadfafa27066bd7fdba37bef2c3cd73045dac2a4",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-37",
+			"source": "pub fn main(){format!(\"{}\",\"ab\".chars())}",
+			"source_sha256": "89f67e386fa9befaa285e0ef1a89805b7d4312812af46ab95d163d5a86d616c8",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-38",
+			"source": "pub fn main(){format!(\"{:?}\",\"ab\".chars())}",
+			"source_sha256": "4273e1a4ab328c91291606a06003d371ad75ce21f7ed0012ac745d3347f3f749",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-39",
+			"source": "pub fn main(){format!(\"{}\",[1,2].iter().skip(1))}",
+			"source_sha256": "96919e76e3ef98041e197663fc71405f7e97d7c767e6515878ce20abb7dbccf3",
+			"policy": "Compile-refused Method"
+		},
+		{
+			"name": "extra-40",
+			"source": "pub fn main(){format!(\"{:?}\",[1,2].iter().skip(1))}",
+			"source_sha256": "a0154ef7479e204382920a0a2c0fb6b7738416012c9719f2f86f4eae6aba77e7",
+			"policy": "Compile-refused Method"
+		},
+		{
+			"name": "extra-41",
+			"source": "pub fn main(){format!(\"{}\",[1,2].iter().take(1))}",
+			"source_sha256": "49450cd4eead2436d5469d2399bfdb632923e0974d5ae37e80d26d2ddca4d845",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-42",
+			"source": "pub fn main(){format!(\"{:?}\",[1,2].iter().take(1))}",
+			"source_sha256": "fea4512bc862a9bb814a445879e325b7fb66f70d19869ec6cb2f9f88b7ae594b",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-43",
+			"source": "pub fn main(){format!(\"{}\",('a'..'c').iter())}",
+			"source_sha256": "dde1e6efb034f744fee0138ac1533cee72712dccfa1d1673da8433152bdd91de",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-44",
+			"source": "pub fn main(){format!(\"{:?}\",('a'..'c').iter())}",
+			"source_sha256": "a836e0559bf93e16eca0466d8a1dd73949bd3d747a5f2caeae755ab4bebd3d1a",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-45",
+			"source": "pub fn main(){format!(\"{}\",(1u64..3u64).iter())}",
+			"source_sha256": "8f23b32f8698d72d2b97a77f3c32beeac869aa5378bf321a707e53da58e47916",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-46",
+			"source": "pub fn main(){format!(\"{:?}\",(1u64..3u64).iter())}",
+			"source_sha256": "ae13b6f6888ae45ff1d62173d341839e237dadfb0beb01becb4253327fadd22f",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-47",
+			"source": "pub fn main(){format!(\"{}\",('a'..).iter())}",
+			"source_sha256": "972eadfd1b641d7484f30b92fd91eab5544fabd2be9015616b900e8d28530cb1",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-48",
+			"source": "pub fn main(){format!(\"{:?}\",('a'..).iter())}",
+			"source_sha256": "fd2a09be83f789fcf92842b3769be2a9e3791f201e0099ea64dcf7e1652b40bf",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "extra-49",
+			"source": "pub fn main(){format!(\"{}\",(1u64..=3u64).iter())}",
+			"source_sha256": "8c7895013d737062b93103a5958ce2d5dadbc33360d7a889430c210696aa9425",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "extra-50",
+			"source": "pub fn main(){format!(\"{:?}\",(1u64..=3u64).iter())}",
+			"source_sha256": "10877f66eaf0c2c03e374b55582771211cda54eaecadb4f6023cbfdd6b1b6e0b",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "sort-extra-51",
+			"source": "pub fn main(){(true).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "5a1605c0d57595a12b252a2bba57f8edfb530a0dc82d1e0cb25a80ab3b5d374b",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-52",
+			"source": "pub fn main(){(1).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "6e536a6001bec40282efbe0158826b37f73cf700f31c252a589e197b734cfae8",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-53",
+			"source": "pub fn main(){(1.0).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "f7b115f9cb2191614a8c51d371bc3eb8ad32002319f79b75ed34b844fe9f0bbc",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-54",
+			"source": "pub fn main(){('a').sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "bd0e7b47115474b4e92f89fe6f8fb73ca9951ee2f085f346f621b6f07dc92add",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-55",
+			"source": "pub fn main(){(\"a\").sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "de88ee142626207edf22f35e2f15cdbb657802b7eb28efc8e9d94994485e7f74",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-56",
+			"source": "pub fn main(){(#{x:1}).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "2601962e1e6d4cdf80eb09e26fae2ee407ed2f3cb65a8c75a9035d3a02a22a81",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-57",
+			"source": "pub fn main(){(Some(1)).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "149b99b656892ae17cf5960108266ff28648031cfb99a3f4ac8d2af854131688",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-58",
+			"source": "pub fn main(){((1..3)).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "932f527694a0036b7d59f1d3b54ffb141d0363193b9680ae0d2b4af95fb26be8",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "sort-extra-59",
+			"source": "pub fn main(){([1].iter()).sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "45661683aef7b43c0bbe9059bf66868d9aa03d90e1d57b54af7b9a90991789aa",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-display-range",
+			"source": "pub fn main(){let r=1..3;let alias=r;drop(r);format!(\"{}\",alias)}",
+			"source_sha256": "7a67624709a7f9b063b07407d73025fb4c7ceda227fe40b1954abb5a35abb21f",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-debug-range",
+			"source": "pub fn main(){let r=1..3;let alias=r;drop(r);format!(\"{:?}\",alias)}",
+			"source_sha256": "1643f4b9b7362f3fc1946810b777a7afd01eb192a9f45982136fd1d372461a37",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-sort-tuple",
+			"source": "pub fn main(){let t=(1,2);let alias=t;drop(t);alias.sort_by(|a,b|a.cmp(b));0}",
+			"source_sha256": "d7f9e6e47c8fffdb06c866060e89b6b03a1692098684aaa4077a0f27eb31f80f",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "bad-sort-arg",
+			"source": "pub fn main(){().sort_by(42);0}",
+			"source_sha256": "0eaa0d72833cd23d26bdaa44d1c3a1da1274c63bb35ee434e17692db6ff1e7c3",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-00",
+			"source": "pub fn main(){let it=[1].iter();let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "93ec0a753551bc26d0d7c0d7ed7a6b0b139a07b67f490860856667ec590c4d86",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-01",
+			"source": "pub fn main(){let it=[1].iter();let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "48de7055fc217a0d759432f185d259b931b4674bd2b2574fe11e419a832abd13",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-02",
+			"source": "pub fn main(){let it=#{x:1}.iter();let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "952a8c53d0cd5db6a268bee39e1c8995da4401529b611320dc1eaa4c969c1719",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-03",
+			"source": "pub fn main(){let it=#{x:1}.iter();let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "f809e875173aaf8a50daec411e93cc60a1c6805bf532d95727b8e76e0e37b433",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-04",
+			"source": "pub fn main(){let it=Some(1).iter();let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "e1b16c1da90cfed2127a79a6624ddafb6668359241f2a32e4fa4c97757975e1f",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-05",
+			"source": "pub fn main(){let it=Some(1).iter();let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "93dbb4cc737a641ed27063975426388e70f1194c260f7051492a01fb0dec0180",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-06",
+			"source": "pub fn main(){let it=(1..3).iter();let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "501ebc7faa4eb50b068985262c8cc6608c209c2c5035bcd7fa215b975fbfdc48",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-07",
+			"source": "pub fn main(){let it=(1..3).iter();let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "7ada0411259e2a5c49e5f53a1e077bd53129d723d991136c9744ce4a7fd6a595",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-08",
+			"source": "pub fn main(){let it=(1..=3).iter();let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "01fe9853188656bbd55a1989312e236de7aebcba8588d7491b8f8bbaf46a8b59",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-09",
+			"source": "pub fn main(){let it=(1..=3).iter();let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "0004eb6333793cc4186d571823f64afb9fcc5cdf477c59573221d4b6277b7052",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-10",
+			"source": "pub fn main(){let it=\"ab\".chars();let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "b61d1471e7fd5bf527bb0fc77377b947a311792563921dde2564d2ff3106f8bc",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-11",
+			"source": "pub fn main(){let it=\"ab\".chars();let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "940bdb6099bf17dfa59c66245d3f7bb8bb5f90ac03ccc0a53b56270838e9f8c7",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-12",
+			"source": "pub fn main(){let it=\"a b\".split(\" \");let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "3674a6685327643a70613ebdafa39d33c6645959cf11f903e096afc0171c21be",
+			"policy": "Stock-exact"
+		},
+		{
+			"name": "moved-13",
+			"source": "pub fn main(){let it=\"a b\".split(\" \");let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "d36a3c70278d722e2483e6a33033e99b092d05fcc5c38634266e9c88e24c83b4",
+			"policy": "Intentional opaque Debug address"
+		},
+		{
+			"name": "moved-14",
+			"source": "pub fn main(){let it=[1].iter().skip(1);let alias=it;drop(it);format!(\"{}\",alias)}",
+			"source_sha256": "fcb07d1e36cfae4c88c4ff8b9f6e2edef738b8f85ef1b6379696caa653aaa56d",
+			"policy": "Compile-refused Method"
+		},
+		{
+			"name": "moved-15",
+			"source": "pub fn main(){let it=[1].iter().skip(1);let alias=it;drop(it);format!(\"{:?}\",alias)}",
+			"source_sha256": "216f811c300b7fbc2262060818c9ad31cec90ec9d3b16996f431718c90cf57d4",
+			"policy": "Compile-refused Method"
+		}
+	]
+}

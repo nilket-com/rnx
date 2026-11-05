@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "counts": {
+    "emissions": 722,
+    "admitted_emissions": 551,
+    "l1": 2941,
+    "l1_admitted": 2612,
+    "legacy_units": 2953
+  },
+  "fixture_pins": {
+    "0185-s5-emissions1/static_methods/PROGRESS.json": "235ae406cb48cd0daa5c11c402addd7cdd7b7d6963b17b7335e938fb4981afa4",
+    "0185-s5-emissions1/dynamic_methods/PROGRESS.json": "319e3ed074aa08d11b5750669e348d1ac2548ae513434d3536cc1400e131ba27",
+    "0185-s5-stock-units1/RECORDS.json": "242abcb33dced0d03fb61639e32dadbf0719d528f0893c46265733b888715d85",
+    "0185-c18b3f-l1-2/L1-CLASSIFICATION.json": "4b526bdf7001d3140c14f8b2834777e842f57b44f592b0ea9710cb52ab5d4fff",
+    "0185-s5-l1-1/l1/records/RECORDS.json": "08d9b95bf66c4cce077ab7dac476d0bb1556b5447be578454f1a2869322e1b70"
+  },
+  "repository_pins": {
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/cases.json": "7808ead8767600acd55bf2282d432b46e4961f86a07a28f6d272fd476d456cae",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/dispositions.json": "b6f39e932ef87455c69ce52a188e1014b0c0413e25102be2d3e74bfbc7e677ba",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b1_admissions.json": "94a575831f1f0061052b83355b2d03cb7616b32c4b0ff488a71c67b27b3835ab",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3a_admissions.json": "06fa180962805b02a9c204b81df283c5b7a02052dd3f14ca1bf382504a0eb0cb",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3b_admissions.json": "b3f1cadd46a4a4fced87288fccf21af7dc341d6550042c9cf474114cfa030b8d",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3d_admissions.json": "05484ee7ef4d625f04597349ab4873b9bdb686243ec3306385cf41633347b8c0",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3e_admissions.json": "b974a0f5e447eec21cf5eff39c777357dd2c5f1c3d996317ae00dd57db87dde1",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c17f_admissions.json": "29f4187445a7401f799a57b4fb28f1c9ff7273d9b4844c041f7389b5909ed401",
+    "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/s6_progressions.json": "056569078d45ca9179ab73c6965c88b99110282c81afc133103e64549df06fb2",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/cases.json": "7cd5135c15f16cd0d048f05fa523de083a0f8ec4aa16b0d2d497a3e090df43e4",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/dispositions.json": "abe06bfac452b3d02f2fdd2de39cde27ff3fe83a0ed4374fc023af00263ad6ec",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3a_admissions.json": "ba79bb8301c873ff020f83c0a57006a594c055420b4e09e605fb87d4f37fa882",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3b_admissions.json": "afa5d3a4ae8413c354887585b1472d3a39723f62cbd5d45d8864d777eb329a58",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3e_admissions.json": "07db6b32f2c5cfff1ae67eb38d028a66182cea2691f51b1153def50a59dfdbd0",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c17f_admissions.json": "781a6e93daa48ab65a791eb8a99022a3da0e2b48a616ba30ed29606662f1328d",
+    "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/s6_progressions.json": "52c821c837977e41c0504b55d18c9d4a3dd217e7711568f1279ee6ea6d29b8de"
+  },
+  "modules": [
+    {
+      "name": "static_methods",
+      "prefix": "C18A",
+      "root": "crates/rune/src/experimental_core/tests/gap_hunt/static_methods",
+      "overlays": [
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b1_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3a_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3b_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3d_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3e_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c17f_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/static_methods/s6_progressions.json"
+      ],
+      "baseline_progress": "0185-s5-emissions1/static_methods/PROGRESS.json"
+    },
+    {
+      "name": "dynamic_methods",
+      "prefix": "C18B",
+      "root": "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods",
+      "overlays": [
+        "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3a_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3b_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3e_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c17f_admissions.json",
+        "crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/s6_progressions.json"
+      ],
+      "baseline_progress": "0185-s5-emissions1/dynamic_methods/PROGRESS.json"
+    }
+  ],
+  "unit_records": "0185-s5-stock-units1/RECORDS.json",
+  "l1_classification": "0185-c18b3f-l1-2/L1-CLASSIFICATION.json",
+  "policy": "S7b2 final35 exact historical bytes and existing disposition projections; inherited progression labels unchanged",
+  "l1_records": "0185-s5-l1-1/l1/records/RECORDS.json",
+  "historical_anchor_component": ".reviews"
+}

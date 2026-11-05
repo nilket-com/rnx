@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "crates/*",
+    "examples",
+    "benches",
+    "tools/*",
+    "no-std",
+]
+
+default-members = [
+    "crates/*",
+    "examples",
+    "benches",
+    "tools/site",
+    "tools/builder",
+]
+
+[profile.bench]
+lto = false
+debug = true

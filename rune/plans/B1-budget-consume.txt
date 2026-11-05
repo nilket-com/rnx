@@ -1,0 +1,128 @@
+Rune B1: consume ambient budget in constant time
+
+Status: proposed for review before implementation.
+Authority: Claude rune-native 25913. Base is published CK1
+b4088528083eed006c4f9a79618220ec176d5f1d. This is a separate small record before
+rnx 0205. It does not restore parked N7/N8 or alter column execution.
+
+Add public runtime::budget::consume(n: usize) -> Result<(), BudgetExhausted>.
+Read the current ambient budget once. If it is the existing usize::MAX unlimited
+sentinel, succeed without changing it for every n, including usize::MAX. For a
+finite allowance, checked_sub(n) determines success: on success replace the
+allowance with that remainder; on failure return BudgetExhausted without any
+write or partial debit. Zero succeeds even when the finite allowance is zero.
+The implementation is O(1), allocates nothing, invokes no user callback and has
+no loop. BudgetExhausted is a small public value type with Debug, Copy, Clone,
+Eq/PartialEq, Display and core::error::Error. Its text describes budget
+exhaustion; it does not fabricate a VmError or a script error/trace.
+
+Use the existing std/no-std budget get/replace abstraction. Add no host ABI
+symbol, dependency, atomic operation or unsafe block. The no-std host retains
+its existing thread-local budget contract. Do not refactor take(), permit(),
+acquire(), BudgetGuard, replace(), with(), with_slice(), VM dispatch or any
+existing budget path to call the new API. Their code stays unchanged.
+
+Document that consume debits the innermost installed ambient budget. Nested
+with/replace scopes restore the outer budget exactly as before, including on
+unwind. An outstanding acquire guard has removed the finite ambient allowance;
+consume therefore observes unlimited until that guard drops, matching take's
+existing behavior. consume is a debit, not a reservation or guard. An exhausted
+request leaves the full prior allowance available for scalar replay. It does
+not change the with_slice soft-yield threshold or itself yield; execution sees
+the decreased hard allowance at its next ordinary boundary. Cross-thread callers
+must transfer snapshots and remainders explicitly; TLS is not inherited.
+
+Tests exercise finite exact/under/over-boundary debit, repeated use, zero at zero,
+remaining(), unlimited and usize::MAX requests, near-sentinel finite budgets,
+nested with and replace scopes, acquire compatibility, unwind restoration and
+with_slice. Include a bounded differential control against n successful take()
+operations for affordable n, while separately checking that a failed bulk debit
+is transactional (unlike a partially executed sequence of take()). Assert the
+soft threshold remains unchanged and exercise the existing VM slice behavior
+where appropriate. Run these safe tests under Miri. Keep tests focused on the
+new contract; do not duplicate the existing budget implementation in an oracle.
+
+Signed plan then signed implementation on local main, no branches/worktrees.
+Only runtime/budget.rs, a focused budget test module if useful, mechanical
+canonical test-count inventory updates and required record tooling/evidence are
+in scope. No runtime dependency or feature changes. Enforce existing formatting,
+Clippy, dependency-set and staged-artifact prerequisites before tests or costly
+captures; include no-std compile coverage through the canonical suite. Update
+expected library counts only for actual new tests in each feature inventory.
+Run targeted controls, the full library suite and fresh verification-account
+cold-all plus Miri, including the new budget tests. Preserve existing safe native
+glue/column Miri requirements; do not claim Miri executes AVX2.
+
+Reuse the existing exact-source host/native-off/native-on/old-loop/production
+Call/Return zero-growth controls with published CK1 as the baseline. Require zero
+added core instructions per operation/call, report any nonzero result before
+source or rule changes, and report fixed startup differences separately. No new
+performance gate or column-kernel recapture is needed for this unused additive
+API. Exact source/binary/controller pins, measurement leases, fixed cooldown,
+readiness and existing policies remain unchanged. Remote launchers explicitly
+carry PATH and SSH_AUTH_SOCK and preflight BatchMode access. Jobs block on exit,
+notify only terminal states, and preserve failed receipts for attribution.
+
+Bring the signed implementation and complete receipts for publication review.
+After all gates and acceptance, publish B1 by ordinary fast-forward and verify
+the remote ref. Then amend the rnx 0205 plan/pin to that published revision and
+implement its approved adapter using consume(checked row_charge * valid_rows)
+after admitted success. Its exactly-one scalar replay and unsupported stock-VM
+accounting remain as reviewed. Never use the declined forgotten-guard approach.
+
+Script-host budget audit (review request 25922)
+
+The published stock VM does not acquire its budget for the instruction loop.
+runtime/vm.rs::run calls budget::take() directly at each instruction; op_call
+calls the native handler inline without acquiring or replacing the budget.
+runtime/vm_execution.rs temporarily takes only the soft YieldPoint, not the hard
+budget. rnx src/execute.rs installs a finite budget with with_slice around sync
+resume and with around async polling. Therefore the hard ambient allowance is
+still installed while a normal stock-VM host function runs. The acquire note
+above applies to a caller explicitly holding such a guard, not the normal VM.
+
+The execution engine is different: execute.rs keeps its fuel in a local usize,
+subtracts at charged instructions and passes no fuel to execute/host_bridge.rs.
+That bridge invokes a handler without installing an ambient work allowance.
+consume cannot debit this Executor fuel. Never describe it as doing so, and do
+not extend the bridge or introduce a TLS hook in B1.
+
+The 0205 Polars handle and Series are opaque stock-VM values. Register the new
+bindings as ordinary adapter functions, without execution host certificates.
+They are outside the execution bridge's closed scalar/dynamic payload contract.
+Default rnx routing must therefore refuse the entire outer script before any
+effect and select the stock VM, as existing Polars routing already does. Forced
+--engine=legacy selects that same VM directly. The inner pure row Program can
+still use CK1 or an explicitly fuel-bounded scalar Executor; it is not the outer
+script's engine. An execution-core script entry for opaque column values is
+outside 0205 and would require a separately reviewed explicit fuel interface.
+
+Require 0205 routing controls proving that exact default selection and that no
+execution-host certificate admits the new bindings. At script binding entry,
+require budget::remaining() == Some(finite): None is an unavailable allowance,
+not implicit permission for unlimited work. Fail before launching the worker
+or touching input/output if absent, including a negative control with a caller
+holding acquire(). The separate Rust host API may accept explicitly unlimited
+options; do not use that mode implicitly for a script call.
+
+For a script call, snapshot the finite installed allowance before spawning a
+joined worker. Give the worker that exact amount by value (a scoped budget for
+stock-VM fallback, explicit Executor work for admitted scalar replay). Return
+the remainder/structured failure to the caller, then consume only actual spent
+work on that caller thread. There are no nested callbacks or concurrent caller
+VM instructions during the join; verify the caller allowance still matches its
+snapshot. A primitive refusal consumes nothing before exactly one replay.
+
+Required 0205 adversarial control: the same script with a small --budget and a
+large column must exhaust for both default and --engine=legacy CLI policies;
+record engine selection, not an inaccurate claim that the outer execution core
+ran. Compare each against a forced admitted scalar-row reference, with identical
+error kind, first failing row/location and remaining allowance. For entry B and
+verified row charge C, complete valid rows consume exactly C each; the failing
+row's actual remaining_work comes from Executor, and caller remainder equals
+that returned total remainder. In particular insufficient work exhausts to zero,
+not a successful uncharged column. Preserve typed budget exhaustion at the
+script boundary; do not turn it into a successful catchable column value. Add
+an unrelated admitted-core host-call control documenting that ambient consume
+is not that engine's fuel interface. These requirements close the specific
+0205 path; they do not claim to solve arbitrary core host-operation metering.

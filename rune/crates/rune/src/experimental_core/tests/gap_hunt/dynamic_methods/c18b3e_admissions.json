@@ -1,0 +1,456 @@
+{
+  "record": "C18b3e",
+  "policy": "Additive exact nominal provenance admissions; original cases, stocks, dispositions and refused diagnostics unchanged",
+  "rows": [
+    {
+      "index": 75,
+      "legacy": {
+        "index": 75,
+        "label": "native/zed-script-only",
+        "source_sha256": "4a28281d352c5a54e0e11a5bee0ec1d3658b7bba974db27212da52a5aaa24a07",
+        "stock_row_sha256": "4dfda4f9ca3454950bc5cd7fdc867e8956564c34b09583542bdb431cb66b78af",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 63,
+            "source": 0,
+            "start": 56
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 56, end: 63 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 56:63, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 78,
+      "legacy": {
+        "index": 78,
+        "label": "native/len-script-only",
+        "source_sha256": "e5084c8c96523d3c342017affcb7db7090d6ed939afd13dec70cc3779d7abe94",
+        "stock_row_sha256": "8bdd2844115ad6fb87a45a9e38979e0de379c0b5b087f7053b60389e1161c026",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 64,
+            "source": 0,
+            "start": 57
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 57, end: 64 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 57:64, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 81,
+      "legacy": {
+        "index": 81,
+        "label": "native/push-script-only",
+        "source_sha256": "ee737c2ca676358cb4a98ae0a32b733a51f5959a680ec7c0047e2f7618faea79",
+        "stock_row_sha256": "9e0602203dfa1c70390ad913ca7c4c40710d39e5b3301a2e6fb1092b2bb8c7e9",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 76,
+            "source": 0,
+            "start": 67
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 67, end: 76 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 67:76, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 82,
+      "legacy": {
+        "index": 82,
+        "label": "native/clone-script-only",
+        "source_sha256": "d6ffdc7bbe80ed20ad0d7858e450106a6197214fbf3dfe042ee30d758f7a8228",
+        "stock_row_sha256": "fd752c33859c13613b462ace0bc271158814dc4a6717024314f91642bf1aa580",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 70,
+            "source": 0,
+            "start": 61
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 61, end: 70 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 61:70, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 84,
+      "legacy": {
+        "index": 84,
+        "label": "native/next-script-only",
+        "source_sha256": "10b5be56647124595dab2fa03b6b99b7ee4c6b88cd3b1a040382a095adade72e",
+        "stock_row_sha256": "1ff57b5cfd5bb936b9e2901b4b1abae0473e3d68c6333ab1782fcce63ef4fd8b",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 82,
+            "source": 0,
+            "start": 74
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 74, end: 82 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 74:82, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 232,
+      "legacy": {
+        "index": 232,
+        "label": "shadow/len/param",
+        "source_sha256": "e5084c8c96523d3c342017affcb7db7090d6ed939afd13dec70cc3779d7abe94",
+        "stock_row_sha256": "8bdd2844115ad6fb87a45a9e38979e0de379c0b5b087f7053b60389e1161c026",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 64,
+            "source": 0,
+            "start": 57
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 57, end: 64 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 57:64, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 233,
+      "legacy": {
+        "index": 233,
+        "label": "shadow/push/param",
+        "source_sha256": "521bf8a0312152be009aac4fa78699e58f5d127f1a7385bfa75bc9d9c4b1d58c",
+        "stock_row_sha256": "2494ede2c75b4ab4c1959a5968067b547142a76c8d71b1c0c88ad4b66864f519",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 68,
+            "source": 0,
+            "start": 59
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 59, end: 68 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:68, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 234,
+      "legacy": {
+        "index": 234,
+        "label": "shadow/iter/param",
+        "source_sha256": "d770b50abc32344e79af78443390590a52cd761923e679da5b86bfbdf524e888",
+        "stock_row_sha256": "91dbb81441c1ea4eccb5cd5e5e15b6657c033a7cc562c1baf487424035d00ac4",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 67,
+            "source": 0,
+            "start": 59
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 59, end: 67 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:67, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 235,
+      "legacy": {
+        "index": 235,
+        "label": "shadow/get/param",
+        "source_sha256": "80fdbe1aec5e9dac311ba02db80393af85bde6e5fb1df25c11be9cef8322218b",
+        "stock_row_sha256": "4b7fbf7f1bda2663522d8bb14acd7b6914f2513f49828086542163c7ea2d7564",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 68,
+            "source": 0,
+            "start": 60
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 60, end: 68 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 60:68, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 237,
+      "legacy": {
+        "index": 237,
+        "label": "shadow/contains/param",
+        "source_sha256": "d036209eefe205d09808004c64a26457bb0128fa8af265ae9483956468acccdb",
+        "stock_row_sha256": "2494ede2c75b4ab4c1959a5968067b547142a76c8d71b1c0c88ad4b66864f519",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 76,
+            "source": 0,
+            "start": 63
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 63, end: 76 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 63:76, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 238,
+      "legacy": {
+        "index": 238,
+        "label": "shadow/insert/param",
+        "source_sha256": "60dcacc78841d78def4e05c03b95d55b35d291c8bac859bf89db0236a415be7d",
+        "stock_row_sha256": "1ff57b5cfd5bb936b9e2901b4b1abae0473e3d68c6333ab1782fcce63ef4fd8b",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 78,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 78 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:78, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 239,
+      "legacy": {
+        "index": 239,
+        "label": "shadow/remove/param",
+        "source_sha256": "f7ba038e5e83a372d402c83cee6eb71f6459a93fa91a1b7c9c5d3445c39d706e",
+        "stock_row_sha256": "1ff57b5cfd5bb936b9e2901b4b1abae0473e3d68c6333ab1782fcce63ef4fd8b",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 72,
+            "source": 0,
+            "start": 61
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 61, end: 72 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 61:72, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 240,
+      "legacy": {
+        "index": 240,
+        "label": "shadow/next/param",
+        "source_sha256": "adacf39a535f49e95c845d13d87ff6af254df8ece1e43ea0d53e955202111e3c",
+        "stock_row_sha256": "8db2076a4ac3ad705c417aea79b63bf13c8c2255e41942956e5a0c3a914f6cb4",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 67,
+            "source": 0,
+            "start": 59
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 59, end: 67 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:67, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 242,
+      "legacy": {
+        "index": 242,
+        "label": "shadow/sort/param",
+        "source_sha256": "5b03c8919ded1e2b57f732ee47e8ad2db7b98379b993ac1aa472a2434cd3b379",
+        "stock_row_sha256": "cc9630e20fa229b563b64788af3d4396ae526afa2c166675a7e8483bf2c729f2",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 67,
+            "source": 0,
+            "start": 59
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 59, end: 67 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:67, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 243,
+      "legacy": {
+        "index": 243,
+        "label": "shadow/values/param",
+        "source_sha256": "c379c5a72339d0f92b56edc8e419f34f259e68408bf5b708915b3df77d054197",
+        "stock_row_sha256": "7c463ed03ed6f9f13574c7caf05d5b85aefeb31d57f72f2f15fb10d0a2834c17",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 71,
+            "source": 0,
+            "start": 61
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 61, end: 71 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 61:71, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 244,
+      "legacy": {
+        "index": 244,
+        "label": "shadow/keys/param",
+        "source_sha256": "acce08ebc00cc680ddbbd64836101428cd1f52cea18bc4ef71067aeb064c718a",
+        "stock_row_sha256": "77938335d38fc9a185825476bfaa6b2105f7d719ae4be681bdcab008954908d2",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 67,
+            "source": 0,
+            "start": 59
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 59, end: 67 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:67, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 246,
+      "legacy": {
+        "index": 246,
+        "label": "shadow/capacity/param",
+        "source_sha256": "4493993effb13609a11411e523305c6dbcb196d94cbd92cf566daa5321c38d6e",
+        "stock_row_sha256": "8841abbf9a54747d0c37b13b357b74be6b36bd03c1a49b9c16bd6f3dbe07a883",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 77,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 77 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:77, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 251,
+      "legacy": {
+        "index": 251,
+        "label": "shadow/pop/param",
+        "source_sha256": "d3fb5abf0112593d2e889851fda77fd5c6aca988171080e9bdd448983e56eb50",
+        "stock_row_sha256": "988ec27a6d497eb505ddc0c52a34eb3ae34672644920450243b826c019c38dbd",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 65,
+            "source": 0,
+            "start": 58
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 58, end: 65 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 58:65, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+	"version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Language Server (Local Debug Build)",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/editors/code"
+            ],
+            "env": {
+                "RUNE_BUILD_FOLDER": "${workspaceFolder}/target/debug",
+                "RUNE_LOG_FILE": "${workspaceFolder}/target/debug/rune-languageserver.log",
+                "RUNE_LOG": "rune_languageserver=trace",
+                "RUST_BACKTRACE": "1"
+            }
+        },
+        {
+            "name": "Language Server",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}/editors/code"
+            ],
+            "env": {
+                "RUNE_LOG_FILE": "${workspaceFolder}/target/debug/rune-languageserver.log",
+                "RUNE_LOG": "rune_languageserver=trace",
+                "RUST_BACKTRACE": "1"
+            }
+        }
+    ]
+}

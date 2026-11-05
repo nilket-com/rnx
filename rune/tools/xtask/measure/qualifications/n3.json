@@ -1,0 +1,40 @@
+{
+	"schema": 1,
+	"record": "N3",
+	"baseline_milestone": "N2",
+	"candidate_commit": "cbc81682526bc8f2d49948e9bcfa47fce51e5da9",
+	"tip_commit": "ee28ecf2cdb484295765a221385ccf3a85749ab4",
+	"entries": [
+		{
+			"rule": "exact-scalar-entry-and-cold-preparation",
+			"cells": {
+				"on/while": 2626,
+				"on/numeric": 3364
+			},
+			"calls": 1000,
+			"steady_Ir": {
+				"on/while": 1000,
+				"on/numeric": 1000
+			},
+			"cold_Ir": {
+				"on/while": 1626,
+				"on/numeric": 2364
+			}
+		},
+		{
+			"rule": "exact-unreachable-predecessor-analysis",
+			"cells": {
+				"on/shared_rows": 27796
+			},
+			"calls": 1,
+			"steady_Ir": {
+				"on/shared_rows": 0
+			},
+			"cold_Ir": {
+				"on/shared_rows": 27796
+			}
+		}
+	],
+	"proof": "n3-proof.json",
+	"proof_sha256": "7b04585b01f30aa3be22bd9c2a6ff5166bbe3b4ac565ca11e45d681d066beb97"
+}

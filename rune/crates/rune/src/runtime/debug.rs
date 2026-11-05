@@ -1,0 +1,197 @@
+//! Debug information for units.
+
+use core::fmt;
+
+#[cfg(feature = "musli")]
+use musli_core::{Decode, Encode};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
+use crate as rune;
+use crate::alloc::prelude::*;
+use crate::alloc::{Box, HashMap, Vec};
+use crate::ast::Span;
+use crate::runtime::DebugLabel;
+use crate::{Hash, ItemBuf, SourceId};
+
+/// Debug information about a unit.
+#[derive(Debug, TryClone, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "musli", derive(Decode, Encode), musli(crate = musli_core))]
+#[non_exhaustive]
+pub struct DebugInfo {
+	/// Debug information on each instruction.
+	pub instructions: HashMap<usize, DebugInst>,
+	/// Function signatures.
+	pub functions: HashMap<Hash, DebugSignature>,
+	/// Reverse lookup of a function.
+	pub functions_rev: HashMap<usize, Hash>,
+	/// Hash to identifier.
+	pub hash_to_ident: HashMap<Hash, Box<str>>,
+	/// Static slots, indexed by slot.
+	///
+	/// This is empty if debug information has been disabled, in which case
+	/// diagnostics have to refer to a static by its slot index.
+	pub globals: Vec<DebugGlobal>,
+}
+
+impl DebugInfo {
+	/// Get debug instruction at the given instruction pointer.
+	pub fn instruction_at(&self, ip: usize) -> Option<&DebugInst> {
+		self.instructions.get(&ip)
+	}
+
+	/// Get the function corresponding to the given instruction pointer.
+	pub fn function_at(&self, ip: usize) -> Option<(Hash, &DebugSignature)> {
+		let hash = *self.functions_rev.get(&ip)?;
+		let signature = self.functions.get(&hash)?;
+		Some((hash, signature))
+	}
+
+	/// Access an identifier for the given hash - if it exists.
+	pub fn ident_for_hash(&self, hash: Hash) -> Option<&str> {
+		Some(self.hash_to_ident.get(&hash)?)
+	}
+
+	/// Access debug information for the given static slot - if it exists.
+	pub fn global(&self, slot: usize) -> Option<&DebugGlobal> {
+		self.globals.get(slot)
+	}
+}
+
+/// Debug information for a static slot.
+#[derive(Debug, TryClone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "musli", derive(Decode, Encode), musli(crate = musli_core))]
+#[non_exhaustive]
+pub struct DebugGlobal {
+	/// The path of the static item occupying the slot.
+	pub path: ItemBuf,
+}
+
+impl DebugGlobal {
+	/// Construct a new static slot description.
+	#[inline]
+	pub fn new(path: ItemBuf) -> Self {
+		Self { path }
+	}
+}
+
+impl fmt::Display for DebugGlobal {
+	#[inline]
+	fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(fmt, "{}", self.path)
+	}
+}
+
+/// Debug information for every instruction.
+#[derive(Debug, TryClone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "musli", derive(Decode, Encode), musli(crate = musli_core))]
+#[non_exhaustive]
+pub struct DebugInst {
+	/// The file by id the instruction belongs to.
+	pub source_id: SourceId,
+	/// The span of the instruction.
+	pub span: Span,
+	/// The comment for the line.
+	pub comment: Option<Box<str>>,
+	/// Label associated with the location.
+	pub labels: Vec<DebugLabel>,
+}
+
+impl DebugInst {
+	/// Construct a new debug instruction.
+	pub fn new(
+		source_id: SourceId,
+		span: Span,
+		comment: Option<Box<str>>,
+		labels: Vec<DebugLabel>,
+	) -> Self {
+		Self {
+			source_id,
+			span,
+			comment,
+			labels,
+		}
+	}
+}
+
+/// Debug information on function arguments.
+#[derive(Debug, TryClone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "musli", derive(Decode, Encode), musli(crate = musli_core))]
+#[non_exhaustive]
+pub enum DebugArgs {
+	/// An empty, with not arguments.
+	EmptyArgs,
+	/// A tuple, with the given number of arguments.
+	TupleArgs(usize),
+	/// A collection of named arguments.
+	Named(Box<[Box<str>]>),
+}
+
+/// A description of a function signature.
+#[derive(Debug, TryClone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "musli", derive(Decode, Encode), musli(crate = musli_core))]
+#[non_exhaustive]
+pub struct DebugSignature {
+	/// The path of the function.
+	pub path: ItemBuf,
+	/// The number of arguments expected in the function.
+	pub args: DebugArgs,
+}
+
+impl DebugSignature {
+	/// Construct a new function signature.
+	#[inline]
+	pub fn new(path: ItemBuf, args: DebugArgs) -> Self {
+		Self { path, args }
+	}
+}
+
+impl fmt::Display for DebugSignature {
+	fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match &self.args {
+			DebugArgs::EmptyArgs => {
+				write!(fmt, "{}", self.path)?;
+			}
+			DebugArgs::TupleArgs(args) if *args > 0 => {
+				write!(fmt, "{}(", self.path)?;
+
+				let mut it = 0..*args;
+				let last = it.next_back();
+
+				for arg in it {
+					write!(fmt, "{arg}, ")?;
+				}
+
+				if let Some(arg) = last {
+					write!(fmt, "{arg}")?;
+				}
+
+				write!(fmt, ")")?;
+			}
+			DebugArgs::Named(args) => {
+				write!(fmt, "{}(", self.path)?;
+
+				let mut it = args.iter();
+				let last = it.next_back();
+
+				for arg in it {
+					write!(fmt, "{arg}, ")?;
+				}
+
+				if let Some(arg) = last {
+					write!(fmt, "{arg}")?;
+				}
+
+				write!(fmt, ")")?;
+			}
+			_ => (),
+		}
+
+		Ok(())
+	}
+}

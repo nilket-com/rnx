@@ -1,0 +1,90 @@
+{
+  "measured_commit": "f4af80a2c565f579347e9c04d87b1d9e03060ce0",
+  "tip_commit": "0fed676af917e5d66f5bde49280f550488d02d70",
+  "ruling": "rune-native seq24856 and24863",
+  "artifact_directory": "target/n5/read-only-loops-f4af80a2",
+  "artifacts": {
+    "tip-checkout.asm": {
+      "sha256": "9962e00aae4a81ca3c0cda63912c9a8f8e26f78ab06e4a33959c4cb2600838a0",
+      "bytes": 107769
+    },
+    "tip-invoke.asm": {
+      "sha256": "157df100d4e50176118e2e90052662fc37a6f8dc42c952a8e5f1ebaf010e8031",
+      "bytes": 115451
+    },
+    "candidate-invoke.asm": {
+      "sha256": "aec61d802d0b05a32ab543ad05ea5aec7a83adc60bcd396e120bce69c7e6b475",
+      "bytes": 113974
+    },
+    "candidate-checkout.asm": {
+      "sha256": "831cfe77dff7bd3cbfd71aeddab37b8e063931707e00e0741b69407437432110",
+      "bytes": 109590
+    },
+    "ATTRIBUTION.json": {
+      "sha256": "925f0bfab2dad6f2833a43c95ab2ee6c73f54864d19998fe85942e498953b355",
+      "bytes": 96494
+    }
+  },
+  "steady_Ir_per_host_invoke": {
+    "Executor::invoke": 8,
+    "cache::checkout": 0,
+    "all_VM_closures": 0
+  },
+  "scope": "Nine original 1000/2000 invocation pairs; raw accounting/assembly attached by hashes. Cold deltas remain explicit and unqualified. No per-script-call or per-loop-iteration allowance.",
+  "CGU1_shared_rows_correction": {
+    "ruling": "rune-native seq24896",
+    "measured_commit": "b04c17f8ab8d515952108ce514629d8d3234024e",
+    "attribution": {
+      "path": "target/n5/read-only-cgu1-b04c17f8/ATTRIBUTION.json",
+      "sha256": "618e4a0c080b016cf949abc6457bf64e1c70a181c86fd7c0c1cd71fee538b9ba",
+      "bytes": 35805
+    },
+    "invoke_tip": {
+      "self_Ir": 132012,
+      "calls": 1000
+    },
+    "invoke_candidate": {
+      "self_Ir": 138012,
+      "calls": 1000
+    },
+    "exact_delta": 6000,
+    "explanation": "No-region/interpreted host-entry shortcut differs from Native checkout arm: six extra capture setup instructions per host invoke instead of eight. VM closure costs/calls identical. Same f4 signed invoke assembly hashes above cover both dispatch paths; raw remainder1098 goes through ordinary bounds."
+  },
+  "native_return_validation": {
+    "ruling": "rune-native seq24901",
+    "symbol": "<rune::experimental_core::region::recursion::Shape>::at",
+    "cell": "on/fib",
+    "receipt": {
+      "path": "target/n5/cgu1-fib-counts-b04c17f8/RESULT.json",
+      "sha256": "8be70e81bde48dee72a0a2ba7e667f298147b740de47ef67ad0387bfc38d760d",
+      "bytes": 2775
+    },
+    "trace": {
+      "path": "/home/me/work/rune/target/n5/cgu1-fib-counts-b04c17f8/TRACE.json",
+      "sha256": "bbcca74445ddb5bc845797c76dfb513603616d4cd16e709b9b7bf2a1b37d9b6e",
+      "bytes": 387741
+    },
+    "binary": {
+      "bytes": 14258096,
+      "path": "/home/me/work/target/n5-b04c17f8/builds/candidate-cgu1-on/run/target/release/p2-probe-harness",
+      "sha256": "2bc238d6f64d4dc7a21dc51cf41ba56fc00d3088c9542cf05ea07db00f69853f"
+    },
+    "source": {
+      "path": "/home/me/work/rune/tools/xtask/measure/kernels/fib.rn",
+      "sha256": "d1d605ea61c5b09f421465beae93e45998506423e3aace2ce1c825f7afa578c1",
+      "bytes": 88
+    },
+    "stream": {
+      "path": "/home/me/work/target/n5-b04c17f8/callgrind-cgu1/data/fib_main.txt",
+      "sha256": "bd02dd78733c6258ae3f67158ea2a44dc67fa2ba45c3a16cc02e38b751e2a004",
+      "bytes": 303000
+    },
+    "entries": 1000,
+    "completions": 999,
+    "replays": 1,
+    "slot_limit": 64,
+    "actual_slots": 7,
+    "shape_at_calls": 6993,
+    "scope": "RecordedsealedABIreturns,sameCGU1binary/source/inputs; slotchecker classifiedboundedreturnworkonly; NO instruction subtraction or netcore/whole exemption"
+  }
+}

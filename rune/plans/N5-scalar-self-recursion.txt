@@ -1,0 +1,70 @@
+N5: native pure scalar direct self-recursion at function entry
+
+Authority: user go-ahead and Claude rune-native seq24677 (six conditions).
+Base Rune 0fed676af917e5d66f5bde49280f550488d02d70; rnx0202 39634c5f.
+Read-only report: ../target/n5-step0-0fed676a/STEP0.txt (PASS).
+
+Admit acyclic function bodies with direct SELF calls, I64/Bool/Unit values,
+scalar literals, copies, release, arithmetic, comparisons, branches and returns.
+Reject mutual recursion, other helper calls, intra-body loops, dynamic/method
+calls, heap values, fields, strings, IO and collections. No benchmark-specific
+rewrites, memoization or removal of tail-call charges.
+
+Enter at charged pc0 after the interpreter publishes the real initial frame,
+before its charge. Keep private iterative continuations with closed return-site
+IDs, never machine-stack recursion or engine pointers. Bound every flattened
+private-buffer index physically and clamp speculative accesses including empty
+sentinels. Use a separately sealed recursive compiler/entry/record; preserve
+existing scalar/collection ABIs, ExitRecord and MAX_REGION_CELLS.
+
+Count the full interpreter frame and slot occupancy for every virtual call,
+including tail calls, against region_room's already reserved frame, diagnostic
+and slot capacity. Never grow engine buffers natively. Refuse anything whose
+allocation equivalence is not proved. Scratch allocation failure is invisible.
+On any nested fault, type, fuel, cancel or room problem discard private state
+and replay the entire function from original pc0, window and fuel. Suppress
+attempts in descendant frames until that dynamic root returns, allowing later
+independent roots to retry after real interpreter growth. Test deep failing
+recursion and fuel-limited divergence with counted speculative work to exclude
+quadratic retry. Invalid records poison the entry and fail closed.
+
+On success commit only validated scalar top-frame state and exact fuel, resume
+at its actual Return before that instruction's charge/execution, and let the
+interpreter perform the real return and ownership cleanup. Match all fuel cuts
+on branching and tail recursion; match errors, locations, chains, capacities,
+cleanup and remaining fuel across all probed resource limits. Prove zero-quota
+factorial succeeds even when native scratch preparation fails.
+
+Select recursion-specific execution once per admitted program. Existing
+native-off and numeric/range/N2/N3/N4 paths must add zero Ir per call. Add a
+committed interpreter-only Call microcheck beside Push, compared with locked
+N4, requiring exactly zero extra Ir/call. Preserve all unchanged limits.
+
+Production proof: fib n>1 and a general second recursive kernel; entry and
+completion counts, positive virtual calls and depth, checksums, off entries0,
+first-call and warm-call completion separately. Report cold replay honestly.
+Measure whole calls including setup vs off and locked N4; annotate thermal
+limitations. No permute/shared_rows gain claimed.
+
+Mandatory committed fmt/Clippy barrier before expensive tests. Full native
+suite, targeted/canonical Miri, fresh cold-all, fresh unqualified CGU1 on/off,
+K1/counter2/seals, old-loop and interpreter-only Push/Call diagnostics. On a
+measurement failure attribute existing profiles read-only and bring numbers
+before changing code or rules. No inherited qualification or threshold waiver.
+
+One signed plan and one signed implementation on main, no branches/worktrees.
+Claude review and all gates before publication; then rnx pin. Durable jobs
+notify on exit; no polling/progress watchers, read terminal receipts once.
+
+Claude seq24708 clarified condition 1: zero cost applies to programs without
+admitted recursion. In a program with admitted recursion, wrapper bookkeeping
+must be O(1) per call, with no per-instruction work or scans. Measure/report a
+mixed program's wrapper-call cost explicitly vs off and locked N4; retain a
+net whole-call win when recursion dominates. Use a bounded direct function
+lookup and execute entry checks once per actual frame, before pc0's charge.
+
+Claude seq24741 approved a narrow audit equality proof for an optimizer's
+one-level duplicate pure I64 iadd (same SSA/constant operands, commuted allowed).
+The physical len, unsigned guard, full-index Spectre clamp, zero sentinel and
+scale permissions are unchanged. Reject different operands/bounds, loads,
+other opcodes and nested nonidentical expressions; exercise these controls.

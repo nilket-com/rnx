@@ -1,0 +1,15 @@
+[package]
+name = "no-std"
+authors = ["John-John Tedro <udoprog@tedro.se>"]
+edition = "2021"
+publish = false
+
+[features]
+std = ["rune/std"]
+
+[dependencies]
+rune = { path = "../crates/rune", default-features = false, features = ["alloc"] }
+wee_alloc = "0.4.5"
+# Pull in your own critical-section implementation.
+# See: https://github.com/rust-embedded/critical-section/tree/main#usage-in-no-std-binaries
+critical-section = { version = "1.2.0", default-features = false }

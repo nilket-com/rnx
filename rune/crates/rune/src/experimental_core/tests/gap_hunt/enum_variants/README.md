@@ -1,0 +1,23 @@
+# C15b enum and match oracle
+
+The oracle freezes 166 inputs before implementation: 142 Exact, 4 Intentional declaration-order comparisons, 10 frontend refusals, 8 surface refusals, 1 depth refusal and 1 retained fuel rule. Authority: chatd messages 18976, 18981 and 18997. The base is C15 commit 9e4caecf.
+
+The original 163 inputs and their observations are unchanged. Rows 058, 059 and 123 preserve the frontend diagnostics for a named constructor used directly as a match scrutinee. New rows 163 and 164 bind that value before matching and return 7 and 16. New row 165 reports the unknown pattern field. The appended inputs use the second legacy VM binary; all original observations use the first binary. The external review package retains child receipts and source provenance.
+
+The contract runs the stock VM live on each case. Its comparable row omits raw debug evidence and projects only the seven approved structured kind leaves containing nine `AnyTypeInfo.full_name` pointers. All hashes, type names, spans, diagnostics, effects, reuse results and value graph identities remain exact. `p1.json` lists the exact leaves.
+
+Both engines compare variants by declaration order for rows 036, 039, 040 and 052, so the execution engine is compared with the live stock result. Only row 036 changed output for these inputs; the other three happen to agree with the old hash order. No older oracle input found by the enum/relational-source audit pins a different variant order.
+
+Row 148 has a source-identical legacy VM completion at fuel 200000 with 100 events. A execution core fuel stop must retain a non-strict prefix of that complete tape, close its lifecycle and allow executor reuse. Completion must match the complete observation. This rule checks effect order, not equal numeric fuel consumption.
+
+The scope includes unit, empty tuple, tuple and named variants, enum identity, fields, formatting, equality, declaration-order comparison, match, if-let and while-let. Nested patterns, guards, rest, wrong-type misses and unit on no arm retain the observed behavior. First-class constructors, refutable local and parameter patterns, bare named-variant type values and async blocks remain compile-time refusals before effects. Depth 128 remains a compile-time refusal. The nominal clone aliasing defect is reserved for C15c; its observations are preserved here.
+
+The ignored contract requires an external bounded operator. It runs each of the 166 sources on the stock VM and the execution engine and checks exact diagnostics and source-pinned sites, the structured pointer projection and the complete retained fuel tape. Each child must close its lifecycle. D1b now gives stock and new the same format-display text and argument sites for rows 005/012/019/026/033; `d1b_diagnostics.json` retains the before/after receipts. Every other observation leaf remains exact.
+
+The new observer traverses anonymous object keys through the same Rune map representation as the stock observer, using placeholder values only to recover key iteration order. It interns the actual new children independently and preserves alias identities. Named variant fields use declaration order. Neither observer reads expected graphs.
+
+Variants reuse the existing struct type tag and list or record storage. Cold nominal descriptors are 40 bytes and retain variant hash, parent enum hash, declaration ordinal and field names after code destruction. A separate 16 KiB table of canonical variant IDs lets arm tests compare identity without taking the metadata mutex. IDs ignore storage shape and field layout. Context variants remain refused before effects. Source-pinned sidecars in the older pattern, constructor and method contracts admit only cases checked exactly against their original stock observations.
+
+Arm tests use the existing Call instruction. Lowering binds each staged selector to a struct descriptor in the caller's type pool; publication replaces it with the canonical variant ID in both encoded and cached instructions. Validation requires that caller binding and one valid slot argument. The fixed intrinsic policy remains unchanged. The matcher validates the root handle and reads its tag without traversing children or creating a script frame. Ordinary Is instructions and the shared Call driver keep their C15 paths.
+
+The final paired Callgrind control measures 192 instructions per extra enum-arm miss: 106 in the intrinsic wrapper and 86 in the Call driver. This cost is accepted for C15b; match performance is queued as M1 after D1. Ordinary Is has identical loop instruction counts with counting enabled and a four-instruction total setup difference with counting disabled. These are instruction-count observations, not wall-clock claims.

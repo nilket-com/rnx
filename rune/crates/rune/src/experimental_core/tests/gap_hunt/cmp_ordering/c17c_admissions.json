@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "note": "C17c admits i64 min and max on a proven i64 receiver with the exact frozen stock value. Frozen stock and legacy refusals remain unchanged.",
+  "rows": [
+    {
+      "index": 182,
+      "label": "refusal/min",
+      "source_hex": "70756220666e206d61696e28297b312e6d696e2832297d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "aaea5c6883d5d8c07c88d3b0610b3d968e983611d1597dfa89bd8e878639155d",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Method",
+        "refusal": "Method",
+        "invoked": false,
+        "source": 0,
+        "start": 14,
+        "end": 22,
+        "span_hex": "312e6d696e283229"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": "",
+      "stock_projected_sha256": "6d17128de531f3b58377c13fafe59d15893cc14349c3f9bbbb2f859db5deaff8"
+    },
+    {
+      "index": 183,
+      "label": "refusal/max",
+      "source_hex": "70756220666e206d61696e28297b312e6d61782832297d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "2a7149bba2ed63b88cad113762b62b0c550296e2cc96c9aaccfa2833a36993e2",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Method",
+        "refusal": "Method",
+        "invoked": false,
+        "source": 0,
+        "start": 14,
+        "end": 22,
+        "span_hex": "312e6d6178283229"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": "",
+      "stock_projected_sha256": "5f26b5ffd41a37628efcd9f773de87aeed5f01a07bff88f3949198495eed858f"
+    }
+  ]
+}

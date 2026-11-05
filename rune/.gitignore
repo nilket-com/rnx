@@ -1,0 +1,16 @@
+/target
+/tools/xtask/measure/harness/target
+/*.lua
+/*.py
+/scripts/test.rn
+/.vscode/spellright.dict
+*.rnc
+/.idea
+/flamegraph.svg
+/perf.data
+/perf.data.*
+/*.log
+/TODO.md
+/CLAUDE.md
+
+/tools/xtask/column/probe/target

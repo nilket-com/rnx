@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "note": "C13 admits these absent-name calls with the exact frozen stock missing-method error. Frozen stock and legacy refusals remain unchanged.",
+  "rows": [
+    {
+      "index": 179,
+      "label": "refusal/reverse",
+      "source_hex": "70756220666e206d61696e28297b7374643a3a636d703a3a4f72646572696e673a3a4c6573732e7265766572736528297d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "1c9137b68a71eee362d0148b5b3246e26df021c3f6713a8af9866fc83c87f80d",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Method",
+        "refusal": "Method",
+        "invoked": false,
+        "source": 0,
+        "start": 14,
+        "end": 48,
+        "span_hex": "7374643a3a636d703a3a4f72646572696e673a3a4c6573732e726576657273652829"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": "",
+      "stock_projected_sha256": "a307fdb344cc1efea8a286f5075d9295703a0867a98408b04a440e883fe1a8e7"
+    },
+    {
+      "index": 180,
+      "label": "refusal/then",
+      "source_hex": "70756220666e206d61696e28297b7374643a3a636d703a3a4f72646572696e673a3a4c6573732e7468656e287374643a3a636d703a3a4f72646572696e673a3a457175616c297d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "f67b8855ab5d1de83dace4f419a414312ed74f8d3c11ecb8fa9d18cdb5cc7038",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Method",
+        "refusal": "Method",
+        "invoked": false,
+        "source": 0,
+        "start": 14,
+        "end": 70,
+        "span_hex": "7374643a3a636d703a3a4f72646572696e673a3a4c6573732e7468656e287374643a3a636d703a3a4f72646572696e673a3a457175616c29"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": "",
+      "stock_projected_sha256": "fdcbf8df09f81b7cfe42d146ca62a0bb9bbbb2168f126260acc57cf4c654ebf0"
+    },
+    {
+      "index": 181,
+      "label": "refusal/then-with",
+      "source_hex": "70756220666e206d61696e28297b7374643a3a636d703a3a4f72646572696e673a3a4c6573732e7468656e5f77697468287c7c7374643a3a636d703a3a4f72646572696e673a3a457175616c297d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "08b66e62f48d5b34ec4b82b12cc1123705dd8f400f4c39222a55cf2d68a9e596",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Method",
+        "refusal": "Method",
+        "invoked": false,
+        "source": 0,
+        "start": 14,
+        "end": 77,
+        "span_hex": "7374643a3a636d703a3a4f72646572696e673a3a4c6573732e7468656e5f77697468287c7c7374643a3a636d703a3a4f72646572696e673a3a457175616c29"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": "",
+      "stock_projected_sha256": "75b2bb1dae584ec467eceebe66ff8d8657538ed57dd91a18f2c1631bb03e773d"
+    }
+  ]
+}

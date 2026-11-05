@@ -1,0 +1,51 @@
+N4: native append to one homogeneous scalar vector
+
+Authority: user confirmation and Claude rune-native seq24618. Base 0dd43079.
+Read-only report: enclosing workspace target/n4-step0-0dd43079/STEP0.txt.
+
+Admit direct Push to one stable I64 or Bool Vec in scalar/range/while
+regions, including initially empty vectors and same-target Get/Set. Use
+private bounded scalar staging; never pass an engine pointer to machine
+code. Check every access. Staging exhaustion or an interpreter growth limit
+commits the completed prefix and retries the precise Push in the interpreter.
+
+Factor checked capacity growth, byte charge and allocation peak into helpers
+shared with Store::push, preserving interpreter behavior. Use those helpers
+to establish private execution bounds and prepare exact exit capacity.
+Preserve the constructor hint policy, alias identity and reader leases.
+Account for intermediate allocator peaks, not just final payload bytes.
+Scratch/replacement preparation failure falls back at the original header
+with untouched state and fuel, with no visible error or cache poisoning.
+Refuse paths whose resource equivalence cannot be proved.
+
+Use separate append analysis metadata, entry and commit. Validate scalar,
+iterator, target, aliases, length, capacity, charges, fuel and record before
+any mutation. Prepare replacement storage before publication, then commit
+without allocation or a fallible ownership operation. Maintain exact Retry
+prefixes and failure PCs. Preserve MAX_REGION_CELLS and successful scalar,
+range, N2 and N3 execution paths; prove unchanged costs with fresh counters.
+
+Defer two-root iterator-to-destination fusion, String/Char and heap pushes,
+rows, fields, dynamic calls and recursion. No shared_rows or permute gain.
+No arbitrary element cap; use existing byte budgets. Prove a million-element
+case under adequate limits, including real production builder entry/return
+separately from readers for the integer/Boolean benchmarks and Sieve.
+
+Differentially compare interpreter/native prefix, capacity, bytes and errors
+at store limit96, allocator quotas64/96/128/192/256 and every doubling.
+Cover types, aliases, leases, exact fuel, partial exits, overflow, bounds,
+stale/closed handles, resource fallback and malformed records. Run targeted
+and canonical Miri, full native tests, fmt/Clippy and fresh cold-all.
+Use unchanged CGU1, K1, counter2 and seals; off delta exactly zero. Attribute
+failures read-only before changes; bring entry-only deltas to Claude with
+numbers. N3's hash-bound qualification is not inherited. Measure complete
+production calls against native-off and locked N3 including preparation and
+publication, and report thermal limitations explicitly.
+
+User steering: make formatting and Clippy prerequisites in the committed
+verification runner, including selected-suite runs. Prove failure prevents
+expensive test/Miri launch; do not depend on operator script ordering.
+
+One signed plan and one signed implementation on main; no worktrees or
+branches. Block on durable job exits and read terminal receipts once.
+Publish only after review and gates, then rnx pin, then N5 recursion.
