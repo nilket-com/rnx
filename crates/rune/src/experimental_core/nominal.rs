@@ -74,7 +74,7 @@ impl ReadEntry {
 // Variant order and persistent field names are cold metadata; heap layouts are unchanged.
 const _: () = assert!(core::mem::size_of::<Entry>() == 40);
 
-pub(crate) struct Interner {
+struct Interner {
 	limits: Limits,
 	entries: Vec<Entry>,
 	names: String,
@@ -1164,6 +1164,51 @@ mod tests {
 	}
 
 	#[test]
+	fn private_identity_publication_barrier_reproducer() {
+		const CHILD: &str = "RUNE_0207_IDENTITY_CHILD";
+		if std::env::var_os(CHILD).is_none() {
+			let output = std::process::Command::new(std::env::current_exe().unwrap())
+				.args(["--exact", "experimental_core::nominal::tests::private_identity_publication_barrier_reproducer", "--nocapture"])
+				.env(CHILD, "1").output().unwrap();
+			let stderr = std::string::String::from_utf8_lossy(&output.stderr);
+			assert!(!output.status.success(), "legacy assertion must fail");
+			assert!(
+				stderr.contains("ADR0207 local IDs compared through global registry"),
+				"{stderr}"
+			);
+			return;
+		}
+		assert_eq!(global_len(), 0);
+		let mut table = small(2, 8, 12);
+		let a = table.intern(1, "A").unwrap();
+		let b = table.intern(2, "B").unwrap();
+		assert_ne!(a, b);
+		let barrier = std::sync::Arc::new(std::sync::Barrier::new(2));
+		let other = barrier.clone();
+		let publisher = std::thread::spawn(move || {
+			let mut staging = Staging::default();
+			staging
+				.stage_variant(0x207001, format_args!("V"), Shape::Tuple(1), 0x207000)
+				.unwrap();
+			staging
+				.stage_variant(0x207001, format_args!("V"), Shape::Tuple(2), 0x207000)
+				.unwrap();
+			let mut remap = staging.prepare_remap().unwrap();
+			other.wait();
+			staging.commit(&mut remap).unwrap();
+			other.wait();
+		});
+		barrier.wait();
+		barrier.wait();
+		publisher.join().unwrap();
+		assert_eq!(table.hash(a), Some(1));
+		assert_eq!(table.hash(b), Some(2));
+		assert_ne!(a.0, b.0);
+		limits_refuse_before_publishing();
+		assert_ne!(a, b, "ADR0207 local IDs compared through global registry");
+	}
+
+	#[test]
 	fn limits_refuse_before_publishing() {
 		let mut table = small(2, 8, 12);
 		let a = table.intern(1, "A").unwrap();
@@ -1179,7 +1224,7 @@ mod tests {
 		assert_eq!(long.refusal, Some(Refusal::TypeTable));
 		assert_eq!(table.len(), 1, "a refused name is not published");
 		let b = table.intern(2, "B").unwrap();
-		assert_ne!(a, b);
+		assert_ne!(a.0, b.0, "indices belong to this private table");
 		assert_eq!(table.name(b), Some("B"));
 		let full = table.intern(3, "C").unwrap_err();
 		assert_eq!(full.refusal, Some(Refusal::TypeTable));

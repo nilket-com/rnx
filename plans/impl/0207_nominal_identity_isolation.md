@@ -21,3 +21,30 @@ reintroduction. Validate the deterministic interleaving and ordinary parallel
 feature suites, retain failures without retries, update exact manifest counts,
 and run fresh-clone/Miri gates at the stacked 0207 tip. Publish 0206 and 0207
 together only after all required gates pass.
+
+## Constructor and provisional-identity audit
+
+Interner::with_limits is called in production only by nominal::with_global,
+which passes its candidate to with_prepared and installs it behind GLOBAL.
+Other construction sites are module tests. Make Interner private to preserve
+that boundary. The private-table inequality in limits_refuse_before_publishing
+must compare raw indices, because Nominal::PartialEq consults published metadata.
+
+Staging::stage_shape/stage_variant_order can produce high-bit provisional IDs.
+Transaction::stage, stage_shape and stage_variant retain them in the builder.
+Transaction::finish validates through Staging::valid and constructs/audits the
+decoded cache before publication. code::audit_cached delegates to same_op;
+same_tag explicitly compares Struct IDs by their raw u32, bypassing Nominal
+semantic equality. The frontend receiver-proof comparisons use Hash, not Nominal.
+Staging lookup compares entry hashes/shapes/fields, not semantic Nominal equality.
+
+After all fallible validation and remap allocation, finish calls staging.commit
+then for_each_type_mut to replace every provisional Struct ID in encoded type
+pools and cached operands. No fallible operation follows publication. Debug
+assertions check that no provisional ID remains and re-audit the cache. A refused
+finish returns no Code; the staging/builder values drop. Published execution
+therefore cannot observe the private local-table IDs in the failing test.
+
+Evidence: target/adr0207/reproduce-v1/RESULT.json. The fresh child forces the
+publication with two Barrier rendezvous; local metadata stays distinct while
+the legacy global equality assertion fails. This is not a failed-suite retry.

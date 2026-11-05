@@ -402,8 +402,49 @@ fn borrow_doc(ctx: &Context, label: &str, selector: &str) -> Result<Value> {
 	Ok(json!({"selector":selector,"receipt":run.receipt,"passed":2}))
 }
 
+fn validate_library_result(exit: i32, passed: usize, failed: usize, expected: usize) -> Result<()> {
+	ensure!(
+		exit == 0 && failed == 0,
+		"library failed; no isolated retry"
+	);
+	ensure!(
+		passed == expected,
+		"library count changed: {passed} vs {expected}"
+	);
+	Ok(())
+}
+
+#[cfg(test)]
+mod library_failure_controls {
+	fn one_original_run(body: &str) -> bool {
+		body.matches("ctx.run(").count() == 1
+			&& !body.contains("ctx.checked(")
+			&& body.matches("Command::new(").count() == 1
+			&& body.contains("validate_library_result(r.code, passed, failed, l.passed)?")
+	}
+
+	#[test]
+	fn runner_cannot_reintroduce_an_isolated_retry() {
+		let source = include_str!("native.rs");
+		let marker = ["fn ", "library("].concat();
+		let start = source.find(&marker).unwrap();
+		let body = source[start..].split("\nfn ").next().unwrap();
+		assert!(one_original_run(body));
+		assert!(!one_original_run(&format!("{body} ctx.run(")));
+		assert!(!one_original_run(&format!("{body} ctx.checked(")));
+	}
+
+	#[test]
+	fn failed_original_suite_cannot_be_accepted() {
+		assert!(super::validate_library_result(0, 12, 0, 12).is_ok());
+		assert!(super::validate_library_result(101, 11, 1, 12).is_err());
+		assert!(super::validate_library_result(101, 12, 0, 12).is_err());
+		assert!(super::validate_library_result(0, 11, 1, 12).is_err());
+		assert!(super::validate_library_result(0, 11, 0, 12).is_err());
+	}
+}
+
 fn library(ctx: &Context, l: &Library) -> Result<Value> {
-	let failure_names = Regex::new(r"(?m)^    (\S+)$")?;
 	let binary = ctx.build_rune(&l.name, &l.features)?;
 	let mut cmd = Command::new(&binary);
 	cmd.current_dir(&ctx.repo);
@@ -419,39 +460,14 @@ fn library(ctx: &Context, l: &Library) -> Result<Value> {
 	let r = ctx.run(&format!("{}-library", l.name), &mut cmd, 2400)?;
 	let text = fs::read_to_string(&r.stdout)?;
 	let (passed, failed) = counts(&text)?;
-	let mut retry = Value::Null;
-	if r.code != 0 || failed != 0 {
-		let flaky = "experimental_core::nominal::tests::limits_refuse_before_publishing";
-		let failures = text.rsplit("\nfailures:\n").next().unwrap_or("");
-		let names: std::collections::BTreeSet<_> = failure_names
-			.captures_iter(failures)
-			.map(|c| c[1].to_owned())
-			.collect();
-		ensure!(
-			failed == 1 && names == [flaky.to_owned()].into_iter().collect(),
-			"{} library failed",
-			l.name
-		);
-		let mut cmd = Command::new(&binary);
-		cmd.current_dir(&ctx.repo).args(["--exact", flaky]);
-		let rerun = ctx.checked(&format!("{}-known-flaky-rerun", l.name), &mut cmd, 600)?;
-		exact_counts(&fs::read_to_string(&rerun.stdout)?, 1)?;
-		retry = json!({"receipt":rerun.receipt,"passed":1});
-	}
-	ensure!(
-		passed + failed == l.passed,
-		"{} library count changed: {} vs {}",
-		l.name,
-		passed + failed,
-		l.passed
-	);
+	validate_library_result(r.code, passed, failed, l.passed)?;
 	let budget_classes = if has_edges {
 		read_json::<Value>(&edge_output.join("COUNTS.json"))?
 	} else {
 		Value::Null
 	};
 	Ok(
-		json!({"name":l.name,"features":l.features,"passed":passed,"failed":failed,"flaky_rerun":retry,"expected":l.passed,"receipt":r.receipt,"seconds":r.seconds,"budget_classes":budget_classes,"budget_observations":if has_edges {Some(edge_output)}else{None}}),
+		json!({"name":l.name,"features":l.features,"passed":passed,"failed":failed,"expected":l.passed,"receipt":r.receipt,"seconds":r.seconds,"budget_classes":budget_classes,"budget_observations":if has_edges {Some(edge_output)}else{None}}),
 	)
 }
 

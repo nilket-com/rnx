@@ -1,6 +1,6 @@
 # ADR 0207: Nominal identity isolation
 
-Status: Proposed
+Status: Accepted
 
 Comparable nominal identities belong to the published global registry. Private
 interner tests compare local entry indices and local metadata, not global
