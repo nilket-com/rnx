@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 sha2 = "=0.10.9" # Legacy installation verification only.
 blake3 = "=1.8.7"
-rune = { git = "https://github.com/nilket-com/rune", rev = "fed878b5aea151a878462d71626c9a4d589a4273", default-features = false, features = ["std", "anyhow"] }
+rune = { path = "../../rune/crates/rune", default-features = false, features = ["std", "anyhow"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "=0.9.12"
@@ -35,3 +35,26 @@ required-features = ["test-support"]
 name = "rnx-project"
 path = "src/main.rs"
 test = false
+
+# Preserve Git-dependency codegen after migration to canonical Rune paths.
+
+[profile.dev.package.rune]
+incremental = false
+
+[profile.dev.package.rune-alloc]
+incremental = false
+
+[profile.dev.package.rune-alloc-macros]
+incremental = false
+
+[profile.dev.package.rune-core]
+incremental = false
+
+[profile.dev.package.rune-macros]
+incremental = false
+
+[profile.dev.package.rune-tracing]
+incremental = false
+
+[profile.dev.package.rune-tracing-macros]
+incremental = false

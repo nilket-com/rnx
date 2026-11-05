@@ -1,0 +1,17 @@
+{
+  "note": "Canonical engine license locations after import. Existing third-party/licenses/SOURCES.tsv retains historical acquisition provenance; original license bytes are unchanged.",
+  "licenses": [
+    {
+      "path": "rune/LICENSE-APACHE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "upstream_source": "https://github.com/rune-rs/rune",
+      "import_revision": "6d7aa59dee00dd9c5c598b3a1e0d54fca6ae6bdf"
+    },
+    {
+      "path": "rune/LICENSE-MIT",
+      "sha256": "69f4c49c53b3798ea665d464784ede97b4826e59d15a1bac74cbb268789c8b14",
+      "upstream_source": "https://github.com/rune-rs/rune",
+      "import_revision": "6d7aa59dee00dd9c5c598b3a1e0d54fca6ae6bdf"
+    }
+  ]
+}

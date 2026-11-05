@@ -20,3 +20,26 @@ path = "main.rs"
 rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
 rnx-polars = { path = "../../adapters/polars" }
 rnx-candle = { path = "../../adapters/candle" }
+
+# Preserve Git-dependency codegen after migration to canonical Rune paths.
+
+[profile.dev.package.rune]
+incremental = false
+
+[profile.dev.package.rune-alloc]
+incremental = false
+
+[profile.dev.package.rune-alloc-macros]
+incremental = false
+
+[profile.dev.package.rune-core]
+incremental = false
+
+[profile.dev.package.rune-macros]
+incremental = false
+
+[profile.dev.package.rune-tracing]
+incremental = false
+
+[profile.dev.package.rune-tracing-macros]
+incremental = false

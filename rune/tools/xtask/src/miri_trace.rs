@@ -182,11 +182,16 @@ pub fn harness_records(ctx: &Context) -> Result<Value> {
 				.collect::<Result<Vec<_>>>()?;
 			PathBuf::from(std::ffi::OsString::from_vec(bytes))
 		};
+		let sources: Vec<_> = args
+			.iter()
+			.filter_map(Value::as_str)
+			.filter(|arg| arg.ends_with("crates/rune/src/lib.rs"))
+			.collect();
 		ensure!(
-			fs::canonicalize(&cwd)? == ctx.repo,
-			"Miri harness belongs to different source: {}",
-			cwd.display()
+			sources.len() == 1,
+			"Miri harness must name exactly one Rune source"
 		);
+		common::verify_engine_location(&ctx.repo, &cwd, Path::new(sources[0]))?;
 		let copy = dest.join(format!("{:03}.json", records.len()));
 		common::write_json(&copy, &record)?;
 		records.push(

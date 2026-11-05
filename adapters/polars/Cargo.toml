@@ -75,3 +75,26 @@ libc = "0.2"
 debug = false
 [profile.release]
 debug = false
+
+# Preserve Git-dependency codegen after migration to canonical Rune paths.
+
+[profile.dev.package.rune]
+incremental = false
+
+[profile.dev.package.rune-alloc]
+incremental = false
+
+[profile.dev.package.rune-alloc-macros]
+incremental = false
+
+[profile.dev.package.rune-core]
+incremental = false
+
+[profile.dev.package.rune-macros]
+incremental = false
+
+[profile.dev.package.rune-tracing]
+incremental = false
+
+[profile.dev.package.rune-tracing-macros]
+incremental = false

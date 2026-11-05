@@ -131,6 +131,11 @@ fn git(repo: &Path, args: &[&str]) -> Result<Vec<u8>> {
 }
 impl Source {
 	fn capture(repo: &Path) -> Result<Self> {
+		// Engine verification also depends on the canonical workspace manifest/lock.
+		if !repo.join("Cargo.toml").is_file() && repo.join("crates/rune/Cargo.toml").is_file() {
+			let root = String::from_utf8(git(repo, &["rev-parse", "--show-toplevel"])?)?;
+			return Self::capture(Path::new(root.trim()));
+		}
 		let head = String::from_utf8(git(repo, &["rev-parse", "HEAD"])?)?
 			.trim()
 			.to_owned();
@@ -271,6 +276,13 @@ impl Context {
 			}
 		}
 		Ok(())
+	}
+	pub fn engine_profile_args(&self) -> Vec<&'static str> {
+		if self.repo.join("Cargo.toml").is_file() {
+			Vec::new()
+		} else {
+			vec!["--profile", "engine-dev"]
+		}
 	}
 	pub fn cargo(&self) -> Command {
 		self.cargo_toolchain(&self.toolchain)
@@ -620,6 +632,7 @@ impl Context {
 				"--no-run",
 				"--message-format=json",
 			])
+			.args(self.engine_profile_args())
 			.env("CARGO_TARGET_DIR", self.root_out.join("targets").join(key));
 		let run = ctx.checked("cargo", &mut command, 3600)?;
 		let mut binaries = Vec::new();
@@ -705,6 +718,30 @@ fn valid_label(label: &str) -> Result<()> {
 	);
 	Ok(())
 }
+pub fn verify_engine_location(repo: &Path, cwd: &Path, source: &Path) -> Result<()> {
+	let repo = fs::canonicalize(repo)?;
+	let workspace = match repo.parent() {
+		Some(parent)
+			if !repo.join("Cargo.toml").is_file()
+				&& parent.join("Cargo.toml").is_file()
+				&& parent.join("rune") == repo =>
+		{
+			parent.to_owned()
+		}
+		_ => repo.clone(),
+	};
+	ensure!(
+		fs::canonicalize(cwd)? == workspace,
+		"engine compilation directory differs from its workspace"
+	);
+	ensure!(
+		fs::canonicalize(cwd.join(source))?
+			== fs::canonicalize(repo.join("crates/rune/src/lib.rs"))?,
+		"engine compilation source differs from canonical Rune library"
+	);
+	Ok(())
+}
+
 pub fn dwarf_units(text: &str, repo: &Path) -> Result<Vec<serde_json::Value>> {
 	let mut units = Vec::new();
 	for block in text.split("Compilation Unit @ offset") {
@@ -727,11 +764,13 @@ pub fn dwarf_units(text: &str, repo: &Path) -> Result<Vec<serde_json::Value>> {
 			.next()
 			.context("invalid DWARF directory")?
 			.trim();
-		ensure!(
-			fs::canonicalize(cwd)? == repo,
-			"test executable belongs to {cwd}, expected {}",
-			repo.display()
-		);
+		let source = name
+			.rsplit(": ")
+			.next()
+			.context("missing DWARF source")?
+			.trim();
+		let source = source.split("/@/").next().context("invalid DWARF source")?;
+		verify_engine_location(repo, Path::new(cwd), Path::new(source))?;
 		units.push(json!({"name":name.rsplit(": ").next().unwrap().trim(),"recorded_cwd":cwd}));
 	}
 	ensure!(!units.is_empty(), "no Rune compilation units in executable");
@@ -985,12 +1024,37 @@ mod tests {
 	fn dwarf_requires_expected_source_directory() {
 		let tree = TestTree::new();
 		let repo = fs::canonicalize(tree.0.join("repo")).unwrap();
+		fs::create_dir_all(repo.join("crates/rune/src")).unwrap();
+		fs::write(repo.join("crates/rune/src/lib.rs"), "").unwrap();
 		let unit = |cwd: &Path| {
-			format!("Compilation Unit @ offset 0:\n DW_AT_name : crates/rune/src/lib.rs\n DW_AT_comp_dir : {}\n", cwd.display())
+			format!(
+				"Compilation Unit @ offset 0:\n DW_AT_name : crates/rune/src/lib.rs\n DW_AT_comp_dir : {}\n",
+				cwd.display()
+			)
 		};
 		assert!(dwarf_units(&unit(&repo), &repo).is_ok());
 		assert!(dwarf_units(&unit(&tree.0), &repo).is_err());
 		assert!(dwarf_units("", &repo).is_err());
+	}
+
+	#[test]
+	fn monorepo_compilation_location_rejects_wrong_checkout_and_source() {
+		let tree = TestTree::new();
+		let workspace = tree.0.join("repo");
+		let repo = workspace.join("rune");
+		fs::create_dir_all(repo.join("crates/rune/src")).unwrap();
+		fs::write(workspace.join("Cargo.toml"), "[workspace]").unwrap();
+		fs::write(repo.join("crates/rune/src/lib.rs"), "").unwrap();
+		let source = Path::new("rune/crates/rune/src/lib.rs");
+		assert!(verify_engine_location(&repo, &workspace, source).is_ok());
+		assert!(verify_engine_location(&repo, &repo, Path::new("crates/rune/src/lib.rs")).is_err());
+		fs::write(workspace.join("wrong.rs"), "").unwrap();
+		assert!(verify_engine_location(&repo, &workspace, Path::new("wrong.rs")).is_err());
+		let other = tree.0.join("other");
+		fs::create_dir(&other).unwrap();
+		assert!(
+			verify_engine_location(&repo, &other, &repo.join("crates/rune/src/lib.rs")).is_err()
+		);
 	}
 
 	#[test]

@@ -27,6 +27,9 @@ publish = false
 
 # Deliberately independent of the product workspace and its editor/GUI hosts.
 [workspace]
+resolver = "3"
+default-members = ["."]
+members = ["rune/crates/rune", "rune/crates/rune-alloc", "rune/crates/rune-alloc-macros", "rune/crates/rune-cli", "rune/crates/rune-core", "rune/crates/rune-languageserver", "rune/crates/rune-macros", "rune/crates/rune-modules", "rune/crates/rune-tracing", "rune/crates/rune-tracing-macros", "rune/crates/rune-wasm", "rune/tools/builder", "rune/tools/generate", "rune/tools/site", "rune/tools/xtask", "rune/examples", "rune/benches", "rune/no-std"]
 exclude = ["tools/project"]
 
 [features]
@@ -56,7 +59,7 @@ hyper = { version = "=1.11.1", default-features = false, features = ["server", "
 hyper-util = { version = "=0.1.20", default-features = false, features = ["server", "http1", "service", "tokio"], optional = true }
 rnx-project = { path = "tools/project", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
-rune = { git = "https://github.com/nilket-com/rune", rev = "fed878b5aea151a878462d71626c9a4d589a4273", default-features = false, features = ["std", "fmt", "execution", "native-code"] }
+rune = { path = "rune/crates/rune", default-features = false, features = ["std", "fmt", "execution", "native-code"] }
 serde_json = "1.0.149"
 jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }
 libc = "0.2.177"
@@ -90,3 +93,77 @@ unicode-width = "0.2.2"
 [target."cfg(windows)".dependencies]
 jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo", "tzdb-bundle-platform"] }
 windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_System_Threading", "Win32_System_Console", "Win32_System_Pipes", "Win32_System_IO", "Win32_System_Diagnostics_ToolHelp", "Win32_Storage_FileSystem", "Wdk_Storage_FileSystem"] }
+
+[profile.engine-dev]
+inherits = "dev"
+debug = 2
+opt-level = 0
+[profile.engine-dev.package."*"]
+opt-level = 0
+[profile.engine-release]
+inherits = "release"
+lto = false
+[profile.engine-bench]
+inherits = "bench"
+lto = false
+debug = true
+
+# Preserve the shipped host dependency recipe after these crates become members.
+
+[profile.dev.package.rune]
+opt-level = 2
+incremental = false
+
+[profile.dev.package.rune-alloc]
+opt-level = 2
+incremental = false
+
+[profile.dev.package.rune-alloc-macros]
+opt-level = 2
+incremental = false
+
+[profile.dev.package.rune-core]
+opt-level = 2
+incremental = false
+
+[profile.dev.package.rune-macros]
+opt-level = 2
+incremental = false
+
+[profile.dev.package.rune-tracing]
+opt-level = 2
+incremental = false
+
+[profile.dev.package.rune-tracing-macros]
+opt-level = 2
+incremental = false
+
+# Engine verification retains its original standalone development recipe.
+
+[profile.engine-dev.package.rune]
+opt-level = 0
+incremental = true
+
+[profile.engine-dev.package.rune-alloc]
+opt-level = 0
+incremental = true
+
+[profile.engine-dev.package.rune-alloc-macros]
+opt-level = 0
+incremental = true
+
+[profile.engine-dev.package.rune-core]
+opt-level = 0
+incremental = true
+
+[profile.engine-dev.package.rune-macros]
+opt-level = 0
+incremental = true
+
+[profile.engine-dev.package.rune-tracing]
+opt-level = 0
+incremental = true
+
+[profile.engine-dev.package.rune-tracing-macros]
+opt-level = 0
+incremental = true

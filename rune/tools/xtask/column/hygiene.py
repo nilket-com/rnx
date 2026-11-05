@@ -1,5 +1,5 @@
 """Reject staged build products before any CK1 build or source pinning."""
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 import subprocess
 
 ARTIFACT_SUFFIXES = {".o", ".obj", ".a", ".so", ".dylib", ".dll", ".exe", ".pdb", ".rlib", ".rmeta", ".pyc"}
@@ -12,18 +12,25 @@ def artifact_path(name):
 
 
 def check(root):
+	root = Path(root).resolve()
+	top = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], cwd=root, text=True).strip())
+	prefix = root.relative_to(top)
 	probe_target = "tools/xtask/column/probe/target/ck1-ignore-control"
 	if subprocess.run(["git", "check-ignore", "--quiet", probe_target], cwd=root).returncode:
 		raise ValueError("CK1 probe target directory must be gitignored")
 	staged = subprocess.check_output(["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"], cwd=root).decode().split("\0")
-	for name in filter(None, staged):
+	for indexed_name in filter(None, staged):
+		try:
+			name = str(Path(indexed_name).relative_to(prefix))
+		except ValueError:
+			continue
 		if not name.startswith("tools/"):
 			continue
 		if artifact_path(name):
 			raise ValueError(f"staged build artifact: {name}")
 		# Inspect the index object rather than the working copy: replacing a
 		# staged binary on disk must not let the staged binary pass this guard.
-		with subprocess.Popen(["git", "show", ":" + name], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as process:
+		with subprocess.Popen(["git", "show", ":" + indexed_name], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as process:
 			prefix = process.stdout.read(8)
 			process.stdout.close()
 			process.wait()

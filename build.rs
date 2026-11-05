@@ -1,4 +1,6 @@
 //! Gate-1 prototype: build provenance only. No network or source acquisition.
+#[path = "tools/build_identity.rs"]
+mod identity;
 use std::{
 	collections::BTreeMap,
 	fs,
@@ -282,6 +284,7 @@ fn verification_pins(root: &Path, out: &Path) -> Result<(), Box<dyn std::error::
 }
 
 fn main() {
+	identity::emit(Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap()));
 	// The verifier declares this feature only in its private dev manifest.
 	println!("cargo:rustc-check-cfg=cfg(feature, values(\"cross-verification\"))");
 	if std::env::var_os("CARGO_FEATURE_CROSS_VERIFICATION").is_some() {

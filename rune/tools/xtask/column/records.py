@@ -45,8 +45,16 @@ def git(repo, *args):
 	return subprocess.check_output(["git", *args], cwd=repo, text=True)
 
 
-def check(repo, base=BASE):
-	head = git(repo, "rev-parse", "HEAD").strip()
+def check(repo, base=BASE, head=None):
+	if head is None and base == BASE:
+		root = Path(git(repo, "rev-parse", "--show-toplevel").strip())
+		if (root / "rune/crates/rune").is_dir():
+			# Preserve the existing engine guard across the history import. The full
+			# root ket checker remains ADR 0209; no imported ancestry is reworded.
+			engine = check(root, BASE, "6d7aa59dee00dd9c5c598b3a1e0d54fca6ae6bdf")
+			current = check(root, "002584a48d1f714e3856f5a3d6a99ac86c2204eb", git(root, "rev-parse", "HEAD").strip())
+			return {"status": "PASS", "engine_before_import": engine, "root_since_import_plan": current}
+	head = head or git(repo, "rev-parse", "HEAD").strip()
 	# No --base escape in the normal preflight: the committed adoption boundary
 	# is fixed. The parameter exists for isolated temporary-repository controls.
 	subprocess.run(["git", "merge-base", "--is-ancestor", base, head], cwd=repo, check=True)
