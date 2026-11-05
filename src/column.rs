@@ -236,9 +236,10 @@ impl Kernel {
 			let attempt = self.attempt(inputs, options, room, &mut canceled);
 			match attempt {
 				core::ColumnOutcome::Complete(result) => {
-					self.last.valid_rows = result.validity.as_ref().map_or(len, |bits| {
-						bits.iter().map(|b| b.count_ones() as usize).sum()
-					});
+					self.last.valid_rows = result
+						.validity
+						.as_deref()
+						.map_or(len, |bits| validity_count(bits, len));
 					self.last.path = Some(match result.path {
 						core::Path::Scalar => Path::ScalarPrimitives,
 						core::Path::Avx2 => Path::Avx2,
@@ -345,3 +346,19 @@ impl Kernel {
 
 #[cfg(all(test, not(feature = "cross-verification")))]
 mod tests;
+
+// Count only logical rows, independently of padding in the core output.
+fn validity_count(bits: &[u8], len: usize) -> usize {
+	let whole_bytes = len / 8;
+	let (words, tail) = bits[..whole_bytes].as_chunks::<8>();
+	let full: usize = words
+		.iter()
+		.map(|word| u64::from_le_bytes(*word).count_ones() as usize)
+		.sum();
+	let partial = if len.is_multiple_of(8) {
+		0
+	} else {
+		(bits[whole_bytes] & ((1 << (len % 8)) - 1)).count_ones() as usize
+	};
+	full + partial + tail.iter().map(|b| b.count_ones() as usize).sum::<usize>()
+}

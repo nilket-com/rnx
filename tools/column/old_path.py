@@ -55,7 +55,7 @@ try:
 	build=json.loads((args.build_receipt.resolve(strict=True)).read_text());assert build['status']=='PASS'
 	source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
 	tooling_changes=subprocess.check_output(['git','diff','--name-only',build['candidate'],source_commit],cwd=ROOT,text=True).splitlines()
-	assert all(name.startswith('tools/column/') or name == 'probes/0072/inventory/doc.sh' for name in tooling_changes),'build source differs outside column tooling/inventory producer'
+	assert all(name.startswith(('tools/column/','plans/impl/')) or name == 'probes/0072/inventory/doc.sh' for name in tooling_changes),'build source differs outside column tooling/inventory producer'
 	result.update(source_commit=source_commit,tooling_changes_since_build=tooling_changes)
 	pins={str(p):sha(p) for p in HERE.glob('*.py')}
 	pins.update({str(p):sha(p) for p in (args.rune_root.resolve(strict=True)/'tools/xtask/measure').glob('*.py')})

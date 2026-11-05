@@ -426,3 +426,31 @@ fn owned_handles_and_results_can_cross_a_joined_worker() {
 	send::<Error>();
 	send::<Output>();
 }
+
+#[test]
+fn validity_word_count_matches_independent_bit_reference() {
+	for len in 0usize..=1031 {
+		for pattern in [0u8, 255, 170, 49] {
+			let mut bits = vec![pattern; len.div_ceil(8)];
+			if !len.is_multiple_of(8) {
+				*bits.last_mut().unwrap() &= (1 << (len % 8)) - 1;
+			}
+			let expected = (0..len)
+				.filter(|&i| bits[i / 8] & (1 << (i % 8)) != 0)
+				.count();
+			assert_eq!(
+				validity_count(&bits, len),
+				expected,
+				"len {len}, pattern {pattern}"
+			);
+			if !len.is_multiple_of(8) {
+				*bits.last_mut().unwrap() |= !((1 << (len % 8)) - 1);
+				assert_eq!(
+					validity_count(&bits, len),
+					expected,
+					"dirty padding, len {len}"
+				);
+			}
+		}
+	}
+}
