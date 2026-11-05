@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "benches",
+    "examples",
+    "crates/rune",
+]

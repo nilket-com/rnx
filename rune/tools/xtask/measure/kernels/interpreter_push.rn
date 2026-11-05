@@ -1,0 +1,6 @@
+// Native-off production microcheck: growth and the interpreter's scalar Push path.
+fn kernel(seed) {
+	let values = [];
+	for i in 0..128 { values.push(i + seed); }
+	values[0] + values[127]
+}

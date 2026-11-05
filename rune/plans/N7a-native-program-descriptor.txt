@@ -1,0 +1,63 @@
+N7a: one native program descriptor and small exit validation
+
+Authority: user N7 GO and Claude rune-native25204. Base published Rune
+is a68e739e6213dd02877258503f16df7ddaae6fc7. This prerequisite changes
+no admitted bytecode shapes, language semantics, opcode arms or native ABI.
+N7 String/row projection and startup work are excluded.
+
+One cache entry owns one descriptor containing loop regions and, when present,
+scalar-recursion or mixed named-method activations. Remove both TLS sidecar
+tables, their installation/eviction paths and successive invocation fallbacks.
+One cache checkout selects the existing execution specialization once per host
+invocation. Preserve the existing two runtime metadata arguments and static
+specializations; ordinary IterNext/Get/Eq/Release/Call/Field arms are untouched.
+
+Use a single owned, fallibly allocated native descriptor per admitted program,
+not per invocation. Reserve its exact shell before loading the first mapping,
+charge its capacity to existing program/thread metadata limits, and transfer
+ownership into the existing Building/CheckedOut/Ready cache state machine.
+A native-only standard allocation cannot become a new script-visible failure.
+Allocation/refusal/unwind must drop or retain every artifact and pool token
+exactly once, leave no stale key or reservation, and retain interpreter fallback.
+Do not change configured program/region/compile/mapping/analysis/scratch caps.
+Count actual descriptor and cache-table storage, without fictional free bytes.
+
+A small checkout guard owns the descriptor while in flight and restores it only
+to its matching marker. Nested checkout of the same code interprets; in-flight
+entries cannot be evicted or reused. Preserve LRU, cache clear/thread-exit,
+environment/page-size disablement, Miri refusal and invalid-exit poisoning.
+Keep optional activation data owned by that descriptor, not by another table.
+No new callable engine or Store pointer crosses the existing private ABI.
+
+Replace validate_record's early large Outcome construction with a small
+Invalid/Replay/Complete-PC classification. Preserve every status, fuel, work,
+call/depth, reserved-field and reached-Return check. Both scalar and method
+entries construct the same existing Outcome only after successful publication;
+Replay/Invalid leave the original engine state untouched. The shared compiler,
+continuations, full-index/Spectre guards and pre/post/machine audits stay intact.
+Do not tune shared interpreter heap leaves or their inlining attributes.
+
+Witness scalar loops, collection loops, scalar recursion, methods and mixed
+programs in one descriptor; cached/in-flight/eviction/clear/unwind lifetimes;
+allocation and scaled-cap refusal; cleanup/accounting; invalid records; and
+existing full-state/fuel/error/cancellation behavior. Replace tests of deleted
+sidecar mechanics with controls of the actual unified ownership boundary.
+Run committed formatting/Clippy prerequisites before expensive checks. New
+comments/tests describe mechanisms; Python uses tabs.
+
+Measure exact signed candidate against a68e739e: standard38 CGU1, nine old-loop
+host diagnostics, production native-off Push/Call, N5 and N6 actual CLI native
+entry/return/first-warm/off0/parity witnesses, K1/counter2 and seals. Report
+host/core/cold costs separately; no existing path may exceed the N6 accepted
+residuals (pure N5 +3, loops +1, no-region0 relative to the earlier baseline),
+and native-off core remains exactly0. Report direct a68e739e deltas and any
+improvement toward0 honestly. Bring failed saved profiles read-only before
+source/rule changes; no inherited qualification or silently relaxed threshold.
+
+One signed plan and one signed implementation on local main, no branches or
+worktrees. Review exact source, then all required gates and a fresh cold-all
+clone plus canonical and N5/N6 safe native-glue Miri. Durable jobs block on exit;
+read terminal receipts, without polling or progress watchers. Publish Rune only
+on all PASS and acceptance. NO rnx pin or matrix refresh for N7a alone. After
+it lands, bring N7's explicit general admission/compile policy and projection
+plan for Claude review before implementing any String/row functionality.

@@ -1,0 +1,38 @@
+[package]
+name = "rune-wasm"
+authors = ["John-John Tedro <udoprog@tedro.se>"]
+edition = "2021"
+rust-version = "1.95"
+description = "A WASM module for the Rune Language, an embeddable dynamic programming language for Rust."
+documentation = "https://docs.rs/rune"
+readme = "README.md"
+homepage = "https://github.com/rune-rs/rune"
+repository = "https://github.com/rune-rs/rune"
+license = "MIT OR Apache-2.0"
+keywords = ["language", "scripting", "scripting-language"]
+categories = ["parser-implementations"]
+publish = false
+
+[dependencies]
+rune = { version = "0.15.0", path = "../rune", features = ["capture-io"] }
+rune-macros = { version = "=0.15.0", path = "../rune-macros" }
+rune-modules = { version = "0.15.0", path = "../rune-modules", features = ["core", "test", "json", "toml", "rand"] }
+
+serde = { version = "1.0.163", features = ["derive"] }
+wasm-bindgen = { version = "0.2.100", features = ["serde-serialize"] }
+wasm-bindgen-futures = "0.4.35"
+js-sys = "0.3.62"
+anyhow = "1.0.71"
+gloo-utils = "0.3.0"
+
+[dependencies.web-sys]
+version = "0.3.62"
+features = ["Request", "Response", "Window", "RequestInit", "RequestMode"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "src/lib.rs"
+
+[package.metadata.wasm-pack.profile.release]
+# Note: doesn't work
+wasm-opt = false

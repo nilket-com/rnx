@@ -1,0 +1,54 @@
+{
+  "record": "CK2",
+  "approval": "rune-native 26505",
+  "base_commit": "1b4b66bd3657868ecb1d49f8b3f355585b3ec98d",
+  "boundary": "actual production CLI whole map, including validity and owned output",
+  "rows": [
+    10000000,
+    100000000
+  ],
+  "flat_ir_per_row_max": {
+    "f64add": 4.0,
+    "mul3": 12.0
+  },
+  "nullable_numeric_ratio_to_new_flat_max": 6.0,
+  "nullable_numeric_must_improve_published": true,
+  "nullable_boolnot_ir_per_row_max": 5.0,
+  "nullable_patterns": [
+    "long-run",
+    "alternating",
+    "deterministic-random"
+  ],
+  "layouts": [
+    "flat",
+    "independent-chunks-offsets-tails"
+  ],
+  "zero_unreviewed_growth": [
+    "flat i64add",
+    "flat axpy",
+    "flat boolnot",
+    "all old-path controls"
+  ],
+  "masked_add_primitive_ir_per_row_strictly_less_than": 9.5,
+  "published_nullable_ir_per_row": {
+    "i64add": 80.8622571,
+    "axpy": 111.65973137,
+    "boolnot": 108.55504969,
+    "f64add": 143.04538324,
+    "mul3": 155.29694058
+  },
+  "reviewed_exceptions": [
+    {
+      "review": "rune-native 26785",
+      "candidate": "6b01bba874a8bbc1e4032a1f36d50bb0c7124775",
+      "baseline": "1b4b66bd3657868ecb1d49f8b3f355585b3ec98d",
+      "kind": "boolnot",
+      "layout": "flat",
+      "rows": 100000000,
+      "call": 0,
+      "max_delta_Ir": 28,
+      "attribution_sha256": "c54c7dd32ac7494e8e59a161b715c23092b011be518ec839dc52726d19074d39",
+      "attribution": "First-call function attribution: allocator +48 Ir; invoke -28; fast-plan +6; remaining symbol/address deltas retained in hashed evidence. Warm call improves. Exact exception only; no general slope allowance."
+    }
+  ]
+}

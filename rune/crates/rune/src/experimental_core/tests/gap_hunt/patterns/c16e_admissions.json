@@ -1,0 +1,89 @@
+{
+	"let/some": {
+		"source_sha256": "d02409f150baf422f50113090e0cb7a03973fe58c5f04d8368694a46682e0b3e",
+		"stock_outcome_sha256": "5ba55e22707cdaf2a48b42de3bf8fd7f5671106cc58fcc1cfa3591e68b6c9c9f",
+		"policy": "Exact",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309"
+	},
+	"let/none": {
+		"source_sha256": "832777215a03294808af80008ad4b647f8d2ba77fde756cc007a80cf31b99921",
+		"stock_outcome_sha256": "cccca9a54fe3595f3dded967d712c3566ade85696e137bf2a7941c8c7858b0f5",
+		"policy": "Policy-presentation",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309",
+		"stock_class": "stock:Panic { reason: Panic { inner: UnmatchedPattern } }",
+		"fresh_class": "Panic"
+	},
+	"let/tuple": {
+		"source_sha256": "2122950f247914b8fc0a4bb4abdb515ef2a8feaa4ba6ca5d6aef3176f5e4b560",
+		"stock_outcome_sha256": "5ba55e22707cdaf2a48b42de3bf8fd7f5671106cc58fcc1cfa3591e68b6c9c9f",
+		"policy": "Exact",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309"
+	},
+	"let/tuple-miss": {
+		"source_sha256": "b924dd652765f5ed0d3916d37caa098d6b84ea0810291375a21d9ca1ada2ab3e",
+		"stock_outcome_sha256": "e4798f28ad8b630e0f86e0decd3ccc2899d764e4e459d8834b85e7cb8d540c80",
+		"policy": "Policy-presentation",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309",
+		"stock_class": "stock:Panic { reason: Panic { inner: UnmatchedPattern } }",
+		"fresh_class": "Panic"
+	},
+	"let/nested": {
+		"source_sha256": "775a5588a9bce35a4fc3dd73fcc1322dd83d6fd0b4fff5126c45afa1cb102d23",
+		"stock_outcome_sha256": "5ba55e22707cdaf2a48b42de3bf8fd7f5671106cc58fcc1cfa3591e68b6c9c9f",
+		"policy": "Exact",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309"
+	},
+	"supplement/struct-let/match": {
+		"source_sha256": "5d3e5485813f4b2db9aa2edd06e493f348f8d2867eb6d9c5f53f2e9210fd3ddf",
+		"stock_outcome_sha256": "5ba55e22707cdaf2a48b42de3bf8fd7f5671106cc58fcc1cfa3591e68b6c9c9f",
+		"policy": "Exact",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309"
+	},
+	"supplement/struct-let/mismatch": {
+		"source_sha256": "b45cc09d1ee5f0247755cf9a8994be0ed9f2dc9e79ec969cf69487383b7453c0",
+		"stock_outcome_sha256": "22d84fcb5d83c43c274d82c6506b791ef51828e41f396be6008f25a173eb8402",
+		"policy": "Policy-presentation",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309",
+		"stock_class": "stock:Panic { reason: Panic { inner: UnmatchedPattern } }",
+		"fresh_class": "Panic"
+	},
+	"c4/let/deferred/Ok/match": {
+		"source_sha256": "33a65dbffe4416d9470f560b285c9ed098568f234783147a9032e205c0ceed15",
+		"stock_outcome_sha256": "5ba55e22707cdaf2a48b42de3bf8fd7f5671106cc58fcc1cfa3591e68b6c9c9f",
+		"policy": "Exact",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309"
+	},
+	"c4/let/deferred/Ok/mismatch": {
+		"source_sha256": "0b62e107018c95f7d3bd5a8769815e3ff6a8a709139835f3ea779812e6e9c48e",
+		"stock_outcome_sha256": "5e4c9a7b9ed16156932af7a71433930ff8c4b286f8896a8149f573be8665f212",
+		"policy": "Policy-presentation",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309",
+		"stock_class": "stock:Panic { reason: Panic { inner: UnmatchedPattern } }",
+		"fresh_class": "Panic"
+	},
+	"c4/let/deferred/Err/match": {
+		"source_sha256": "e6734765cd7fc886b8a46bf06b65da8ce05e9cebafc7f59d6535c2876c47a7f7",
+		"stock_outcome_sha256": "5ba55e22707cdaf2a48b42de3bf8fd7f5671106cc58fcc1cfa3591e68b6c9c9f",
+		"policy": "Exact",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309"
+	},
+	"c4/let/deferred/Err/mismatch": {
+		"source_sha256": "e837fc7a9d7e9c18e02c48c638e6fbcd60bbe1950cffd223aba190f0bb1c8dc0",
+		"stock_outcome_sha256": "cc62884a0754383c99de018f7a60d2f5838b5e641dd27aff24e3d1099c89d8f1",
+		"policy": "Policy-presentation",
+		"previous_refusal": "Some(Pattern)",
+		"authority": "Claude chatd seq21309",
+		"stock_class": "stock:Panic { reason: Panic { inner: UnmatchedPattern } }",
+		"fresh_class": "Panic"
+	}
+}

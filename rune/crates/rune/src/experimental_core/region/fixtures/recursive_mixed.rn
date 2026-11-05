@@ -1,0 +1,9 @@
+// Small self recursion called through an ordinary wrapper many times. This is a
+// bookkeeping diagnostic; gains for this tiny call shape are measured, not assumed.
+fn small(n) { if n < 1 { 1 } else { small(n - 1) + 1 } }
+fn wrapper(n) { small(n) }
+fn kernel(seed) {
+    let total = 0;
+    for i in 0..128 { total += wrapper(seed % 2); }
+    total
+}

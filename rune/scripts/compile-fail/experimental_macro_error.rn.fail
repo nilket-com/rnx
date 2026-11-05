@@ -1,0 +1,10 @@
+use std::experiments::stringy_math;
+
+pub fn main() {
+    let a = 1;
+
+    // This will error inside of the macro.
+    let result = stringy_math! {
+        doit a
+    };
+}

@@ -1,0 +1,32 @@
+{
+  "record": "CK1",
+  "approval": "rune-native 25787",
+  "base_commit": "1ccb94261f7c88f116823adb33d2d5709d3b6578",
+  "kernel": {
+    "rows": 100000000,
+    "block_rows": 1024,
+    "inputs": "all-valid",
+    "output": "preallocated private PreparedBatch output",
+    "ir_per_element_max": {
+      "i64add": 3.0,
+      "axpy": 4.75,
+      "f64add": 1.25,
+      "boolnot": 0.10
+    }
+  },
+  "headline": {
+    "gate": false,
+    "surface": "polars::column_kernel(...).map([series])",
+    "operation": "checked I64 x+1",
+    "rows": 100000000,
+    "chunks": 1,
+    "nullable": false,
+    "metrics": ["total Ir/element", "elapsed logical GB/s"],
+    "comparators": ["Polars py-2.1.0 pinned git", "scalar per-row Rune"]
+  },
+  "existing_paths": {
+    "per_operation_extra_ir_max": 0,
+    "per_call_extra_ir_max": 0,
+    "controls": ["native-off", "native-on host", "old loops", "Call/Return"]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "record": "C18b3b",
+  "policy": "Exact original stock observation, diagnostics and effects; three native receiver identities proven unreachable at every fresh value boundary",
+  "rows": [
+    {
+      "index": 83,
+      "legacy": {
+        "index": 83,
+        "label": "native/is-empty-script-only",
+        "source_sha256": "0d4f4ccde11bb94d599e077f7cae2d442d678cfb559c2d562e5206f665707748",
+        "stock_row_sha256": "bb687c45f50b8530136002f3814afe74d87ce682ecb8ffaad551e14a3a0a1335",
+        "classification": "Refused-native",
+        "fresh": {
+          "kind": "Unsupported",
+          "location": {
+            "end": 81,
+            "source": 0,
+            "start": 69
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 69, end: 81 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 69:81, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

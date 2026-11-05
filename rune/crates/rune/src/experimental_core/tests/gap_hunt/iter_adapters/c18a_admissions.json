@@ -1,0 +1,315 @@
+{
+ "rule": "C18a lowers a script instance method on a certain receiver (a constructor or struct literal) as a direct script call. Exact entries are now admitted; refusal entries still refuse, at a later site. Each entry pins the whole disposition it replaces and carries the new rule.",
+ "rows": [
+  {
+   "index": 1003,
+   "legacy": {
+    "index": 1003,
+    "label": "script/impl-map",
+    "source_sha256": "1085b8a7dbcc678fb33ce9d3a499ce31cfc7a414f890bf03df31b31b62f082d7",
+    "stock_row_sha256": "ae2860890d0a641a29dde653c90ca3f5fdaec1f05d9a32c74182be20dda7dbd6",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 116,
+      "source": 0,
+      "start": 98
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 98, end: 116 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 98:116, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1004,
+   "legacy": {
+    "index": 1004,
+    "label": "script/impl-filter",
+    "source_sha256": "02a50207ca5faa38437e0d97ff318802c78792fa83f86fc831e0475e1224d476",
+    "stock_row_sha256": "4353c57a583f93ec2206dcc86f5820abcfe3c443fed3a5a88986cef6bfde74f8",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 122,
+      "source": 0,
+      "start": 101
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 101, end: 122 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 101:122, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1005,
+   "legacy": {
+    "index": 1005,
+    "label": "script/impl-fold",
+    "source_sha256": "8dd93096e7dd4e3677711be649fde87fa4e3008409b926cb86af3765046e0bf1",
+    "stock_row_sha256": "e52a7726bb3afdaa88e474706cc4b520676c9252f9fec4fc97cd9bb11163d262",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 126,
+      "source": 0,
+      "start": 103
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 103, end: 126 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 103:126, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1006,
+   "legacy": {
+    "index": 1006,
+    "label": "script/impl-find",
+    "source_sha256": "77895fe65ab905b5e294a3648071b53c6deff4f4e825aefc4e409e782abc89db",
+    "stock_row_sha256": "5932bc236c23b6e769a1f072d8f8252dd3dca8c91d2a5c6a1ddeb82e8dbeb229",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 116,
+      "source": 0,
+      "start": 99
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 99, end: 116 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 99:116, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1007,
+   "legacy": {
+    "index": 1007,
+    "label": "script/impl-any-all",
+    "source_sha256": "d7d1abff55e763e45461d8920abea84edb7e4107bda6fefd39d3c0efc94490f5",
+    "stock_row_sha256": "e28adbd1849cca06458475e1062aeca8cd44e16b303b20e70b0b5c2893205a9f",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 120,
+      "source": 0,
+      "start": 109
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 109, end: 120 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 109:120, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 156,
+      "source": 0,
+      "start": 133
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 156 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:156, kind: Custom { error: \"Method\" } }) })]"
+   }
+  },
+  {
+   "index": 1008,
+   "legacy": {
+    "index": 1008,
+    "label": "script/impl-enumerate",
+    "source_sha256": "057d7a525f278c7a8d6df52f8ea83584a9706c3ee59419eb5850d80cb425e9f1",
+    "stock_row_sha256": "a20bea1f25b30d10a515d1fc7ff78f9ce1637b74461c69043eec5291ef9e6506",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 120,
+      "source": 0,
+      "start": 102
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 102, end: 120 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 102:120, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1009,
+   "legacy": {
+    "index": 1009,
+    "label": "script/impl-rev",
+    "source_sha256": "8a152c37f4624395a73a3c7eab0a2bad85bf71b71f9d8a606534167202f248a2",
+    "stock_row_sha256": "9b49e5f9f15180cc5c61b465d64551ad3e66035704b6f37f6b926a0253fcf8f7",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 98,
+      "source": 0,
+      "start": 88
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 88, end: 98 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 88:98, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1010,
+   "legacy": {
+    "index": 1010,
+    "label": "script/impl-chain",
+    "source_sha256": "5c20ea0f2e7bbbc1597d2c5e96e30a8b8d571530a8e8713eee9a8db57541cc1c",
+    "stock_row_sha256": "ca1413b51fa0039fb647e1c3ddd7126fd25e9a36edddf088932753c34b100a0c",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 114,
+      "source": 0,
+      "start": 99
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 99, end: 114 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 99:114, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1011,
+   "legacy": {
+    "index": 1011,
+    "label": "script/impl-flat_map",
+    "source_sha256": "3a9c0e5277010f0c59d09aa260314c33c8ac09eb66cc2d5a84a9aa80e989b7cd",
+    "stock_row_sha256": "5ae2bf08943750638ab3ac8f19eed8e14a4cf951e0f7d42688eb2e5a026c1b25",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 124,
+      "source": 0,
+      "start": 103
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 103, end: 124 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 103:124, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1012,
+   "legacy": {
+    "index": 1012,
+    "label": "script/impl-filter_map",
+    "source_sha256": "3fb342807d12ad142dd70cd697dec6779b0b6cd1f2be4186441d94f44168b506",
+    "stock_row_sha256": "563a314587a8fff260589ef6b3a88d693abb1338a62a626b53be6a4b3152f71e",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 117,
+      "source": 0,
+      "start": 97
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 97, end: 117 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 97:117, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1013,
+   "legacy": {
+    "index": 1013,
+    "label": "script/impl-reduce",
+    "source_sha256": "9b6dd5a11d1248d746acb49d46daf60c13a75522d68b3541c59ccbb834664cd7",
+    "stock_row_sha256": "eb13001d108e69c88e14d726f0c56029f4ba169be0bb67dd4199cbfee0940331",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 111,
+      "source": 0,
+      "start": 96
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 96, end: 111 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 96:111, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Exact"
+   }
+  },
+  {
+   "index": 1014,
+   "legacy": {
+    "index": 1014,
+    "label": "script/impl-iter-then-map",
+    "source_sha256": "bd2dcbbd3606d74bc408ec65706164f75e0ed1f3e5f24d22546356d161bb5803",
+    "stock_row_sha256": "a6a2389459e0e25812a93424f9131bf172746c9bdc7083236ee23a599f361286",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 115,
+      "source": 0,
+      "start": 102
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 102, end: 115 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 102:115, kind: Custom { error: \"Method\" } }) })]"
+   },
+   "admitted": {
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 145,
+      "source": 0,
+      "start": 102
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 102, end: 145 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 102:145, kind: Custom { error: \"Method\" } }) })]"
+   }
+  }
+ ]
+}

@@ -1,0 +1,74 @@
+# Instance functions
+
+Instance functions are functions that are associated to a specific type of
+variable. When called they take the form `value.foo()`, where the *instance*
+is the first part `value`. And the *instance function* is `foo()`.
+
+These are a bit special in Rune. Since Rune is a dynamic programming language we
+can't tell at compile time which instance any specific `value` can be. So
+instance functions must be looked up at runtime.
+
+```rune
+{{#include ../../scripts/book/instance_functions/missing_instance_fn.rn}}
+```
+
+```text
+$> cargo run -- run scripts/book/instance_functions/missing_instance_fn.rn
+error: Missing instance function `0x8cec23d38bca81a9` for `Foo`
+   ┌─ scripts/book/instance_functions/missing_instance_fn.rn:10:1
+   │
+10 │ foo.bar();
+   │ ^^^^^^^^^
+   │ │
+   │ Missing instance function `0x8cec23d38bca81a9` for `Foo`
+   │ This corresponds to the `Foo::bar` instance function
+
+Backtrace:
+scripts/book/instance_functions/missing_instance_fn.rn:10:1:
+foo.bar();
+```
+
+> Note: The error is currently a bit nondescript. But in the future we will be
+> able to provide better diagnostics by adding debug information.
+
+What you're seeing above are type and function hashes. These uniquely identify
+the item in the virtual machine and is the result of a deterministic computation
+based on its item. So the hash for the item `Foo::new` will always be the same.
+
+In Rust, we can calculate this hash using the `Hash::type_hash` method:
+
+```rune
+{{#include ../../examples/examples/function_hash.rs}}
+```
+
+```text
+$> cargo run --example function_hash
+0xb5dc92ab43cb37d9
+0xb5dc92ab43cb37d9
+```
+
+The exact implementation of the hash function is currently not defined, but will
+be stabilized and documented in a future release.
+
+## Defining instance functions in Rust
+
+Native instance functions are added to a runtime environment using the
+[`Module::associated_function`] function. The type is identified as the first
+argument of the instance function, and must be a type registered in the module
+using [`Module::ty`].
+
+```rust,noplaypen
+{{#include ../../examples/examples/custom_instance_fn.rs}}
+```
+
+```text
+$> cargo run --example custom_instance_fn
+output: 11
+```
+
+For more examples on how modules can be used you can have a look at the source
+for the [`rune-modules`] crate.
+
+[`Module::associated_function`]: https://docs.rs/rune/0/rune/struct.Module.html#method.associated_function
+[`Module::ty`]: https://docs.rs/rune/0/rune/struct.Module.html#method.ty
+[`rune-modules`]: https://github.com/rune-rs/rune/tree/main/crates/rune-modules

@@ -1,0 +1,184 @@
+{
+  "name": "rune-vscode",
+  "displayName": "Rune",
+  "description": "Language support for Rune",
+  "preview": true,
+  "private": true,
+  "icon": "assets/logo.png",
+  "version": "0.13.3",
+  "releaseTag": null,
+  "publisher": "udoprog",
+  "repository": {
+    "url": "https://github.com/rune-rs/rune.git",
+    "type": "git"
+  },
+  "homepage": "https://rune-rs.github.io/",
+  "license": "MIT OR Apache-2.0",
+  "keywords": [
+    "rune"
+  ],
+  "categories": [
+    "Programming Languages"
+  ],
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "activationEvents": [
+    "onLanguage:rune",
+    "onCommand:rune-vscode.reload",
+    "onCommand:rune-vscode.startServer",
+    "onCommand:rune-vscode.stopServer",
+    "workspaceContains:*/Rune.toml"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "rune",
+        "extensions": [
+          ".rn"
+        ],
+        "aliases": [
+          "Rune",
+          "rune"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "assets/icon.png",
+          "dark": "assets/icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "rune",
+        "path": "./syntaxes/rune.tmLanguage.json",
+        "scopeName": "source.rune"
+      }
+    ],
+    "commands": [
+      {
+        "command": "rune-vscode.reload",
+        "title": "Reload extension",
+        "category": "Rune"
+      },
+      {
+        "command": "rune-vscode.startServer",
+        "title": "Start server",
+        "category": "Rune"
+      },
+      {
+        "command": "rune-vscode.stopServer",
+        "title": "Stop server",
+        "category": "Rune"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "rune-vscode.reload"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Rune",
+      "properties": {
+        "rune.updates.channel": {
+          "type": "string",
+          "enum": [
+            "nightly"
+          ],
+          "default": "nightly",
+          "markdownEnumDescriptions": [
+            "`nightly` updates are shipped daily (extension updates automatically by downloading artifacts directly from GitHub), they contain cutting-edge features and latest bug fixes."
+          ],
+          "markdownDescription": "Choose `nightly` updates to get the latest features and bug fixes every day."
+        },
+        "rune.updates.checkInterval": {
+          "type": "number",
+          "default": 7200,
+          "description": "Update check interval in seconds. (Default: 2h)"
+        },
+        "rune.updates.askBeforeDownload": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to ask for permission before downloading any files from the Internet."
+        },
+        "rune.typing.continueCommentsOnNewline": {
+          "markdownDescription": "Whether to prefix newlines after comments with the corresponding comment prefix.",
+          "default": true,
+          "type": "boolean"
+        },
+        "rune.server.cargoPackage": {
+          "title": "Cargo Package",
+          "markdownDescription": "Set the extension to use the given cargo package to run the language server, rather than a downloaded rune-languageserver.",
+          "type": "string",
+          "default": ""
+        },
+        "rune.server.cargoBinary": {
+          "title": "Cargo Binary",
+          "markdownDescription": "Set the extension to use the given cargo binary to run the language server. If left empty, the last binary built is used.",
+          "type": "string",
+          "default": ""
+        },
+        "rune.server.path": {
+          "markdownDescription": "Path to rune-languageserver executable (will be downloaded by default). If this is set, then `#rune.updates.channel#` setting is not used",
+          "type": "string",
+          "scope": "machine-overridable",
+          "default": ""
+        },
+        "rune.server.extraEnv": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "default": null,
+          "markdownDescription": "Extra environment variables that will be passed to the rune-languageserver executable. Useful for passing e.g. `RUNE_LOG_FILE` for debugging."
+        },
+        "rune.trace.extension": {
+          "description": "Enable logging of VS Code extensions itself.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2",
+    "vscode-languageclient": "^8.0.2"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "16.x",
+    "@types/node-fetch": "^2.6.2",
+    "@types/vscode": "^1.70.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^8.20.0",
+    "glob": "^8.0.3",
+    "mocha": "^10.8.2",
+    "ts-loader": "^9.3.1",
+    "typescript": "^4.7.4",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^4.10.0"
+  }
+}

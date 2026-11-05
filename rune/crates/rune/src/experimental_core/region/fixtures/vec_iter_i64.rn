@@ -1,0 +1,12 @@
+fn sum(values) {
+	let total = 0;
+	for value in values { total += value; }
+	total
+}
+fn kernel(seed) {
+	let values = [];
+	for i in 0..10000 { values.push((i + seed) % 97); }
+	let total = 0;
+	for repeat in 0..8 { total = (total + sum(values)) % 1000000007; }
+	total
+}

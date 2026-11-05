@@ -1,0 +1,21 @@
+[package]
+name = "rune-benches"
+edition = "2021"
+publish = false
+
+[dependencies]
+rune = { path = "../crates/rune", features = ["bench", "capture-io"] }
+rhai = "1.21.0"
+
+tokio = { version = "1.28.1", features = ["macros"] }
+criterion = "0.8.1"
+anyhow = "1.0.71"
+futures-executor = "0.3.28"
+
+[[bench]]
+name = "main"
+harness = false
+
+[[bench]]
+name = "comparison"
+harness = false

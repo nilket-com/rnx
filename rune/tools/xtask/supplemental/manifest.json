@@ -1,0 +1,282 @@
+{
+	"version": 1,
+	"nightly": "nightly-2026-09-01",
+	"stable": "1.98.1",
+	"measured_peak_rss_bytes": 3288178688,
+	"reservation_bytes": 5368709120,
+	"features": {
+		"native": "fmt,workspace,native-code,capture-io,disable-io,sha2",
+		"execution": "fmt,workspace,execution,capture-io,disable-io,sha2"
+	},
+	"subsets": [
+		{
+			"name": "n5",
+			"feature": "native",
+			"selector": "n5_",
+			"exact": false,
+			"inventory": [
+				"experimental_core::region::recursion::tests::n5_admission_and_deferrals",
+				"experimental_core::region::recursion::tests::n5_all_frame_and_slot_limits_and_reuse_after_failure",
+				"experimental_core::region::recursion::tests::n5_allocation_limits_and_zero_quota_factorial",
+				"experimental_core::region::recursion::tests::n5_cancel_and_wrong_parameter_types",
+				"experimental_core::region::recursion::tests::n5_cold_cache_does_not_consume_script_allocation_quota",
+				"experimental_core::region::recursion::tests::n5_cold_warm_and_bounded_replay",
+				"experimental_core::region::recursion::tests::n5_executor_every_fuel_and_limits",
+				"experimental_core::region::recursion::tests::n5_native_boundary_physical_scratch_checks",
+				"experimental_core::region::recursion::tests::n5_safe_transaction_refusal_and_invalid_records",
+				"experimental_native::tests::n5_snapshot_audit_matches_only_duplicate_pure_index_adds"
+			],
+			"shards": [
+				[
+					"experimental_core::region::recursion::tests::n5_admission_and_deferrals"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_all_frame_and_slot_limits_and_reuse_after_failure"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_allocation_limits_and_zero_quota_factorial"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_cancel_and_wrong_parameter_types"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_cold_cache_does_not_consume_script_allocation_quota"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_cold_warm_and_bounded_replay"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_executor_every_fuel_and_limits"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_native_boundary_physical_scratch_checks"
+				],
+				[
+					"experimental_core::region::recursion::tests::n5_safe_transaction_refusal_and_invalid_records"
+				],
+				[
+					"experimental_native::tests::n5_snapshot_audit_matches_only_duplicate_pure_index_adds"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": [
+				"experimental_core::region::recursion::tests::n5_all_frame_and_slot_limits_and_reuse_after_failure",
+				"experimental_core::region::recursion::tests::n5_allocation_limits_and_zero_quota_factorial",
+				"experimental_core::region::recursion::tests::n5_cancel_and_wrong_parameter_types",
+				"experimental_core::region::recursion::tests::n5_cold_cache_does_not_consume_script_allocation_quota",
+				"experimental_core::region::recursion::tests::n5_cold_warm_and_bounded_replay",
+				"experimental_core::region::recursion::tests::n5_executor_every_fuel_and_limits",
+				"experimental_core::region::recursion::tests::n5_native_boundary_physical_scratch_checks",
+				"experimental_native::tests::n5_snapshot_audit_matches_only_duplicate_pure_index_adds"
+			]
+		},
+		{
+			"name": "method_closure",
+			"feature": "native",
+			"selector": "method_closure_",
+			"exact": false,
+			"inventory": [
+				"experimental_core::region::recursion::methods::entry::tests::method_closure_atomic_publication_invalid_record_headroom_and_scratch_controls",
+				"experimental_core::region::recursion::methods::entry::tests::method_closure_boolean_vector_native_writes_and_lease_guard",
+				"experimental_core::region::recursion::methods::entry::tests::method_closure_both_record_orders_execute_native_and_fault_discards_private_mutation",
+				"experimental_core::region::recursion::methods::entry::tests::method_closure_scalar_and_boolean_vector_publish_together_with_root_ownership",
+				"experimental_core::region::recursion::methods::tests::method_closure_closed_methods_admission_and_provenance_controls",
+				"experimental_core::region::recursion::methods::tests::method_closure_descriptor_allocation_failure_is_cached_and_invisible",
+				"experimental_core::region::recursion::methods::tests::method_closure_executor_cold_warm_every_fuel_and_nested_fault",
+				"experimental_core::region::recursion::methods::tests::method_closure_frame_slot_and_allocation_limits_match_interpreter",
+				"experimental_core::region::recursion::methods::tests::method_closure_shared_aliases_distinct_vectors_and_cache_lifetime",
+				"experimental_core::region::recursion::methods::tests::method_closure_shared_compiler_private_permute_activations"
+			],
+			"shards": [
+				[
+					"experimental_core::region::recursion::methods::entry::tests::method_closure_atomic_publication_invalid_record_headroom_and_scratch_controls"
+				],
+				[
+					"experimental_core::region::recursion::methods::entry::tests::method_closure_boolean_vector_native_writes_and_lease_guard"
+				],
+				[
+					"experimental_core::region::recursion::methods::entry::tests::method_closure_both_record_orders_execute_native_and_fault_discards_private_mutation"
+				],
+				[
+					"experimental_core::region::recursion::methods::entry::tests::method_closure_scalar_and_boolean_vector_publish_together_with_root_ownership"
+				],
+				[
+					"experimental_core::region::recursion::methods::tests::method_closure_closed_methods_admission_and_provenance_controls"
+				],
+				[
+					"experimental_core::region::recursion::methods::tests::method_closure_descriptor_allocation_failure_is_cached_and_invisible"
+				],
+				[
+					"experimental_core::region::recursion::methods::tests::method_closure_executor_cold_warm_every_fuel_and_nested_fault"
+				],
+				[
+					"experimental_core::region::recursion::methods::tests::method_closure_frame_slot_and_allocation_limits_match_interpreter"
+				],
+				[
+					"experimental_core::region::recursion::methods::tests::method_closure_shared_aliases_distinct_vectors_and_cache_lifetime"
+				],
+				[
+					"experimental_core::region::recursion::methods::tests::method_closure_shared_compiler_private_permute_activations"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": [
+				"experimental_core::region::recursion::methods::entry::tests::method_closure_boolean_vector_native_writes_and_lease_guard",
+				"experimental_core::region::recursion::methods::entry::tests::method_closure_both_record_orders_execute_native_and_fault_discards_private_mutation",
+				"experimental_core::region::recursion::methods::tests::method_closure_descriptor_allocation_failure_is_cached_and_invisible",
+				"experimental_core::region::recursion::methods::tests::method_closure_executor_cold_warm_every_fuel_and_nested_fault",
+				"experimental_core::region::recursion::methods::tests::method_closure_frame_slot_and_allocation_limits_match_interpreter",
+				"experimental_core::region::recursion::methods::tests::method_closure_shared_aliases_distinct_vectors_and_cache_lifetime",
+				"experimental_core::region::recursion::methods::tests::method_closure_shared_compiler_private_permute_activations"
+			]
+		},
+		{
+			"name": "payload_bit_scan",
+			"feature": "native",
+			"selector": "experimental_core::region::commit::tests::canonical_payload_bit_scan_matches_cell_predicate",
+			"exact": true,
+			"inventory": [
+				"experimental_core::region::commit::tests::canonical_payload_bit_scan_matches_cell_predicate"
+			],
+			"shards": [
+				[
+					"experimental_core::region::commit::tests::canonical_payload_bit_scan_matches_cell_predicate"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": []
+		},
+		{
+			"name": "column",
+			"feature": "execution",
+			"selector": "experimental_core::column",
+			"exact": false,
+			"inventory": [
+				"experimental_core::column::lease::block_word_tests::physical_block_copy_offsets_tails_and_prefix_canaries",
+				"experimental_core::column::lease::word_tests::exact_ranges_offsets_tails_and_adjacent_writes",
+				"experimental_core::column::run::packed_tests::packed_selection_and_cancellation_bound",
+				"experimental_core::column::tests::actual_frontend_functions_admit_and_refuse_without_source_patterns",
+				"experimental_core::column::tests::all_numeric_primitives_and_floating_point_special_values",
+				"experimental_core::column::tests::boolean_offsets_tails_and_independent_validity",
+				"experimental_core::column::tests::bounds_and_budget_do_not_publish_partial_output",
+				"experimental_core::column::tests::ck2_masks_chunks_offsets_and_every_fuel_stop",
+				"experimental_core::column::tests::ck2_null_constant_overflow_and_first_valid_fault",
+				"experimental_core::column::tests::ck2_nullable_typed_pairs_and_general_multiply",
+				"experimental_core::column::tests::ck2_optimistic_flags_ignore_nulls_and_replay_first_valid_boundary_fault",
+				"experimental_core::column::tests::composed_chain_copies_redefinitions_and_dead_faults",
+				"experimental_core::column::tests::exact_identity_and_entry_types_are_sealed",
+				"experimental_core::column::tests::finalized_long_path_fuel_matches_every_stopping_point",
+				"experimental_core::column::tests::first_fault_is_row_order_not_operation_order",
+				"experimental_core::column::tests::independent_chunks_null_bits_and_exact_fuel",
+				"experimental_core::column::tests::packed_boolean_chunks_fuel_and_canceled_publication",
+				"experimental_core::column::tests::preparation_memory_boundary_and_batch_drop_are_transactional"
+			],
+			"shards": [
+				[
+					"experimental_core::column::lease::block_word_tests::physical_block_copy_offsets_tails_and_prefix_canaries",
+					"experimental_core::column::lease::word_tests::exact_ranges_offsets_tails_and_adjacent_writes",
+					"experimental_core::column::run::packed_tests::packed_selection_and_cancellation_bound",
+					"experimental_core::column::tests::actual_frontend_functions_admit_and_refuse_without_source_patterns",
+					"experimental_core::column::tests::all_numeric_primitives_and_floating_point_special_values",
+					"experimental_core::column::tests::boolean_offsets_tails_and_independent_validity",
+					"experimental_core::column::tests::bounds_and_budget_do_not_publish_partial_output",
+					"experimental_core::column::tests::ck2_masks_chunks_offsets_and_every_fuel_stop",
+					"experimental_core::column::tests::ck2_null_constant_overflow_and_first_valid_fault",
+					"experimental_core::column::tests::ck2_nullable_typed_pairs_and_general_multiply",
+					"experimental_core::column::tests::ck2_optimistic_flags_ignore_nulls_and_replay_first_valid_boundary_fault",
+					"experimental_core::column::tests::composed_chain_copies_redefinitions_and_dead_faults",
+					"experimental_core::column::tests::exact_identity_and_entry_types_are_sealed",
+					"experimental_core::column::tests::finalized_long_path_fuel_matches_every_stopping_point",
+					"experimental_core::column::tests::first_fault_is_row_order_not_operation_order",
+					"experimental_core::column::tests::independent_chunks_null_bits_and_exact_fuel",
+					"experimental_core::column::tests::packed_boolean_chunks_fuel_and_canceled_publication",
+					"experimental_core::column::tests::preparation_memory_boundary_and_batch_drop_are_transactional"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": [
+				"experimental_core::column::tests::actual_frontend_functions_admit_and_refuse_without_source_patterns"
+			]
+		},
+		{
+			"name": "primitives",
+			"feature": "execution",
+			"selector": "experimental_column_primitives",
+			"exact": false,
+			"inventory": [
+				"experimental_column_primitives::constant_tests::literal_multiply_signed_boundaries_and_tails",
+				"experimental_column_primitives::masked_float_block_tests::fused_masked_float_blocks_match_portable_bits_and_canaries",
+				"experimental_column_primitives::masked_tests::masked_extrema_every_lane_tail_and_canaries",
+				"experimental_column_primitives::masked_tests::typed_general_multiply_and_float_pairs",
+				"experimental_column_primitives::pair_tests::checked_add_pairs_extrema_fault_lanes_and_tails",
+				"experimental_column_primitives::tests::extrema_fault_positions_and_output_canaries",
+				"experimental_column_primitives::tests::safe_float_and_bit_loops_match_portable",
+				"experimental_column_primitives::zero_null_tests::preserves_all_valid_bits_and_clears_nulls_with_tails"
+			],
+			"shards": [
+				[
+					"experimental_column_primitives::constant_tests::literal_multiply_signed_boundaries_and_tails",
+					"experimental_column_primitives::masked_float_block_tests::fused_masked_float_blocks_match_portable_bits_and_canaries",
+					"experimental_column_primitives::masked_tests::masked_extrema_every_lane_tail_and_canaries",
+					"experimental_column_primitives::masked_tests::typed_general_multiply_and_float_pairs",
+					"experimental_column_primitives::pair_tests::checked_add_pairs_extrema_fault_lanes_and_tails",
+					"experimental_column_primitives::tests::extrema_fault_positions_and_output_canaries",
+					"experimental_column_primitives::tests::safe_float_and_bit_loops_match_portable",
+					"experimental_column_primitives::zero_null_tests::preserves_all_valid_bits_and_clears_nulls_with_tails"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": []
+		},
+		{
+			"name": "budget",
+			"feature": "execution",
+			"selector": "runtime::budget::tests",
+			"exact": false,
+			"inventory": [
+				"runtime::budget::tests::consume_boundaries_are_transactional",
+				"runtime::budget::tests::consume_future_polls_keep_the_same_hard_allowance",
+				"runtime::budget::tests::consume_obeys_nested_scopes_and_acquire",
+				"runtime::budget::tests::consume_preserves_slice_threshold",
+				"runtime::budget::tests::consume_unwind_restores_outer_allowance",
+				"runtime::budget::tests::successful_bulk_debit_matches_individual_permits"
+			],
+			"shards": [
+				[
+					"runtime::budget::tests::consume_boundaries_are_transactional",
+					"runtime::budget::tests::consume_future_polls_keep_the_same_hard_allowance",
+					"runtime::budget::tests::consume_obeys_nested_scopes_and_acquire",
+					"runtime::budget::tests::consume_preserves_slice_threshold",
+					"runtime::budget::tests::consume_unwind_restores_outer_allowance",
+					"runtime::budget::tests::successful_bulk_debit_matches_individual_permits"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": []
+		},
+		{
+			"name": "budget_errors",
+			"feature": "execution",
+			"selector": "runtime::vm_error::budget_tests",
+			"exact": false,
+			"inventory": [
+				"runtime::vm_error::budget_tests::budget_predicate_checks_the_root_kind_only",
+				"runtime::vm_error::budget_tests::host_budget_constructor_matches_real_vm_and_native_halts",
+				"runtime::vm_error::budget_tests::host_budget_halt_cannot_be_caught_as_a_script_result"
+			],
+			"shards": [
+				[
+					"runtime::vm_error::budget_tests::budget_predicate_checks_the_root_kind_only"
+				],
+				[
+					"runtime::vm_error::budget_tests::host_budget_constructor_matches_real_vm_and_native_halts"
+				],
+				[
+					"runtime::vm_error::budget_tests::host_budget_halt_cannot_be_caught_as_a_script_result"
+				]
+			],
+			"timeout_seconds": 7200,
+			"ignored": []
+		}
+	]
+}

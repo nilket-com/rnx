@@ -1,0 +1,51 @@
+{
+	"access/option/scalar": {
+		"source_sha256": "6283b82579e954355184584e3a3932589ab96e3a4e9ff960a96401e99ca8ced5",
+		"stock_outcome_sha256": "242aca1bccdda6364a57de26281fc2ab4cec710ce000abf72dcccbb13eb4d348",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	},
+	"access/option/string": {
+		"source_sha256": "706e2157a8f5f1e8fd5af4aa38937c90983b124d3ca540153e445cfecc701db8",
+		"stock_outcome_sha256": "242aca1bccdda6364a57de26281fc2ab4cec710ce000abf72dcccbb13eb4d348",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	},
+	"access/option/tuple": {
+		"source_sha256": "f37cdcd41c62e3611a678dfebb3c20236cc9731a99f36e358560a0353ca52f82",
+		"stock_outcome_sha256": "242aca1bccdda6364a57de26281fc2ab4cec710ce000abf72dcccbb13eb4d348",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	},
+	"access/option/vec": {
+		"source_sha256": "aa48586b63e1690447a0240cc5c6c607b8a69d9d964ce5d714900b34541dc0fe",
+		"stock_outcome_sha256": "242aca1bccdda6364a57de26281fc2ab4cec710ce000abf72dcccbb13eb4d348",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	},
+	"access/option/option": {
+		"source_sha256": "858086f76115bc2cae2e350787a0a83c1abb954657080c4afd061bfe7a1880d8",
+		"stock_outcome_sha256": "e27024211ab6be2cb4048714d8273c88585cea84d927e16f7f13f14b1230ff84",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	},
+	"access/option/wildcard": {
+		"source_sha256": "6ba2162621af82076ca2e47bacd868f1bfacb816331f1cb077567faa15eda1c4",
+		"stock_outcome_sha256": "e27024211ab6be2cb4048714d8273c88585cea84d927e16f7f13f14b1230ff84",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	},
+	"life/W1-parent-move": {
+		"source_sha256": "da3e23ce123b0b3217c98941ea288db0ff17dac675e345e227a1af59fd5c2ea5",
+		"stock_outcome_sha256": "7f81198518add7ad73a16747eb17cb9860dfd877deefbbb04d16d9da89b065ad",
+		"policy": "Exact",
+		"previous_refusal": "Some(Method)",
+		"record": "C17a"
+	}
+}
