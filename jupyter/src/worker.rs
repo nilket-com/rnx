@@ -23,7 +23,7 @@ use tokio::{
 	time::{Duration, Instant, timeout},
 };
 
-pub(crate) const RUNE_VERSION: &str = "0.15.0 (git fed878b5aea151a878462d71626c9a4d589a4273)";
+pub(crate) const RUNE_VERSION: &str = env!("RNX_ENGINE_IDENTITY");
 
 fn identity_matches(ready: &Value) -> bool {
 	ready["type"] == "ready"
@@ -590,20 +590,10 @@ mod identity_tests {
 	use super::*;
 
 	#[test]
-	fn the_worker_requirement_tracks_the_root_rune_pin() {
-		let manifest = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../Cargo.toml"));
-		let dependency = manifest
-			.lines()
-			.find(|line| line.starts_with("rune = "))
-			.unwrap();
-		let revision = dependency
-			.split("rev = \"")
-			.nth(1)
-			.unwrap()
-			.split('"')
-			.next()
-			.unwrap();
-		assert_eq!(RUNE_VERSION, format!("0.15.0 (git {revision})"));
+	fn the_worker_requirement_tracks_the_monorepo_identity() {
+		assert_eq!(RUNE_VERSION, env!("RNX_ENGINE_IDENTITY"));
+		assert!(RUNE_VERSION.contains("monorepo "));
+		assert!(RUNE_VERSION.contains("; engine "));
 	}
 
 	#[test]

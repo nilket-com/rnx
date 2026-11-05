@@ -73,13 +73,12 @@ fn field(manifest: &str, key: &str) -> Option<String> {
 	)
 }
 
-/// The exact Rune revision, from either spelling: the inline table the
+/// The canonical Rune path, from either spelling: the inline table the
 /// repository's manifest writes, or the section the generated one does.
-/// Since record 0185 Rune is the fork, pinned by Git `rev` rather than by an
-/// `=` version.
-fn rune_pin(manifest: &str) -> Option<String> {
+/// ADR 0211 binds Rune to the imported source instead of a Git pin.
+fn rune_path(manifest: &str) -> Option<String> {
 	if let Some(section) = table(manifest, "[dependencies.rune]") {
-		return value(&section, "rev");
+		return value(&section, "path");
 	}
 	let dependencies = table(manifest, "[dependencies]")?;
 	let inline = dependencies
@@ -87,18 +86,18 @@ fn rune_pin(manifest: &str) -> Option<String> {
 		.map(str::trim)
 		.find(|line| line.starts_with("rune ") || line.starts_with("rune="))?;
 	inline
-		.split_once("rev = \"")
+		.split_once("path = \"")
 		.and_then(|(_, rest)| rest.split('"').next())
 		.map(str::to_owned)
 }
 
-/// The version the lockfile resolved for `rune` at that revision.
-fn locked_rune_version(rev: &str) -> Option<String> {
+/// The version of the canonical path dependency, with no external source.
+fn locked_rune_version() -> Option<String> {
 	let lock = include_str!("../Cargo.lock");
 	lock.split("[[package]]").find_map(|package| {
 		let name = value(package, "name")?;
-		let source = value(package, "source")?;
-		(name == "rune" && source.ends_with(&format!("#{rev}")))
+		let source = value(package, "source");
+		(name == "rune" && source.is_none())
 			.then(|| value(package, "version"))
 			.flatten()
 	})
@@ -157,9 +156,9 @@ fn the_claims_hold(manifest: &str, whose: &str) {
 		"{whose}: rust-version"
 	);
 	assert_eq!(
-		rune_pin(manifest).as_deref(),
-		Some("fed878b5aea151a878462d71626c9a4d589a4273"),
-		"{whose}: the rune pin"
+		rune_path(manifest).as_deref(),
+		Some("rune/crates/rune"),
+		"{whose}: the canonical Rune path"
 	);
 }
 
@@ -176,18 +175,15 @@ fn the_version_is_the_one_the_ladder_has_earned() {
 }
 
 #[test]
-fn the_rune_it_reports_is_the_rune_it_pins() {
-	// The two halves cannot drift: the constant is compiled into the binary
-	// and the pin is in the manifest, so a version bump that changes one
-	// without the other fails here.
-	let pinned = rune_pin(MANIFEST).expect("an exact rune pin");
-	let version = locked_rune_version(&pinned).expect("rune locked at the pinned revision");
+fn the_rune_it_reports_is_the_canonical_engine() {
+	assert_eq!(rune_path(MANIFEST).as_deref(), Some("rune/crates/rune"));
+	let version = locked_rune_version().expect("canonical Rune lock entry without external source");
+	let identity = env!("RNX_ENGINE_IDENTITY");
+	assert!(identity.starts_with(&format!("{version} (monorepo ")));
+	assert!(identity.contains("; engine ") && identity.contains("; dirty="));
 	let (out, code) = rnx(&["version"]);
 	assert_eq!(code, Some(0), "{out}");
-	assert!(
-		out.contains(&format!("rune {version} (git {pinned})\n")),
-		"the binary reports {out:?}; the manifest pins {pinned} and the lockfile resolves {version}"
-	);
+	assert!(out.contains(&format!("rune {identity}\n")), "{out}");
 }
 
 #[test]
@@ -786,6 +782,7 @@ fn scratch_repository(tag: &str) -> std::path::PathBuf {
 		"Cargo.lock",
 		"build.rs",
 		"src",
+		"tools/build_identity.rs",
 		"tools/project/Cargo.toml",
 		"tools/project/src",
 		"scripts",
@@ -805,6 +802,25 @@ fn scratch_repository(tag: &str) -> std::path::PathBuf {
 			"could not copy {item} into the scratch copy"
 		);
 	}
+	// Copy tracked engine inputs, never build caches, into the scratch workspace.
+	let listed = Command::new("git")
+		.args(["ls-files", "-z", "--", "rune/"])
+		.current_dir(root)
+		.output()
+		.expect("tracked engine inputs");
+	assert!(listed.status.success());
+	assert!(!listed.stdout.is_empty(), "missing imported engine fixture");
+	for name in listed
+		.stdout
+		.split(|byte| *byte == 0)
+		.filter(|name| !name.is_empty())
+	{
+		let name = std::str::from_utf8(name).unwrap();
+		let destination = into.join(name);
+		std::fs::create_dir_all(destination.parent().unwrap()).unwrap();
+		std::fs::copy(root.join(name), destination).unwrap();
+	}
+
 	into
 }
 

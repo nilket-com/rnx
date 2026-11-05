@@ -43,7 +43,7 @@ def main():
 			assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip() == candidate
 			assert not subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip(), "source must remain clean"
 			for name, value in pre["source_pins"].items():
-				assert digest(ROOT / name) == value, name
+				assert digest(Path(pre.get("source_root", ROOT)) / name) == value, name
 			assert digest(pre["probe"]["path"]) == pre["probe"]["sha256"]
 		exact()
 		policy = json.loads((HERE / "CK1.json").read_text())

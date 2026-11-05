@@ -29,14 +29,17 @@ def main():
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
 	started = time.monotonic()
-	files = subprocess.check_output(["git", "ls-files", "--cached", "--others", "--exclude-standard"], cwd=ROOT, text=True).splitlines()
+	source_root = Path(subprocess.check_output(["git", "rev-parse", "--show-toplevel"], cwd=ROOT, text=True).strip())
+	files = subprocess.check_output(["git", "ls-files", "--cached", "--others", "--exclude-standard"], cwd=source_root, text=True).splitlines()
 	pins = {}
-	result = {"record": record, "status": "FAIL", "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(), "source_pins": pins, "checks": []}
+	result = {"record": record, "status": "FAIL", "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(), "source_pins": pins, "source_root": str(source_root), "checks": []}
 	env = dict(os.environ, CARGO_BUILD_JOBS="4", PYTHONDONTWRITEBYTECODE="1")
 	def exact():
 		for name, digest in pins.items():
-			assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == digest, f"source changed during {record} job: {name}"
+			assert hashlib.sha256((source_root / name).read_bytes()).hexdigest() == digest, f"source changed during {record} job: {name}"
 	def run(name, command):
+		if command[:2] == ["cargo", "+1.98.1"] and command[2] in {"test", "clippy"} and "--manifest-path" not in command and not (ROOT / "Cargo.toml").exists():
+			command[3:3] = ["--profile", "engine-dev"]
 		exact()
 		with (out / (name + ".stdout")).open("x") as stdout, (out / (name + ".stderr")).open("x") as stderr:
 			p = subprocess.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=3600)
@@ -48,7 +51,7 @@ def main():
 		hygiene.controls()
 		hygiene.index_controls()
 		hygiene.check(ROOT)
-		pins.update({name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in files if (ROOT / name).is_file()})
+		pins.update({name: hashlib.sha256((source_root / name).read_bytes()).hexdigest() for name in files if (source_root / name).is_file()})
 		result["checks"].append({"name": "staged-artifact-guard", "exit": 0})
 		for source in HERE.glob("*.py"):
 			compile(source.read_text(), str(source), "exec")

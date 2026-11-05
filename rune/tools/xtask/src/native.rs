@@ -397,6 +397,7 @@ fn borrow_doc(ctx: &Context, label: &str, selector: &str) -> Result<Value> {
 		"fmt,workspace,execution",
 		selector,
 	]);
+	command.args(ctx.engine_profile_args());
 	let run = ctx.checked(label, &mut command, 600)?;
 	exact_counts(&fs::read_to_string(&run.stdout)?, 2)?;
 	Ok(json!({"selector":selector,"receipt":run.receipt,"passed":2}))
@@ -484,8 +485,8 @@ fn clippy(ctx: &Context, m: &Manifest) -> Result<Value> {
 	let r = ctx.checked("fmt", &mut cmd, 900)?;
 	rows.push(json!({"name":"fmt","receipt":r.receipt,"seconds":r.seconds}));
 	let mut cmd = ctx.cargo();
+	cmd.arg("clippy").args(ctx.engine_profile_args());
 	cmd.args([
-		"clippy",
 		"--locked",
 		"-p",
 		"xtask",
@@ -498,8 +499,8 @@ fn clippy(ctx: &Context, m: &Manifest) -> Result<Value> {
 	rows.push(json!({"name":"clippy-xtask","receipt":r.receipt,"seconds":r.seconds}));
 	for (i, f) in m.clippy_features.iter().enumerate() {
 		let mut cmd = ctx.cargo();
+		cmd.arg("clippy").args(ctx.engine_profile_args());
 		cmd.args([
-			"clippy",
 			"--locked",
 			"-p",
 			"rune",
@@ -514,7 +515,8 @@ fn clippy(ctx: &Context, m: &Manifest) -> Result<Value> {
 		rows.push(json!({"features":f,"receipt":r.receipt,"seconds":r.seconds}));
 	}
 	let mut cmd = ctx.cargo();
-	cmd.args(["test", "--locked", "-p", "xtask"]);
+	cmd.args(["test", "--locked", "-p", "xtask"])
+		.args(ctx.engine_profile_args());
 	let r = ctx.checked("runner-controls", &mut cmd, 900)?;
 	rows.push(json!({"name":"runner-controls","receipt":r.receipt,"seconds":r.seconds}));
 	Ok(json!({"status":"PASS","checks":rows}))
@@ -643,7 +645,9 @@ mod tests {
 	#[test]
 	fn contract_bundle_summary_and_outer_selection_are_preserved() {
 		let selector = "experimental_core::tests::gap_hunt::contracts::all_frozen_contracts";
-		let text = format!("running 1 test\ntest {selector} ... PASS sample\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n");
+		let text = format!(
+			"running 1 test\ntest {selector} ... PASS sample\nok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n"
+		);
 		assert!(contract_bundle_output(&text, selector).is_ok());
 		assert!(contract_bundle_output(
 			&text.replace("test result: ok. 1 passed;", "test result: ok. 0 passed;"),

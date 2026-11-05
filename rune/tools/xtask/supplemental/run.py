@@ -51,7 +51,7 @@ def environment():
 
 
 def cargo(manifest, feature):
-	return ['cargo', '+' + manifest['nightly'], 'miri', 'test', '--offline', '--frozen',
+	return ['cargo', '+' + manifest['nightly'], 'miri', 'test', '--profile', 'engine-dev', '--offline', '--frozen',
 		'-p', 'rune', '--lib', '--features', manifest['features'][feature]]
 
 
@@ -72,7 +72,7 @@ def prerequisite(attempt, root, manifest, env):
 	controls = execute([sys.executable, '-m', 'unittest', 'discover', '-s', str(HERE), '-p', 'test_*.py'], attempt, env, root, 120, label='controls')
 	if controls['exit']:
 		raise ValueError('supplemental runner controls failed')
-	row = execute(['cargo', '+' + manifest['stable'], 'xtask', 'verify', '--suite', 'clippy',
+	row = execute(['cargo', '+' + manifest['stable'], 'run', '--package', 'xtask', '--profile', 'engine-dev', '--', 'verify', '--suite', 'clippy',
 		'--cold', '--out', str(attempt / 'canonical')], attempt, env, root, 7200)
 	if row['exit']:
 		raise ValueError('format/Clippy prerequisite failed')
@@ -82,7 +82,7 @@ def prerequisite(attempt, root, manifest, env):
 def verify_harness_isolation(target):
 	import re
 	harnesses = []
-	for path in target.glob('miri/*/debug/build/rune/*/out/rune-*'):
+	for path in target.glob('miri/*/*/build/rune/*/out/rune-*'):
 		if not re.fullmatch(r'rune-[0-9a-f]+', path.name):
 			continue
 		record = json.loads(path.read_text())

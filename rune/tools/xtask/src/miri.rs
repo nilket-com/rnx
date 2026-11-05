@@ -154,6 +154,7 @@ fn cargo(ctx: &Context, m: &Manifest) -> Command {
 		"--features",
 		&m.features,
 	])
+	.args(ctx.engine_profile_args())
 	.env("CARGO_TARGET_DIR", ctx.out.join("target-miri"))
 	.env_remove("MIRIFLAGS")
 	.env_remove("MIRI_SYSROOT");
@@ -200,8 +201,14 @@ fn pass(stdout: &str, stderr: &str, selector: &str) -> Result<()> {
 		"Miri must pass exactly one test"
 	);
 	let marker = match selector {
-		"experimental_core::tests::patterns_safety::vec_local_host_shapes_moved_values_and_reuse" => Some("C16a Vec local Miri rows 12"),
-		"experimental_core::tests::patterns_safety::loop_binders_control_flow_failures_and_reuse" => Some("C16b loop Miri rows 24"), _ => None };
+		"experimental_core::tests::patterns_safety::vec_local_host_shapes_moved_values_and_reuse" => {
+			Some("C16a Vec local Miri rows 12")
+		}
+		"experimental_core::tests::patterns_safety::loop_binders_control_flow_failures_and_reuse" => {
+			Some("C16b loop Miri rows 24")
+		}
+		_ => None,
+	};
 	if let Some(marker) = marker {
 		ensure!(
 			stdout.matches(marker).count() == 1
@@ -452,18 +459,37 @@ mod tests {
 	#[test]
 	fn special_markers_require_exact_adjacent_pass_lines() {
 		for (selector, marker) in [
-			("experimental_core::tests::patterns_safety::vec_local_host_shapes_moved_values_and_reuse", "C16a Vec local Miri rows 12"),
-			("experimental_core::tests::patterns_safety::loop_binders_control_flow_failures_and_reuse", "C16b loop Miri rows 24"),
+			(
+				"experimental_core::tests::patterns_safety::vec_local_host_shapes_moved_values_and_reuse",
+				"C16a Vec local Miri rows 12",
+			),
+			(
+				"experimental_core::tests::patterns_safety::loop_binders_control_flow_failures_and_reuse",
+				"C16b loop Miri rows 24",
+			),
 		] {
-			let summary = "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n";
-			assert!(pass(&format!("test {selector} ... {marker}\nok\n{summary}"), "", selector).is_ok());
+			let summary =
+				"test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n";
+			assert!(
+				pass(
+					&format!("test {selector} ... {marker}\nok\n{summary}"),
+					"",
+					selector
+				)
+				.is_ok()
+			);
 			for wrong in [
 				format!("test {selector} ... ok\n{marker}\n{summary}"),
 				format!("test {selector} ... {marker}\n{summary}"),
 				format!("test {selector}_suffix ... {marker}\nok\n{summary}"),
 				format!("test {selector} ... {marker}\nok_suffix\n{summary}"),
 				format!("prefix test {selector} ... {marker}\nok\n{summary}"),
-			] { assert!(pass(&wrong, "", selector).is_err(), "accepted malformed marker output: {wrong}"); }
+			] {
+				assert!(
+					pass(&wrong, "", selector).is_err(),
+					"accepted malformed marker output: {wrong}"
+				);
+			}
 		}
 	}
 
@@ -477,7 +503,13 @@ mod tests {
 
 	#[test]
 	fn rejects_zero_multiple_and_wrong_selection() {
-		for text in ["test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n", "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n", "test other ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n"] {assert!(pass(text,"","wanted").is_err());}
+		for text in [
+			"test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n",
+			"test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n",
+			"test other ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out\n",
+		] {
+			assert!(pass(text, "", "wanted").is_err());
+		}
 	}
 	#[test]
 	fn rejects_ub_despite_pass() {

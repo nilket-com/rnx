@@ -7,7 +7,7 @@ exact live test inventory, then admit memory-bounded exact-name jobs.
 Launch a cold run from a clean, signed checkout:
 
 ```sh
-python3 tools/xtask/supplemental/run.py --root "$PWD" \
+python3 rune/tools/xtask/supplemental/run.py --root "$PWD" \
   --out "$PWD/target/xtask-verify/supplemental-cold" \
   --launch --unit rune-supplemental-cold --require-overlap
 ```
@@ -44,7 +44,7 @@ run identity; memory observations and selected workers are in invocation receipt
 Controls run with:
 
 ```sh
-python3 -m unittest discover -s tools/xtask/supplemental -p 'test_*.py'
+python3 -m unittest discover -s rune/tools/xtask/supplemental -p 'test_*.py'
 ```
 
 ## Proportional tooling acceptance

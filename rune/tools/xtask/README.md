@@ -1,10 +1,20 @@
 # Rune correctness verification
 
-`cargo xtask list` lists the named suites. Output defaults to a new scratch directory under `target/xtask-verify`; an explicit output may also be outside the source tree. For example:
+Run these commands from the repository root. Use the explicit invocation
+`cargo run --package xtask --profile engine-dev --`; there is no Cargo alias
+configuration at the root or under `rune/`. Generated-project provenance checks
+configuration ancestors of local dependencies as well as the host workspace.
+
+`cargo run --package xtask --profile engine-dev -- list` lists the named suites.
+Output defaults to a new scratch directory under `target/xtask-verify`; an
+explicit output may also be outside the source tree. For example:
 
 ```sh
-cargo xtask verify --suite native,contracts
+cargo run --package xtask --profile engine-dev -- verify --suite native,contracts
 ```
+
+Backlog: refresh the historical `cargo xtask` help strings to use the explicit
+invocation above.
 
 Use `--suite all` for every suite. `--check-manifests` checks the selected suites'
 pinned inputs without compiling Rune. The default Rust toolchain is `1.98.1`;
