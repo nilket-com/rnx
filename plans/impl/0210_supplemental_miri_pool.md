@@ -52,3 +52,32 @@ process overlap and correct final coverage in a fresh checkout, with the
 per-subset terminal receipts retained. Preserve individual bounds; no flake
 retries. Review signed implementation and exact-source evidence before normal
 fast-forward publication. No rnx pin is required for a tooling-only record.
+
+## Implemented evidence and limits
+
+All seven subset probes passed. Kernel traces proved four-way and three-way
+interpreter overlap, without rebuilds or build-directory lock waits. Maximum
+observed individual-descendant RSS was 3,288,178,688 bytes. Admission reserves
+5 GiB per worker (rounded to 4 GiB plus 25%), with a 2 GiB host reserve and
+CPU/ancestor-memory bounds. RSS is not aggregate process-tree memory.
+
+N5 exact partitions passed in 3391.32 and 402.10 seconds. One individual test
+dominates; sharding does not promise to eliminate that floor. N5, method
+closures, and budget errors use singleton exact-name shards, including ignored
+tests. Other subsets retain verified exact-name batches. Cold acceptance reports
+per-shard timing and ignored status; future balancing can use those observations.
+
+Artifact files and nested directories are fsynced before receipt publication.
+Unique same-directory temporary files prevent stale temporary-file collisions.
+Controls include real process interruption/resume and durability fault injection.
+
+## Acceptance recovery
+
+The first cold tooling acceptance found a copied-harness incremental-cache race.
+Captured absolute incremental paths mutated shared preparation while later copies
+read it. Retain the raw FAIL. Disable incremental compilation, reject captured
+incremental arguments, and rehash preparation after execution. Approved recovery
+is explicit tooling-short acceptance: fresh preparation, two real concurrent
+subsets, isolation/kill-resume/identity controls, and measured overlap. Scope is
+bound into receipts and identity; the full default is unchanged. This acceptance
+does not claim that the initial incomplete full run passed.

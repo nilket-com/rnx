@@ -143,3 +143,10 @@ New records after the published B2 adoption boundary use signed subject-only
 files. The mandatory prerequisite runs `column/records.py` (including rejection
 controls) before formatting and Clippy. It checks committed objects and the
 complete first-parent chain, leaving historical plans and commits untouched.
+
+## Supplemental Miri pool
+
+[ADR 0210 runner](supplemental/README.md) adds durable, memory-bounded exact-name
+shards for the seven supplemental subsets. It runs its controls and the canonical
+format/Clippy prerequisite before preparation. It does not replace the canonical
+98-row suite. Use its explicit resume mode only for interrupted work.
