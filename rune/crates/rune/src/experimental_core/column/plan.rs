@@ -19,7 +19,16 @@ pub(super) struct Node {
 	pub step: Step,
 	pub ty: ColumnType,
 	pub pc: usize,
-	pub buffer: usize,
+	pub operand: Operand,
+}
+
+/// Storage of a node's typed value. Only computed intermediates own slots.
+#[derive(Clone, Copy, Debug)]
+pub(super) enum Operand {
+	Input(usize),
+	Constant(u64),
+	Slot(usize),
+	Output,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -158,7 +167,7 @@ pub(super) fn prepare(
 			step: Step::Input(i),
 			ty,
 			pc: 0,
-			buffer: 0,
+			operand: Operand::Input(i),
 		});
 	}
 	let mut row_charge = 0usize;
@@ -226,12 +235,34 @@ pub(super) fn prepare(
 			}
 			_ => return Err(ColumnRefusal::Unsupported),
 		};
+		// Fold only successful constants. Overflowing constant operations retain
+		// their original node/PC and execute normally so replay keeps fault order.
+		// row_charge above still counts the original instructions.
+		let step = match step {
+			Step::Binary(op, a, b) => match (nodes[a].step, nodes[b].step) {
+				(Step::Constant(x), Step::Constant(y)) => {
+					let (value, failed) = super::run::binary(op, nodes[a].ty, x, y);
+					if failed {
+						step
+					} else {
+						Step::Constant(value)
+					}
+				}
+				_ => step,
+			},
+			Step::Not(a) => match nodes[a].step {
+				Step::Constant(value) => Step::Constant(u64::from(value == 0)),
+				_ => step,
+			},
+			_ => step,
+		};
+
 		slots[out as usize] = Some(nodes.len());
 		nodes.push(Node {
 			step,
 			ty,
 			pc,
-			buffer: 0,
+			operand: Operand::Output,
 		});
 	}
 	let result = result.ok_or(ColumnRefusal::Unsupported)?;
@@ -271,11 +302,16 @@ pub(super) fn prepare(
 	free.clear();
 	let mut scratch_count = 0;
 	for i in 0..nodes.len() {
-		nodes[i].buffer = free.pop().unwrap_or_else(|| {
-			let slot = scratch_count;
-			scratch_count += 1;
-			slot
-		});
+		nodes[i].operand = match nodes[i].step {
+			Step::Input(column) => Operand::Input(column),
+			Step::Constant(value) => Operand::Constant(value),
+			_ if i == result => Operand::Output,
+			_ => Operand::Slot(free.pop().unwrap_or_else(|| {
+				let slot = scratch_count;
+				scratch_count += 1;
+				slot
+			})),
+		};
 		let deps = match nodes[i].step {
 			Step::Binary(_, a, b) => [Some(a), Some(b)],
 			Step::Not(a) => [Some(a), None],
@@ -284,11 +320,15 @@ pub(super) fn prepare(
 		for dependency in deps.into_iter().flatten() {
 			uses[dependency] -= 1;
 			if uses[dependency] == 0 {
-				free.push(nodes[dependency].buffer);
+				if let Operand::Slot(slot) = nodes[dependency].operand {
+					free.push(slot);
+				}
 			}
 		}
 		if uses[i] == 0 {
-			free.push(nodes[i].buffer);
+			if let Operand::Slot(slot) = nodes[i].operand {
+				free.push(slot);
+			}
 		}
 	}
 	let mut types = [ColumnType::I64; 3];

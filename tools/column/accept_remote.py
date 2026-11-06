@@ -25,6 +25,7 @@ def main():
 	out.mkdir(parents=True, exist_ok=False)
 	result = {"status": "FAIL"}
 	try:
+		subprocess.run(["python3", "-B", str(ROOT / "ci/disk_space.py"), "--path", str(ROOT), "--path", str(out)], check=True)
 		assert args.memory_bytes > 0
 		assert os.environ.get("SSH_AUTH_SOCK") and Path(os.environ["SSH_AUTH_SOCK"]).exists(), "missing SSH agent"
 		assert re.fullmatch(r"[A-Za-z0-9_.-]+", args.host), "invalid SSH host"
@@ -48,7 +49,9 @@ def main():
 			"test ! -e " + quote(remote), "mkdir -p " + quote(remote),
 			"git clone --no-checkout " + quote(prefix + ".bundle") + " " + quote(remote + "/rnx"),
 			"cd " + quote(remote + "/rnx"), "git checkout --detach " + quote(candidate),
-			"git -c gpg.ssh.allowedSignersFile=" + quote(prefix + ".signers") + " verify-commit HEAD",
+			"git config --local gpg.ssh.allowedSignersFile " + quote(prefix + ".signers"),
+			"python3 -B ci/disk_space.py --path . --path " + quote(remote),
+			"git verify-commit HEAD",
 			"git -c gpg.ssh.allowedSignersFile=" + quote(prefix + ".signers") + " verify-commit HEAD^",
 			"exec python3 -B tools/column/accept.py --candidate " + quote(candidate) + " --out " + quote(remote + "/acceptance"), "",
 		]))

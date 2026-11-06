@@ -67,69 +67,6 @@ pub(super) fn float_operation(fast: Fast) -> (FloatOp, usize, usize) {
 	}
 }
 
-pub(super) fn copy_input(values: ColumnSlice<'_>, start: usize, out: &mut [u64]) {
-	match values {
-		ColumnSlice::I64(x) => {
-			for (&x, out) in x[start..start + out.len()].iter().zip(out) {
-				*out = x as u64;
-			}
-		}
-		ColumnSlice::F64(x) => {
-			for (&x, out) in x[start..start + out.len()].iter().zip(out) {
-				*out = x.to_bits();
-			}
-		}
-		ColumnSlice::Bool(x) => {
-			for (i, out) in out.iter_mut().enumerate() {
-				*out = u64::from(x.bit(start + i));
-			}
-		}
-	}
-}
-
-pub(super) fn copy_output(input: &[u64], values: &mut ColumnValues, row: usize) {
-	match values {
-		ColumnValues::I64(out) => {
-			for (&x, out) in input.iter().zip(&mut out[row..row + input.len()]) {
-				*out = x as i64;
-			}
-		}
-		ColumnValues::F64(out) => {
-			for (&x, out) in input.iter().zip(&mut out[row..row + input.len()]) {
-				*out = f64::from_bits(x);
-			}
-		}
-		ColumnValues::Bool(out) => {
-			for (i, &x) in input.iter().enumerate() {
-				out[(row + i) / 8] |= (x as u8) << ((row + i) % 8);
-			}
-		}
-	}
-}
-
-// The verifier allocates the destination before releasing either operand.
-// Thus it is a disjoint BLOCK-sized range. Operands may equal each other.
-// Express that proof through safe split_at_mut, never aliased raw slices.
-pub(super) fn split_binary(
-	slots: &mut [u64],
-	a: usize,
-	b: usize,
-	out: usize,
-	len: usize,
-) -> (&[u64], &[u64], &mut [u64]) {
-	assert!(len <= BLOCK && a != out && b != out);
-	let (before, rest) = slots.split_at_mut(out);
-	let (output, after) = rest.split_at_mut(BLOCK);
-	let input = |index: usize| {
-		if index < out {
-			&before[index..index + len]
-		} else {
-			&after[index - out - BLOCK..index - out - BLOCK + len]
-		}
-	};
-	(input(a), input(b), &mut output[..len])
-}
-
 pub(super) fn first_fault(
 	plan: &PreparedColumn,
 	inputs: &[ColumnSlice<'_>; 3],
@@ -181,6 +118,7 @@ impl PreparedBatch<'_, '_> {
 			validity,
 			len,
 			charge,
+			valid_rows,
 			mut scratch,
 			mut row_values,
 		} = self;
@@ -294,49 +232,20 @@ impl PreparedBatch<'_, '_> {
 					}
 					let mut failed = fast.is_some_and(|(failed, _)| failed);
 					if fast.is_none() {
-						for node in &plan.nodes {
-							let out = node.buffer * BLOCK;
-							match node.step {
-								Step::Input(i) => {
-									copy_input(inputs[i], current[i], &mut scratch[out..out + n])
-								}
-								Step::Constant(v) => scratch[out..out + n].fill(v),
-								Step::Not(a) => {
-									let a = plan.nodes[a].buffer * BLOCK;
-									for j in 0..n {
-										scratch[out + j] = u64::from(scratch[a + j] == 0);
-									}
-								}
-								Step::Binary(op, a, b) => {
-									let ty = plan.nodes[a].ty;
-									let a = plan.nodes[a].buffer * BLOCK;
-									let b = plan.nodes[b].buffer * BLOCK;
-									if all {
-										failed |= apply_binary(
-											op,
-											ty,
-											&mut scratch,
-											[a, b, out],
-											n,
-											engine,
-										);
-										if ty == ColumnType::I64
-											&& op == Binary::Add && engine.avx2()
-										{
-											path = Path::Avx2;
-										}
-									} else {
-										failed |= apply_masked_binary(
-											op,
-											ty,
-											&mut scratch,
-											[a, b, out],
-											n,
-											mask,
-										);
-									}
-								}
-							}
+						let (fault, simd) = operands::execute(
+							plan,
+							&inputs,
+							&current,
+							&mut scratch,
+							&mut values,
+							output_row,
+							n,
+							if all { None } else { Some(mask) },
+							engine,
+						);
+						failed |= fault;
+						if simd {
+							path = Path::Avx2;
 						}
 					}
 					if failed {
@@ -349,16 +258,6 @@ impl PreparedBatch<'_, '_> {
 							Some(mask),
 							&mut row_values,
 						));
-					}
-					if fast.is_none() {
-						let start = plan.nodes[plan.result].buffer * BLOCK;
-						let output = &mut scratch[start..start + n];
-						if !all {
-							for (i, value) in output.iter_mut().enumerate() {
-								*value &= 0u64.wrapping_sub(mask >> i & 1);
-							}
-						}
-						copy_output(output, &mut values, output_row);
 					}
 				}
 			}
@@ -374,6 +273,7 @@ impl PreparedBatch<'_, '_> {
 			values,
 			validity,
 			len,
+			valid_rows,
 			remaining_work: options.work - charge,
 			path,
 		})
@@ -430,40 +330,4 @@ fn masked_fast(
 		_ => unreachable!("verified fast output"),
 	};
 	Some((failed, engine.avx2()))
-}
-
-fn apply_masked_binary(
-	op: Binary,
-	ty: ColumnType,
-	slots: &mut [u64],
-	buffers: [usize; 3],
-	n: usize,
-	mask: u64,
-) -> bool {
-	let [a, b, out] = buffers;
-	let (x, y, out) = split_binary(slots, a, b, out, n);
-	macro_rules! integer {
-		($method:ident) => {{
-			let mut failed = false;
-			for (i, ((&a, &b), out)) in x.iter().zip(y).zip(out).enumerate() {
-				let (v, f) = (a as i64).$method(b as i64);
-				*out = v as u64;
-				failed |= f && (mask >> i & 1 != 0);
-			}
-			failed
-		}};
-	}
-	match (ty, op) {
-		(ColumnType::I64, Binary::Add) => integer!(overflowing_add),
-		(ColumnType::I64, Binary::Sub) => integer!(overflowing_sub),
-		(ColumnType::I64, Binary::Mul) => integer!(overflowing_mul),
-		_ => {
-			// Non-integer arithmetic cannot overflow. This uncommon generic
-			// path preserves every admitted comparison/Boolean operation.
-			for ((&a, &b), out) in x.iter().zip(y).zip(out) {
-				*out = binary(op, ty, a, b).0;
-			}
-			false
-		}
-	}
 }
