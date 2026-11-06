@@ -1139,3 +1139,212 @@ fn ck2_optimistic_flags_ignore_nulls_and_replay_first_valid_boundary_fault() {
 		}
 	}
 }
+
+#[test]
+fn borrowed_operands_repeated_input_and_result_used_later() {
+	// The returned value is also read by a later operation: Output must remain
+	// an immutable operand without moving instruction order or hiding faults.
+	let p = program(
+		1,
+		3,
+		&[
+			Op::Binary {
+				out: 1,
+				op: Binary::Add,
+				lhs: 0,
+				rhs: 0,
+			},
+			Op::Binary {
+				out: 2,
+				op: Binary::Mul,
+				lhs: 1,
+				rhs: 0,
+			},
+			Op::Return { value: 1 },
+		],
+	);
+	let plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::I64],
+		ColumnType::I64,
+		Limits::default(),
+	)
+	.unwrap();
+	assert!(matches!(plan.nodes[0].operand, plan::Operand::Input(0)));
+	assert!(matches!(
+		plan.nodes[plan.result].operand,
+		plan::Operand::Output
+	));
+	assert_eq!(plan.scratch_count, 1);
+	for force in [true, false] {
+		for masked in [false, true] {
+			let x = [2, 3, -4, 5, 6];
+			let bits = [0b11110101]; // dirty padding deliberately ignored
+			let chunks = [ColumnChunk::new(
+				ColumnSlice::I64(&x),
+				if masked {
+					Some(BitSlice::new(&bits, 0, 5).unwrap())
+				} else {
+					None
+				},
+			)
+			.unwrap()];
+			let cols = [Column::new(ColumnType::I64, &chunks).unwrap()];
+			let ColumnOutcome::Complete(out) = plan.execute(&cols, options(1000, force), || false)
+			else {
+				panic!("borrowed result")
+			};
+			assert_eq!(out.valid_rows, if masked { 3 } else { 5 });
+			assert_eq!(out.remaining_work, 1000 - plan.row_charge * out.valid_rows);
+			let ColumnValues::I64(values) = out.values else {
+				panic!("type")
+			};
+			assert_eq!(
+				values,
+				if masked {
+					vec![4, 0, -8, 0, 12]
+				} else {
+					vec![4, 6, -8, 10, 12]
+				}
+			);
+		}
+		let x = [i64::MAX / 3];
+		let chunks = [i64_chunk(&x)];
+		let cols = [Column::new(ColumnType::I64, &chunks).unwrap()];
+		assert!(matches!(
+			plan.execute(&cols, options(1000, force), || false),
+			ColumnOutcome::Replay {
+				reason: ColumnRefusal::Arithmetic,
+				fault: Some(Fault { row: 0, pc: 1 })
+			}
+		));
+	}
+}
+
+#[test]
+fn borrowed_identity_constant_and_bitmap_count() {
+	for constant in [false, true] {
+		let ops = if constant {
+			vec![
+				Op::Literal {
+					out: 1,
+					value: Value::I64(-7),
+				},
+				Op::Return { value: 1 },
+			]
+		} else {
+			vec![Op::Return { value: 0 }]
+		};
+		let p = program(1, 2, &ops);
+		let plan = PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::I64],
+			ColumnType::I64,
+			Limits::default(),
+		)
+		.unwrap();
+		assert_eq!(plan.scratch_count, 0);
+		for offset in 0..8 {
+			for len in [0usize, 1, 7, 63, 64, 65, 129] {
+				let values: Vec<_> = (0..len).map(|i| i as i64 - 30).collect();
+				let bits = vec![0xa5; (offset + len).div_ceil(8)];
+				let mask = BitSlice::new(&bits, offset, len).unwrap();
+				let chunks = [ColumnChunk::new(ColumnSlice::I64(&values), Some(mask)).unwrap()];
+				let cols = [Column::new(ColumnType::I64, &chunks).unwrap()];
+				let ColumnOutcome::Complete(out) =
+					plan.execute(&cols, options(10000, true), || false)
+				else {
+					panic!("identity/constant")
+				};
+				assert_eq!(
+					out.valid_rows,
+					(0..len).filter(|&i| mask.get(i).unwrap()).count()
+				);
+				let ColumnValues::I64(output) = out.values else {
+					panic!("type")
+				};
+				for i in 0..len {
+					assert_eq!(
+						output[i],
+						if !mask.get(i).unwrap() {
+							0
+						} else if constant {
+							-7
+						} else {
+							values[i]
+						}
+					);
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn borrowed_constant_folding_retains_fuel_and_overflow_pc() {
+	for (a, b, overflow) in [(3, 4, false), (i64::MAX, 1, true)] {
+		let p = program(
+			1,
+			4,
+			&[
+				Op::Literal {
+					out: 1,
+					value: Value::I64(a),
+				},
+				Op::Literal {
+					out: 2,
+					value: Value::I64(b),
+				},
+				Op::Binary {
+					out: 3,
+					op: Binary::Add,
+					lhs: 1,
+					rhs: 2,
+				},
+				Op::Return { value: 3 },
+			],
+		);
+		let plan = PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::I64],
+			ColumnType::I64,
+			Limits::default(),
+		)
+		.unwrap();
+		assert_eq!(
+			matches!(plan.nodes[plan.result].step, plan::Step::Constant(_)),
+			!overflow
+		);
+		for valid in [false, true] {
+			let bits = [u8::from(valid)];
+			let chunks = [ColumnChunk::new(
+				ColumnSlice::I64(&[0]),
+				Some(BitSlice::new(&bits, 0, 1).unwrap()),
+			)
+			.unwrap()];
+			let columns = [Column::new(ColumnType::I64, &chunks).unwrap()];
+			match plan.execute(&columns, options(100, true), || false) {
+				ColumnOutcome::Complete(out) => {
+					assert!(!overflow || !valid);
+					assert_eq!(out.valid_rows, usize::from(valid));
+					assert_eq!(
+						out.remaining_work,
+						100 - usize::from(valid) * plan.row_charge
+					);
+					let ColumnValues::I64(v) = out.values else {
+						panic!("type")
+					};
+					assert_eq!(v, [if valid { 7 } else { 0 }]);
+				}
+				ColumnOutcome::Replay { reason, fault } => {
+					assert!(overflow && valid);
+					assert_eq!(reason, ColumnRefusal::Arithmetic);
+					assert_eq!(fault, Some(Fault { row: 0, pc: 2 }));
+				}
+			}
+		}
+	}
+}

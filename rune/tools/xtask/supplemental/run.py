@@ -201,6 +201,7 @@ def main():
 	manifest = json.loads((HERE / 'manifest.json').read_text())
 	if directory.is_relative_to(root) and not directory.is_relative_to(root / 'target/xtask-verify'):
 		parser.error('in-source output must be under target/xtask-verify')
+	subprocess.run([sys.executable, "-B", str(root / "ci/disk_space.py"), "--path", str(root), "--path", str(directory)], check=True)
 	if args.launch:
 		limits = admit(*resources(), manifest['measured_peak_rss_bytes'], args.workers)
 		command = ['systemd-run', '--user', '--unit=' + args.unit,

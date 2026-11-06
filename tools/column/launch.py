@@ -16,6 +16,7 @@ def main():
 	args = parser.parse_args()
 	command = args.command[1:] if args.command[:1] == ["--"] else args.command
 	assert command, "missing gate command"
+	subprocess.run(["python3", "-B", str(Path(__file__).resolve().parents[2] / "ci/disk_space.py"), "--path", str(args.cwd)], check=True)
 	budget = json.loads(args.hosts.read_text())["measurement"]["memory_bytes"]
 	assert type(budget) is int and budget > 0, "invalid declared memory budget"
 	launch = ["systemd-run", "--user", "--unit=" + args.unit,

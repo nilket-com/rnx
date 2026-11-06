@@ -454,3 +454,35 @@ fn validity_word_count_matches_independent_bit_reference() {
 		}
 	}
 }
+
+#[test]
+fn core_valid_rows_matches_reference_for_sliced_dirty_masks() {
+	for offset in 0..8 {
+		for len in [0usize, 1, 63, 64, 65, 129] {
+			let data: Vec<_> = (0..len).map(|i| i as i64).collect();
+			let bits = vec![0xa5; (offset + len).div_ceil(8)];
+			let mask = BitSlice::new(&bits, offset, len).unwrap();
+			let chunks = [Chunk {
+				values: ColumnSlice::I64(&data),
+				validity: Some(mask),
+			}];
+			let inputs = [Input {
+				ty: ColumnType::I64,
+				chunks: &chunks,
+			}];
+			let mut k = kernel(
+				"pub fn map(x) { x * 3 + x }",
+				&[ColumnType::I64],
+				ColumnType::I64,
+			);
+			let expected = (0..len).filter(|&i| mask.get(i).unwrap()).count();
+			for mode in [Mode::Auto, Mode::Portable, Mode::Reference] {
+				let out = k.map(&inputs, options(10000, mode), || false).unwrap();
+				assert_eq!(k.last_path().valid_rows, expected);
+				for (i, &v) in ints(&out).iter().enumerate() {
+					assert_eq!(v, if mask.get(i).unwrap() { data[i] * 4 } else { 0 });
+				}
+			}
+		}
+	}
+}

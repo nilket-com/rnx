@@ -41,3 +41,14 @@ reason; fixing the race is preferred to hiding it.
 Long jobs produce durable terminal receipts. Wait for exit notifications rather
 than polling or running progress watchers. Resume only completed cases whose
 identity and artifact hashes match; never overwrite a failed observation.
+
+# Disk admission
+
+Maintained column and supplemental-Miri launchers run `ci/disk_space.py` before
+expensive work. Require 20 GiB available on the source/build and output
+filesystems, including an explicit `CARGO_TARGET_DIR`. A nonexistent output
+path is checked against its nearest existing ancestor. Remote acceptance checks
+both the bundling host and the verifier. This is a minimum reserve, not a promise
+that every full suite fits; preserve failures and reclaim only identified,
+reproducible closed-record build artifacts. Never automatically delete source,
+parked bundles or acceptance receipts to satisfy admission.

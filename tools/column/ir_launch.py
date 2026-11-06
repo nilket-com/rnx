@@ -22,6 +22,7 @@ def main():
 	assert command and "--resources" not in command
 	root = Path(__file__).resolve().parents[2]
 	subprocess.run([sys.executable, "-B", str(root / "ci/preflight.py"), "--repo", str(root)], check=True)
+	subprocess.run([sys.executable, "-B", str(root / "ci/disk_space.py"), "--path", str(root), "--path", str(args.manifest.parent)], check=True)
 	# The new service lives in app.slice, which may differ from this process.
 	group = subprocess.check_output(["systemctl", "--user", "show", "app.slice", "--property=ControlGroup", "--value"], text=True).strip()
 	assert group.startswith("/"), "cannot locate destination slice"

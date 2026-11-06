@@ -1,0 +1,9 @@
+# Follow-ups
+
+- After ADR 0212: remove numeric output zero-initialization only under a separate
+  decision record. The current cost is 0.4375 instructions/row at 100M rows.
+  Spare-capacity writes and publishing initialized length introduce an unsafe
+  invariant that needs its own audit and failure/cancellation controls.
+- After ADR 0212: accelerate generic mixed-mask expressions with validity-aware
+  SIMD. The 49 instructions/row multiply3 mixed-mask path is mostly scalar
+  arithmetic; eliminating copies alone cannot provide the larger SIMD gain.

@@ -2,6 +2,33 @@
 //! Safe wrappers prove equal lengths and exclusive output access. The only
 //! target-feature entry is dominated by runtime detection (disabled in Miri).
 
+// Bit-preserving views used by the typed operand dispatcher. These are the
+// only representation casts: all three scalar types have identical size and alignment,
+// every bit pattern is valid, and returned borrows retain the input lifetime.
+// Mutable views require an exclusive initialized slice; no length is changed.
+const _: () = {
+	assert!(core::mem::size_of::<i64>() == core::mem::size_of::<u64>());
+	assert!(core::mem::align_of::<i64>() == core::mem::align_of::<u64>());
+	assert!(core::mem::size_of::<f64>() == core::mem::size_of::<u64>());
+	assert!(core::mem::align_of::<f64>() == core::mem::align_of::<u64>());
+};
+pub(crate) fn i64_words(values: &[i64]) -> &[u64] {
+	// SAFETY: identical layout and validity, shared borrow with unchanged extent.
+	unsafe { core::slice::from_raw_parts(values.as_ptr().cast(), values.len()) }
+}
+pub(crate) fn f64_words(values: &[f64]) -> &[u64] {
+	// SAFETY: identical layout and validity, shared borrow with unchanged extent.
+	unsafe { core::slice::from_raw_parts(values.as_ptr().cast(), values.len()) }
+}
+pub(crate) fn i64_words_mut(values: &mut [i64]) -> &mut [u64] {
+	// SAFETY: identical layout/validity; exclusive borrow with unchanged extent.
+	unsafe { core::slice::from_raw_parts_mut(values.as_mut_ptr().cast(), values.len()) }
+}
+pub(crate) fn f64_words_mut(values: &mut [f64]) -> &mut [u64] {
+	// SAFETY: identical layout/validity; exclusive borrow with unchanged extent.
+	unsafe { core::slice::from_raw_parts_mut(values.as_mut_ptr().cast(), values.len()) }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum FloatOp {
 	Add,
@@ -91,27 +118,6 @@ impl Engine {
 		for ((&a, &b), out) in x.iter().zip(y).zip(out) {
 			let (v, f) = (a as i64).overflowing_add(b as i64);
 			*out = v as u64;
-			failed |= f;
-		}
-		failed
-	}
-
-	pub(crate) fn add_pair_output(self, x: &[u64], y: &[u64], out: &mut [i64]) -> bool {
-		assert_eq!(x.len(), y.len());
-		assert_eq!(x.len(), out.len());
-		#[cfg(target_arch = "x86_64")]
-		if self.avx2 {
-			// SAFETY: detected AVX2 and equal accessible slices, exclusive output.
-			// i64/u64 have identical size/alignment and every bit pattern is valid.
-			// The private helper only writes output; no aliased reference is made.
-			return unsafe {
-				simd::add_pair(x.as_ptr(), y.as_ptr(), out.as_mut_ptr().cast(), x.len())
-			};
-		}
-		let mut failed = false;
-		for ((&a, &b), out) in x.iter().zip(y).zip(out) {
-			let (v, f) = (a as i64).overflowing_add(b as i64);
-			*out = v;
 			failed |= f;
 		}
 		failed
@@ -775,7 +781,7 @@ mod pair_tests {
 					let failed = engine.add_pair(&x, &y, &mut out[1..n + 1]);
 					let mut direct = std::vec![719i64; n + 2];
 					assert_eq!(
-						engine.add_pair_output(&x, &y, &mut direct[1..n + 1]),
+						engine.add_pair(&x, &y, super::i64_words_mut(&mut direct[1..n + 1])),
 						failed
 					);
 					assert_eq!((direct[0], direct[n + 1]), (719, 719));
@@ -935,5 +941,27 @@ mod masked_float_block_tests {
 				}
 			}
 		}
+	}
+}
+
+#[cfg(test)]
+mod borrowed_view_tests {
+	use super::*;
+	#[test]
+	fn bit_views_preserve_storage_extents_and_all_patterns() {
+		let mut ints = [719, i64::MIN, -1, 0, i64::MAX, 719];
+		let source = &ints[1..5];
+		assert_eq!(i64_words(source).as_ptr().cast::<i64>(), source.as_ptr());
+		assert_eq!(i64_words(source), &[1 << 63, u64::MAX, 0, i64::MAX as u64]);
+		i64_words_mut(&mut ints[1..5]).copy_from_slice(&[0, u64::MAX, 1 << 63, 1]);
+		assert_eq!(ints, [719, 0, -1, i64::MIN, 1, 719]);
+		let patterns = [0u64, 1 << 63, 0x7ff0000000000001, 0xffffffffffffffff];
+		let mut floats = [719.0; 6];
+		f64_words_mut(&mut floats[1..5]).copy_from_slice(&patterns);
+		assert_eq!(f64_words(&floats[1..5]), patterns);
+		assert_eq!(f64_words(&floats).as_ptr().cast::<f64>(), floats.as_ptr());
+		assert_eq!((floats[0], floats[5]), (719.0, 719.0));
+		assert!(i64_words(&[]).is_empty());
+		assert!(f64_words_mut(&mut []).is_empty());
 	}
 }

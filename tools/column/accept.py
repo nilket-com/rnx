@@ -18,6 +18,8 @@ MANIFESTS = ["Cargo.toml", "tools/project/Cargo.toml", "adapters/candle/Cargo.to
 
 
 def commands(out):
+	# The verifier only permits ignored in-tree output below this directory.
+	cross_out = ROOT / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16])
 	cargo = ["cargo", "+1.98.1"]
 	steps = [("commit-discipline", ["python3", "-B", "ci/preflight.py"])]
 	steps += [("fetch-" + m.replace("/", "-"), cargo + ["fetch", "--locked", "--manifest-path", m]) for m in MANIFESTS]
@@ -45,7 +47,7 @@ def commands(out):
 	for manifest in MANIFESTS[-3:]:
 		steps.append(("check-" + manifest.replace("/", "-"), cargo + ["check", "--locked", "--all-targets", "--manifest-path", manifest]))
 	steps += [
-		("cross", ["python3", "-B", "tools/verify.py", "cross", "--suite", "all", "--jobs", "4", "--out", str(out / "cross")]),
+		("cross", ["python3", "-B", "tools/verify.py", "cross", "--suite", "all", "--jobs", "4", "--out", str(cross_out)]),
 		("production-cli-build", cargo + ["build", "--locked", "--release", "--manifest-path", "adapters/polars/Cargo.toml", "--bin", "rnx-polars"]),
 		("production-cli-controls", ["python3", "-B", "tools/column/cli.py", "--binary", str(ROOT / "adapters/polars/target/release/rnx-polars"), "--out", str(out / "cli")]),
 	]
@@ -72,6 +74,7 @@ def main():
 		assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip() == args.candidate
 		assert not subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip(), "source changed"
 	try:
+		subprocess.run(["python3", "-B", str(ROOT / "ci/disk_space.py"), "--path", str(ROOT), "--path", str(out)], check=True)
 		exact()
 		assert not env.get("CARGO_TARGET_DIR"), "fresh acceptance requires native workspace targets"
 		for manifest in MANIFESTS:

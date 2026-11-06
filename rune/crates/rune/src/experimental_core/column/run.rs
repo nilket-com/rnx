@@ -1,7 +1,7 @@
 use super::{
 	filled,
 	lease::low_mask,
-	plan::{Fast, Step},
+	plan::{Fast, Operand, Step},
 	BitSlice, Column, ColumnRefusal, ColumnSlice, ColumnType, PreparedColumn,
 };
 use crate::experimental_core::{arithmetic::Binary, execute::ExecutorLimits};
@@ -9,9 +9,9 @@ use std::vec::Vec;
 
 #[path = "masked.rs"]
 mod masked;
-use masked::{
-	copy_input, copy_output, first_fault, float_operation, intersect_validity, split_binary,
-};
+use masked::{first_fault, float_operation, intersect_validity};
+#[path = "operands.rs"]
+mod operands;
 
 const BLOCK: usize = 1024;
 
@@ -55,6 +55,8 @@ pub struct ColumnResult {
 	pub validity: Option<Vec<u8>>,
 	/// Logical row count (needed for packed output).
 	pub len: usize,
+	/// Number of valid rows computed by the fuel-reservation pass.
+	pub valid_rows: usize,
 	/// Exact remaining allowance after all non-null rows.
 	pub remaining_work: usize,
 	/// Actual primitive dispatch path.
@@ -123,6 +125,7 @@ pub struct PreparedBatch<'plan, 'input> {
 	validity: Option<Vec<u8>>,
 	len: usize,
 	charge: usize,
+	valid_rows: usize,
 	scratch: Vec<u64>,
 	row_values: Vec<u64>,
 }
@@ -234,6 +237,7 @@ impl PreparedColumn {
 			validity,
 			len,
 			charge,
+			valid_rows: valid,
 			scratch,
 			row_values,
 		})
@@ -274,6 +278,7 @@ impl PreparedBatch<'_, '_> {
 			validity,
 			len,
 			charge,
+			valid_rows,
 			mut scratch,
 			mut row_values,
 		} = self;
@@ -287,6 +292,7 @@ impl PreparedBatch<'_, '_> {
 						values,
 						validity,
 						len,
+						valid_rows,
 						remaining_work: options.work - charge,
 						path,
 					});
@@ -378,71 +384,21 @@ impl PreparedBatch<'_, '_> {
 					path = Path::Avx2;
 				}
 				let mut failed = fast.unwrap_or(false);
-				let mut direct_output = false;
 				if fast.is_none() {
-					for (index, node) in plan.nodes.iter().enumerate() {
-						let out = node.buffer * BLOCK;
-						match node.step {
-							Step::Input(i) => {
-								copy_input(inputs[i], offsets[i], &mut scratch[out..out + count]);
-							}
-							Step::Constant(v) => scratch[out..out + count].fill(v),
-							Step::Not(a) => {
-								let a = plan.nodes[a].buffer * BLOCK;
-								for j in 0..count {
-									scratch[out + j] = u64::from(scratch[a + j] == 0);
-								}
-							}
-							Step::Binary(op, a, b) => {
-								let ty = plan.nodes[a].ty;
-								let literal = if ty == ColumnType::I64 && op == Binary::Mul {
-									match (plan.nodes[a].step, plan.nodes[b].step) {
-										(_, Step::Constant(c)) => Some((false, c as i64)),
-										(Step::Constant(c), _) => Some((true, c as i64)),
-										_ => None,
-									}
-								} else {
-									None
-								};
-								let a = plan.nodes[a].buffer * BLOCK;
-								let b = plan.nodes[b].buffer * BLOCK;
-
-								if index == plan.result
-									&& index + 1 == plan.nodes.len()
-									&& ty == ColumnType::I64 && op == Binary::Add
-								{
-									let ColumnValues::I64(output) = &mut values else {
-										unreachable!("verified integer result")
-									};
-									failed |= engine.add_pair_output(
-										&scratch[a..a + count],
-										&scratch[b..b + count],
-										&mut output[row..row + count],
-									);
-									direct_output = true;
-								} else if let Some((swap, c)) = literal {
-									let (x, y, output) =
-										split_binary(&mut scratch, a, b, out, count);
-									failed |=
-										engine.mul_constant(if swap { y } else { x }, c, output);
-									if engine.avx2() && c != 0 && c.unsigned_abs() < (1u64 << 32) {
-										path = Path::Avx2;
-									}
-								} else {
-									failed |= apply_binary(
-										op,
-										ty,
-										&mut scratch,
-										[a, b, out],
-										count,
-										engine,
-									);
-								}
-								if ty == ColumnType::I64 && op == Binary::Add && engine.avx2() {
-									path = Path::Avx2;
-								}
-							}
-						}
+					let (fault, simd) = operands::execute(
+						plan,
+						&inputs,
+						&offsets,
+						&mut scratch,
+						&mut values,
+						row,
+						count,
+						None,
+						engine,
+					);
+					failed |= fault;
+					if simd {
+						path = Path::Avx2;
 					}
 				}
 				if failed {
@@ -455,11 +411,6 @@ impl PreparedBatch<'_, '_> {
 						None,
 						&mut row_values,
 					));
-				}
-
-				if fast.is_none() && !direct_output {
-					let start = plan.nodes[plan.result].buffer * BLOCK;
-					copy_output(&scratch[start..start + count], &mut values, row);
 				}
 			}
 			row += count;
@@ -474,6 +425,7 @@ impl PreparedBatch<'_, '_> {
 			values,
 			validity,
 			len,
+			valid_rows,
 			remaining_work: options.work - charge,
 			path,
 		})
@@ -553,7 +505,7 @@ fn input(values: ColumnSlice<'_>, index: usize) -> u64 {
 	}
 }
 
-fn binary(op: Binary, ty: ColumnType, a: u64, b: u64) -> (u64, bool) {
+pub(super) fn binary(op: Binary, ty: ColumnType, a: u64, b: u64) -> (u64, bool) {
 	use Binary::*;
 	macro_rules! compare {
 		($a:expr, $b:expr) => {
@@ -603,136 +555,5 @@ fn binary(op: Binary, ty: ColumnType, a: u64, b: u64) -> (u64, bool) {
 			},
 			false,
 		),
-	}
-}
-
-// Dispatch is per primitive/block. None of the element loops selects an opcode.
-fn apply_binary(
-	op: Binary,
-	ty: ColumnType,
-	slots: &mut [u64],
-	buffers: [usize; 3],
-	len: usize,
-	engine: crate::experimental_column_primitives::Engine,
-) -> bool {
-	use Binary::*;
-	let [a, b, out] = buffers;
-	let (x, y, output) = split_binary(slots, a, b, out, len);
-	macro_rules! apply {
-		($f:expr) => {{
-			let mut failed = false;
-			for ((&a, &b), out) in x.iter().zip(y).zip(output) {
-				let (v, fault) = ($f)(a, b);
-				*out = v;
-				failed |= fault;
-			}
-			failed
-		}};
-	}
-	macro_rules! int {
-		($method:ident) => {
-			apply!(|a: u64, b: u64| {
-				let (v, f) = (a as i64).$method(b as i64);
-				(v as u64, f)
-			})
-		};
-	}
-	macro_rules! cmp {
-		($decode:expr, $op:tt) => { apply!(|a: u64, b: u64| (u64::from(($decode)(a) $op ($decode)(b)), false)) };
-	}
-	macro_rules! numeric {
-		($decode:expr) => { match op { Eq => cmp!($decode, ==), Ne => cmp!($decode, !=), Lt => cmp!($decode, <), Le => cmp!($decode, <=), Gt => cmp!($decode, >), Ge => cmp!($decode, >=), _ => unreachable!("verified comparison") } };
-	}
-	match (ty, op) {
-		(ColumnType::I64, Add) => engine.add_pair(x, y, output),
-		(ColumnType::I64, Sub) => int!(overflowing_sub),
-		(ColumnType::I64, Mul) => crate::experimental_column_primitives::checked_mul(x, y, output),
-		(ColumnType::I64, _) => numeric!(|v: u64| v as i64),
-		(ColumnType::F64, Add) => {
-			apply!(|a, b| ((f64::from_bits(a) + f64::from_bits(b)).to_bits(), false))
-		}
-		(ColumnType::F64, Sub) => {
-			apply!(|a, b| ((f64::from_bits(a) - f64::from_bits(b)).to_bits(), false))
-		}
-		(ColumnType::F64, Mul) => {
-			apply!(|a, b| ((f64::from_bits(a) * f64::from_bits(b)).to_bits(), false))
-		}
-		(ColumnType::F64, _) => numeric!(f64::from_bits),
-		(ColumnType::Bool, BitAnd) => apply!(|a, b| (a & b, false)),
-		(ColumnType::Bool, BitOr) => apply!(|a, b| (a | b, false)),
-		(ColumnType::Bool, BitXor) => apply!(|a, b| (a ^ b, false)),
-		(ColumnType::Bool, Eq) => cmp!(|v| v, ==),
-		(ColumnType::Bool, Ne) => cmp!(|v| v, !=),
-		_ => unreachable!("verified primitive"),
-	}
-}
-
-#[cfg(test)]
-mod packed_tests {
-	use super::*;
-	use crate::experimental_core::column::{BitSlice, ColumnChunk};
-
-	#[test]
-	fn packed_selection_and_cancellation_bound() {
-		let values = [0x69; 520];
-		for force in [true, false] {
-			let engine = crate::experimental_column_primitives::Engine::new(force);
-			for offset in 0..16 {
-				let chunks = [ColumnChunk::new(
-					ColumnSlice::Bool(BitSlice::new(&values, offset, 3087).unwrap()),
-					None,
-				)
-				.unwrap()];
-				let column = Column::new(ColumnType::Bool, &chunks).unwrap();
-				let mut out = [0u8; 386];
-				let result = packed_not(column, &mut out, engine, &mut || false);
-				assert_eq!(result.is_some(), offset.is_multiple_of(8));
-				if result.is_none() {
-					assert_eq!(out, [0; 386]);
-				}
-			}
-			let chunks = [ColumnChunk::new(
-				ColumnSlice::Bool(BitSlice::new(&values, 8, 3087).unwrap()),
-				None,
-			)
-			.unwrap()];
-			let column = Column::new(ColumnType::Bool, &chunks).unwrap();
-			// Observe the private prefix only in this internal test: no block
-			// between cancellation checks processes more than 1024 logical rows.
-			for (stop, prefix) in [0, 1024, 2048, 3072, 3080, 3087].into_iter().enumerate() {
-				let mut guarded = [0xa5; 388];
-				guarded[1..387].fill(0);
-				let mut calls = 0;
-				assert_eq!(
-					packed_not(column, &mut guarded[1..387], engine, &mut || {
-						calls += 1;
-						calls == stop + 1
-					}),
-					Some(Err(ColumnRefusal::Canceled))
-				);
-				let output = BitSlice::new(&guarded[1..387], 0, 3087).unwrap();
-				for row in 0..3087 {
-					assert_eq!(
-						output.bit(row),
-						row < prefix && values[1 + row / 8] & (1 << (row % 8)) == 0
-					);
-				}
-				assert_eq!(guarded[0], 0xa5);
-				assert_eq!(guarded[387], 0xa5);
-				assert_eq!(guarded[386] >> 7, 0);
-			}
-			// Reject a nonfinal partial byte before even the aligned prefix is written.
-			let chunks = [8, 7, 8].map(|len| {
-				ColumnChunk::new(
-					ColumnSlice::Bool(BitSlice::new(&values, 0, len).unwrap()),
-					None,
-				)
-				.unwrap()
-			});
-			let column = Column::new(ColumnType::Bool, &chunks).unwrap();
-			let mut out = [0xa5; 3];
-			assert_eq!(packed_not(column, &mut out, engine, &mut || false), None);
-			assert_eq!(out, [0xa5; 3]);
-		}
 	}
 }
