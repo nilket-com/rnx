@@ -1,0 +1,327 @@
+{
+  "candidate": "89182b3b3235cdbf66b3312f844792608d6f1e12",
+  "baselines": {
+    "baseline": "c213c23590f8efa44630c56add02e17d1ae10f61",
+    "original": "99790566bbf72e1b1431df95fd0a6e4e89ad7e0b"
+  },
+  "approval": "rune-native seq28168; fixed constants only; no per-block allowance",
+  "functions": [
+    "rune::experimental_core::column::plan::prepare",
+    "<rune::experimental_core::column::PreparedColumn>::prepare",
+    "<alloc::vec::Vec<core::option::Option<usize>>>::resize",
+    "rune::experimental_core::column::filled::<usize>",
+    "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>"
+  ],
+  "entries": {
+    "baseline/i64add/sliced-chunked-null": {
+      "cap": 40,
+      "vector": [
+        -753,
+        720,
+        53,
+        -26,
+        46
+      ]
+    },
+    "baseline/f64const/alternating": {
+      "cap": 43,
+      "vector": [
+        -756,
+        724,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/f64const/alternating": {
+      "cap": 43,
+      "vector": [
+        -756,
+        724,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/f64const/deterministic-random": {
+      "cap": 43,
+      "vector": [
+        -756,
+        724,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/f64const/deterministic-random": {
+      "cap": 43,
+      "vector": [
+        -756,
+        724,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/f64const/sliced-chunked-null": {
+      "cap": 43,
+      "vector": [
+        -756,
+        724,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/f64const/sliced-chunked-null": {
+      "cap": 43,
+      "vector": [
+        -756,
+        724,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/f64add/alternating": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/f64add/alternating": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/f64add/deterministic-random": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/f64add/deterministic-random": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/f64add/sliced-chunked-null": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/f64add/sliced-chunked-null": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/multiply3/flat": {
+      "cap": 17,
+      "vector": [
+        -1060,
+        981,
+        63,
+        -36,
+        69
+      ]
+    },
+    "original/multiply3/flat": {
+      "cap": 17,
+      "vector": [
+        -1060,
+        981,
+        63,
+        -36,
+        69
+      ]
+    },
+    "baseline/boolnot/flat": {
+      "cap": 82,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        66
+      ]
+    },
+    "original/boolnot/flat": {
+      "cap": 82,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        66
+      ]
+    },
+    "baseline/boolnot/alternating": {
+      "cap": 65,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        49
+      ]
+    },
+    "original/boolnot/alternating": {
+      "cap": 65,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        49
+      ]
+    },
+    "baseline/boolnot/deterministic-random": {
+      "cap": 65,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        49
+      ]
+    },
+    "original/boolnot/deterministic-random": {
+      "cap": 65,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        49
+      ]
+    },
+    "baseline/boolnot/sliced-chunked-null": {
+      "cap": 65,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        49
+      ]
+    },
+    "original/boolnot/sliced-chunked-null": {
+      "cap": 65,
+      "vector": [
+        -586,
+        572,
+        48,
+        -18,
+        49
+      ]
+    },
+    "baseline/float-sub/benign": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/float-sub/adversarial": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/float-mul/benign": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "baseline/float-mul/adversarial": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/float-sub/benign": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/float-sub/adversarial": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/float-mul/benign": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    },
+    "original/float-mul/adversarial": {
+      "cap": 41,
+      "vector": [
+        -708,
+        674,
+        53,
+        -26,
+        48
+      ]
+    }
+  }
+}

@@ -13,6 +13,10 @@ use masked::{first_fault, float_operation, intersect_validity};
 #[path = "operands.rs"]
 mod operands;
 
+#[path = "flat.rs"]
+mod flat;
+use flat::Output;
+
 const BLOCK: usize = 1024;
 
 /// Request configuration. The work budget is copied, never consumed on refusal.
@@ -130,6 +134,38 @@ pub struct PreparedBatch<'plan, 'input> {
 	row_values: Vec<u64>,
 }
 
+/// Allocated batch token. Dispatch consumes it before entering either traversal.
+#[derive(Debug)]
+pub struct PreparedToken<'plan, 'input> {
+	inner: BatchKind<'plan, 'input>,
+}
+#[derive(Debug)]
+enum BatchKind<'plan, 'input> {
+	Initialized(PreparedBatch<'plan, 'input>),
+	Flat(flat::FlatBatch<'plan, 'input>),
+}
+impl PreparedToken<'_, '_> {
+	/// Actual owned capacity, including this token's inline allocation metadata.
+	pub fn owned_bytes(&self) -> usize {
+		core::mem::size_of::<Self>()
+			+ match &self.inner {
+				BatchKind::Initialized(b) => b.owned_bytes() - core::mem::size_of_val(b),
+				BatchKind::Flat(b) => b.storage_bytes(),
+			}
+	}
+	/// Consume the token before entering the selected execution frame.
+	#[inline]
+	pub fn invoke(self, mut canceled: impl FnMut() -> bool) -> ColumnOutcome {
+		match self.inner {
+			BatchKind::Initialized(batch) => batch.invoke(canceled),
+			BatchKind::Flat(batch) => match batch.run_flat(&mut canceled) {
+				Ok(result) => ColumnOutcome::Complete(result),
+				Err((reason, fault)) => ColumnOutcome::Replay { reason, fault },
+			},
+		}
+	}
+}
+
 impl PreparedColumn {
 	/// Prepare and execute one private batch. A refusal leaves original inputs
 	/// and allowance untouched. Cancellation is checked at most every 1024 rows.
@@ -153,7 +189,7 @@ impl PreparedColumn {
 		columns: &'input [Column<'input>],
 		options: ColumnOptions,
 		mut canceled: impl FnMut() -> bool,
-	) -> super::Result<PreparedBatch<'plan, 'input>> {
+	) -> super::Result<PreparedToken<'plan, 'input>> {
 		self.allocate_batch(columns, options, &mut canceled)
 			.map_err(|(reason, _)| reason)
 	}
@@ -163,7 +199,7 @@ impl PreparedColumn {
 		columns: &'input [Column<'input>],
 		options: ColumnOptions,
 		canceled: &mut impl FnMut() -> bool,
-	) -> core::result::Result<PreparedBatch<'plan, 'input>, (ColumnRefusal, Option<Fault>)> {
+	) -> core::result::Result<PreparedToken<'plan, 'input>, (ColumnRefusal, Option<Fault>)> {
 		let allocation = |error| (error, None);
 		if columns.len() != self.arity
 			|| columns
@@ -186,7 +222,7 @@ impl PreparedColumn {
 		let mut room = self
 			.limit
 			.checked_sub(self.bytes)
-			.and_then(|n| n.checked_sub(core::mem::size_of::<PreparedBatch<'_, '_>>()))
+			.and_then(|n| n.checked_sub(core::mem::size_of::<PreparedToken<'_, '_>>()))
 			.ok_or((ColumnRefusal::Memory, None))?;
 		let masked = columns
 			.iter()
@@ -210,15 +246,19 @@ impl PreparedColumn {
 			.checked_mul(self.row_charge)
 			.filter(|&n| n <= options.work)
 			.ok_or((ColumnRefusal::Fuel, None))?;
-		let values = match self.output {
-			ColumnType::I64 => ColumnValues::I64(filled(len, 0i64, room).map_err(allocation)?),
-			ColumnType::F64 => ColumnValues::F64(filled(len, 0f64, room).map_err(allocation)?),
-			ColumnType::Bool => {
-				ColumnValues::Bool(filled(len.div_ceil(8), 0u8, room).map_err(allocation)?)
-			}
+		let values = if flat::eligible(self, columns, masked) {
+			Output::reserve(self.output, len, room).map_err(allocation)?
+		} else {
+			Output::Initialized(match self.output {
+				ColumnType::I64 => ColumnValues::I64(filled(len, 0i64, room).map_err(allocation)?),
+				ColumnType::F64 => ColumnValues::F64(filled(len, 0f64, room).map_err(allocation)?),
+				ColumnType::Bool => {
+					ColumnValues::Bool(filled(len.div_ceil(8), 0u8, room).map_err(allocation)?)
+				}
+			})
 		};
 		room = room
-			.checked_sub(storage_bytes(&values))
+			.checked_sub(values.bytes())
 			.ok_or((ColumnRefusal::Memory, None))?;
 		let scratch_len = self
 			.scratch_count
@@ -229,18 +269,33 @@ impl PreparedColumn {
 			.checked_sub(scratch.capacity() * 8)
 			.ok_or((ColumnRefusal::Memory, None))?;
 		let row_values = filled(self.nodes.len(), 0u64, room).map_err(allocation)?;
-		Ok(PreparedBatch {
-			plan: self,
-			columns,
-			options,
-			values,
-			validity,
-			len,
-			charge,
-			valid_rows: valid,
-			scratch,
-			row_values,
-		})
+		let inner = match values {
+			Output::Initialized(values) => BatchKind::Initialized(PreparedBatch {
+				plan: self,
+				columns,
+				options,
+				values,
+				validity,
+				len,
+				charge,
+				valid_rows: valid,
+				scratch,
+				row_values,
+			}),
+			values => BatchKind::Flat(flat::FlatBatch {
+				plan: self,
+				columns,
+				options,
+				values,
+				validity,
+				len,
+				charge,
+				valid_rows: valid,
+				scratch,
+				row_values,
+			}),
+		};
+		Ok(PreparedToken { inner })
 	}
 }
 
