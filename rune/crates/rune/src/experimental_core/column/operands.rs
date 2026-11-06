@@ -309,6 +309,32 @@ fn integer_loop<L: Src, R: Src, const MASKED: bool>(
 	}
 }
 
+// Keep constant dispatch out of the existing pair/multiply executor's inline body.
+#[cold]
+#[inline(never)]
+fn constant_optimistic(
+	op: Binary,
+	x: Value<'_>,
+	y: Value<'_>,
+	output: &mut [u64],
+	mask: u64,
+	engine: Engine,
+) -> Option<bool> {
+	use Binary::*;
+	match (op, x, y) {
+		(Add, Value::Words(a), Value::Constant(c)) | (Add, Value::Constant(c), Value::Words(a)) => {
+			Some(engine.add_words_constant(a, c as i64, output, Some(mask)))
+		}
+		(Sub, Value::Words(a), Value::Constant(c)) => {
+			Some(engine.sub_constant::<false>(a, c as i64, output, Some(mask)))
+		}
+		(Sub, Value::Constant(c), Value::Words(a)) => {
+			Some(engine.sub_constant::<true>(a, c as i64, output, Some(mask)))
+		}
+		_ => None,
+	}
+}
+
 fn operation<const MASKED: bool>(
 	op: Binary,
 	ty: ColumnType,
@@ -332,7 +358,7 @@ fn operation<const MASKED: bool>(
 				{
 					Some(engine.mul_constant(a, c as i64, output))
 				}
-				_ => None,
+				_ => constant_optimistic(op, x, y, output, mask, engine),
 			};
 			if let Some(flagged) = optimistic {
 				let failed = flagged
