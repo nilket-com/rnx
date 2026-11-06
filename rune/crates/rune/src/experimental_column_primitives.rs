@@ -456,13 +456,24 @@ mod simd {
 	pub(super) unsafe fn add_pair(x: *const u64, y: *const u64, out: *mut u64, n: usize) -> bool {
 		let mut acc = _mm256_setzero_si256();
 		let mut i = 0;
-		while i + 4 <= n {
-			let a = _mm256_loadu_si256(x.add(i).cast());
-			let b = _mm256_loadu_si256(y.add(i).cast());
-			let sum = _mm256_add_epi64(a, b);
-			let overflow = _mm256_and_si256(_mm256_xor_si256(a, sum), _mm256_xor_si256(b, sum));
-			acc = _mm256_or_si256(acc, overflow);
-			_mm256_storeu_si256(out.add(i).cast(), sum);
+		let vector_end = n & !7;
+		macro_rules! vector {
+			($index:expr) => {{
+				let a = _mm256_loadu_si256(x.add($index).cast());
+				let b = _mm256_loadu_si256(y.add($index).cast());
+				let sum = _mm256_add_epi64(a, b);
+				let overflow = _mm256_and_si256(_mm256_xor_si256(a, sum), _mm256_xor_si256(b, sum));
+				acc = _mm256_or_si256(acc, overflow);
+				_mm256_storeu_si256(out.add($index).cast(), sum);
+			}};
+		}
+		while i < vector_end {
+			vector!(i);
+			vector!(i + 4);
+			i += 8;
+		}
+		if i + 4 <= n {
+			vector!(i);
 			i += 4;
 		}
 		let mut failed = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
@@ -562,12 +573,23 @@ mod simd {
 		let mut shifts = _mm256_set_epi64x(3, 2, 1, 0);
 		let four = _mm256_set1_epi64x(4);
 		let mut i = 0;
-		while i + 4 <= n {
-			let valid =
-				_mm256_sub_epi64(zero, _mm256_and_si256(_mm256_srlv_epi64(bits, shifts), one));
-			let value = _mm256_loadu_si256(out.add(i).cast());
-			_mm256_storeu_si256(out.add(i).cast(), _mm256_and_si256(value, valid));
+		macro_rules! vector {
+			($index:expr) => {{
+				let valid =
+					_mm256_sub_epi64(zero, _mm256_and_si256(_mm256_srlv_epi64(bits, shifts), one));
+				let value = _mm256_loadu_si256(out.add($index).cast());
+				_mm256_storeu_si256(out.add($index).cast(), _mm256_and_si256(value, valid));
+			}};
+		}
+		while i + 8 <= n {
+			vector!(i);
 			shifts = _mm256_add_epi64(shifts, four);
+			vector!(i + 4);
+			shifts = _mm256_add_epi64(shifts, four);
+			i += 8;
+		}
+		if i + 4 <= n {
+			vector!(i);
 			i += 4;
 		}
 		while i < n {
@@ -710,20 +732,41 @@ mod simd {
 		let cv = _mm256_set1_epi64x(c);
 		let mut acc = _mm256_setzero_si256();
 		let mut i = 0;
+		let vector_end = n & !7;
 		if c >= 0 {
 			let limit = _mm256_set1_epi64x(i64::MAX - c);
-			while i + 4 <= n {
-				let a = _mm256_loadu_si256(x.add(i).cast());
-				acc = _mm256_or_si256(acc, _mm256_cmpgt_epi64(a, limit));
-				_mm256_storeu_si256(out.add(i).cast(), _mm256_add_epi64(a, cv));
+			macro_rules! vector {
+				($index:expr) => {{
+					let a = _mm256_loadu_si256(x.add($index).cast());
+					acc = _mm256_or_si256(acc, _mm256_cmpgt_epi64(a, limit));
+					_mm256_storeu_si256(out.add($index).cast(), _mm256_add_epi64(a, cv));
+				}};
+			}
+			while i < vector_end {
+				vector!(i);
+				vector!(i + 4);
+				i += 8;
+			}
+			if i + 4 <= n {
+				vector!(i);
 				i += 4;
 			}
 		} else {
 			let limit = _mm256_set1_epi64x(i64::MIN - c);
-			while i + 4 <= n {
-				let a = _mm256_loadu_si256(x.add(i).cast());
-				acc = _mm256_or_si256(acc, _mm256_cmpgt_epi64(limit, a));
-				_mm256_storeu_si256(out.add(i).cast(), _mm256_add_epi64(a, cv));
+			macro_rules! vector {
+				($index:expr) => {{
+					let a = _mm256_loadu_si256(x.add($index).cast());
+					acc = _mm256_or_si256(acc, _mm256_cmpgt_epi64(limit, a));
+					_mm256_storeu_si256(out.add($index).cast(), _mm256_add_epi64(a, cv));
+				}};
+			}
+			while i < vector_end {
+				vector!(i);
+				vector!(i + 4);
+				i += 8;
+			}
+			if i + 4 <= n {
+				vector!(i);
 				i += 4;
 			}
 		}
@@ -741,15 +784,27 @@ mod simd {
 	pub(super) unsafe fn fused(x: *const i64, y: *const i64, out: *mut i64, n: usize) -> bool {
 		let mut acc = _mm256_setzero_si256();
 		let mut i = 0;
-		while i + 4 <= n {
-			let a = _mm256_loadu_si256(x.add(i).cast());
-			let b = _mm256_loadu_si256(y.add(i).cast());
-			let product = _mm256_add_epi64(a, a);
-			let sum = _mm256_add_epi64(product, b);
-			let mul = _mm256_xor_si256(a, product);
-			let add = _mm256_and_si256(_mm256_xor_si256(product, sum), _mm256_xor_si256(b, sum));
-			acc = _mm256_or_si256(acc, _mm256_or_si256(mul, add));
-			_mm256_storeu_si256(out.add(i).cast(), sum);
+		let vector_end = n & !7;
+		macro_rules! vector {
+			($index:expr) => {{
+				let a = _mm256_loadu_si256(x.add($index).cast());
+				let b = _mm256_loadu_si256(y.add($index).cast());
+				let product = _mm256_add_epi64(a, a);
+				let sum = _mm256_add_epi64(product, b);
+				let mul = _mm256_xor_si256(a, product);
+				let add =
+					_mm256_and_si256(_mm256_xor_si256(product, sum), _mm256_xor_si256(b, sum));
+				acc = _mm256_or_si256(acc, _mm256_or_si256(mul, add));
+				_mm256_storeu_si256(out.add($index).cast(), sum);
+			}};
+		}
+		while i < vector_end {
+			vector!(i);
+			vector!(i + 4);
+			i += 8;
+		}
+		if i + 4 <= n {
+			vector!(i);
 			i += 4;
 		}
 		let mut fail = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
@@ -1256,5 +1311,65 @@ mod borrowed_view_tests {
 		assert_eq!((floats[0], floats[5]), (719.0, 719.0));
 		assert!(i64_words(&[]).is_empty());
 		assert!(f64_words_mut(&mut []).is_empty());
+	}
+}
+
+#[cfg(test)]
+mod explicit_block_tests {
+	use super::*;
+	use std::vec::Vec;
+
+	#[test]
+	fn block_remainders_extrema_offsets_and_guards() {
+		let portable = Engine::new(true);
+		let native = Engine::new(false);
+		for n in (0..=17).chain([31, 32, 33, 63, 64, 65, 1023, 1024, 1025]) {
+			for shift in 0..5 {
+				let cases = [i64::MIN, i64::MAX, -1, 0, 1];
+				let x: Vec<_> = (0..n + 3).map(|i| cases[(i + shift) % 5]).collect();
+				let y: Vec<_> = (0..n + 5).map(|i| cases[(i + shift + 2) % 5]).collect();
+				let (x, y) = (&x[1..n + 1], &y[3..n + 3]);
+				for c in [i64::MIN, -1, 0, 1, i64::MAX] {
+					let mut a = std::vec![713; n + 2];
+					let mut b = a.clone();
+					assert_eq!(
+						portable.add(x, c, &mut a[1..n + 1]),
+						native.add(x, c, &mut b[1..n + 1])
+					);
+					assert_eq!(a, b);
+					assert_eq!((b[0], b[n + 1]), (713, 713));
+				}
+				let mut a = std::vec![713; n + 2];
+				let mut b = a.clone();
+				assert_eq!(
+					portable.fused(x, y, &mut a[1..n + 1]),
+					native.fused(x, y, &mut b[1..n + 1])
+				);
+				assert_eq!(a, b);
+				assert_eq!((b[0], b[n + 1]), (713, 713));
+				let mut a = std::vec![713u64; n + 2];
+				let mut b = a.clone();
+				assert_eq!(
+					portable.add_pair(i64_words(x), i64_words(y), &mut a[1..n + 1]),
+					native.add_pair(i64_words(x), i64_words(y), &mut b[1..n + 1])
+				);
+				assert_eq!(a, b);
+				assert_eq!((b[0], b[n + 1]), (713, 713));
+			}
+		}
+	}
+
+	#[test]
+	fn null_mask_blocks_remainders_and_guards() {
+		for n in 0..=64 {
+			for mask in [0, u64::MAX, 0xaaaa_aaaa_aaaa_aaaa, 0x1234_5678_9abc_def0] {
+				let mut a: Vec<_> = (0..n + 2).map(|i| i as i64 + 1).collect();
+				let mut b = a.clone();
+				Engine::new(true).zero_i64(&mut a[1..n + 1], mask);
+				Engine::new(false).zero_i64(&mut b[1..n + 1], mask);
+				assert_eq!(a, b);
+				assert_eq!((b[0], b[n + 1]), (1, n as i64 + 2));
+			}
+		}
 	}
 }
