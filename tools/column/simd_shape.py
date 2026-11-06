@@ -11,14 +11,14 @@ NAMES = ('add_constant', 'fused', 'add_pair', 'zero_null')
 PREFIX = 'rune::experimental_column_primitives::simd::'
 
 
-def shapes(text):
+def shapes(text, names=NAMES):
 	functions = {}
 	current = None
 	for line in text.splitlines():
 		header = re.match(r'^([0-9a-f]+) <(.+)>:$', line)
 		if header:
 			current = header[2]
-			if not any(current == PREFIX + name or re.fullmatch(re.escape(PREFIX + name) + r'::h[0-9a-f]+', current) for name in NAMES):
+			if not any(current == PREFIX + name or re.fullmatch(re.escape(PREFIX + name) + r'::h[0-9a-f]+', current) for name in names):
 				current = None
 				continue
 			if current in functions:
@@ -29,7 +29,7 @@ def shapes(text):
 		if current and insn:
 			functions[current].append((int(insn[1], 16), insn[2], insn[3]))
 	result = {}
-	for name in NAMES:
+	for name in names:
 		matches = [rows for symbol, rows in functions.items() if symbol == PREFIX + name or re.fullmatch(re.escape(PREFIX + name) + r'::h[0-9a-f]+', symbol)]
 		if len(matches) != 1 or not matches[0]:
 			raise ValueError('missing/ambiguous protected symbol: ' + name)
@@ -54,21 +54,21 @@ def shapes(text):
 	return result
 
 
-def compare(a, b):
-	return {name: {'equal': a[name] == b[name], 'baseline_instructions': len(a[name]), 'candidate_instructions': len(b[name])} for name in NAMES}
+def compare(a, b, names=NAMES):
+	return {name: {'equal': a[name] == b[name], 'baseline_instructions': len(a[name]), 'candidate_instructions': len(b[name])} for name in names}
 
 
-def binary_shapes(binary):
+def binary_shapes(binary, names=NAMES):
 	# Resolve nm aliases by address/extent; objdump may choose any alias label.
 	entries = {}
 	for line in subprocess.check_output(['nm', '-S', '-C', str(binary)], text=True).splitlines():
 		parts = line.split(maxsplit=3)
-		if len(parts) == 4 and parts[3] in {PREFIX + name for name in NAMES}:
+		if len(parts) == 4 and parts[3] in {PREFIX + name for name in names}:
 			if parts[3] in entries:
 				raise ValueError('ambiguous protected symbol: ' + parts[3])
 			entries[parts[3]] = (int(parts[0], 16), int(parts[1], 16))
 	chunks = []
-	for name in NAMES:
+	for name in names:
 		address, size = entries[PREFIX + name]
 		if size <= 0:
 			raise ValueError('empty symbol: ' + name)
@@ -78,7 +78,7 @@ def binary_shapes(binary):
 		start = next(i for i, line in enumerate(lines) if line.startswith(f'{address:016x} <'))
 		lines[start] = f'{address:016x} <{PREFIX + name}>:'
 		chunks.append('\n'.join(lines[start:]))
-	return shapes('\n'.join(chunks))
+	return shapes('\n'.join(chunks), names)
 
 
 def main():

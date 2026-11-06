@@ -2,6 +2,65 @@
 //! Safe wrappers prove equal lengths and exclusive output access. The only
 //! target-feature entry is dominated by runtime detection (disabled in Miri).
 
+use core::mem::MaybeUninit;
+
+/// Private allocation whose initialized prefix is advanced only by complete
+/// primitive writers. No method exposes unwritten elements as initialized T.
+#[derive(Debug)]
+pub(crate) struct NumericOutput<T> {
+	values: std::vec::Vec<T>,
+	len: usize,
+	written: usize,
+}
+impl<T> NumericOutput<T> {
+	pub(crate) fn new(values: std::vec::Vec<T>, len: usize) -> Self {
+		assert!(values.is_empty() && values.capacity() >= len);
+		Self {
+			values,
+			len,
+			written: 0,
+		}
+	}
+	pub(crate) fn capacity(&self) -> usize {
+		self.values.capacity()
+	}
+	fn destination(&mut self, count: usize) -> &mut [MaybeUninit<T>] {
+		assert!(count <= self.len - self.written);
+		&mut self.values.spare_capacity_mut()[self.written..self.written + count]
+	}
+	pub(crate) fn finish(mut self) -> std::vec::Vec<T> {
+		assert_eq!(self.written, self.len);
+		// SAFETY: only the typed writer methods advance written, after a
+		// complete non-panicking primitive call. Each writes the next disjoint
+		// range in bounds. No references escape those calls. The Vec remains
+		// length zero on partial execution, panic, or caller cancellation.
+		unsafe { self.values.set_len(self.len) };
+		self.values
+	}
+}
+impl NumericOutput<i64> {
+	pub(crate) fn add(&mut self, engine: Engine, x: &[i64], c: i64) -> bool {
+		let failed = engine.add_uninit(x, c, self.destination(x.len()));
+		self.written += x.len();
+		failed
+	}
+	pub(crate) fn fused(&mut self, engine: Engine, x: &[i64], y: &[i64]) -> bool {
+		let failed = engine.fused_uninit(x, y, self.destination(x.len()));
+		self.written += x.len();
+		failed
+	}
+}
+impl NumericOutput<f64> {
+	pub(crate) fn floats(&mut self, engine: Engine, x: &[f64], c: f64) {
+		engine.floats_uninit(x, c, self.destination(x.len()));
+		self.written += x.len();
+	}
+	pub(crate) fn pair(&mut self, engine: Engine, op: FloatOp, x: &[f64], y: &[f64]) {
+		engine.float_pair_uninit(op, x, y, self.destination(x.len()));
+		self.written += x.len();
+	}
+}
+
 // Bit-preserving views used by the typed operand dispatcher. These are the
 // only representation casts: all three scalar types have identical size and alignment,
 // every bit pattern is valid, and returned borrows retain the input lifetime.
@@ -73,6 +132,21 @@ fn float_pair(op: FloatOp, x: &[f64], y: &[f64], out: &mut [f64]) {
 	}
 }
 
+fn float_pair_uninit(op: FloatOp, x: &[f64], y: &[f64], out: &mut [MaybeUninit<f64>]) {
+	macro_rules! apply {
+		($op:tt) => {
+			for ((&x, &y), out) in x.iter().zip(y).zip(out) {
+				out.write(x $op y);
+			}
+		};
+	}
+	match op {
+		FloatOp::Add => apply!(+),
+		FloatOp::Sub => apply!(-),
+		FloatOp::Mul => apply!(*),
+	}
+}
+
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct Engine {
 	avx2: bool,
@@ -102,6 +176,25 @@ impl Engine {
 		for (&x, out) in x.iter().zip(out) {
 			let (v, f) = x.overflowing_add(c);
 			*out = v;
+			failed |= f;
+		}
+		failed
+	}
+	/// Fully writes every destination element, including on arithmetic overflow.
+	/// Length assertions occur before writing; no initialized output is borrowed.
+	pub(crate) fn add_uninit(self, x: &[i64], c: i64, out: &mut [MaybeUninit<i64>]) -> bool {
+		assert_eq!(x.len(), out.len());
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: detection, accessible equal-length slices, no output alias.
+			return unsafe {
+				simd::add_constant_uninit(x.as_ptr(), out.as_mut_ptr().cast(), x.len(), c)
+			};
+		}
+		let mut failed = false;
+		for (&x, out) in x.iter().zip(out) {
+			let (v, f) = x.overflowing_add(c);
+			out.write(v);
 			failed |= f;
 		}
 		failed
@@ -267,6 +360,27 @@ impl Engine {
 		}
 		failed
 	}
+	/// Fully writes every destination element, including on arithmetic overflow.
+	/// Length assertions occur before writing; no initialized output is borrowed.
+	pub(crate) fn fused_uninit(self, x: &[i64], y: &[i64], out: &mut [MaybeUninit<i64>]) -> bool {
+		assert_eq!(x.len(), y.len());
+		assert_eq!(x.len(), out.len());
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: detection and immutable inputs disjoint from mutable output.
+			return unsafe {
+				simd::fused_uninit(x.as_ptr(), y.as_ptr(), out.as_mut_ptr().cast(), x.len())
+			};
+		}
+		let mut failed = false;
+		for ((&x, &y), out) in x.iter().zip(y).zip(out) {
+			let (p, a) = x.overflowing_mul(2);
+			let (v, b) = p.overflowing_add(y);
+			out.write(v);
+			failed |= a | b;
+		}
+		failed
+	}
 	pub(crate) fn floats(self, x: &[f64], c: f64, out: &mut [f64]) {
 		assert_eq!(x.len(), out.len());
 		#[cfg(target_arch = "x86_64")]
@@ -279,6 +393,20 @@ impl Engine {
 			*out = x + c;
 		}
 	}
+	/// Fully writes every destination element, including on arithmetic overflow.
+	/// Length assertions occur before writing; no initialized output is borrowed.
+	pub(crate) fn floats_uninit(self, x: &[f64], c: f64, out: &mut [MaybeUninit<f64>]) {
+		assert_eq!(x.len(), out.len());
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: runtime detection. Safe Rust body has no raw accesses.
+			unsafe { simd::floats_uninit(x, c, out) };
+			return;
+		}
+		for (&x, out) in x.iter().zip(out) {
+			out.write(x + c);
+		}
+	}
 	pub(crate) fn float_pair(self, op: FloatOp, x: &[f64], y: &[f64], out: &mut [f64]) {
 		assert_eq!(x.len(), y.len());
 		assert_eq!(x.len(), out.len());
@@ -289,6 +417,25 @@ impl Engine {
 			return;
 		}
 		float_pair(op, x, y, out);
+	}
+	/// Fully writes every destination element, including on arithmetic overflow.
+	/// Length assertions occur before writing; no initialized output is borrowed.
+	pub(crate) fn float_pair_uninit(
+		self,
+		op: FloatOp,
+		x: &[f64],
+		y: &[f64],
+		out: &mut [MaybeUninit<f64>],
+	) {
+		assert_eq!(x.len(), y.len());
+		assert_eq!(x.len(), out.len());
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: runtime detection; the body uses only safe slice loops.
+			unsafe { simd::float_pair_uninit(op, x, y, out) };
+			return;
+		}
+		float_pair_uninit(op, x, y, out);
 	}
 	/// Fused arithmetic and deterministic null zeroing for a physical block.
 	pub(crate) fn masked_floats(
@@ -309,15 +456,15 @@ impl Engine {
 			// constant), exclusive output, and one mask per 64 initialized lanes.
 			unsafe {
 				match rhs {
-					FloatRhs::AddConstant(c) => simd::masked_floats::<0>(x, &[], c, out, masks),
+					FloatRhs::AddConstant(c) => simd::masked_float_constant(x, c, out, masks),
 					FloatRhs::Column(FloatOp::Add, y) => {
-						simd::masked_floats::<1>(x, y, 0.0, out, masks)
+						simd::masked_float_pair::<1>(x, y, out, masks)
 					}
 					FloatRhs::Column(FloatOp::Sub, y) => {
-						simd::masked_floats::<2>(x, y, 0.0, out, masks)
+						simd::masked_float_pair::<2>(x, y, out, masks)
 					}
 					FloatRhs::Column(FloatOp::Mul, y) => {
-						simd::masked_floats::<3>(x, y, 0.0, out, masks)
+						simd::masked_float_pair::<3>(x, y, out, masks)
 					}
 				}
 			}
@@ -408,6 +555,90 @@ mod simd {
 	use core::arch::x86_64::*;
 	// Raw-pointer helpers are private to the safe wrapper. Each full vector is
 	// inside the provided range, accesses are unaligned, and tails are scalar.
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
+	pub(super) fn float_pair_uninit(
+		op: super::FloatOp,
+		x: &[f64],
+		y: &[f64],
+		out: &mut [core::mem::MaybeUninit<f64>],
+	) {
+		let n = x.len().min(y.len()).min(out.len());
+		let vector_end = n & !15;
+		macro_rules! apply {
+			($vector:ident, $scalar:tt) => {{
+				let mut i = 0;
+				// SAFETY: each load/store covers four lanes within the minimum
+				// input/output length. The exclusive destination is write-only.
+				unsafe {
+					macro_rules! vector {
+						($index:expr) => {{
+							let a = _mm256_loadu_pd(x.as_ptr().add($index));
+							let b = _mm256_loadu_pd(y.as_ptr().add($index));
+							_mm256_storeu_pd(out.as_mut_ptr().add($index).cast(), $vector(a, b));
+						}};
+					}
+					while i < vector_end {
+						vector!(i);
+						vector!(i + 4);
+						vector!(i + 8);
+						vector!(i + 12);
+						i += 16;
+					}
+					while i + 4 <= n {
+						vector!(i);
+						i += 4;
+					}
+				}
+				while i < n {
+					out[i].write(x[i] $scalar y[i]);
+					i += 1;
+				}
+			}};
+		}
+		match op {
+			super::FloatOp::Add => apply!(_mm256_add_pd, +),
+			super::FloatOp::Sub => apply!(_mm256_sub_pd, -),
+			super::FloatOp::Mul => apply!(_mm256_mul_pd, *),
+		}
+	}
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
+	pub(super) fn floats_uninit(x: &[f64], c: f64, out: &mut [core::mem::MaybeUninit<f64>]) {
+		let n = x.len().min(out.len());
+		let vector_end = n & !15;
+		let constant = _mm256_set1_pd(c);
+		let mut i = 0;
+		// SAFETY: bounded four-lane accesses, unaligned loads/stores, and an
+		// exclusive output slice; no uninitialized element is ever read.
+		unsafe {
+			macro_rules! vector {
+				($index:expr) => {{
+					let value = _mm256_loadu_pd(x.as_ptr().add($index));
+					_mm256_storeu_pd(
+						out.as_mut_ptr().add($index).cast(),
+						_mm256_add_pd(value, constant),
+					);
+				}};
+			}
+			while i < vector_end {
+				vector!(i);
+				vector!(i + 4);
+				vector!(i + 8);
+				vector!(i + 12);
+				i += 16;
+			}
+			while i + 4 <= n {
+				vector!(i);
+				i += 4;
+			}
+		}
+		while i < n {
+			out[i].write(x[i] + c);
+			i += 1;
+		}
+	}
+
 	#[target_feature(enable = "avx2")]
 	#[inline(never)]
 	pub(super) unsafe fn mul_constant(
@@ -511,91 +742,118 @@ mod simd {
 		failed
 	}
 
+	macro_rules! masked_float_body {
+		($x:ident, $y:expr, $c:expr, $out:ident, $masks:ident, $kind:expr) => {{
+			let (x, y, c, out, masks): (_, &[f64], f64, _, _) = ($x, $y, $c, $out, $masks);
+			let mut i = 0;
+			let constant = _mm256_set1_pd(c);
+			while i + 16 <= out.len() {
+				let bits = _mm256_set1_epi64x((masks[i / 64] >> (i % 64)) as i64);
+				macro_rules! vector {
+					($offset:expr, $shift:expr) => {{
+						let lanes =
+							_mm256_set_epi64x(8 << $shift, 4 << $shift, 2 << $shift, 1 << $shift);
+						let valid = _mm256_cmpeq_epi64(_mm256_and_si256(bits, lanes), lanes);
+						let a = _mm256_loadu_pd(x.as_ptr().add(i + $offset));
+						let b = if $kind == 0 {
+							constant
+						} else {
+							_mm256_loadu_pd(y.as_ptr().add(i + $offset))
+						};
+						let value = match $kind {
+							0 | 1 => _mm256_add_pd(a, b),
+							2 => _mm256_sub_pd(a, b),
+							_ => _mm256_mul_pd(a, b),
+						};
+						_mm256_storeu_pd(
+							out.as_mut_ptr().add(i + $offset),
+							_mm256_and_pd(value, _mm256_castsi256_pd(valid)),
+						);
+					}};
+				}
+				vector!(0, 0);
+				vector!(4, 4);
+				vector!(8, 8);
+				vector!(12, 12);
+				i += 16;
+			}
+			while i < out.len() {
+				let a = x[i];
+				let b = if $kind == 0 { c } else { y[i] };
+				let value = match $kind {
+					0 | 1 => a + b,
+					2 => a - b,
+					_ => a * b,
+				};
+				out[i] = f64::from_bits(
+					value.to_bits() & 0u64.wrapping_sub(masks[i / 64] >> (i % 64) & 1),
+				);
+				i += 1;
+			}
+		}};
+	}
+
 	#[target_feature(enable = "avx2")]
-	pub(super) unsafe fn masked_floats<const KIND: u8>(
+	pub(super) unsafe fn masked_float_constant(x: &[f64], c: f64, out: &mut [f64], masks: &[u64]) {
+		masked_float_body!(x, &[], c, out, masks, 0);
+	}
+
+	#[target_feature(enable = "avx2")]
+	pub(super) unsafe fn masked_float_pair<const KIND: u8>(
 		x: &[f64],
 		y: &[f64],
-		c: f64,
 		out: &mut [f64],
 		masks: &[u64],
 	) {
-		let mut i = 0;
-		let constant = _mm256_set1_pd(c);
-		while i + 16 <= out.len() {
-			let bits = _mm256_set1_epi64x((masks[i / 64] >> (i % 64)) as i64);
-			macro_rules! vector {
-				($offset:expr, $shift:expr) => {{
-					let lanes =
-						_mm256_set_epi64x(8 << $shift, 4 << $shift, 2 << $shift, 1 << $shift);
-					let valid = _mm256_cmpeq_epi64(_mm256_and_si256(bits, lanes), lanes);
-					let a = _mm256_loadu_pd(x.as_ptr().add(i + $offset));
-					let b = if KIND == 0 {
-						constant
-					} else {
-						_mm256_loadu_pd(y.as_ptr().add(i + $offset))
-					};
-					let value = match KIND {
-						0 | 1 => _mm256_add_pd(a, b),
-						2 => _mm256_sub_pd(a, b),
-						_ => _mm256_mul_pd(a, b),
-					};
-					_mm256_storeu_pd(
-						out.as_mut_ptr().add(i + $offset),
-						_mm256_and_pd(value, _mm256_castsi256_pd(valid)),
-					);
-				}};
-			}
-			vector!(0, 0);
-			vector!(4, 4);
-			vector!(8, 8);
-			vector!(12, 12);
-			i += 16;
-		}
-		while i < out.len() {
-			let a = x[i];
-			let b = if KIND == 0 { c } else { y[i] };
-			let value = match KIND {
-				0 | 1 => a + b,
-				2 => a - b,
-				_ => a * b,
-			};
-			out[i] =
-				f64::from_bits(value.to_bits() & 0u64.wrapping_sub(masks[i / 64] >> (i % 64) & 1));
-			i += 1;
-		}
+		masked_float_body!(x, y, 0.0, out, masks, KIND);
 	}
 
 	#[target_feature(enable = "avx2")]
 	pub(super) unsafe fn zero_null(out: *mut u64, n: usize, mask: u64) {
+		// The safe entry proves n <= 64. Spell out the bounded blocks so
+		// their expansion does not depend on interprocedural range inference.
 		let zero = _mm256_setzero_si256();
 		let one = _mm256_set1_epi64x(1);
 		let bits = _mm256_set1_epi64x(mask as i64);
-		let mut shifts = _mm256_set_epi64x(3, 2, 1, 0);
-		let four = _mm256_set1_epi64x(4);
-		let mut i = 0;
 		macro_rules! vector {
 			($index:expr) => {{
+				let shifts = _mm256_set_epi64x($index + 3, $index + 2, $index + 1, $index);
 				let valid =
 					_mm256_sub_epi64(zero, _mm256_and_si256(_mm256_srlv_epi64(bits, shifts), one));
-				let value = _mm256_loadu_si256(out.add($index).cast());
-				_mm256_storeu_si256(out.add($index).cast(), _mm256_and_si256(value, valid));
+				let value = _mm256_loadu_si256(out.add($index as usize).cast());
+				_mm256_storeu_si256(
+					out.add($index as usize).cast(),
+					_mm256_and_si256(value, valid),
+				);
 			}};
 		}
-		while i + 8 <= n {
-			vector!(i);
-			shifts = _mm256_add_epi64(shifts, four);
-			vector!(i + 4);
-			shifts = _mm256_add_epi64(shifts, four);
-			i += 8;
+		macro_rules! block {
+			($index:expr) => {{
+				if n >= $index + 8 {
+					vector!($index);
+					vector!($index + 4);
+				} else {
+					let mut i = $index;
+					if n >= $index + 4 {
+						vector!($index);
+						i += 4;
+					}
+					while i < n {
+						*out.add(i) &= 0u64.wrapping_sub(mask >> i & 1);
+						i += 1;
+					}
+					return;
+				}
+			}};
 		}
-		if i + 4 <= n {
-			vector!(i);
-			i += 4;
-		}
-		while i < n {
-			*out.add(i) &= 0u64.wrapping_sub(mask >> i & 1);
-			i += 1;
-		}
+		block!(0);
+		block!(8);
+		block!(16);
+		block!(24);
+		block!(32);
+		block!(40);
+		block!(48);
+		block!(56);
 	}
 
 	#[target_feature(enable = "avx2")]
@@ -726,6 +984,8 @@ mod simd {
 		failed
 	}
 
+	// Separate write-only entry: the published initialized body below stays
+	// unchanged, with no new callers from the output owner.
 	#[target_feature(enable = "avx2")]
 	#[inline(never)]
 	pub(super) unsafe fn add_constant(x: *const i64, out: *mut i64, n: usize, c: i64) -> bool {
@@ -781,7 +1041,110 @@ mod simd {
 	}
 	#[target_feature(enable = "avx2")]
 	#[inline(never)]
+	pub(super) unsafe fn add_constant_uninit(
+		x: *const i64,
+		out: *mut i64,
+		n: usize,
+		c: i64,
+	) -> bool {
+		let cv = _mm256_set1_epi64x(c);
+		let mut acc = _mm256_setzero_si256();
+		let mut i = 0;
+		let vector_end = n & !7;
+		if c >= 0 {
+			let limit = _mm256_set1_epi64x(i64::MAX - c);
+			macro_rules! vector {
+				($index:expr) => {{
+					let a = _mm256_loadu_si256(x.add($index).cast());
+					acc = _mm256_or_si256(acc, _mm256_cmpgt_epi64(a, limit));
+					_mm256_storeu_si256(out.add($index).cast(), _mm256_add_epi64(a, cv));
+				}};
+			}
+			while i < vector_end {
+				vector!(i);
+				vector!(i + 4);
+				i += 8;
+			}
+			if i + 4 <= n {
+				vector!(i);
+				i += 4;
+			}
+		} else {
+			let limit = _mm256_set1_epi64x(i64::MIN - c);
+			macro_rules! vector {
+				($index:expr) => {{
+					let a = _mm256_loadu_si256(x.add($index).cast());
+					acc = _mm256_or_si256(acc, _mm256_cmpgt_epi64(limit, a));
+					_mm256_storeu_si256(out.add($index).cast(), _mm256_add_epi64(a, cv));
+				}};
+			}
+			while i < vector_end {
+				vector!(i);
+				vector!(i + 4);
+				i += 8;
+			}
+			if i + 4 <= n {
+				vector!(i);
+				i += 4;
+			}
+		}
+		let mut fail = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
+		while i < n {
+			let (v, f) = (*x.add(i)).overflowing_add(c);
+			*out.add(i) = v;
+			fail |= f;
+			i += 1;
+		}
+		fail
+	}
+	// Separate write-only entry: the published initialized body below stays
+	// unchanged, with no new callers from the output owner.
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
 	pub(super) unsafe fn fused(x: *const i64, y: *const i64, out: *mut i64, n: usize) -> bool {
+		let mut acc = _mm256_setzero_si256();
+		let mut i = 0;
+		let vector_end = n & !7;
+		macro_rules! vector {
+			($index:expr) => {{
+				let a = _mm256_loadu_si256(x.add($index).cast());
+				let b = _mm256_loadu_si256(y.add($index).cast());
+				let product = _mm256_add_epi64(a, a);
+				let sum = _mm256_add_epi64(product, b);
+				let mul = _mm256_xor_si256(a, product);
+				let add =
+					_mm256_and_si256(_mm256_xor_si256(product, sum), _mm256_xor_si256(b, sum));
+				acc = _mm256_or_si256(acc, _mm256_or_si256(mul, add));
+				_mm256_storeu_si256(out.add($index).cast(), sum);
+			}};
+		}
+		while i < vector_end {
+			vector!(i);
+			vector!(i + 4);
+			i += 8;
+		}
+		if i + 4 <= n {
+			vector!(i);
+			i += 4;
+		}
+		let mut fail = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
+		while i < n {
+			let (p, m) = (*x.add(i)).overflowing_mul(2);
+			let (v, a) = p.overflowing_add(*y.add(i));
+			*out.add(i) = v;
+			fail |= m | a;
+			i += 1;
+		}
+		fail
+	}
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
+	pub(super) unsafe fn fused_uninit(
+		x: *const i64,
+		y: *const i64,
+		out: *mut i64,
+		n: usize,
+	) -> bool {
 		let mut acc = _mm256_setzero_si256();
 		let mut i = 0;
 		let vector_end = n & !7;
@@ -1311,6 +1674,81 @@ mod borrowed_view_tests {
 		assert_eq!((floats[0], floats[5]), (719.0, 719.0));
 		assert!(i64_words(&[]).is_empty());
 		assert!(f64_words_mut(&mut []).is_empty());
+	}
+}
+
+#[cfg(test)]
+mod write_only_tests {
+	use super::*;
+	use std::{vec, vec::Vec};
+
+	#[test]
+	fn output_owner_rejects_incomplete_publication_and_keeps_allocation() {
+		let owner = NumericOutput::<i64>::new(Vec::with_capacity(3), 3);
+		assert!(std::panic::catch_unwind(|| owner.finish()).is_err());
+		let values = Vec::<i64>::with_capacity(3);
+		let pointer = values.as_ptr();
+		let mut owner = NumericOutput::new(values, 3);
+		assert!(!owner.add(Engine::new(true), &[1], 2));
+		assert!(!owner.add(Engine::new(true), &[3, 4], 2));
+		let values = owner.finish();
+		assert_eq!(pointer, values.as_ptr());
+		assert_eq!(values, [3, 5, 6]);
+	}
+
+	#[test]
+	fn every_numeric_writer_initializes_tails_and_preserves_guards() {
+		for force in [true, false] {
+			let engine = Engine::new(force);
+			for n in (0..=33).chain([63, 64, 65, 1023, 1024, 1025]) {
+				let x: Vec<i64> = (0..n)
+					.map(|i| if i == 0 { i64::MAX } else { i as i64 })
+					.collect();
+				let y = vec![1i64; n];
+				let mut out = vec![MaybeUninit::new(-17); n + 2];
+				let failed = engine.add_uninit(&x, 1, &mut out[1..n + 1]);
+				assert_eq!(failed, n != 0);
+				// SAFETY: guards started initialized; the writer fills its whole slice.
+				let values: Vec<_> = out.iter().map(|v| unsafe { v.assume_init() }).collect();
+				assert_eq!(values[0], -17);
+				assert_eq!(values[n + 1], -17);
+				assert_eq!(
+					&values[1..n + 1],
+					x.iter().map(|x| x.wrapping_add(1)).collect::<Vec<_>>()
+				);
+				let mut raw = vec![MaybeUninit::uninit(); n];
+				engine.fused_uninit(&x, &y, &mut raw);
+				for (i, v) in raw.iter().enumerate() {
+					// SAFETY: successful return writes every lane, even on overflow.
+					assert_eq!(
+						unsafe { v.assume_init() },
+						x[i].wrapping_mul(2).wrapping_add(1)
+					);
+				}
+				let x: Vec<_> = (0..n)
+					.map(|i| if i == 0 { -0.0 } else { i as f64 })
+					.collect();
+				let y = vec![2.0; n];
+				let mut raw = vec![MaybeUninit::uninit(); n];
+				engine.floats_uninit(&x, 1.0, &mut raw);
+				for (x, v) in x.iter().zip(&raw) {
+					// SAFETY: every lane was written by floats_uninit.
+					assert_eq!(unsafe { v.assume_init() }.to_bits(), (x + 1.0).to_bits());
+				}
+				for op in [FloatOp::Add, FloatOp::Sub, FloatOp::Mul] {
+					engine.float_pair_uninit(op, &x, &y, &mut raw);
+					for (x, v) in x.iter().zip(&raw) {
+						let expected = match op {
+							FloatOp::Add => x + 2.0,
+							FloatOp::Sub => x - 2.0,
+							FloatOp::Mul => x * 2.0,
+						};
+						// SAFETY: every lane was written by float_pair_uninit.
+						assert_eq!(unsafe { v.assume_init() }.to_bits(), expected.to_bits());
+					}
+				}
+			}
+		}
 	}
 }
 

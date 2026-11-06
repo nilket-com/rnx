@@ -25,3 +25,12 @@ Restack on c213c23590f8efa44630c56add02e17d1ae10f61 and measure against
 both this published ADR 0216 baseline and original 99790566. Fold the scoped
 0216 result into the final benchmark report: its 4096/65536 controls passed;
 10M/100M were not recaptured for that prerequisite.
+
+Restacked assembly inspection (rune-native seq 28120): the integer entry mask
+materialization and alignment differences are benign; initialized hot loops
+remain 13/25/19 instructions and write-only loops 13/25 in both compositions.
+The unchanged zero_null source lost its full bounded expansion. Keep that
+shape mismatch recorded and let dynamic program instruction counts decide
+against both baselines. Any masked-path growth against c213c235 stops capture
+for a narrow explicit bounded-64-row expansion amendment; do not preemptively
+change the kernel or relax the nonpositive growth rule.

@@ -11,7 +11,8 @@ use std::vec::Vec;
 mod lease;
 mod run;
 pub use run::{
-	ColumnOptions, ColumnOutcome, ColumnResult, ColumnValues, Fault, Path, PreparedBatch,
+	ColumnOptions, ColumnOutcome, ColumnResult, ColumnValues, Fault, Path,
+	PreparedToken as PreparedBatch,
 };
 mod plan;
 pub use lease::{BitSlice, Column, ColumnChunk, ColumnSlice};
@@ -109,7 +110,7 @@ impl PreparedColumn {
 	}
 }
 
-fn filled<T: Clone>(len: usize, value: T, room: usize) -> Result<Vec<T>> {
+fn reserved<T>(len: usize, room: usize) -> Result<Vec<T>> {
 	if len
 		.checked_mul(core::mem::size_of::<T>())
 		.is_none_or(|n| n > room)
@@ -127,9 +128,14 @@ fn filled<T: Clone>(len: usize, value: T, room: usize) -> Result<Vec<T>> {
 	{
 		return Err(ColumnRefusal::Memory);
 	}
-	values.resize(len, value);
 	Ok(values)
 }
 
 #[cfg(test)]
 mod tests;
+
+fn filled<T: Clone>(len: usize, value: T, room: usize) -> Result<Vec<T>> {
+	let mut values = reserved(len, room)?;
+	values.resize(len, value);
+	Ok(values)
+}

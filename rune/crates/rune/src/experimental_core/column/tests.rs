@@ -1519,3 +1519,73 @@ fn borrowed_optimistic_constant_add_sub_replays_only_valid_faults() {
 		}
 	}
 }
+
+#[test]
+fn flat_output_sliced_single_chunk_tails_and_cancellation() {
+	let p = axpy();
+	let plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::I64; 2],
+		ColumnType::I64,
+		Limits::default(),
+	)
+	.unwrap();
+	for n in [0, 1, 3, 4, 5, 1023, 1024, 1025] {
+		let mut x = std::vec![i64::MAX; n + 9];
+		let mut y = std::vec![i64::MIN; n + 13];
+		for i in 0..n {
+			x[3 + i] = i as i64;
+			y[7 + i] = -(i as i64);
+		}
+		// Different non-zero offsets and poisonous prefix/suffix catch incorrect
+		// base-pointer use. ColumnSlice already carries the adjusted input slice.
+		let a = [i64_chunk(&x[3..3 + n])];
+		let b = [i64_chunk(&y[7..7 + n])];
+		let columns = [
+			Column::new(ColumnType::I64, &a).unwrap(),
+			Column::new(ColumnType::I64, &b).unwrap(),
+		];
+		for force in [true, false] {
+			let work = plan.row_charge() * n;
+			let batch = plan
+				.prepare_batch(&columns, options(work, force), || false)
+				.unwrap();
+			// Dropping an unstarted batch must not expose its output or consume work.
+			drop(batch);
+			let ColumnOutcome::Complete(result) =
+				plan.execute(&columns, options(work, force), || false)
+			else {
+				panic!("flat sliced output")
+			};
+			assert_eq!(result.remaining_work, 0);
+			assert_eq!(result.valid_rows, n);
+			let ColumnValues::I64(values) = result.values else {
+				panic!("type")
+			};
+			assert_eq!(
+				values,
+				(0..n).map(|i| i as i64).collect::<std::vec::Vec<_>>()
+			);
+			// Invoke checks before each block and once after all writes. Every
+			// cancellation position, including finalization, must discard output.
+			for stop in 0..=n.div_ceil(1024) {
+				let batch = plan
+					.prepare_batch(&columns, options(work, force), || false)
+					.unwrap();
+				let mut checks = 0;
+				assert!(matches!(
+					batch.invoke(|| {
+						let hit = checks == stop;
+						checks += 1;
+						hit
+					}),
+					ColumnOutcome::Replay {
+						reason: ColumnRefusal::Canceled,
+						fault: None
+					}
+				));
+			}
+		}
+	}
+}
