@@ -19,3 +19,11 @@ through the durable parallel Ir pool. Then run the host, integration,
 generated and cross gates, the commit checker, and format and lint of touched
 crates. Update `BACKLOG.md`: drop the entries completed by 0213–0215 and list
 0220 (Boolean pairs re-land) and 0221 (F64 typed blocks) in order.
+
+## Disposition
+
+Withdrawn after the composition control failed. The annotation attempt, the
+isolated per-call frame and the cfg-only Boolean perturbation are archived
+with their complete validation evidence. No runtime or tooling implementation
+ships in this record. A pure-Boolean whole-plan driver follows as ADR 0220;
+it must not edit or add callers to the generic executor.
