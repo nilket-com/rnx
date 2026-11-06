@@ -1426,3 +1426,96 @@ fn borrowed_optimistic_null_overflow_in_later_node_and_output_reuse() {
 		));
 	}
 }
+
+#[test]
+fn borrowed_optimistic_constant_add_sub_replays_only_valid_faults() {
+	for (op, reversed, constant, valid, invalid) in [
+		(Binary::Add, false, 1, 7, i64::MAX),
+		(Binary::Add, true, i64::MIN, 7, -1),
+		(Binary::Sub, false, i64::MIN, -7, 1),
+		(Binary::Sub, true, i64::MAX, 7, -1),
+	] {
+		let (lhs, rhs) = if reversed { (1, 0) } else { (0, 1) };
+		let p = program(
+			1,
+			4,
+			&[
+				Op::Literal {
+					out: 1,
+					value: Value::I64(constant),
+				},
+				Op::Binary {
+					out: 2,
+					op,
+					lhs,
+					rhs,
+				},
+				// Read the returned Output again; zeroing must wait until completion.
+				Op::Binary {
+					out: 3,
+					op: Binary::Sub,
+					lhs: 2,
+					rhs: 2,
+				},
+				Op::Return { value: 2 },
+			],
+		);
+		let plan = PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::I64],
+			ColumnType::I64,
+			Limits::default(),
+		)
+		.unwrap();
+		let expected = match (op, reversed) {
+			(Binary::Add, _) => valid + constant,
+			(_, false) => valid - constant,
+			(_, true) => constant - valid,
+		};
+		for force in [true, false] {
+			for n in [4usize, 63, 64, 65, 1030] {
+				let x: Vec<_> = (0..n)
+					.map(|i| if i % 2 == 0 { valid } else { invalid })
+					.collect();
+				let mut bits = vec![0; (n + 3).div_ceil(8)];
+				for i in (0..n).step_by(2) {
+					bits[(i + 3) / 8] |= 1 << ((i + 3) % 8);
+				}
+				let chunks = [ColumnChunk::new(
+					ColumnSlice::I64(&x),
+					Some(BitSlice::new(&bits, 3, n).unwrap()),
+				)
+				.unwrap()];
+				let cols = [Column::new(ColumnType::I64, &chunks).unwrap()];
+				let ColumnOutcome::Complete(out) =
+					plan.execute(&cols, options(100000, force), || false)
+				else {
+					panic!("null-only constant overflow");
+				};
+				assert_eq!(out.remaining_work, 100000 - plan.row_charge * n.div_ceil(2));
+				let ColumnValues::I64(values) = out.values else {
+					panic!("type");
+				};
+				for (i, &value) in values.iter().enumerate() {
+					assert_eq!(value, if i % 2 == 0 { expected } else { 0 });
+				}
+			}
+			let x = [valid, invalid, invalid];
+			let bits = [0b101];
+			let chunks = [ColumnChunk::new(
+				ColumnSlice::I64(&x),
+				Some(BitSlice::new(&bits, 0, 3).unwrap()),
+			)
+			.unwrap()];
+			let cols = [Column::new(ColumnType::I64, &chunks).unwrap()];
+			assert!(matches!(
+				plan.execute(&cols, options(100000, force), || false),
+				ColumnOutcome::Replay {
+					reason: ColumnRefusal::Arithmetic,
+					fault: Some(Fault { row: 2, pc: 1 })
+				}
+			));
+		}
+	}
+}

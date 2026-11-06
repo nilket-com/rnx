@@ -123,6 +123,85 @@ impl Engine {
 		failed
 	}
 
+	#[inline]
+	pub(crate) fn add_words_constant(
+		self,
+		x: &[u64],
+		c: i64,
+		out: &mut [u64],
+		mask: Option<u64>,
+	) -> bool {
+		assert_eq!(x.len(), out.len());
+		assert!(mask.is_none() || x.len() <= 64);
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: detected AVX2, equal accessible slices, exclusive output.
+			// Keep generic callers separate from standalone addition codegen.
+			return unsafe {
+				simd::integer_constant::<false, false>(
+					x.as_ptr(),
+					out.as_mut_ptr(),
+					x.len(),
+					c,
+					mask,
+				)
+			};
+		}
+		let mut failed = false;
+		for (i, (&a, out)) in x.iter().zip(out).enumerate() {
+			let a = if mask.is_none_or(|m| m >> i & 1 != 0) {
+				a
+			} else {
+				0
+			};
+			let (v, f) = (a as i64).overflowing_add(c);
+			*out = v as u64;
+			failed |= f;
+		}
+		failed
+	}
+
+	#[inline]
+	pub(crate) fn sub_constant<const REVERSED: bool>(
+		self,
+		x: &[u64],
+		c: i64,
+		out: &mut [u64],
+		mask: Option<u64>,
+	) -> bool {
+		assert_eq!(x.len(), out.len());
+		assert!(mask.is_none() || x.len() <= 64);
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: detected AVX2, equal accessible slices, exclusive output.
+			return unsafe {
+				simd::integer_constant::<true, REVERSED>(
+					x.as_ptr(),
+					out.as_mut_ptr(),
+					x.len(),
+					c,
+					mask,
+				)
+			};
+		}
+		let mut failed = false;
+		for (i, (&a, out)) in x.iter().zip(out).enumerate() {
+			let a = if mask.is_none_or(|m| m >> i & 1 != 0) {
+				a
+			} else {
+				c as u64
+			};
+			let (v, f) = if REVERSED {
+				c.overflowing_sub(a as i64)
+			} else {
+				(a as i64).overflowing_sub(c)
+			};
+			*out = v as u64;
+			failed |= f;
+		}
+		failed
+	}
+
 	pub(crate) fn sub_pair(self, x: &[u64], y: &[u64], out: &mut [u64]) -> bool {
 		assert_eq!(x.len(), y.len());
 		assert_eq!(x.len(), out.len());
@@ -566,6 +645,67 @@ mod simd {
 
 	#[target_feature(enable = "avx2")]
 	#[inline(never)]
+	pub(super) unsafe fn integer_constant<const SUBTRACT: bool, const REVERSED: bool>(
+		x: *const u64,
+		out: *mut u64,
+		n: usize,
+		c: i64,
+		mask: Option<u64>,
+	) -> bool {
+		let cv = _mm256_set1_epi64x(c);
+		let mut acc = _mm256_setzero_si256();
+		let mut i = 0;
+		while i + 4 <= n {
+			let value = _mm256_loadu_si256(x.add(i).cast());
+			let value = if let Some(mask) = mask {
+				let bits = _mm256_set1_epi64x((mask >> i) as i64);
+				let lanes = _mm256_set_epi64x(8, 4, 2, 1);
+				let valid = _mm256_cmpeq_epi64(_mm256_and_si256(bits, lanes), lanes);
+				let neutral = if SUBTRACT { cv } else { _mm256_setzero_si256() };
+				_mm256_blendv_epi8(neutral, value, valid)
+			} else {
+				value
+			};
+			let (a, b) = if REVERSED { (cv, value) } else { (value, cv) };
+			let value = if SUBTRACT {
+				_mm256_sub_epi64(a, b)
+			} else {
+				_mm256_add_epi64(a, b)
+			};
+			let overflow = if SUBTRACT {
+				_mm256_and_si256(_mm256_xor_si256(a, value), _mm256_xor_si256(a, b))
+			} else {
+				_mm256_and_si256(_mm256_xor_si256(a, value), _mm256_xor_si256(b, value))
+			};
+			acc = _mm256_or_si256(acc, overflow);
+			_mm256_storeu_si256(out.add(i).cast(), value);
+			i += 4;
+		}
+		let mut failed = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
+		while i < n {
+			let a = if mask.is_none_or(|m| m >> i & 1 != 0) {
+				*x.add(i) as i64
+			} else if SUBTRACT {
+				c
+			} else {
+				0
+			};
+			let (v, f) = if !SUBTRACT {
+				a.overflowing_add(c)
+			} else if REVERSED {
+				c.overflowing_sub(a)
+			} else {
+				a.overflowing_sub(c)
+			};
+			*out.add(i) = v as u64;
+			failed |= f;
+			i += 1;
+		}
+		failed
+	}
+
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
 	pub(super) unsafe fn add_constant(x: *const i64, out: *mut i64, n: usize, c: i64) -> bool {
 		let cv = _mm256_set1_epi64x(c);
 		let mut acc = _mm256_setzero_si256();
@@ -859,6 +999,116 @@ mod pair_tests {
 #[cfg(test)]
 mod constant_tests {
 	use super::Engine;
+	#[test]
+	fn literal_add_sub_masked_neutral_values() {
+		for c in [i64::MIN, -1, 0, 1, i64::MAX] {
+			for n in [0usize, 1, 4, 7, 63, 64] {
+				let x: std::vec::Vec<_> = (0..n + 2)
+					.map(|i| [i64::MIN, i64::MAX, 0, 1][i % 4] as u64)
+					.collect();
+				for mask in [0, u64::MAX, 0xaaaaaaaaaaaaaaaa, 0x831471bb02f356ad] {
+					for force in [true, false] {
+						let engine = Engine::new(force);
+						for op in 0..3 {
+							let mut out = std::vec![719; n+2];
+							let failed = match op {
+								0 => engine.add_words_constant(
+									&x[1..n + 1],
+									c,
+									&mut out[1..n + 1],
+									Some(mask),
+								),
+								1 => engine.sub_constant::<false>(
+									&x[1..n + 1],
+									c,
+									&mut out[1..n + 1],
+									Some(mask),
+								),
+								_ => engine.sub_constant::<true>(
+									&x[1..n + 1],
+									c,
+									&mut out[1..n + 1],
+									Some(mask),
+								),
+							};
+							let mut expected_fault = false;
+							for i in 0..n {
+								let valid = mask >> i & 1 != 0;
+								let a = if valid {
+									x[i + 1] as i64
+								} else if op == 0 {
+									0
+								} else {
+									c
+								};
+								let (value, fault) = match op {
+									0 => a.overflowing_add(c),
+									1 => a.overflowing_sub(c),
+									_ => c.overflowing_sub(a),
+								};
+								assert_eq!(out[i + 1], value as u64);
+								assert!(valid || !fault);
+								expected_fault |= fault;
+							}
+							assert_eq!(failed, expected_fault);
+							assert_eq!((out[0], out[n + 1]), (719, 719));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	#[test]
+	fn literal_add_sub_signed_boundaries_and_tails() {
+		for c in [i64::MIN, i64::MIN + 1, -37, -1, 0, 1, 37, i64::MAX] {
+			let mut samples = std::vec![i64::MIN, i64::MAX, -1, 0, 1];
+			for bound in [
+				i128::from(i64::MIN) - i128::from(c),
+				i128::from(i64::MAX) - i128::from(c),
+				i128::from(i64::MIN) + i128::from(c),
+				i128::from(i64::MAX) + i128::from(c),
+				i128::from(c) - i128::from(i64::MIN),
+				i128::from(c) - i128::from(i64::MAX),
+			] {
+				for delta in -1..=1 {
+					if let Ok(value) = i64::try_from(bound + delta) {
+						samples.push(value);
+					}
+				}
+			}
+			for force in [true, false] {
+				let engine = Engine::new(force);
+				for n in [0, 1, 3, 4, 7, 31, 64, 67] {
+					for &value in &samples {
+						let x = std::vec![value as u64; n + 2];
+						for op in 0..3 {
+							let mut out = std::vec![719; n + 2];
+							let dest = &mut out[1..n + 1];
+							let (failed, (expected, overflow)) = match op {
+								0 => (
+									engine.add_words_constant(&x[1..n + 1], c, dest, None),
+									value.overflowing_add(c),
+								),
+								1 => (
+									engine.sub_constant::<false>(&x[1..n + 1], c, dest, None),
+									value.overflowing_sub(c),
+								),
+								_ => (
+									engine.sub_constant::<true>(&x[1..n + 1], c, dest, None),
+									c.overflowing_sub(value),
+								),
+							};
+							assert_eq!(failed, n != 0 && overflow);
+							assert!(dest.iter().all(|&v| v == expected as u64));
+							assert_eq!((out[0], out[n + 1]), (719, 719));
+						}
+					}
+				}
+			}
+		}
+	}
+
 	#[test]
 	fn literal_multiply_signed_boundaries_and_tails() {
 		for c in [
