@@ -1,0 +1,2078 @@
+{
+  "approval": "rune-native seq28502",
+  "baseline": "e05ce43c22bc3ec918a288aaafc215fa7372c94f",
+  "candidate": "a8de5a84c8a777988488fa130bf4d9c82deeb37f",
+  "binaries": {
+    "baseline": {
+      "source_commit": "89182b3b3235cdbf66b3312f844792608d6f1e12",
+      "sha256": "0066207207b8c253aecfc5f15bfdfa95d6903055f75acf52bbf3b355a68e3165"
+    },
+    "candidate": {
+      "source_commit": "a8de5a84c8a777988488fa130bf4d9c82deeb37f",
+      "sha256": "a9e7d3c9506f0a40359c8452644e290ce6e8eb51dba2b745c14dc756b96cd7d0"
+    }
+  },
+  "vectors": {
+    "i64add/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -290,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 319,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 23,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "i64add/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -275,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 317,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 23,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "i64add/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -269,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 310,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 23,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "i64add/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -269,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 310,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 23,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "axpy/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -321,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 356,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "axpy/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -285,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 330,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "axpy/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -279,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 323,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "axpy/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -279,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 323,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64const/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -289,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 318,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 24,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64const/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -279,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 321,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 24,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64const/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -273,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 314,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 24,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64const/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -273,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 314,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 24,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64add/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -320,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 355,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64add/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -289,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 334,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64add/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -283,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 327,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64add/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -283,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 327,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolnot/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -264,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 298,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolnot/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -282,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 324,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolnot/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -276,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 317,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolnot/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -276,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 317,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 21,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "multiply3/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -288,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 328,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "formula": "2-ceil(rows/1024)",
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "multiply3/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -285,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 330,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "multiply3/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -279,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 323,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "multiply3/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -279,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 323,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 27,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          1,
+          3
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64chain/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -292,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 332,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 28,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "formula": "2-ceil(rows/1024)",
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64chain/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -289,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 334,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 28,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64chain/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -283,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 327,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 28,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "f64chain/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -283,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 327,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 28,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 102,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -102,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "booleq/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -295,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 335,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "formula": "2-ceil(rows/1024)",
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "booleq/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -292,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 337,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "booleq/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -286,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 330,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "booleq/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -286,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 330,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolxor/flat": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -295,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 335,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "formula": "2-ceil(rows/1024)",
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolxor/sliced-chunked-null": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -292,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 337,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolxor/alternating": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -286,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 330,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    },
+    "boolxor/deterministic-random": {
+      "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+        "delta_Ir": -36,
+        "calls": [
+          2,
+          0
+        ]
+      },
+      "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": -286,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 330,
+        "calls": [
+          0,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "delta_Ir": 38,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "delta_Ir": 3,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+        "delta_Ir": 2,
+        "calls": [
+          2,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<i64>": {
+        "delta_Ir": 77,
+        "calls": [
+          0,
+          2
+        ]
+      },
+      "rune::experimental_core::column::filled::<u64>": {
+        "delta_Ir": -77,
+        "calls": [
+          2,
+          0
+        ]
+      }
+    }
+  },
+  "attribution": "filled u64/i64 merge is retained as two exact function deltas, not normalized; fixed preparation and boundary redistribution; generic flat invoke improves one instruction per 1024-row block."
+}

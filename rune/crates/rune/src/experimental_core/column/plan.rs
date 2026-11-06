@@ -170,6 +170,8 @@ pub(super) fn prepare(
 			operand: Operand::Input(i),
 		});
 	}
+	let mut boolean_plan = inputs.iter().all(|ty| *ty == ColumnType::Bool);
+	let mut boolean_pair = false;
 	let mut row_charge = 0usize;
 	let mut result = None;
 	for (pc, instruction) in f.code.iter().enumerate() {
@@ -235,6 +237,15 @@ pub(super) fn prepare(
 			}
 			_ => return Err(ColumnRefusal::Unsupported),
 		};
+		boolean_plan &= ty == ColumnType::Bool
+			&& match step {
+				Step::Binary(Binary::BitAnd | Binary::BitOr, ..) => {
+					boolean_pair = true;
+					true
+				}
+				Step::Input(..) | Step::Constant(..) | Step::Not(..) => true,
+				_ => false,
+			};
 		// Fold only successful constants. Overflowing constant operations retain
 		// their original node/PC and execute normally so replay keeps fault order.
 		// row_charge above still counts the original instructions.
@@ -348,5 +359,6 @@ pub(super) fn prepare(
 		frame_slots: f.slots as usize,
 		scratch_count,
 		fast,
+		boolean_plan: boolean_plan && boolean_pair,
 	})
 }
