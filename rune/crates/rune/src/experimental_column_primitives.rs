@@ -123,6 +123,24 @@ impl Engine {
 		failed
 	}
 
+	pub(crate) fn sub_pair(self, x: &[u64], y: &[u64], out: &mut [u64]) -> bool {
+		assert_eq!(x.len(), y.len());
+		assert_eq!(x.len(), out.len());
+		#[cfg(target_arch = "x86_64")]
+		if self.avx2 {
+			// SAFETY: detected AVX2, equal accessible slices, exclusive output.
+			return unsafe { simd::sub_pair(x.as_ptr(), y.as_ptr(), out.as_mut_ptr(), x.len()) };
+		}
+		let mut failed = false;
+		for ((&a, &b), out) in x.iter().zip(y).zip(out) {
+			let (v, f) = (a as i64).overflowing_sub(b as i64);
+			*out = v as u64;
+			failed |= f;
+		}
+		failed
+	}
+
+	#[inline]
 	pub(crate) fn mul_constant(self, x: &[u64], c: i64, out: &mut [u64]) -> bool {
 		assert_eq!(x.len(), out.len());
 		#[cfg(target_arch = "x86_64")]
@@ -371,6 +389,31 @@ mod simd {
 		let mut failed = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
 		while i < n {
 			let (v, f) = (*x.add(i) as i64).overflowing_add(*y.add(i) as i64);
+			*out.add(i) = v as u64;
+			failed |= f;
+			i += 1;
+		}
+		failed
+	}
+
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
+	pub(super) unsafe fn sub_pair(x: *const u64, y: *const u64, out: *mut u64, n: usize) -> bool {
+		let mut acc = _mm256_setzero_si256();
+		let mut i = 0;
+		while i + 4 <= n {
+			let a = _mm256_loadu_si256(x.add(i).cast());
+			let b = _mm256_loadu_si256(y.add(i).cast());
+			let difference = _mm256_sub_epi64(a, b);
+			let overflow =
+				_mm256_and_si256(_mm256_xor_si256(a, difference), _mm256_xor_si256(a, b));
+			acc = _mm256_or_si256(acc, overflow);
+			_mm256_storeu_si256(out.add(i).cast(), difference);
+			i += 4;
+		}
+		let mut failed = _mm256_movemask_pd(_mm256_castsi256_pd(acc)) != 0;
+		while i < n {
+			let (v, f) = (*x.add(i) as i64).overflowing_sub(*y.add(i) as i64);
 			*out.add(i) = v as u64;
 			failed |= f;
 			i += 1;
