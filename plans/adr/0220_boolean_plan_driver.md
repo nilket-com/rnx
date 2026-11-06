@@ -1,6 +1,6 @@
 # ADR 0220: Pure-Boolean column plans run in their own driver
 
-Status: Proposed
+Status: Accepted
 
 Combining Boolean predicates with `&` and `|` is the core of analytics
 filters, but it currently runs through the generic scalar executor. At 100M

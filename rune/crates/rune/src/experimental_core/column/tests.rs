@@ -1589,3 +1589,488 @@ fn flat_output_sliced_single_chunk_tails_and_cancellation() {
 		}
 	}
 }
+
+#[test]
+fn boolean_plan_chunks_masks_and_consumers() {
+	let left = [0xa5; 140];
+	let right = [0x3c; 140];
+	let masks = [[0xff; 140], [0; 140], [0x69; 140]];
+	for op in [Binary::BitAnd, Binary::BitOr] {
+		for consumer in [false, true] {
+			let mut ops = vec![Op::Binary {
+				out: 2,
+				op,
+				lhs: 0,
+				rhs: 1,
+			}];
+			if consumer {
+				ops.push(Op::Binary {
+					out: 3,
+					op: Binary::BitOr,
+					lhs: 2,
+					rhs: 0,
+				});
+			}
+			ops.push(Op::Return {
+				value: if consumer { 3 } else { 2 },
+			});
+			let p = program(2, 4, &ops);
+			let plan = PreparedColumn::prepare(
+				&p,
+				0,
+				&[ColumnType::Bool; 2],
+				ColumnType::Bool,
+				Limits::default(),
+			)
+			.unwrap();
+			assert!(plan.boolean_plan);
+
+			let lengths: &[usize] = if cfg!(miri) {
+				&[0, 7, 65]
+			} else {
+				&[0, 1, 7, 8, 63, 64, 65, 1024, 1031]
+			};
+			for &len in lengths {
+				for offset in [0, 3, 7] {
+					for mode in 0..4 {
+						let x = BitSlice::new(&left, offset, len).unwrap();
+						let y = BitSlice::new(&right, 7 - offset, len).unwrap();
+						let mx =
+							(mode != 0).then(|| BitSlice::new(&masks[mode - 1], 1, len).unwrap());
+						let my = (mode == 3).then(|| BitSlice::new(&masks[2], 4, len).unwrap());
+						let cut = len / 3;
+						let xc = [
+							ColumnChunk::new(
+								ColumnSlice::Bool(BitSlice::new(&left, offset, cut).unwrap()),
+								mx.map(|_| BitSlice::new(&masks[mode - 1], 1, cut).unwrap()),
+							)
+							.unwrap(),
+							ColumnChunk::new(
+								ColumnSlice::Bool(
+									BitSlice::new(&left, offset + cut, len - cut).unwrap(),
+								),
+								mx.map(|_| {
+									BitSlice::new(&masks[mode - 1], 1 + cut, len - cut).unwrap()
+								}),
+							)
+							.unwrap(),
+						];
+						let yc = [ColumnChunk::new(ColumnSlice::Bool(y), my).unwrap()];
+						let columns = [
+							Column::new(ColumnType::Bool, &xc).unwrap(),
+							Column::new(ColumnType::Bool, &yc).unwrap(),
+						];
+						for same in [false, true] {
+							let inputs = [columns[0], if same { columns[0] } else { columns[1] }];
+							for force in [false, true] {
+								let ColumnOutcome::Complete(result) =
+									plan.execute(&inputs, options(100000, force), || false)
+								else {
+									panic!("refused");
+								};
+								let ColumnValues::Bool(values) = &result.values else {
+									panic!("type");
+								};
+								let bits = BitSlice::new(values, 0, len).unwrap();
+								let mut valid = 0;
+								for i in 0..len {
+									let present = mx.is_none_or(|m| m.bit(i))
+										&& (same || my.is_none_or(|m| m.bit(i)));
+									valid += usize::from(present);
+									let a = x.bit(i);
+									let b = if same { a } else { y.bit(i) };
+									let expected = match op {
+										Binary::BitAnd => a & b,
+										Binary::BitOr => a | b,
+										_ => unreachable!(),
+									};
+									assert_eq!(
+										bits.bit(i),
+										present && (expected || (consumer && a))
+									);
+									assert_eq!(
+										result.validity.as_ref().is_none_or(|v| BitSlice::new(
+											v, 0, len
+										)
+										.unwrap()
+										.bit(i)),
+										present
+									);
+								}
+								assert_eq!(result.valid_rows, valid);
+								assert_eq!(
+									result.remaining_work,
+									100000 - valid * plan.row_charge()
+								);
+								if !len.is_multiple_of(8) {
+									assert_eq!(values[len / 8] >> (len % 8), 0);
+								}
+								assert!(matches!(
+									plan.execute(&inputs, options(100000, force), || true),
+									ColumnOutcome::Replay {
+										reason: ColumnRefusal::Canceled,
+										..
+									}
+								));
+								if valid != 0 {
+									assert!(matches!(
+										plan.execute(
+											&inputs,
+											options(valid * plan.row_charge() - 1, force),
+											|| false
+										),
+										ColumnOutcome::Replay {
+											reason: ColumnRefusal::Fuel,
+											..
+										}
+									));
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn boolean_plan_constants_not_and_classification() {
+	use crate::experimental_core::arithmetic::Unary;
+	let variants = [
+		// Constant source, NOT inside a packed chain, then a second consumer.
+		vec![
+			Op::Literal {
+				out: 2,
+				value: Value::Bool(true),
+			},
+			Op::Binary {
+				out: 3,
+				op: Binary::BitAnd,
+				lhs: 0,
+				rhs: 2,
+			},
+			Op::Unary {
+				out: 4,
+				op: Unary::Not,
+				value: 3,
+			},
+			Op::Binary {
+				out: 5,
+				op: Binary::BitOr,
+				lhs: 4,
+				rhs: 1,
+			},
+			Op::Return { value: 5 },
+		],
+		// A result that is an input despite otherwise dead computed nodes.
+		vec![
+			Op::Binary {
+				out: 2,
+				op: Binary::BitOr,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Return { value: 0 },
+		],
+		// Folded constant result still needs to be written and null-masked.
+		vec![
+			Op::Literal {
+				out: 2,
+				value: Value::Bool(true),
+			},
+			Op::Literal {
+				out: 3,
+				value: Value::Bool(false),
+			},
+			Op::Binary {
+				out: 4,
+				op: Binary::BitOr,
+				lhs: 2,
+				rhs: 3,
+			},
+			Op::Return { value: 4 },
+		],
+		// The output is produced before a later dead node reads it.
+		vec![
+			Op::Binary {
+				out: 2,
+				op: Binary::BitAnd,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Unary {
+				out: 3,
+				op: Unary::Not,
+				value: 2,
+			},
+			Op::Return { value: 2 },
+		],
+	];
+	for ops in variants {
+		let p = program(2, 6, &ops);
+		let plan = PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::Bool; 2],
+			ColumnType::Bool,
+			Limits::default(),
+		)
+		.unwrap();
+		assert!(plan.boolean_plan);
+		let mut reference = PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::Bool; 2],
+			ColumnType::Bool,
+			Limits::default(),
+		)
+		.unwrap();
+		reference.boolean_plan = false;
+		let lengths: &[usize] = if cfg!(miri) {
+			&[7, 65]
+		} else {
+			&[0, 1, 7, 64, 65, 1024, 1031]
+		};
+		for &len in lengths {
+			let values = [0xa5; 140];
+			let other = [0x3c; 140];
+			let masks = [0x69; 140];
+			for masked in [false, true] {
+				let validity = masked.then(|| BitSlice::new(&masks, 1, len).unwrap());
+				let x = [ColumnChunk::new(
+					ColumnSlice::Bool(BitSlice::new(&values, 3, len).unwrap()),
+					validity,
+				)
+				.unwrap()];
+				let y = [ColumnChunk::new(
+					ColumnSlice::Bool(BitSlice::new(&other, 7, len).unwrap()),
+					None,
+				)
+				.unwrap()];
+				let columns = [
+					Column::new(ColumnType::Bool, &x).unwrap(),
+					Column::new(ColumnType::Bool, &y).unwrap(),
+				];
+				for force in [false, true] {
+					let ColumnOutcome::Complete(a) =
+						plan.execute(&columns, options(100000, force), || false)
+					else {
+						panic!("packed refusal")
+					};
+					let ColumnOutcome::Complete(b) =
+						reference.execute(&columns, options(100000, force), || false)
+					else {
+						panic!("reference refusal")
+					};
+					let (ColumnValues::Bool(a_values), ColumnValues::Bool(b_values)) =
+						(&a.values, &b.values)
+					else {
+						panic!("type")
+					};
+					assert_eq!(a_values, b_values);
+					assert_eq!(a.validity, b.validity);
+					assert_eq!(a.valid_rows, b.valid_rows);
+					assert_eq!(a.remaining_work, b.remaining_work);
+					assert_eq!(a.path, Path::Scalar);
+				}
+			}
+		}
+	}
+	for op in [Binary::Eq, Binary::BitXor] {
+		let p = program(
+			2,
+			4,
+			&[
+				Op::Binary {
+					out: 2,
+					op: Binary::BitAnd,
+					lhs: 0,
+					rhs: 1,
+				},
+				Op::Binary {
+					out: 3,
+					op,
+					lhs: 2,
+					rhs: 1,
+				},
+				Op::Return { value: 3 },
+			],
+		);
+		assert!(
+			!PreparedColumn::prepare(
+				&p,
+				0,
+				&[ColumnType::Bool; 2],
+				ColumnType::Bool,
+				Limits::default()
+			)
+			.unwrap()
+			.boolean_plan
+		);
+	}
+	let p = program(
+		1,
+		2,
+		&[
+			Op::Unary {
+				out: 1,
+				op: Unary::Not,
+				value: 0,
+			},
+			Op::Return { value: 1 },
+		],
+	);
+	assert!(
+		!PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::Bool],
+			ColumnType::Bool,
+			Limits::default()
+		)
+		.unwrap()
+		.boolean_plan
+	);
+}
+
+#[test]
+fn boolean_plan_memory_and_mid_batch_cancel() {
+	let p = program(
+		2,
+		4,
+		&[
+			Op::Binary {
+				out: 2,
+				op: Binary::BitAnd,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Unary {
+				out: 3,
+				op: crate::experimental_core::arithmetic::Unary::Not,
+				value: 2,
+			},
+			Op::Return { value: 3 },
+		],
+	);
+	let mut plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::Bool; 2],
+		ColumnType::Bool,
+		Limits::default(),
+	)
+	.unwrap();
+	assert!(plan.boolean_plan);
+	let data = [0xa5; 257];
+	let chunks = [ColumnChunk::new(
+		ColumnSlice::Bool(BitSlice::new(&data, 0, 2051).unwrap()),
+		None,
+	)
+	.unwrap()];
+	let column = Column::new(ColumnType::Bool, &chunks).unwrap();
+	let inputs = [column, column];
+	let batch = plan
+		.prepare_batch(&inputs, options(100000, true), || false)
+		.unwrap();
+	let bytes = batch.owned_bytes() + plan.retained_bytes();
+	drop(batch);
+	for limit in [bytes - 1, bytes, bytes + 1] {
+		plan.limit = limit;
+		let result = plan.prepare_batch(&inputs, options(100000, true), || false);
+		if limit < bytes {
+			assert!(matches!(result, Err(ColumnRefusal::Memory)));
+		} else {
+			let batch = result.unwrap();
+			assert_eq!(batch.owned_bytes() + plan.retained_bytes(), bytes);
+			let mut calls = 0;
+			assert!(matches!(
+				batch.invoke(|| {
+					calls += 1;
+					calls == 2
+				}),
+				ColumnOutcome::Replay {
+					reason: ColumnRefusal::Canceled,
+					fault: None
+				}
+			));
+			assert_eq!(calls, 2);
+		}
+	}
+}
+
+#[test]
+fn boolean_plan_invalid_payload_is_zero_at_unaligned_chunk_edges() {
+	let p = program(
+		2,
+		3,
+		&[
+			Op::Binary {
+				out: 2,
+				op: Binary::BitAnd,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Return { value: 2 },
+		],
+	);
+	let plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::Bool; 2],
+		ColumnType::Bool,
+		Limits::default(),
+	)
+	.unwrap();
+	assert!(plan.boolean_plan);
+	let ones = [0xff; 140];
+	let masks = [0x55; 140];
+	let lengths: &[usize] = if cfg!(miri) { &[7, 65] } else { &[7, 65, 1031] };
+	for &len in lengths {
+		for offset in 0..8 {
+			for cut in [1, 3, 7] {
+				let cut = cut.min(len);
+				let chunks = [
+					ColumnChunk::new(
+						ColumnSlice::Bool(BitSlice::new(&ones, offset, cut).unwrap()),
+						Some(BitSlice::new(&masks, 1, cut).unwrap()),
+					)
+					.unwrap(),
+					ColumnChunk::new(
+						ColumnSlice::Bool(BitSlice::new(&ones, offset + cut, len - cut).unwrap()),
+						Some(BitSlice::new(&masks, 1 + cut, len - cut).unwrap()),
+					)
+					.unwrap(),
+				];
+				let other = [ColumnChunk::new(
+					ColumnSlice::Bool(BitSlice::new(&ones, 7 - offset, len).unwrap()),
+					None,
+				)
+				.unwrap()];
+				let columns = [
+					Column::new(ColumnType::Bool, &chunks).unwrap(),
+					Column::new(ColumnType::Bool, &other).unwrap(),
+				];
+				let ColumnOutcome::Complete(result) =
+					plan.execute(&columns, options(100000, true), || false)
+				else {
+					panic!("refusal")
+				};
+				let ColumnValues::Bool(payload) = result.values else {
+					panic!("type")
+				};
+				let output = BitSlice::new(&payload, 0, len).unwrap();
+				let validity = BitSlice::new(&masks, 1, len).unwrap();
+				// Inputs are all one, so every invalid zero proves the final
+				// validity mask cleared payload rather than merely hiding it.
+				for row in 0..len {
+					assert_eq!(output.bit(row), validity.bit(row));
+				}
+				if !len.is_multiple_of(8) {
+					assert_eq!(payload[len / 8] >> (len % 8), 0);
+				}
+			}
+		}
+	}
+}

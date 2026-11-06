@@ -17,6 +17,9 @@ mod operands;
 mod flat;
 use flat::Output;
 
+#[path = "boolean.rs"]
+mod boolean;
+
 const BLOCK: usize = 1024;
 
 /// Request configuration. The work budget is copied, never consumed on refusal.
@@ -262,13 +265,22 @@ impl PreparedColumn {
 			.ok_or((ColumnRefusal::Memory, None))?;
 		let scratch_len = self
 			.scratch_count
-			.checked_mul(BLOCK)
+			.checked_mul(if self.boolean_plan { BLOCK / 64 } else { BLOCK })
 			.ok_or((ColumnRefusal::Memory, None))?;
 		let scratch = filled(scratch_len, 0u64, room).map_err(allocation)?;
 		room = room
 			.checked_sub(scratch.capacity() * 8)
 			.ok_or((ColumnRefusal::Memory, None))?;
-		let row_values = filled(self.nodes.len(), 0u64, room).map_err(allocation)?;
+		let row_values = filled(
+			if self.boolean_plan {
+				0
+			} else {
+				self.nodes.len()
+			},
+			0u64,
+			room,
+		)
+		.map_err(allocation)?;
 		let inner = match values {
 			Output::Initialized(values) => BatchKind::Initialized(PreparedBatch {
 				plan: self,
@@ -312,7 +324,12 @@ impl PreparedBatch<'_, '_> {
 
 	/// Run exactly once; success transfers owned output, refusal destroys it.
 	pub fn invoke(self, mut canceled: impl FnMut() -> bool) -> ColumnOutcome {
-		match self.run(&mut canceled) {
+		let result = if self.plan.boolean_plan {
+			boolean::run(self, &mut canceled)
+		} else {
+			self.run(&mut canceled)
+		};
+		match result {
 			Ok(result) => ColumnOutcome::Complete(result),
 			Err((reason, fault)) => ColumnOutcome::Replay { reason, fault },
 		}

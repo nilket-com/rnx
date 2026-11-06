@@ -68,6 +68,7 @@ pub struct PreparedColumn {
 	frame_slots: usize,
 	scratch_count: usize,
 	fast: Option<plan::Fast>,
+	boolean_plan: bool,
 }
 
 impl PreparedColumn {
