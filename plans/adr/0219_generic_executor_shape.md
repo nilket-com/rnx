@@ -1,6 +1,14 @@
 # ADR 0219: Source-determined generic column executor shape
 
-Status: Proposed
+Status: Withdrawn
+
+Explicit leaf annotations perturbed code generation. A separate per-call
+traversal frame preserved every block/lane vector by itself, but adding a
+second const instance of the generic executor still outlined `operation` and
+`destination`, adding 7.2 instructions per row on mixed-null F64. This record
+therefore did not establish isolation and ships no runtime change. Boolean
+work moves to a separate whole-plan driver, leaving the generic executor
+untouched.
 
 ADR 0218 was withdrawn. Its Boolean gains held in every attempt, but each of
 four boundaries changed how the compiler inlined the generic column executor,
