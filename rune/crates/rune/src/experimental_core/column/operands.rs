@@ -107,6 +107,36 @@ pub(super) fn execute(
 	mask: Option<u64>,
 	engine: Engine,
 ) -> (bool, bool) {
+	match mask {
+		None => {
+			execute_inner::<false>(plan, inputs, offsets, scratch, values, row, n, None, engine)
+		}
+		Some(mask) => execute_inner::<true>(
+			plan,
+			inputs,
+			offsets,
+			scratch,
+			values,
+			row,
+			n,
+			Some(mask),
+			engine,
+		),
+	}
+}
+
+#[allow(clippy::too_many_arguments)]
+fn execute_inner<const MASKED: bool>(
+	plan: &PreparedColumn,
+	inputs: &[ColumnSlice<'_>; 3],
+	offsets: &[usize; 3],
+	scratch: &mut [u64],
+	values: &mut ColumnValues,
+	row: usize,
+	n: usize,
+	mask: Option<u64>,
+	engine: Engine,
+) -> (bool, bool) {
 	let mut failed = false;
 	let mut simd = false;
 	for node in &plan.nodes {
@@ -153,7 +183,7 @@ pub(super) fn execute(
 					false,
 				)
 			}
-			Step::Binary(op, a, b) => operation(
+			Step::Binary(op, a, b) => operation::<MASKED>(
 				op,
 				plan.nodes[a].ty,
 				sources.get(plan.nodes[a].operand),
@@ -182,6 +212,13 @@ pub(super) fn execute(
 		};
 		let x = sources.get(result);
 		apply(destination(values, row, n), mask, |i| (x.at(i), false));
+	}
+	// Invalid intermediate lanes may contain wrapped speculative values. Publish
+	// deterministic null payloads only after all later uses of Output are done.
+	if MASKED {
+		if let (Some(mask), ColumnValues::I64(output)) = (mask, values) {
+			engine.zero_i64(&mut output[row..row + n], mask);
+		}
 	}
 	(failed, simd)
 }
@@ -272,7 +309,7 @@ fn integer_loop<L: Src, R: Src, const MASKED: bool>(
 	}
 }
 
-fn operation(
+fn operation<const MASKED: bool>(
 	op: Binary,
 	ty: ColumnType,
 	x: Value<'_>,
@@ -282,6 +319,39 @@ fn operation(
 	engine: Engine,
 ) -> (bool, bool) {
 	use Binary::*;
+	// Optimistic validity: do not feed a null-only overflow flag to first_fault.
+	// A flagged node gets at most one validity-aware scalar rescan.
+	if let (Some(mask), ColumnType::I64, Destination::Words(output)) = (mask, ty, &mut out) {
+		if MASKED && engine.avx2() {
+			let optimistic = match (op, x, y) {
+				(Add, Value::Words(a), Value::Words(b)) => Some(engine.add_pair(a, b, output)),
+				(Sub, Value::Words(a), Value::Words(b)) => Some(engine.sub_pair(a, b, output)),
+				(Mul, Value::Words(a), Value::Constant(c))
+				| (Mul, Value::Constant(c), Value::Words(a))
+					if c != 0 && (c as i64).unsigned_abs() < (1u64 << 32) =>
+				{
+					Some(engine.mul_constant(a, c as i64, output))
+				}
+				_ => None,
+			};
+			if let Some(flagged) = optimistic {
+				let failed = flagged
+					&& match (x, y) {
+						(Value::Words(a), Value::Words(b)) => {
+							integer_kernel(op, a, b, output, Some(mask))
+						}
+						(Value::Words(a), Value::Constant(b)) => {
+							integer_kernel(op, a, Const(b), output, Some(mask))
+						}
+						(Value::Constant(a), Value::Words(b)) => {
+							integer_kernel(op, Const(a), b, output, Some(mask))
+						}
+						_ => unreachable!("optimistic integer shape"),
+					};
+				return (failed, true);
+			}
+		}
+	}
 	if mask.is_none() && ty == ColumnType::I64 {
 		if let Destination::Words(output) = &mut out {
 			match (op, x, y) {
@@ -394,6 +464,54 @@ mod tests {
 						}
 						assert_eq!(failed, expected_fault);
 						assert_eq!((out[0], out[n + 1]), (719, 719));
+					}
+				}
+			}
+		}
+	}
+	#[test]
+	fn optimistic_nodes_match_valid_scalar_lanes() {
+		let extrema = [i64::MIN, i64::MAX, -1, 0, 1, 7, -7];
+		for n in [0usize, 1, 3, 4, 7, 63, 64] {
+			let x: Vec<_> = (0..n + 2).map(|i| extrema[i % 7] as u64).collect();
+			let y: Vec<_> = (0..n + 2).map(|i| extrema[(i + 2) % 7] as u64).collect();
+			for mask in [0, u64::MAX, 0xaaaaaaaaaaaaaaaa, 0x831471bb02f356ad] {
+				for op in [Binary::Add, Binary::Sub, Binary::Mul] {
+					for constant in [
+						None,
+						Some(0),
+						Some(1),
+						Some(-1),
+						Some(3),
+						Some(i64::MIN),
+						Some(i64::MAX),
+					] {
+						for reversed in [false, true] {
+							let a = Value::Words(&x[1..n + 1]);
+							let b = constant
+								.map_or(Value::Words(&y[1..n + 1]), |c| Value::Constant(c as u64));
+							let (a, b) = if reversed { (b, a) } else { (a, b) };
+							let mut out = vec![719; n + 2];
+							let (failed, _) = operation::<true>(
+								op,
+								ColumnType::I64,
+								a,
+								b,
+								Destination::Words(&mut out[1..n + 1]),
+								Some(mask),
+								Engine::new(false),
+							);
+							let mut expected = false;
+							for i in 0..n {
+								if mask >> i & 1 != 0 {
+									let (v, f) = binary(op, ColumnType::I64, a.at(i), b.at(i));
+									assert_eq!(out[i + 1], v);
+									expected |= f;
+								}
+							}
+							assert_eq!(failed, expected);
+							assert_eq!((out[0], out[n + 1]), (719, 719));
+						}
 					}
 				}
 			}

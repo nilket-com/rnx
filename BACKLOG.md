@@ -7,3 +7,7 @@
 - After ADR 0212: accelerate generic mixed-mask expressions with validity-aware
   SIMD. The 49 instructions/row multiply3 mixed-mask path is mostly scalar
   arithmetic; eliminating copies alone cannot provide the larger SIMD gain.
+
+- Column I64 Add/Sub with a constant still uses scalar execution in generic masked
+  chains. Extend optimistic constant-operand arithmetic in a later record; retain
+  invalid-lane fault suppression and bounded rescans (ADR 0213 follow-up).
