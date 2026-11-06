@@ -1,6 +1,6 @@
 # ADR 0217: One open record at a time
 
-Status: Proposed
+Status: Accepted
 
 Records must be worked one at a time and land in number order. Two records
 were interleaved: 0211 landed before 0209, and 0216 was inserted inside 0215.

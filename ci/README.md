@@ -52,3 +52,17 @@ both the bundling host and the verifier. This is a minimum reserve, not a promis
 that every full suite fits; preserve failures and reclaim only identified,
 reproducible closed-record build artifacts. Never automatically delete source,
 parked bundles or acceptance receipts to satisfy admission.
+
+# One open record
+
+After `956ed4d5e89611ccb7140c54d4861390c94db49b`, first-parent history
+alternates a plan and its immediately following implementation. A pending plan
+is allowed only at HEAD. Each plan takes one more than the highest ADR number
+in its parent's committed tree, including `rune/plans/adr/`. Earlier history
+remains grandfathered; `MAX_IMPLEMENTATIONS = 1` is permanent.
+
+To abandon a record, close it with its single implementation, changing only
+its paired documents and setting the ADR's opening `Status: Withdrawn`.
+Finish or withdraw the open record before starting a prerequisite. The checker
+reports sequence violations with the offending commit and rule in JSON.
+The cutoff is fixed policy, with no command-line override.

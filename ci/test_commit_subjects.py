@@ -10,7 +10,7 @@ import unittest
 from commit_subjects import evaluate, segment, Policy, HistoryError, IDENTITY
 
 
-class History(unittest.TestCase):
+class Fixture:
 	def setUp(self):
 		self.temp = tempfile.TemporaryDirectory()
 		self.addCleanup(self.temp.cleanup)
@@ -47,7 +47,7 @@ class History(unittest.TestCase):
 		self.import_commit = self.git("commit-tree", "-S", tree, "-p", parent, "-p", self.engine_tip, "-m", "impl: adr 0208 import history")
 		self.git("reset", "--hard", self.import_commit)
 		self.policy = Policy(host_base=self.base, engine_base=self.engine_base, engine_tip=self.engine_tip,
-			import_commit=self.import_commit, follower_plan="", follower_impl="")
+			sequence_base=self.import_commit, import_commit=self.import_commit, follower_plan="", follower_impl="")
 
 	def git(self, *args):
 		p = subprocess.run(["git", *args], cwd=self.repo, env=self.env, text=True, capture_output=True)
@@ -73,12 +73,14 @@ class History(unittest.TestCase):
 		return self.commit(f"plan: adr {number} test")
 
 	def check(self, policy=None):
-		return evaluate(self.repo, policy or self.policy)
+		return evaluate(self.repo, policy or replace(self.policy, sequence_base=self.git("rev-parse", "HEAD")))
 
 	def reject(self, text, policy=None):
 		with self.assertRaisesRegex(HistoryError, text):
 			self.check(policy)
 
+
+class History(Fixture, unittest.TestCase):
 	def test_valid_history_and_pending_plan(self):
 		self.plan("0209")
 		self.assertEqual(self.check()["status"], "PASS")
@@ -162,7 +164,7 @@ class History(unittest.TestCase):
 		parents = self.git("show", "-s", "--format=%P", self.import_commit).split()
 		bad = self.git("commit-tree", "-S", tree, "-p", parents[0], "-p", parents[1], "-m", "impl: adr 0208 import history")
 		self.git("reset", "--hard", bad)
-		self.reject("subtree", replace(self.policy, import_commit=bad))
+		self.reject("subtree", replace(self.policy, import_commit=bad, sequence_base=bad))
 
 
 	def test_import_outside_prefix(self):
@@ -172,7 +174,7 @@ class History(unittest.TestCase):
 		parents = self.git("show", "-s", "--format=%P", self.import_commit).split()
 		bad = self.git("commit-tree", "-S", tree, "-p", parents[0], "-p", parents[1], "-m", "impl: adr 0208 import history")
 		self.git("reset", "--hard", bad)
-		self.reject("outside prefix", replace(self.policy, import_commit=bad))
+		self.reject("outside prefix", replace(self.policy, import_commit=bad, sequence_base=bad))
 
 	def test_import_wrong_second_parent(self):
 		self.reject("second parent", replace(self.policy, engine_tip=self.engine_base))
@@ -213,6 +215,71 @@ class History(unittest.TestCase):
 		self.assertEqual(len(segment(self.repo, self.base, impl, policy)["commits"]), 2)
 		with self.assertRaisesRegex(HistoryError, "adr document"):
 			segment(self.repo, self.base, impl, self.policy)
+
+
+class Sequence(Fixture, unittest.TestCase):
+	# Keep grandfathered controls above; these controls activate at the import.
+	def test_sequence_pending_and_closed(self):
+		self.plan("0209")
+		self.check(self.policy)
+		self.commit("impl: adr 0209 implementation")
+		self.plan("0210")
+		self.check(self.policy)
+
+	def test_sequence_interleaved(self):
+		self.plan("0209")
+		bad = self.plan("0210")
+		with self.assertRaises(HistoryError) as caught:
+			self.check(self.policy)
+		self.assertEqual(caught.exception.commit, bad)
+		self.assertEqual(caught.exception.rule, "sequence.implementation")
+
+	def test_sequence_numbers(self):
+		for number in ("0210", "0208", "0206"):
+			with self.subTest(number=number):
+				self.plan(number)
+				self.reject("expected next record 0209", self.policy)
+				self.git("reset", "--hard", self.import_commit)
+
+	def test_sequence_wrong_impl(self):
+		self.plan("0209")
+		self.commit("impl: adr 0208 wrong record")
+		self.reject("expected immediate implementation", self.policy)
+
+	def test_sequence_orphan_impl(self):
+		self.commit("impl: adr 0208 another implementation")
+		self.reject("expected next plan", self.policy)
+
+	def test_sequence_withdrawal(self):
+		self.plan("0209")
+		self.write("plans/adr/0209_test.md", "Status: Withdrawn\n")
+		self.commit("impl: adr 0209 withdraw")
+		self.plan("0210")
+		self.check(self.policy)
+
+	def test_sequence_withdrawal_product(self):
+		self.plan("0209")
+		self.write("plans/adr/0209_test.md", "Status: Withdrawn\n")
+		self.write("product", "not allowed")
+		self.commit("impl: adr 0209 withdraw")
+		self.reject("withdrawal must", self.policy)
+
+	def test_sequence_withdrawn_plan(self):
+		self.plan("0209", status="Status: Withdrawn")
+		self.reject("withdrawal must", self.policy)
+
+	def test_sequence_cutoff(self):
+		self.check(self.policy)
+		self.reject("sequence cutoff not", replace(self.policy, sequence_base=self.engine_tip))
+
+	def test_sequence_imported_maximum(self):
+		# Isolated policy fixture: a grandfathered imported ADR also reserves a number.
+		self.write("rune/plans/adr/0212_reserved.md", "Status: Accepted\n")
+		cutoff = self.commit("impl: adr 0208 reserve fixture")
+		# Exercise the sequence walk alone; the duplicate impl is outside its segment.
+		self.plan("0213")
+		segment(self.repo, cutoff, self.git("rev-parse", "HEAD"),
+			replace(self.policy, sequence_base=cutoff), require_sequence=True)
 
 
 class Integration(unittest.TestCase):

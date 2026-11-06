@@ -15,11 +15,15 @@ DOC = re.compile(r"(?:rune/)?plans/(adr|impl)/([0-9]{4})[_-][a-z0-9_-]+\.md$")
 
 
 class HistoryError(ValueError):
-	pass
+	def __init__(self, message, *, commit=None, rule=None):
+		super().__init__(message)
+		self.commit = commit
+		self.rule = rule
 
 
 @dataclass(frozen=True)
 class Policy:
+	sequence_base: str = "956ed4d5e89611ccb7140c54d4861390c94db49b"
 	host_base: str = "bc0fada750c6fa50f2b0e765a2985155bd933e00"
 	engine_base: str = "1b4b66bd3657868ecb1d49f8b3f355585b3ec98d"
 	engine_tip: str = "6d7aa59dee00dd9c5c598b3a1e0d54fca6ae6bdf"
@@ -85,11 +89,16 @@ def import_proof(repo, row, policy):
 	need(not any(p == "rune" or p.startswith("rune/") for p in paths(repo, row["parents"][0])), "import overwrote existing prefix")
 
 
-def segment(repo, base, head, policy, engine=False, occupied=None):
+def segment(repo, base, head, policy, engine=False, occupied=None, require_sequence=False):
 	git(repo, "merge-base", "--is-ancestor", base, head)
 	need(base in git(repo, "rev-list", "--first-parent", head).splitlines(), "cutoff not on complete first-parent chain")
 	commits = git(repo, "rev-list", "--reverse", "--first-parent", base + ".." + head).splitlines()
+	if require_sequence:
+		need(policy.sequence_base == base or policy.sequence_base in commits, "sequence cutoff not on complete first-parent chain")
 	previous = base
+	previous_tree = paths(repo, base)
+	sequenced = not engine and base == policy.sequence_base
+	pending = None
 	plans, implementations, rows = {}, {}, []
 	imported = False
 	for commit in commits:
@@ -104,6 +113,19 @@ def segment(repo, base, head, policy, engine=False, occupied=None):
 		tree = paths(repo, commit)
 		changed = git(repo, "diff-tree", "--no-commit-id", "--name-only", "--no-renames", "-r", previous, commit).splitlines()
 		kind, number = row["kind"], row["number"]
+		if sequenced:
+			def sequence_need(condition, rule, message):
+				if not condition:
+					raise HistoryError(message, commit=commit, rule=rule)
+			if pending is None:
+				sequence_need(kind == "plan", "sequence.plan", "expected next plan after implementation")
+				numbers = [int(m[2]) for path in previous_tree if (m := DOC.fullmatch(path)) and m[1] == "adr"]
+				expected = max(numbers, default=205) + 1
+				sequence_need(int(number) == expected, "sequence.number", f"expected next record {expected:04d}, got {number}")
+				pending = number
+			else:
+				sequence_need(kind == "impl" and number == pending, "sequence.implementation", f"expected immediate implementation of {pending}")
+				pending = None
 		follower = not engine and commit in (policy.follower_plan, policy.follower_impl)
 		if follower:
 			need(number == "0206" and commit == (policy.follower_plan if kind == "plan" else policy.follower_impl), "invalid follower role")
@@ -114,6 +136,12 @@ def segment(repo, base, head, policy, engine=False, occupied=None):
 			adr = document(repo, commit, tree, number, "adr")
 			impl = document(repo, commit, tree, number, "impl")
 			allowed = {adr, impl}
+		if sequenced:
+			text = git(repo, "show", commit + ":" + adr)
+			state = next(line.removeprefix("Status: ") for line in text.splitlines() if line.startswith("Status:"))
+			if state.casefold().startswith("withdrawn"):
+				sequence_need(state == "Withdrawn" and kind == "impl" and bool(changed) and set(changed) <= allowed,
+					"sequence.withdrawal", "withdrawal must be an implementation changing only its paired documents with Status: Withdrawn")
 		if kind == "plan":
 			need(number not in plans, "duplicate plan")
 			need(not occupied or number not in occupied or follower, "shared record number already occupied")
@@ -135,6 +163,9 @@ def segment(repo, base, head, policy, engine=False, occupied=None):
 		row["documents"] = sorted(allowed)
 		rows.append(row)
 		previous = commit
+		previous_tree = tree
+		if not engine and commit == policy.sequence_base:
+			sequenced = True
 	need(previous == head, "empty segment head mismatch")
 	return {"base": base, "head": head, "commits": rows, "plans": plans}
 
@@ -148,12 +179,12 @@ def evaluate(repo, policy=Policy()):
 		grafts = repo / grafts
 	need(not grafts.exists(), "grafted history forbidden")
 	head = git(repo, "rev-parse", "HEAD^{commit}").strip()
-	for value in (policy.host_base, policy.engine_base, policy.engine_tip, policy.import_commit):
+	for value in (policy.host_base, policy.engine_base, policy.engine_tip, policy.import_commit, policy.sequence_base):
 		need(bool(re.fullmatch(r"[0-9a-f]{40}", value)), "invalid pinned cutoff")
 		git(repo, "cat-file", "-e", value + "^{commit}")
 	git(repo, "merge-base", "--is-ancestor", policy.import_commit, head)
 	engine = segment(repo, policy.engine_base, policy.engine_tip, policy, engine=True)
-	host = segment(repo, policy.host_base, head, policy, occupied=engine["plans"])
+	host = segment(repo, policy.host_base, head, policy, occupied=engine["plans"], require_sequence=True)
 	return {"status": "PASS", "head": head, "max_implementations": MAX_IMPLEMENTATIONS, "engine": engine, "host": host}
 
 
@@ -165,6 +196,8 @@ def main():
 		result = evaluate(args.repo)
 	except (HistoryError, OSError, UnicodeError, subprocess.TimeoutExpired) as error:
 		result = {"status": "FAIL", "error": str(error)}
+		if isinstance(error, HistoryError) and error.commit:
+			result.update(commit=error.commit, rule=error.rule)
 	print(json.dumps(result, indent=2))
 	return 0 if result["status"] == "PASS" else 1
 
