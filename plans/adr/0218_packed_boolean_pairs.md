@@ -1,6 +1,11 @@
 # ADR 0218: Packed two-input Boolean AND/OR
 
-Status: Proposed
+Status: Withdrawn
+
+Boolean performance gains held, but the generic executor's code generation
+could not be isolated under the protected-path performance rule. This record
+is withdrawn; the Boolean work will return after the generic executor's shape
+is stabilized in a separate record.
 
 Combining two predicates with `&` or `|` is one of the most common column
 operations in analytics filters. It currently scalarizes. At 100M rows, warm

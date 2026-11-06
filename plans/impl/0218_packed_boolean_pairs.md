@@ -23,3 +23,10 @@ checker. Format and lint the touched crates.
 
 Remove the three stale entries in `BACKLOG.md` that ADRs 0213–0215 completed.
 Add the F64 generic-chain record as the next entry.
+
+## Disposition
+
+Withdrawn after four boundary designs retained Boolean gains but introduced
+size-dependent costs on protected generic paths. No runtime implementation
+ships in this record. Executor-shape stabilization must precede the Boolean
+work's return; the validation evidence is preserved separately.
