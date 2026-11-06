@@ -19,7 +19,8 @@ MANIFESTS = ["Cargo.toml", "tools/project/Cargo.toml", "adapters/candle/Cargo.to
 
 def commands(out):
 	cargo = ["cargo", "+1.98.1"]
-	steps = [("fetch-" + m.replace("/", "-"), cargo + ["fetch", "--locked", "--manifest-path", m]) for m in MANIFESTS]
+	steps = [("commit-discipline", ["python3", "-B", "ci/preflight.py"])]
+	steps += [("fetch-" + m.replace("/", "-"), cargo + ["fetch", "--locked", "--manifest-path", m]) for m in MANIFESTS]
 	steps += [
 		("controller-controls", ["python3", "-B", "-m", "unittest", "discover", "-s", "tools/column", "-p", "test_*.py", "-v"]),
 		("polars-inventory-preflight", ["python3", "-B", "tools/column/inventories.py", "--preflight", "--out", str(out / "polars-inventory-preflight")]),
