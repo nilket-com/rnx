@@ -512,7 +512,8 @@ that range. No native time value is needed.
 | function | result |
 | --- | --- |
 | `time::now_ms()` | i64; wall clock, for timestamps, not elapsed time |
-| `time::monotonic_ms()` | i64; elapsed milliseconds since the first call in this process |
+| `time::monotonic_ms()` | i64; elapsed milliseconds since the first monotonic clock call in this process |
+| `time::monotonic_ns()` | i64; nanoseconds from the same origin; saturates after about 292 years; units do not promise hardware resolution |
 | `time::format(ms, pattern, zone)` | Result<String>; Jiff's strftime dialect |
 | `time::rfc3339(ms, zone)` | Result<String>; strict RFC 3339 with three fractional digits |
 | `time::parse(text)` | Result<i64>; offset or Z required, fractions floored |

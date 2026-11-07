@@ -63,6 +63,14 @@ fn refuses(f: &Fixture, expr: &str, word: &str) {
 	);
 }
 #[test]
+fn nanosecond_clock_is_available_and_shares_the_millisecond_origin() {
+	let f = Fixture::new();
+	yes(
+		&f,
+		"let first=time::monotonic_ns(); let last=first; for _ in 0..100 { let before=time::monotonic_ms(); let n=time::monotonic_ns(); let after=time::monotonic_ms(); assert!(n >= last); assert!(before <= n / 1000000 && n / 1000000 <= after); last=n; } first >= 0 && last >= first",
+	);
+}
+#[test]
 fn clocks_and_the_log_stopwatch_and_file_examples() {
 	let f = Fixture::new();
 	let before = SystemTime::now()

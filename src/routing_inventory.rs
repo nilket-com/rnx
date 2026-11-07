@@ -67,7 +67,7 @@ fn host_policy() -> Vec<HostPolicy> {
 		"closed scalar/Option/Result",
 	);
 	add(
-		"fs::cwd fs::temp_dir path::separator time::now_ms time::monotonic_ms",
+		"fs::cwd fs::temp_dir path::separator time::now_ms time::monotonic_ms time::monotonic_ns",
 		"",
 		Class::Typed,
 		"none",
