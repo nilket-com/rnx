@@ -174,6 +174,8 @@ pub(super) fn prepare(
 	let mut boolean_pair = false;
 	let mut f64_plan = inputs.iter().all(|ty| *ty == ColumnType::F64);
 	let mut f64_operations = 0usize;
+	let mut predicate_plan = true;
+	let mut numeric_comparison = false;
 	let mut row_charge = 0usize;
 	let mut result = None;
 	for (pc, instruction) in f.code.iter().enumerate() {
@@ -257,6 +259,25 @@ pub(super) fn prepare(
 				Step::Input(..) | Step::Constant(..) => true,
 				_ => false,
 			};
+		// Classify before folding: even unused I64 arithmetic must retain replay.
+		predicate_plan &= match step {
+			Step::Input(..) | Step::Constant(..) | Step::Not(..) => true,
+			Step::Binary(op, a, _) => match (nodes[a].ty, op) {
+				(
+					ColumnType::I64 | ColumnType::F64,
+					Binary::Eq | Binary::Ne | Binary::Lt | Binary::Le | Binary::Gt | Binary::Ge,
+				) => {
+					numeric_comparison = true;
+					true
+				}
+				(ColumnType::F64, Binary::Add | Binary::Sub | Binary::Mul)
+				| (
+					ColumnType::Bool,
+					Binary::BitAnd | Binary::BitOr | Binary::BitXor | Binary::Eq | Binary::Ne,
+				) => true,
+				_ => false,
+			},
+		};
 		// Fold only successful constants. Overflowing constant operations retain
 		// their original node/PC and execute normally so replay keeps fault order.
 		// row_charge above still counts the original instructions.
@@ -371,6 +392,8 @@ pub(super) fn prepare(
 		scratch_count,
 		fast,
 		boolean_plan: boolean_plan && boolean_pair,
-		special: (boolean_plan && boolean_pair) || (f64_plan && f64_operations >= 2),
+		special: (boolean_plan && boolean_pair)
+			|| (f64_plan && f64_operations >= 2)
+			|| (predicate_plan && numeric_comparison && output == ColumnType::Bool),
 	})
 }

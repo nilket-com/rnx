@@ -1,6 +1,6 @@
 # ADR 0223: Filter predicates run in their own driver
 
-Status: Proposed
+Status: Accepted
 
 Filter predicates are comparisons combined with Boolean operators, the core
 analytics filter shape. They run through the generic scalar executor
@@ -33,7 +33,7 @@ fault and replay ordering, which this record does not take on, so the driver
 cannot fault. Mixed-type comparisons remain unsupported, as today.
 
 The driver evaluates whole blocks. F64 intermediates stay typed (u64-bit
-scratch, as in ADR 0221). Comparisons write packed Bool words directly, and
+scratch, as in ADR 0221). Comparisons produce packed Bool words, and
 Boolean nodes operate on packed words, as in ADR 0220. Results must equal the
 generic executor exactly:
 - IEEE comparison semantics: ordered comparisons and `==` are false with NaN;
@@ -43,8 +43,11 @@ generic executor exactly:
 - zero payload under invalid rows;
 - the existing fuel, cancellation, refusal and observability contracts.
 
-The new loops have their own source-explicit block shapes, gated for packed
-compares in the primary loop. Nothing calls the generic executor, the
+The new loops have their own reviewed block shapes. F64 comparisons use
+64-lane word loops with packed operations; I64 comparisons retain the cheaper
+bounded eight-lane form selected by executed instruction counts. Executed
+specializations are pinned by instruction snapshot, with no per-lane bounds
+checks. Arithmetic keeps packed primary loops with matched byte stride. Nothing calls the generic executor, the
 protected SIMD kernels or the other two drivers' kernels. Shared bitmap
 helpers may be reused under the 0220 rule.
 
@@ -56,3 +59,12 @@ Acceptance against published `e4e6f465`:
   10M/100M first and warm;
 - NaN, null, offset, chunk, tail, constant-side and alias controls pass;
 - results equal the generic path exactly.
+
+Measured acceptance: all six predicates satisfy their approved whole-map
+ceilings and at most 25% of published-baseline instructions at 10M and 100M
+rows, first and warm, across four layouts. Protected paths retain exact
+function vectors apart from reviewed per-call setup constants and absolute
+call counts. Their program totals are non-increasing; unknown work is exact
+and system-library work follows the approved ELF-object band. Original
+failure receipts remain alongside approved rescores. No wall-time speedup
+is inferred from these instruction counts.

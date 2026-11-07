@@ -1,6 +1,6 @@
 use super::*;
 use crate::experimental_core::{
-	arithmetic::Binary,
+	arithmetic::{Binary, Unary},
 	code::{Builder, Function, Op},
 	error::{ErrorKind, Location},
 	execute::{Executor, ExecutorLimits},
@@ -2419,5 +2419,378 @@ fn f64_plan_write_only_null_words_and_cancellation() {
 			));
 			assert_eq!(calls, stop);
 		}
+	}
+}
+
+#[test]
+fn predicate_comparisons_ieee_and_signed_constants() {
+	let len = if cfg!(miri) { 65usize } else { 1031 };
+	let floats = [
+		0.0,
+		-0.0,
+		f64::INFINITY,
+		f64::NEG_INFINITY,
+		f64::NAN,
+		f64::from_bits(1),
+		-3.0,
+		2.0,
+	];
+	let integers = [i64::MIN, i64::MAX, -1, 0, 1, 2, -3, 100];
+	let xs: Vec<_> = (0..len).map(|i| floats[i % floats.len()]).collect();
+	let is: Vec<_> = (0..len).map(|i| integers[i % integers.len()]).collect();
+	let validity = vec![0x95; (len + 7).div_ceil(8)];
+	for ty in [ColumnType::F64, ColumnType::I64] {
+		for op in [
+			Binary::Eq,
+			Binary::Ne,
+			Binary::Lt,
+			Binary::Le,
+			Binary::Gt,
+			Binary::Ge,
+		] {
+			for reverse in [false, true] {
+				let literal = if ty == ColumnType::F64 {
+					Value::F64(-0.0)
+				} else {
+					Value::I64(i64::MIN)
+				};
+				let p = program(
+					1,
+					3,
+					&[
+						Op::Literal {
+							out: 1,
+							value: literal,
+						},
+						Op::Binary {
+							out: 2,
+							op,
+							lhs: if reverse { 1 } else { 0 },
+							rhs: if reverse { 0 } else { 1 },
+						},
+						Op::Return { value: 2 },
+					],
+				);
+				let mut plan =
+					PreparedColumn::prepare(&p, 0, &[ty], ColumnType::Bool, Limits::default())
+						.unwrap();
+				assert_eq!(plan.driver(), Driver::Predicate);
+				for masked in [false, true] {
+					let input = if ty == ColumnType::F64 {
+						ColumnSlice::F64(&xs)
+					} else {
+						ColumnSlice::I64(&is)
+					};
+					let chunks = [ColumnChunk::new(
+						input,
+						masked.then(|| BitSlice::new(&validity, 3, len).unwrap()),
+					)
+					.unwrap()];
+					let columns = [Column::new(ty, &chunks).unwrap()];
+					predicate_equivalent(&mut plan, &columns);
+				}
+			}
+		}
+	}
+}
+
+fn predicate_equivalent(plan: &mut PreparedColumn, columns: &[Column<'_>]) {
+	let mut results = Vec::new();
+	for enabled in [true, false] {
+		plan.special = enabled;
+		let ColumnOutcome::Complete(r) = plan.execute(columns, options(1000000, true), || false)
+		else {
+			panic!("refused")
+		};
+		let ColumnValues::Bool(v) = r.values else {
+			panic!("type")
+		};
+		results.push((v, r.validity, r.remaining_work, r.valid_rows));
+	}
+	assert_eq!(results[0], results[1]);
+	plan.special = true;
+}
+
+#[test]
+fn predicate_mixed_slots_output_consumers_and_masks() {
+	let len = if cfg!(miri) { 19usize } else { 1031 };
+	let x: Vec<_> = (0..len)
+		.map(|i| {
+			if i % 7 == 0 {
+				f64::NAN
+			} else {
+				i as f64 - 10.0
+			}
+		})
+		.collect();
+	let bits = vec![0x96; (len + 7).div_ceil(8)];
+	for op in [
+		Binary::BitAnd,
+		Binary::BitOr,
+		Binary::BitXor,
+		Binary::Eq,
+		Binary::Ne,
+	] {
+		for returned in [1, 5, 6, 8] {
+			let p = program(
+				2,
+				9,
+				&[
+					Op::Literal {
+						out: 2,
+						value: Value::F64(2.0),
+					},
+					Op::Binary {
+						out: 3,
+						op: Binary::Mul,
+						lhs: 0,
+						rhs: 2,
+					},
+					Op::Binary {
+						out: 4,
+						op: Binary::Sub,
+						lhs: 3,
+						rhs: 2,
+					},
+					Op::Binary {
+						out: 5,
+						op: Binary::Gt,
+						lhs: 4,
+						rhs: 0,
+					},
+					Op::Binary {
+						out: 6,
+						op,
+						lhs: 5,
+						rhs: 1,
+					},
+					Op::Unary {
+						out: 7,
+						op: Unary::Not,
+						value: 6,
+					},
+					Op::Binary {
+						out: 8,
+						op: Binary::BitOr,
+						lhs: 7,
+						rhs: 5,
+					},
+					Op::Return { value: returned },
+				],
+			);
+			let mut plan = PreparedColumn::prepare(
+				&p,
+				0,
+				&[ColumnType::F64, ColumnType::Bool],
+				ColumnType::Bool,
+				Limits::default(),
+			)
+			.unwrap();
+			assert_eq!(plan.driver(), Driver::Predicate);
+			for mask in [0u8, 0xff, 0x55] {
+				let validity = vec![mask; (len + 7).div_ceil(8)];
+				let xs = [
+					ColumnChunk::new(ColumnSlice::F64(&[]), None).unwrap(),
+					ColumnChunk::new(
+						ColumnSlice::F64(&x[..3]),
+						Some(BitSlice::new(&validity, 2, 3).unwrap()),
+					)
+					.unwrap(),
+					ColumnChunk::new(
+						ColumnSlice::F64(&x[3..]),
+						Some(BitSlice::new(&validity, 5, len - 3).unwrap()),
+					)
+					.unwrap(),
+				];
+				let bs = [ColumnChunk::new(
+					ColumnSlice::Bool(BitSlice::new(&bits, 3, len).unwrap()),
+					None,
+				)
+				.unwrap()];
+				let columns = [
+					Column::new(ColumnType::F64, &xs).unwrap(),
+					Column::new(ColumnType::Bool, &bs).unwrap(),
+				];
+				predicate_equivalent(&mut plan, &columns);
+			}
+		}
+	}
+}
+
+#[test]
+fn predicate_refuses_integer_arithmetic_and_preserves_limits() {
+	let p = program(
+		1,
+		4,
+		&[
+			Op::Literal {
+				out: 1,
+				value: Value::I64(1),
+			},
+			Op::Binary {
+				out: 2,
+				op: Binary::Add,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Binary {
+				out: 3,
+				op: Binary::Gt,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Return { value: 3 },
+		],
+	);
+	assert!(
+		!PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::I64],
+			ColumnType::Bool,
+			Limits::default()
+		)
+		.unwrap()
+		.special
+	);
+	let p = program(
+		1,
+		3,
+		&[
+			Op::Literal {
+				out: 1,
+				value: Value::I64(1),
+			},
+			Op::Binary {
+				out: 2,
+				op: Binary::Gt,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Return { value: 2 },
+		],
+	);
+	let mut plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::I64],
+		ColumnType::Bool,
+		Limits::default(),
+	)
+	.unwrap();
+	let x = [2; 19];
+	let chunks = [
+		ColumnChunk::new(ColumnSlice::I64(&x[..3]), None).unwrap(),
+		ColumnChunk::new(ColumnSlice::I64(&x[3..]), None).unwrap(),
+	];
+	let columns = [Column::new(ColumnType::I64, &chunks).unwrap()];
+	for stop in [1, 2, 3] {
+		let token = plan
+			.prepare_batch(&columns, options(100000, true), || false)
+			.unwrap();
+		let mut calls = 0;
+		assert!(matches!(
+			token.invoke(|| {
+				calls += 1;
+				calls == stop
+			}),
+			ColumnOutcome::Replay {
+				reason: ColumnRefusal::Canceled,
+				..
+			}
+		));
+	}
+	for enabled in [true, false] {
+		plan.special = enabled;
+		assert!(matches!(
+			plan.execute(&columns, options(0, true), || false),
+			ColumnOutcome::Replay {
+				reason: ColumnRefusal::Fuel,
+				..
+			}
+		));
+	}
+}
+
+#[test]
+fn predicate_recycled_slots_and_memory_boundary() {
+	let p = program(
+		1,
+		7,
+		&[
+			Op::Literal {
+				out: 1,
+				value: Value::F64(1.0),
+			},
+			Op::Binary {
+				out: 2,
+				op: Binary::Add,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Binary {
+				out: 3,
+				op: Binary::Gt,
+				lhs: 2,
+				rhs: 0,
+			},
+			Op::Binary {
+				out: 4,
+				op: Binary::Mul,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Binary {
+				out: 5,
+				op: Binary::Eq,
+				lhs: 4,
+				rhs: 0,
+			},
+			Op::Binary {
+				out: 6,
+				op: Binary::BitAnd,
+				lhs: 3,
+				rhs: 5,
+			},
+			Op::Return { value: 6 },
+		],
+	);
+	let mut plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::F64],
+		ColumnType::Bool,
+		Limits::default(),
+	)
+	.unwrap();
+	assert_eq!(plan.driver(), Driver::Predicate);
+	let slots: Vec<_> = plan
+		.nodes
+		.iter()
+		.filter_map(|n| match n.operand {
+			plan::Operand::Slot(s) => Some(s),
+			_ => None,
+		})
+		.collect();
+	assert!(slots
+		.iter()
+		.enumerate()
+		.any(|(i, slot)| slots[..i].contains(slot)));
+	let x = [2.0; 65];
+	let chunks = [ColumnChunk::new(ColumnSlice::F64(&x), None).unwrap()];
+	let columns = [Column::new(ColumnType::F64, &chunks).unwrap()];
+	predicate_equivalent(&mut plan, &columns);
+	let token = plan
+		.prepare_batch(&columns, options(100000, true), || false)
+		.unwrap();
+	let bytes = token.owned_bytes() + plan.retained_bytes();
+	drop(token);
+	for bound in [bytes - 1, bytes] {
+		plan.limit = bound;
+		assert_eq!(
+			plan.prepare_batch(&columns, options(100000, true), || false)
+				.is_ok(),
+			bound == bytes
+		);
 	}
 }

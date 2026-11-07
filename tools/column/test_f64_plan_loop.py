@@ -24,3 +24,23 @@ class LoopControls(unittest.TestCase):
 
 	def test_missing_loop(self):
 		self.assertEqual(primary_loop('10: addpd %xmm1,%xmm0')['status'], 'FAIL')
+
+class PredicateArithmetic(unittest.TestCase):
+	def test_four_lanes(self):
+		assembly = loop(stride='0x20', count=2)
+		self.assertEqual(primary_loop(assembly, driver='predicate')['status'], 'PASS')
+		self.assertEqual(primary_loop(assembly)['status'], 'FAIL')
+
+	def test_scalar_primary_vector_tail(self):
+		assembly = loop(op='addsd') + '\n90: addpd %xmm1,%xmm0\n94: jne 90 <tail>'
+		self.assertEqual(primary_loop(assembly, driver='predicate')['status'], 'FAIL')
+
+	def test_wrong_stride(self):
+		self.assertEqual(primary_loop(loop(stride='0x40', count=2), driver='predicate')['status'], 'FAIL')
+
+	def test_bounds_branch(self):
+		assembly = loop(stride='0x20', count=2).replace('10:', 'e: jae ff <panic>\n10:')
+		# Place the bounds branch inside the primary loop, rather than before it.
+		assembly = assembly.replace('e: jae ff <panic>\n', '').replace('14:', '12: jae ff <panic>\n14:')
+		self.assertEqual(primary_loop(assembly, driver='predicate')['status'], 'FAIL')
+
