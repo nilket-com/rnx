@@ -1,6 +1,6 @@
 # ADR 0221: Pure-F64 column plans run in their own driver
 
-Status: Proposed
+Status: Accepted
 
 Multi-operation F64 expressions such as `x*2.0+y` run through the generic
 scalar executor. At 100M rows, warm whole-map cost is 104.03 Ir/row with no
@@ -22,7 +22,9 @@ Results must be bit-identical to the generic executor for every lane: the
 same operation order, IEEE semantics, NaN and signed-zero propagation, and
 no fused multiply-add or reassociation. Validity, fuel, cancellation,
 refusal, payload, padding and path observability match the existing
-contracts. Invalid output lanes contain zero bits (`+0.0`). Division is
+contracts. NaN payload and sign equality is verified natively on x86-64, the
+supported target; Rust does not guarantee it across platforms, so no
+cross-platform payload claim is made. Invalid output lanes contain zero bits (`+0.0`). Division is
 unsupported by the existing column planner and remains out of scope.
 
 Do not edit the generic executor or its callees, and add no new callers to

@@ -20,6 +20,12 @@ use flat::Output;
 #[path = "boolean.rs"]
 mod boolean;
 
+#[path = "f64_plan.rs"]
+mod f64_plan;
+
+#[path = "drivers.rs"]
+mod drivers;
+
 const BLOCK: usize = 1024;
 
 /// Request configuration. The work budget is copied, never consumed on refusal.
@@ -271,16 +277,8 @@ impl PreparedColumn {
 		room = room
 			.checked_sub(scratch.capacity() * 8)
 			.ok_or((ColumnRefusal::Memory, None))?;
-		let row_values = filled(
-			if self.boolean_plan {
-				0
-			} else {
-				self.nodes.len()
-			},
-			0u64,
-			room,
-		)
-		.map_err(allocation)?;
+		let row_values = filled(if self.special { 0 } else { self.nodes.len() }, 0u64, room)
+			.map_err(allocation)?;
 		let inner = match values {
 			Output::Initialized(values) => BatchKind::Initialized(PreparedBatch {
 				plan: self,
@@ -324,8 +322,8 @@ impl PreparedBatch<'_, '_> {
 
 	/// Run exactly once; success transfers owned output, refusal destroys it.
 	pub fn invoke(self, mut canceled: impl FnMut() -> bool) -> ColumnOutcome {
-		let result = if self.plan.boolean_plan {
-			boolean::run(self, &mut canceled)
+		let result = if self.plan.special {
+			drivers::run(self, &mut canceled)
 		} else {
 			self.run(&mut canceled)
 		};
