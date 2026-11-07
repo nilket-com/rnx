@@ -1,0 +1,593 @@
+{
+  "status": "APPROVED",
+  "review_seq": 28691,
+  "candidate": "1f575d208caa08931bcae56890076e2d8ab93509",
+  "builds": [
+    {
+      "role": "baseline",
+      "source_commit": "3893e38f3bb8d7d99a2fe969e2a2c715941ce4b9",
+      "sha256": "7ffa2e1560b40753e19a2ee24e11f4a183e02ccf422cb285409eca0bf0e4e397"
+    },
+    {
+      "role": "candidate",
+      "source_commit": "1f575d208caa08931bcae56890076e2d8ab93509",
+      "sha256": "9d3a28f7caebbf6844be9c687e3702484740e00ea4b6b2381f226c943f50b84b"
+    }
+  ],
+  "rules": [
+    {
+      "kind": "booland",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "multiply3",
+      "layout": "flat",
+      "functions": {}
+    },
+    {
+      "kind": "multiply3",
+      "layout": "sliced-chunked-null",
+      "functions": {}
+    },
+    {
+      "kind": "multiply3",
+      "layout": "alternating",
+      "functions": {}
+    },
+    {
+      "kind": "multiply3",
+      "layout": "deterministic-random",
+      "functions": {}
+    },
+    {
+      "kind": "i64add",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "i64add",
+      "layout": "sliced-chunked-null",
+      "functions": {}
+    },
+    {
+      "kind": "i64add",
+      "layout": "alternating",
+      "functions": {}
+    },
+    {
+      "kind": "i64add",
+      "layout": "deterministic-random",
+      "functions": {}
+    },
+    {
+      "kind": "axpy",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "axpy",
+      "layout": "sliced-chunked-null",
+      "functions": {}
+    },
+    {
+      "kind": "axpy",
+      "layout": "alternating",
+      "functions": {}
+    },
+    {
+      "kind": "axpy",
+      "layout": "deterministic-random",
+      "functions": {}
+    },
+    {
+      "kind": "f64const",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 6,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::filled::<f64>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 6,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::filled::<f64>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 6,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::filled::<f64>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 6,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::filled::<f64>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 6,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::filled::<f64>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 6,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::filled::<f64>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "flat",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "alternating",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        }
+      }
+    }
+  ]
+}

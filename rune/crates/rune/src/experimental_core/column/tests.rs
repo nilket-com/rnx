@@ -2148,6 +2148,7 @@ fn f64_plan_bitwise_chunks_masks_and_output_reuse() {
 					Column::new(ColumnType::F64, &other).unwrap(),
 				];
 				let mut results = Vec::new();
+				// Each execute prepares a fresh batch for its selected driver.
 				for enabled in [true, false] {
 					plan.special = enabled;
 					let ColumnOutcome::Complete(result) =
@@ -2323,6 +2324,100 @@ fn f64_plan_dying_slots_constants_and_limits() {
 					..
 				}
 			));
+		}
+	}
+}
+
+#[test]
+fn f64_plan_write_only_null_words_and_cancellation() {
+	let p = program(
+		2,
+		4,
+		&[
+			Op::Binary {
+				out: 2,
+				op: Binary::Add,
+				lhs: 0,
+				rhs: 1,
+			},
+			Op::Binary {
+				out: 3,
+				op: Binary::Mul,
+				lhs: 2,
+				rhs: 0,
+			},
+			Op::Return { value: 3 },
+		],
+	);
+	let mut plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::F64; 2],
+		ColumnType::F64,
+		Limits::default(),
+	)
+	.unwrap();
+	let x = vec![f64::from_bits(0x7ff8_1234_5678_9abc); 131];
+	let y = vec![-0.0; 131];
+	for mask in [0u8, 0xff, 0x55] {
+		let bits = vec![mask; 18];
+		let xs = [
+			ColumnChunk::new(
+				ColumnSlice::F64(&x[..65]),
+				Some(BitSlice::new(&bits, 3, 65).unwrap()),
+			)
+			.unwrap(),
+			ColumnChunk::new(
+				ColumnSlice::F64(&x[65..]),
+				Some(BitSlice::new(&bits, 68, 66).unwrap()),
+			)
+			.unwrap(),
+		];
+		let ys = [ColumnChunk::new(ColumnSlice::F64(&y), None).unwrap()];
+		let columns = [
+			Column::new(ColumnType::F64, &xs).unwrap(),
+			Column::new(ColumnType::F64, &ys).unwrap(),
+		];
+		let mut results = Vec::new();
+		for enabled in [true, false] {
+			plan.special = enabled;
+			let ColumnOutcome::Complete(r) =
+				plan.execute(&columns, options(100000, true), || false)
+			else {
+				panic!("refused");
+			};
+			let ColumnValues::F64(v) = r.values else {
+				panic!("type");
+			};
+			if mask == 0 {
+				assert!(v.iter().all(|v| v.to_bits() == 0));
+			}
+			results.push((
+				v.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+				r.validity,
+				r.remaining_work,
+			));
+		}
+		assert_eq!(results[0], results[1]);
+		plan.special = true;
+		// Two chunk-limited blocks: call 2 cancels after the first write;
+		// call 3 cancels at the final check after both blocks were written.
+		for stop in [2, 3] {
+			let token = plan
+				.prepare_batch(&columns, options(100000, true), || false)
+				.unwrap();
+			let mut calls = 0;
+			assert!(matches!(
+				token.invoke(|| {
+					calls += 1;
+					calls == stop
+				}),
+				ColumnOutcome::Replay {
+					reason: ColumnRefusal::Canceled,
+					..
+				}
+			));
+			assert_eq!(calls, stop);
 		}
 	}
 }

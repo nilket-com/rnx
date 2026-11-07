@@ -1,5 +1,6 @@
 //! Whole-plan floating arithmetic isolated from the generic executor.
 use super::*;
+use crate::experimental_column_primitives::NumericOutput;
 
 #[derive(Clone, Copy, Default)]
 struct Cursor {
@@ -14,10 +15,18 @@ enum Value<'a> {
 	Constant(f64),
 }
 trait Src {
+	fn write_masked(&self, out: &mut NumericOutput<f64>, start: usize, count: usize, mask: u64);
 	fn check_len(&self, n: usize);
 	fn get(&self, i: usize) -> f64;
+	fn write(&self, out: &mut NumericOutput<f64>, start: usize, count: usize);
 }
 impl Src for &[f64] {
+	fn write_masked(&self, out: &mut NumericOutput<f64>, start: usize, count: usize, mask: u64) {
+		out.copy_values_masked(&self[start..start + count], mask);
+	}
+	fn write(&self, out: &mut NumericOutput<f64>, start: usize, count: usize) {
+		out.copy_values(&self[start..start + count]);
+	}
 	#[inline(always)]
 	fn check_len(&self, n: usize) {
 		assert!(self.len() >= n);
@@ -28,6 +37,12 @@ impl Src for &[f64] {
 	}
 }
 impl Src for &[u64] {
+	fn write_masked(&self, out: &mut NumericOutput<f64>, start: usize, count: usize, mask: u64) {
+		out.copy_bits_masked(&self[start..start + count], mask);
+	}
+	fn write(&self, out: &mut NumericOutput<f64>, start: usize, count: usize) {
+		out.copy_bits(&self[start..start + count]);
+	}
 	#[inline(always)]
 	fn check_len(&self, n: usize) {
 		assert!(self.len() >= n);
@@ -38,6 +53,14 @@ impl Src for &[u64] {
 	}
 }
 impl Src for f64 {
+	fn write_masked(&self, out: &mut NumericOutput<f64>, start: usize, count: usize, mask: u64) {
+		let _ = start;
+		out.fill_values_masked(count, *self, mask);
+	}
+	fn write(&self, out: &mut NumericOutput<f64>, start: usize, count: usize) {
+		let _ = start;
+		out.fill_values(count, *self);
+	}
 	#[inline(always)]
 	fn check_len(&self, _: usize) {}
 	#[inline(always)]
@@ -126,26 +149,23 @@ fn arithmetic<const OP: u8>(out: &mut [u64], a: Value<'_>, b: Value<'_>) {
 
 // Resolve the representation once, then mask a word at a time. Null values
 // are published as positive zero without evaluating their source again.
-fn publish(out: &mut [f64], value: impl Src, validity: Option<BitSlice<'_>>) {
-	value.check_len(out.len());
-	for (word, block) in out.chunks_mut(64).enumerate() {
-		let start = word * 64;
-		let all = low_mask(block.len());
-		let mask = validity.map_or(all, |v| v.word(start, block.len()));
+fn publish(
+	out: &mut NumericOutput<f64>,
+	value: impl Src,
+	count: usize,
+	validity: Option<BitSlice<'_>>,
+) {
+	value.check_len(count);
+	for start in (0..count).step_by(64) {
+		let n = (count - start).min(64);
+		let all = low_mask(n);
+		let mask = validity.map_or(all, |v| v.word(start, n));
 		if mask == 0 {
-			block.fill(0.0);
+			out.fill_values(n, 0.0);
 		} else if mask == all {
-			for (i, output) in block.iter_mut().enumerate() {
-				*output = value.get(start + i);
-			}
+			value.write(out, start, n);
 		} else {
-			for (i, output) in block.iter_mut().enumerate() {
-				*output = if mask >> i & 1 != 0 {
-					value.get(start + i)
-				} else {
-					0.0
-				};
-			}
+			value.write_masked(out, start, n, mask);
 		}
 	}
 }
@@ -159,7 +179,7 @@ pub(super) fn run(
 		plan,
 		columns,
 		options,
-		mut values,
+		values,
 		validity,
 		len,
 		charge,
@@ -167,9 +187,10 @@ pub(super) fn run(
 		mut scratch,
 		row_values: _,
 	} = batch;
-	let ColumnValues::F64(output) = &mut values else {
+	let ColumnValues::F64(output) = values else {
 		unreachable!("verified float output");
 	};
+	let mut output = NumericOutput::new(output, len);
 	let mut cursors = [Cursor::default(); 3];
 	// Every live result lane is overwritten before use; retain initialized
 	// storage across blocks, including a shorter final block.
@@ -255,9 +276,9 @@ pub(super) fn run(
 			.as_ref()
 			.map(|v| BitSlice::new(v, row, count).expect("prepared validity"));
 		match value {
-			Value::Floats(v) => publish(&mut output[row..row + count], v, valid),
-			Value::Words(v) => publish(&mut output[row..row + count], v, valid),
-			Value::Constant(v) => publish(&mut output[row..row + count], v, valid),
+			Value::Floats(v) => publish(&mut output, v, count, valid),
+			Value::Words(v) => publish(&mut output, v, count, valid),
+			Value::Constant(v) => publish(&mut output, v, count, valid),
 		}
 		row += count;
 		for cursor in &mut cursors[..columns.len()] {
@@ -268,7 +289,7 @@ pub(super) fn run(
 		return Err((ColumnRefusal::Canceled, None));
 	}
 	Ok(ColumnResult {
-		values,
+		values: ColumnValues::F64(output.finish()),
 		validity,
 		len,
 		valid_rows,
