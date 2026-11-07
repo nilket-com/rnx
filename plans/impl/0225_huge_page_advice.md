@@ -6,12 +6,14 @@ validated runtime page size and best-effort ignored advice result. Other
 platforms and Miri use an inline no-op. Pure checked inward-rounding arithmetic
 is tested separately, including overflow, empty and unaligned ranges.
 
-Add runtime-only reserved_output/filled_output wrappers. Keep the shared
-reserved/filled helpers and compiler metadata unchanged. Update run/flat
-output, validity and scratch sites only. After allocation and capacity-limit
-checks, advise once before any write; NumericOutput must not advise again.
-Skip zero-sized types and capacity below 4 MiB. Never inspect uninitialized
-contents. Core remains forbid(unsafe_code), with no new dependency.
+Keep all existing reserved/filled call sites and symbols. Advise at the end of
+reserved, after allocation and capacity-limit checks; filled delegates to it
+before initialization. This issues advice once, not again in NumericOutput.
+The 4 MiB capacity threshold excludes small compiler metadata allocations;
+borrowed inputs never pass this owned-allocation boundary. Core remains
+forbid(unsafe_code), with no new dependency. If protected operands::execute
+still drifts after this one minimal-diff attempt, stop and report disassembly;
+no further code-generation tweaks are authorized.
 
 Measure as follows:
 - Rerun the 0225 per-call fault diagnostic on the candidate, with faults and
@@ -25,3 +27,17 @@ Measure as follows:
 
 Remove nothing from the BACKLOG. Add "0226: bounded last-owner output
 recycling (repeated calls)".
+
+Reviewed bounded follow-up: make advise_huge_capacity inline(never), changing
+no other runtime code. Screen booleq, boolxor and multiply3 at 4096/65536 rows,
+first and warm calls, before the full small matrix and fault capture. Any
+remaining per-row execute slope stops this attempt; archive the implementation
+and withdraw this record before packed Boolean xor/equality work.
+
+## Disposition
+
+Withdrawn after the bounded outlined-helper screen failed. All three signed
+implementation states, the plan, capture receipts and disassembly attribution
+are preserved in a verified local archive. This implementation commit ships
+only the withdrawal documentation; the runtime and backlog match the published
+0224 baseline. No host gates or further performance experiments were run.

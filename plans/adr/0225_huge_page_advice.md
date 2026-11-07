@@ -1,6 +1,15 @@
 # ADR 0225: Huge-page advice for large column outputs
 
-Status: Accepted
+Status: Withdrawn
+
+Huge-page advice reduced per-call page faults by 170–314× for 100M F64
+outputs in the measured cases. The reservation-path changes nevertheless
+perturbed register allocation in the unchanged generic scalar Boolean
+executor: flat ==/^ gained one instruction per lane and masked paths gained
+two. An outlined advice helper did not remove that slope and also regressed
+sliced multiply. No further experiments are authorized; no runtime or host
+changes ship in this record. ADR 0226 moves pure-Boolean xor/equality into
+the packed driver; ADR 0227 retries huge-page advice on that base.
 
 ADR 0224's comparison found rnx 2–3.5× slower than Arrow and Polars on 100M F64
 arithmetic, with no first→warm improvement. The read-only attribution
@@ -38,7 +47,9 @@ Acceptance:
 - small outputs below the threshold unchanged;
 - Miri and non-Linux builds unaffected.
 
-Runtime-only reservation wrappers exclude compiler metadata and borrowed inputs.
+The existing reserved/filled call sites and symbols stay unchanged. The 4 MiB
+threshold guards advice, rather than runtime-only call sites; compiler metadata
+allocations below that threshold are unaffected. Borrowed inputs are never advised.
 Cache the positive, power-of-two runtime page size; skip advice if it cannot be
 validated. Advice occurs once after allocation/limit checks, before initialization.
 NumericOutput does not issue duplicate advice.
