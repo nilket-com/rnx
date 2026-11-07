@@ -51,6 +51,63 @@ impl NumericOutput<i64> {
 	}
 }
 impl NumericOutput<f64> {
+	pub(crate) fn copy_values_masked(&mut self, values: &[f64], mask: u64) {
+		assert!(values.len() <= 64);
+		for (i, (out, value)) in self
+			.destination(values.len())
+			.iter_mut()
+			.zip(values)
+			.enumerate()
+		{
+			out.write(if mask >> i & 1 != 0 { *value } else { 0.0 });
+		}
+		self.written += values.len();
+	}
+
+	pub(crate) fn copy_bits_masked(&mut self, values: &[u64], mask: u64) {
+		assert!(values.len() <= 64);
+		for (i, (out, value)) in self
+			.destination(values.len())
+			.iter_mut()
+			.zip(values)
+			.enumerate()
+		{
+			out.write(if mask >> i & 1 != 0 {
+				f64::from_bits(*value)
+			} else {
+				0.0
+			});
+		}
+		self.written += values.len();
+	}
+
+	pub(crate) fn fill_values_masked(&mut self, count: usize, value: f64, mask: u64) {
+		assert!(count <= 64);
+		for (i, out) in self.destination(count).iter_mut().enumerate() {
+			out.write(if mask >> i & 1 != 0 { value } else { 0.0 });
+		}
+		self.written += count;
+	}
+
+	pub(crate) fn copy_values(&mut self, values: &[f64]) {
+		for (out, value) in self.destination(values.len()).iter_mut().zip(values) {
+			out.write(*value);
+		}
+		self.written += values.len();
+	}
+	pub(crate) fn copy_bits(&mut self, values: &[u64]) {
+		for (out, value) in self.destination(values.len()).iter_mut().zip(values) {
+			out.write(f64::from_bits(*value));
+		}
+		self.written += values.len();
+	}
+	pub(crate) fn fill_values(&mut self, count: usize, value: f64) {
+		for out in self.destination(count) {
+			out.write(value);
+		}
+		self.written += count;
+	}
+
 	pub(crate) fn floats(&mut self, engine: Engine, x: &[f64], c: f64) {
 		engine.floats_uninit(x, c, self.destination(x.len()));
 		self.written += x.len();
@@ -1681,6 +1738,67 @@ mod borrowed_view_tests {
 mod write_only_tests {
 	use super::*;
 	use std::{vec, vec::Vec};
+
+	#[test]
+	fn f64_output_masked_writers_preserve_bits_and_tails() {
+		for n in [0, 1, 7, 31, 63, 64] {
+			for mask in [0, u64::MAX, 0x5555_5555_5555_5555, 0x8000_0000_0000_0001] {
+				let bits = [0x7ff8_1234_5678_9abc, (-0.0f64).to_bits()];
+				let words: Vec<_> = (0..n).map(|i| bits[i % 2]).collect();
+				let floats: Vec<_> = words.iter().map(|v| f64::from_bits(*v)).collect();
+				let mut owner = NumericOutput::<f64>::new(Vec::with_capacity(n * 3), n * 3);
+				owner.copy_bits_masked(&words, mask);
+				owner.copy_values_masked(&floats, mask);
+				owner.fill_values_masked(n, f64::from_bits(bits[0]), mask);
+				let output = owner.finish();
+				for i in 0..n {
+					let expected = if mask >> i & 1 != 0 { words[i] } else { 0 };
+					assert_eq!(output[i].to_bits(), expected);
+					assert_eq!(output[n + i].to_bits(), expected);
+					assert_eq!(
+						output[n * 2 + i].to_bits(),
+						if mask >> i & 1 != 0 { bits[0] } else { 0 }
+					);
+				}
+			}
+		}
+		let mut owner = NumericOutput::<f64>::new(Vec::with_capacity(65), 65);
+		assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+			|| owner.fill_values_masked(65, 1.0, u64::MAX)
+		))
+		.is_err());
+		assert_eq!(owner.written, 0);
+	}
+
+	#[test]
+	fn f64_output_copy_fill_and_partial_drop() {
+		for n in [0, 1, 63, 64, 65, 1025] {
+			let bits = vec![0x7ff8_1234_5678_9abcu64; n];
+			let mut owner = NumericOutput::<f64>::new(Vec::with_capacity(n * 3), n * 3);
+			owner.copy_bits(&bits);
+			owner.copy_values(&vec![-0.0; n]);
+			owner.fill_values(n, 0.0);
+			let values = owner.finish();
+			assert!(values[..n].iter().all(|v| v.to_bits() == bits[0]));
+			assert!(values[n..n * 2]
+				.iter()
+				.all(|v| v.to_bits() == (-0.0f64).to_bits()));
+			assert!(values[n * 2..].iter().all(|v| v.to_bits() == 0));
+		}
+		let mut partial = NumericOutput::<f64>::new(Vec::with_capacity(3), 3);
+		partial.copy_bits(&[1]);
+		assert_eq!(partial.values.len(), 0);
+		drop(partial);
+		let mut partial = NumericOutput::<f64>::new(Vec::with_capacity(3), 3);
+		partial.fill_values(1, 0.0);
+		assert!(std::panic::catch_unwind(|| partial.finish()).is_err());
+		let mut overrun = NumericOutput::<f64>::new(Vec::with_capacity(1), 1);
+		assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+			|| overrun.copy_values(&[1.0, 2.0])
+		))
+		.is_err());
+		assert_eq!(overrun.written, 0);
+	}
 
 	#[test]
 	fn output_owner_rejects_incomplete_publication_and_keeps_allocation() {

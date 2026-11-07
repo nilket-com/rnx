@@ -27,3 +27,6 @@ is already stored separately, and owned-byte accounting uses capacity.
 Only `special && !boolean_plan` preparation selects this representation.
 The F64 driver consumes the Vec into `NumericOutput`; no shared field or
 variant is added. The generic and Boolean drivers never receive this state.
+
+Mixed words use safe direct masked writers for bits, input values, and
+constants. No staging array is initialized or copied per word.

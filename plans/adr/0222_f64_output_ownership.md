@@ -1,6 +1,6 @@
 # ADR 0222: Write-only output for the pure-F64 plan driver
 
-Status: Proposed
+Status: Accepted
 
 The pure-F64 plan driver (ADR 0221) still zero-fills its whole output before
 computing, then overwrites every row. That pass writes 8 bytes per row a
@@ -15,8 +15,8 @@ quiet timings of roughly 28% lower wall time.
 Give the F64 driver write-only output through the existing `NumericOutput<f64>`
 owner. Its length stays zero until `finish` checks that every row was written,
 then publishes once. Add only safe writer methods that copy from fully
-initialized sources: a block of result bits, a constant fill, and a small
-initialized staging array for mixed validity words. No new `unsafe` and no
+initialized sources: a block of result bits, a constant fill, and masked writers that select
+source bits or +0.0 directly for mixed validity words. No new `unsafe` and no
 `MaybeUninit` exposure beyond the existing owner. Writes happen in row order,
 once per block. Partial execution, panic, cancellation and refusal publish
 nothing and drop the allocation cleanly.

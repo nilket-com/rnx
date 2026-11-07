@@ -260,7 +260,13 @@ impl PreparedColumn {
 		} else {
 			Output::Initialized(match self.output {
 				ColumnType::I64 => ColumnValues::I64(filled(len, 0i64, room).map_err(allocation)?),
-				ColumnType::F64 => ColumnValues::F64(filled(len, 0f64, room).map_err(allocation)?),
+				ColumnType::F64 => ColumnValues::F64(if self.special && !self.boolean_plan {
+					// F64 driver plans carry a reserved, empty Vec consumed only by
+					// f64_plan::run; logical length remains in the private batch.
+					super::reserved(len, room).map_err(allocation)?
+				} else {
+					filled(len, 0f64, room).map_err(allocation)?
+				}),
 				ColumnType::Bool => {
 					ColumnValues::Bool(filled(len.div_ceil(8), 0u8, room).map_err(allocation)?)
 				}
@@ -337,6 +343,7 @@ impl PreparedBatch<'_, '_> {
 		self,
 		canceled: &mut impl FnMut() -> bool,
 	) -> core::result::Result<ColumnResult, (ColumnRefusal, Option<Fault>)> {
+		debug_assert!(!matches!(&self.values, ColumnValues::F64(v) if v.len() != self.len));
 		if self.validity.is_some() {
 			return self.run_masked(canceled);
 		}
