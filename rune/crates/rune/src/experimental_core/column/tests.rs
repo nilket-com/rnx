@@ -1827,6 +1827,7 @@ fn boolean_plan_constants_not_and_classification() {
 		)
 		.unwrap();
 		reference.boolean_plan = false;
+		reference.special = false;
 		let lengths: &[usize] = if cfg!(miri) {
 			&[7, 65]
 		} else {
@@ -2071,6 +2072,257 @@ fn boolean_plan_invalid_payload_is_zero_at_unaligned_chunk_edges() {
 					assert_eq!(payload[len / 8] >> (len % 8), 0);
 				}
 			}
+		}
+	}
+}
+
+#[test]
+fn f64_plan_bitwise_chunks_masks_and_output_reuse() {
+	let bits = [
+		0,
+		1 << 63,
+		1,
+		0x8000000000000001,
+		0x7ff0000000000000,
+		0xfff0000000000000,
+		0x7ff8000000000123,
+		0xfff8000000000456,
+		0x7ff0000000000123,
+		0x3ff0000000000000,
+		0x4000000000000000,
+	];
+	let len = if cfg!(miri) { 19 } else { 1031 };
+	let x: Vec<_> = (0..len)
+		.map(|i| f64::from_bits(bits[i % bits.len()]))
+		.collect();
+	let y: Vec<_> = (0..len)
+		.map(|i| f64::from_bits(bits[(i / bits.len() + 3) % bits.len()]))
+		.collect();
+	let masks = vec![0x55; (len + 7).div_ceil(8)];
+	for op in [Binary::Add, Binary::Sub, Binary::Mul] {
+		for returned in [0, 2, 3] {
+			let p = program(
+				2,
+				4,
+				&[
+					Op::Binary {
+						out: 2,
+						op,
+						lhs: 0,
+						rhs: 1,
+					},
+					Op::Binary {
+						out: 3,
+						op: Binary::Sub,
+						lhs: 2,
+						rhs: 1,
+					},
+					Op::Return { value: returned },
+				],
+			);
+			let mut plan = PreparedColumn::prepare(
+				&p,
+				0,
+				&[ColumnType::F64; 2],
+				ColumnType::F64,
+				Limits::default(),
+			)
+			.unwrap();
+			assert!(plan.special);
+			for masked in [false, true] {
+				let chunks = [
+					ColumnChunk::new(
+						ColumnSlice::F64(&x[..3]),
+						masked.then(|| BitSlice::new(&masks, 2, 3).unwrap()),
+					)
+					.unwrap(),
+					ColumnChunk::new(
+						ColumnSlice::F64(&x[3..]),
+						masked.then(|| BitSlice::new(&masks, 5, len - 3).unwrap()),
+					)
+					.unwrap(),
+				];
+				let other = [ColumnChunk::new(ColumnSlice::F64(&y), None).unwrap()];
+				let columns = [
+					Column::new(ColumnType::F64, &chunks).unwrap(),
+					Column::new(ColumnType::F64, &other).unwrap(),
+				];
+				let mut results = Vec::new();
+				for enabled in [true, false] {
+					plan.special = enabled;
+					let ColumnOutcome::Complete(result) =
+						plan.execute(&columns, options(100000, true), || false)
+					else {
+						panic!("refused");
+					};
+					let ColumnValues::F64(values) = result.values else {
+						panic!("type");
+					};
+					results.push((
+						values.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+						result.validity,
+						result.remaining_work,
+						result.valid_rows,
+					));
+				}
+				assert_eq!(
+					results[0], results[1],
+					"op {op:?}, result {returned}, masked {masked}"
+				);
+			}
+		}
+	}
+}
+
+#[test]
+fn f64_plan_dying_slots_constants_and_limits() {
+	let p = program(
+		2,
+		8,
+		&[
+			Op::Literal {
+				out: 2,
+				value: Value::F64(2.0),
+			},
+			Op::Literal {
+				out: 3,
+				value: Value::F64(3.0),
+			},
+			Op::Binary {
+				out: 4,
+				op: Binary::Mul,
+				lhs: 0,
+				rhs: 2,
+			},
+			Op::Binary {
+				out: 5,
+				op: Binary::Add,
+				lhs: 4,
+				rhs: 1,
+			},
+			Op::Binary {
+				out: 6,
+				op: Binary::Mul,
+				lhs: 3,
+				rhs: 5,
+			},
+			Op::Binary {
+				out: 7,
+				op: Binary::Sub,
+				lhs: 6,
+				rhs: 0,
+			},
+			Op::Return { value: 7 },
+		],
+	);
+	let mut plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::F64; 2],
+		ColumnType::F64,
+		Limits::default(),
+	)
+	.unwrap();
+	assert!(plan.special);
+	// Allocation assigns a destination BEFORE releasing the dying operands:
+	// plan.rs interval loop assigns nodes[i].operand, then decrements uses.
+	let mut slots = Vec::new();
+	for node in &plan.nodes {
+		if let plan::Operand::Slot(slot) = node.operand {
+			if let plan::Step::Binary(_, a, b) = node.step {
+				for index in [a, b] {
+					if let plan::Operand::Slot(source) = plan.nodes[index].operand {
+						assert_ne!(slot, source);
+					}
+				}
+			}
+			slots.push(slot);
+		}
+	}
+	assert!(slots.len() > plan.scratch_count, "exercise slot recycling");
+	for len in [0, 1, 7, 65, if cfg!(miri) { 71 } else { 2051 }] {
+		let x = vec![1.25; len];
+		let y = vec![-0.5; len];
+		let a = vec![0x55; (len + 7).div_ceil(8)];
+		let b = vec![0x33; (len + 7).div_ceil(8)];
+		for masks in [false, true] {
+			let xs = [ColumnChunk::new(
+				ColumnSlice::F64(&x),
+				masks.then(|| BitSlice::new(&a, 2, len).unwrap()),
+			)
+			.unwrap()];
+			let ys = [ColumnChunk::new(
+				ColumnSlice::F64(&y),
+				masks.then(|| BitSlice::new(&b, 3, len).unwrap()),
+			)
+			.unwrap()];
+			let columns = [
+				Column::new(ColumnType::F64, &xs).unwrap(),
+				Column::new(ColumnType::F64, &ys).unwrap(),
+			];
+			let mut states = Vec::new();
+			for enabled in [true, false] {
+				plan.special = enabled;
+				let ColumnOutcome::Complete(r) =
+					plan.execute(&columns, options(100000, true), || false)
+				else {
+					panic!("refusal");
+				};
+				let ColumnValues::F64(v) = r.values else {
+					panic!("type");
+				};
+				states.push((
+					v.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+					r.validity,
+					r.valid_rows,
+					r.remaining_work,
+				));
+			}
+			assert_eq!(states[0], states[1]);
+			plan.special = true;
+			let charge = 100000 - states[0].3;
+			assert!(matches!(
+				plan.execute(&columns, options(charge, true), || false),
+				ColumnOutcome::Complete(_)
+			));
+			if charge > 0 {
+				assert!(matches!(
+					plan.execute(&columns, options(charge - 1, true), || false),
+					ColumnOutcome::Replay {
+						reason: ColumnRefusal::Fuel,
+						..
+					}
+				));
+			}
+			let token = plan
+				.prepare_batch(&columns, options(100000, true), || false)
+				.unwrap();
+			let bytes = token.owned_bytes() + plan.retained_bytes();
+			drop(token);
+			let limit = plan.limit;
+			for bound in [bytes - 1, bytes] {
+				plan.limit = bound;
+				assert_eq!(
+					plan.prepare_batch(&columns, options(100000, true), || false)
+						.is_ok(),
+					bound == bytes
+				);
+			}
+			plan.limit = limit;
+			let token = plan
+				.prepare_batch(&columns, options(100000, true), || false)
+				.unwrap();
+			let mut calls = 0;
+			assert!(matches!(
+				token.invoke(|| {
+					calls += 1;
+					calls == 1
+				}),
+				ColumnOutcome::Replay {
+					reason: ColumnRefusal::Canceled,
+					..
+				}
+			));
 		}
 	}
 }

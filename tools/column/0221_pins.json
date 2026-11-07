@@ -1,0 +1,2765 @@
+{
+  "status": "APPROVED",
+  "baseline_published": "662a82143fa27699a746fe1ee35dbde7f98e70d3",
+  "candidate": "3893e38f3bb8d7d99a2fe969e2a2c715941ce4b9",
+  "builds": [
+    {
+      "role": "baseline",
+      "source_commit": "a8de5a84c8a777988488fa130bf4d9c82deeb37f",
+      "sha256": "a9e7d3c9506f0a40359c8452644e290ce6e8eb51dba2b745c14dc756b96cd7d0"
+    },
+    {
+      "role": "candidate",
+      "source_commit": "3893e38f3bb8d7d99a2fe969e2a2c715941ce4b9",
+      "sha256": "7ffa2e1560b40753e19a2ee24e11f4a183e02ccf422cb285409eca0bf0e4e397"
+    }
+  ],
+  "block_rows": 1024,
+  "rules": [
+    {
+      "kind": "axpy",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 297,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -323,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "axpy",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 297,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -323,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "axpy",
+      "layout": "flat",
+      "functions": {
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 429,
+          "per_block_Ir": 56,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::run::flat::FlatBatch>::run_flat::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -171,
+          "per_block_Ir": -58,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -356,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "axpy",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 303,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 316,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -335,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booland",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -337,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -4,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 20,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -343,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -4,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 20,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -343,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 345,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 20,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -372,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolchain",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 318,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 20,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -350,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 316,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -335,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "booleq",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -337,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 293,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 23,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -317,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 293,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 23,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -317,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 284,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 23,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -298,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolnot",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 299,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 23,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -324,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 316,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -335,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolor",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 19,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 10,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -337,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 304,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 316,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -335,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "boolxor",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 22,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -337,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 301,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 38,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -327,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 301,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 38,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -327,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "flat",
+      "functions": {
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 427,
+          "per_block_Ir": 67,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::run::flat::FlatBatch>::run_flat::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -170,
+          "per_block_Ir": -67,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 38,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -355,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64add",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 307,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 38,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -334,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 290,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 35,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -314,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 290,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 35,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -314,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "flat",
+      "functions": {
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 378,
+          "per_block_Ir": 45,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::run::flat::FlatBatch>::run_flat::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -155,
+          "per_block_Ir": -46,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 35,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -318,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "f64const",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 296,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 35,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -321,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "i64add",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 286,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 30,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "i64add",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 286,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 30,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -310,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "i64add",
+      "layout": "flat",
+      "functions": {
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 375,
+          "per_block_Ir": 39,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::run::flat::FlatBatch>::run_flat::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -152,
+          "per_block_Ir": -41,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 30,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -319,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "i64add",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 292,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 30,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -317,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "multiply3",
+      "layout": "alternating",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 297,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -323,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "multiply3",
+      "layout": "deterministic-random",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -3,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 297,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -323,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "multiply3",
+      "layout": "flat",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "rnx_polars::column::apply_joined::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 309,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -328,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    },
+    {
+      "kind": "multiply3",
+      "layout": "sliced-chunked-null",
+      "functions": {
+        "<rune::experimental_core::column::run::PreparedBatch>::invoke::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 1,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<alloc::vec::Vec<rune::runtime::value::Repr> as core::ops::drop::Drop>::drop": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            0,
+            2
+          ]
+        },
+        "<rnx::column::Kernel>::map::<rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": 303,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::prepare": {
+          "constant_Ir": 36,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            1
+          ]
+        },
+        "<rune::experimental_core::column::PreparedColumn>::execute::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+          "constant_Ir": -330,
+          "per_block_Ir": 0,
+          "calls": [
+            1,
+            0
+          ]
+        },
+        "core::ptr::drop_glue::<rune::runtime::value::dismantle::Worklist>": {
+          "constant_Ir": -2,
+          "per_block_Ir": 0,
+          "calls": [
+            2,
+            2
+          ]
+        }
+      }
+    }
+  ],
+  "review_seq": 28627
+}

@@ -172,6 +172,8 @@ pub(super) fn prepare(
 	}
 	let mut boolean_plan = inputs.iter().all(|ty| *ty == ColumnType::Bool);
 	let mut boolean_pair = false;
+	let mut f64_plan = inputs.iter().all(|ty| *ty == ColumnType::F64);
+	let mut f64_operations = 0usize;
 	let mut row_charge = 0usize;
 	let mut result = None;
 	for (pc, instruction) in f.code.iter().enumerate() {
@@ -244,6 +246,15 @@ pub(super) fn prepare(
 					true
 				}
 				Step::Input(..) | Step::Constant(..) | Step::Not(..) => true,
+				_ => false,
+			};
+		f64_plan &= ty == ColumnType::F64
+			&& match step {
+				Step::Binary(Binary::Add | Binary::Sub | Binary::Mul, ..) => {
+					f64_operations += 1;
+					true
+				}
+				Step::Input(..) | Step::Constant(..) => true,
 				_ => false,
 			};
 		// Fold only successful constants. Overflowing constant operations retain
@@ -360,5 +371,6 @@ pub(super) fn prepare(
 		scratch_count,
 		fast,
 		boolean_plan: boolean_plan && boolean_pair,
+		special: (boolean_plan && boolean_pair) || (f64_plan && f64_operations >= 2),
 	})
 }
