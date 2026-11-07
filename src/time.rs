@@ -1,4 +1,4 @@
-//! Two clocks and a calendar over integer milliseconds: record 0038.
+//! Wall/elapsed clocks and a calendar; monotonic clocks share a process origin.
 use crate::host::HostFunction;
 use jiff::{
 	Timestamp, Zoned,
@@ -37,13 +37,22 @@ fn milliseconds(ts: Timestamp) -> i64 {
 fn now_ms() -> i64 {
 	milliseconds(Timestamp::now())
 }
+static MONOTONIC_ORIGIN: OnceLock<Instant> = OnceLock::new();
+
 fn monotonic_ms() -> i64 {
-	static ORIGIN: OnceLock<Instant> = OnceLock::new();
 	// Saturation can only occur after ~292 million years in one process.
-	ORIGIN
+	MONOTONIC_ORIGIN
 		.get_or_init(Instant::now)
 		.elapsed()
 		.as_millis()
+		.min(i64::MAX as u128) as i64
+}
+fn monotonic_ns() -> i64 {
+	// Saturation after ~292 years keeps the signed result nondecreasing.
+	MONOTONIC_ORIGIN
+		.get_or_init(Instant::now)
+		.elapsed()
+		.as_nanos()
 		.min(i64::MAX as u128) as i64
 }
 fn fixed_offset(s: &str) -> Result<Offset, String> {
@@ -296,6 +305,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("time")?;
 	module.host_function("now_ms", now_ms)?;
 	module.host_function("monotonic_ms", monotonic_ms)?;
+	module.host_function("monotonic_ns", monotonic_ns)?;
 	module.host_function("format", format)?;
 	module.host_function("rfc3339", rfc3339)?;
 	module.host_function("parse", parse)?;
@@ -305,7 +315,8 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	context.install(module)?;
 	Ok([
 		("now_ms","now_ms() -> i64: wall-clock milliseconds since Unix epoch, floored; not an elapsed-time clock"),
-		("monotonic_ms","monotonic_ms() -> i64: milliseconds since first call in this process; never decreases; not an epoch timestamp"),
+		("monotonic_ms","monotonic_ms() -> i64: milliseconds since the first monotonic clock call in this process; never decreases; not an epoch timestamp"),
+		("monotonic_ns","monotonic_ns() -> i64: nanoseconds from the same process origin as monotonic_ms; never decreases, saturates at i64::MAX after about 292 years; units do not guarantee hardware resolution; not an epoch timestamp"),
 		("format","format(ms, pattern, zone) -> Result<String>: Jiff strftime dialect; fallible, precision chosen by the pattern"),
 		("rfc3339","rfc3339(ms, zone) -> Result<String>: three fractional digits; refuses negative years and offsets outside whole minutes in ±23:59"),
 		("parse","parse(text) -> Result<i64>: floor milliseconds; offset or Z required; leap seconds refused, zone annotations checked (Z preserves the instant)"),
@@ -317,6 +328,23 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn monotonic_nanoseconds_share_origin_and_never_decrease() {
+		let mut previous = monotonic_ns();
+		let origin = MONOTONIC_ORIGIN.get().unwrap();
+		for _ in 0..1000 {
+			let before_ns = origin.elapsed().as_nanos() as i64;
+			let before_ms = monotonic_ms();
+			let current = monotonic_ns();
+			let after_ms = monotonic_ms();
+			let after_ns = origin.elapsed().as_nanos() as i64;
+			assert!(current >= previous);
+			assert!(before_ns <= current && current <= after_ns);
+			assert!(before_ms <= current / 1_000_000);
+			assert!(current / 1_000_000 <= after_ms);
+			previous = current;
+		}
+	}
 	#[test]
 	fn conversion_floors_and_keeps_both_endpoints() {
 		for n in [
@@ -351,6 +379,7 @@ mod tests {
 			[
 				"time::now_ms",
 				"time::monotonic_ms",
+				"time::monotonic_ns",
 				"time::format",
 				"time::rfc3339",
 				"time::parse",
