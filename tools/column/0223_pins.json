@@ -1,0 +1,237 @@
+{
+  "approval_seq": 28875,
+  "builds": [
+    {
+      "role": "baseline",
+      "source_commit": "1f575d208caa08931bcae56890076e2d8ab93509",
+      "sha256": "9d3a28f7caebbf6844be9c687e3702484740e00ea4b6b2381f226c943f50b84b"
+    },
+    {
+      "role": "candidate",
+      "source_commit": "eb50b3ebf0eac85ea82026b10d3def7b7395f03a",
+      "sha256": "9cf7296e6e371facef1d27595602f3c0c4d5dbd1eb6c4a6e05c24fca6930427d"
+    }
+  ],
+  "rules": {
+    "axpy": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "booland": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 12,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "boolchain": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 20,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -42,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "booleq": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "boolnot": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 9,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -22,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "boolor": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 12,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "boolxor": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64add": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 10,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64chain": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 8,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "rune::experimental_core::column::run::drivers::run::<&mut rnx_polars::column::script::map::{closure#0}::{closure#2}>": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64const": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 10,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -22,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "i64add": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 13,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -22,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "multiply3": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 17,
+        "calls": [
+          1,
+          1
+        ]
+      },
+      "<rune::runtime::value::dismantle::Worklist>::dismantle_repr": {
+        "constant_Ir": -32,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    }
+  }
+}

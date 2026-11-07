@@ -2,7 +2,10 @@
 import re
 
 
-def primary_loop(assembly):
+def primary_loop(assembly, *, driver="f64_plan"):
+	# Keep the existing F64-plan policy; predicates have their own reviewed
+	# four-lane / 32-byte packed arithmetic shape.
+	minimum_stride = {"f64_plan": 64, "predicate": 32}[driver]
 	instructions = []
 	for line in assembly.splitlines():
 		m = re.match(r'^\s*([0-9a-f]+):\s+([a-z][a-z0-9.]*)\s*(.*)$', line)
@@ -35,7 +38,11 @@ def primary_loop(assembly):
 		if len(scales) != 1: continue
 		stride = step * next(iter(scales))
 		if stride > 0: strides.append(dict(instruction=row, bytes=stride))
-	agree = [x for x in strides if x['bytes'] % 64 == 0 and x['bytes'] == lanes * 8]
-	return dict(status='PASS' if packed and agree else 'FAIL', primary=primary,
+	agree = [x for x in strides if x['bytes'] % minimum_stride == 0 and x['bytes'] == lanes * 8]
+	bounds_branches = [x for x in primary['instructions'] if x[1] in ('jae', 'ja', 'jb', 'jbe')
+		and (m := re.match(r'([0-9a-f]+)\s+<', x[2]))
+		and not primary['start'] <= int(m[1], 16) <= primary['end']]
+	return dict(status='PASS' if packed and agree and (driver != "predicate" or not bounds_branches) else 'FAIL', primary=primary,
+		driver=driver, bounds_branches=bounds_branches,
 		packed=packed, packed_lanes=lanes, strides=strides, matched_strides=agree,
-		reason='primary packed arithmetic lane count must equal byte stride, a multiple of 64')
+		reason=f'primary packed arithmetic lane count must equal byte stride, a multiple of {minimum_stride}')

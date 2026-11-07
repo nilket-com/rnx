@@ -13,3 +13,5 @@
 - Cleanup record: remove agent notification coupling and machine-specific paths from legacy column tooling (`rune/tools/xtask/column/ck1.py`, `cli_capture.py`, `measure.py`, `probe/build.rs`, and `fixtures/native/TABLE.json`); keep notifications in external launchers.
 
 - Boolean plan output ownership remains initialized; consider separately from ADR 0222's numeric output owner.
+
+- Predicate-driver I64 compare packing with SSE4.1/AVX2 target features (SSE2 pcmpeqd pairing lost to bounded scalar in ADR 0223), plus AVX2/wider F64 comparison packing; measure against the selected per-type shapes.

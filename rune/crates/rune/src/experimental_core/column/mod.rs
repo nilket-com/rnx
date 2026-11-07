@@ -72,7 +72,32 @@ pub struct PreparedColumn {
 	boolean_plan: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Driver {
+	Boolean,
+	F64,
+	Predicate,
+}
+
 impl PreparedColumn {
+	fn driver(&self) -> Driver {
+		debug_assert!(self.special);
+		let boolean = self.boolean_plan && self.output == ColumnType::Bool;
+		let floats = !self.boolean_plan && self.output == ColumnType::F64;
+		let predicate = !self.boolean_plan && self.output == ColumnType::Bool;
+		debug_assert_eq!(
+			usize::from(boolean) + usize::from(floats) + usize::from(predicate),
+			1
+		);
+		if boolean {
+			Driver::Boolean
+		} else if floats {
+			Driver::F64
+		} else {
+			Driver::Predicate
+		}
+	}
+
 	/// Prepare a host-eligible function with one to three scalar arguments.
 	/// `limits.bytes` is the adapter's existing memory allowance, not a new
 	/// element cap. The adapter must deduct its other live owned storage first.

@@ -2,7 +2,7 @@ use super::{
 	filled,
 	lease::low_mask,
 	plan::{Fast, Operand, Step},
-	BitSlice, Column, ColumnRefusal, ColumnSlice, ColumnType, PreparedColumn,
+	BitSlice, Column, ColumnRefusal, ColumnSlice, ColumnType, Driver, PreparedColumn,
 };
 use crate::experimental_core::{arithmetic::Binary, execute::ExecutorLimits};
 use std::vec::Vec;
@@ -22,6 +22,9 @@ mod boolean;
 
 #[path = "f64_plan.rs"]
 mod f64_plan;
+
+#[path = "predicate.rs"]
+mod predicate;
 
 #[path = "drivers.rs"]
 mod drivers;
@@ -260,13 +263,15 @@ impl PreparedColumn {
 		} else {
 			Output::Initialized(match self.output {
 				ColumnType::I64 => ColumnValues::I64(filled(len, 0i64, room).map_err(allocation)?),
-				ColumnType::F64 => ColumnValues::F64(if self.special && !self.boolean_plan {
-					// F64 driver plans carry a reserved, empty Vec consumed only by
-					// f64_plan::run; logical length remains in the private batch.
-					super::reserved(len, room).map_err(allocation)?
-				} else {
-					filled(len, 0f64, room).map_err(allocation)?
-				}),
+				ColumnType::F64 => {
+					ColumnValues::F64(if self.special && self.driver() == Driver::F64 {
+						// F64 driver plans carry a reserved, empty Vec consumed only by
+						// f64_plan::run; logical length remains in the private batch.
+						super::reserved(len, room).map_err(allocation)?
+					} else {
+						filled(len, 0f64, room).map_err(allocation)?
+					})
+				}
 				ColumnType::Bool => {
 					ColumnValues::Bool(filled(len.div_ceil(8), 0u8, room).map_err(allocation)?)
 				}
