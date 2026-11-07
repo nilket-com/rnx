@@ -4,6 +4,165 @@
 
 use core::mem::MaybeUninit;
 
+/// Best-effort advice for wholly owned pages, before output initialization.
+/// Small metadata allocations fall below the threshold; inputs remain borrowed.
+#[inline]
+pub(crate) fn advise_huge_capacity<T>(values: &mut std::vec::Vec<T>) {
+	#[cfg(all(
+		target_os = "linux",
+		not(miri),
+		any(
+			target_arch = "x86_64",
+			target_arch = "aarch64",
+			target_arch = "riscv64",
+			target_arch = "x86",
+			target_arch = "arm"
+		)
+	))]
+	{
+		let Some(bytes) = values.capacity().checked_mul(core::mem::size_of::<T>()) else {
+			return;
+		};
+		if bytes >= 4 * 1024 * 1024 {
+			advise_large_capacity(values.as_mut_ptr().cast(), bytes);
+		}
+	}
+	#[cfg(not(all(
+		target_os = "linux",
+		not(miri),
+		any(
+			target_arch = "x86_64",
+			target_arch = "aarch64",
+			target_arch = "riscv64",
+			target_arch = "x86",
+			target_arch = "arm"
+		)
+	)))]
+	let _ = values;
+}
+
+#[cfg(any(
+	all(
+		target_os = "linux",
+		not(miri),
+		any(
+			target_arch = "x86_64",
+			target_arch = "aarch64",
+			target_arch = "riscv64",
+			target_arch = "x86",
+			target_arch = "arm"
+		)
+	),
+	test
+))]
+fn owned_page_interior(address: usize, bytes: usize, page: usize) -> Option<(usize, usize)> {
+	if !page.is_power_of_two() {
+		return None;
+	}
+	let end = address.checked_add(bytes)? & !(page - 1);
+	let start = address.checked_add(page - 1)? & !(page - 1);
+	(end > start).then(|| (start - address, end - start))
+}
+
+#[cfg(all(
+	target_os = "linux",
+	not(miri),
+	any(
+		target_arch = "x86_64",
+		target_arch = "aarch64",
+		target_arch = "riscv64",
+		target_arch = "x86",
+		target_arch = "arm"
+	)
+))]
+#[cold]
+fn advise_large_capacity(pointer: *mut u8, bytes: usize) {
+	unsafe extern "C" {
+		fn getpagesize() -> core::ffi::c_int;
+		fn madvise(
+			address: *mut core::ffi::c_void,
+			length: usize,
+			advice: core::ffi::c_int,
+		) -> core::ffi::c_int;
+	}
+	// Linux asm-generic/mman-common.h; only verified architectures enter here.
+	const MADV_HUGEPAGE: core::ffi::c_int = 14;
+	static PAGE: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
+	let page = *PAGE.get_or_init(|| {
+		// SAFETY: getpagesize has no arguments or memory preconditions.
+		let n = unsafe { getpagesize() };
+		if n > 0 && (n as usize).is_power_of_two() {
+			n as usize
+		} else {
+			0
+		}
+	});
+	if let Some((offset, length)) = owned_page_interior(pointer.addr(), bytes, page) {
+		// SAFETY: the only caller supplies an exclusively borrowed Vec allocation.
+		// The checked interior is wholly inside its capacity and page aligned.
+		// MADV_HUGEPAGE (Linux value 14) changes policy only: it does not read,
+		// initialize, discard, or expose values. No pointer escapes the syscall.
+		unsafe {
+			let _ = madvise(pointer.add(offset).cast(), length, MADV_HUGEPAGE);
+		}
+	}
+}
+
+#[cfg(test)]
+mod huge_page_tests {
+	use super::*;
+
+	#[test]
+	fn interior_excludes_partial_pages_and_overflow() {
+		for page in [4096, 16384, 65536] {
+			assert_eq!(owned_page_interior(page, page, page), Some((0, page)));
+			assert_eq!(
+				owned_page_interior(page + 1, 3 * page, page),
+				Some((page - 1, 2 * page))
+			);
+			assert_eq!(owned_page_interior(page + 1, page, page), None);
+			assert_eq!(owned_page_interior(page, 0, page), None);
+			assert_eq!(owned_page_interior(usize::MAX - 1, page, page), None);
+		}
+		assert_eq!(owned_page_interior(0, 8192, 0), None);
+		assert_eq!(owned_page_interior(0, 8192, 3), None);
+	}
+
+	#[test]
+	fn advice_preserves_capacity_length_and_bits() {
+		for len in [0, 1, 524287, 524288, 524289] {
+			let mut values = std::vec![0x7ff8_1234_5678_9abcu64; len];
+			if len > 1 {
+				values[0] = (-0.0f64).to_bits();
+				values[len - 1] = 0;
+			}
+			let ptr = values.as_ptr();
+			let capacity = values.capacity();
+			advise_huge_capacity(&mut values);
+			assert_eq!(values.as_ptr(), ptr);
+			assert_eq!(values.capacity(), capacity);
+			assert_eq!(values.len(), len);
+			if len > 1 {
+				assert_eq!(values[0], (-0.0f64).to_bits());
+				assert_eq!(values[len / 2], 0x7ff8_1234_5678_9abc);
+				assert_eq!(values[len - 1], 0);
+			}
+		}
+		let mut zst = std::vec![(); 3];
+		advise_huge_capacity(&mut zst);
+		assert_eq!(zst.len(), 3);
+	}
+
+	#[test]
+	fn advice_accepts_uninitialized_capacity() {
+		let mut values = std::vec::Vec::<u64>::with_capacity(524288);
+		advise_huge_capacity(&mut values);
+		assert!(values.is_empty());
+		values.push(42);
+		assert_eq!(values, [42]);
+	}
+}
+
 /// Private allocation whose initialized prefix is advanced only by complete
 /// primitive writers. No method exposes unwritten elements as initialized T.
 #[derive(Debug)]

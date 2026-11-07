@@ -155,6 +155,7 @@ fn reserved<T>(len: usize, room: usize) -> Result<Vec<T>> {
 	{
 		return Err(ColumnRefusal::Memory);
 	}
+	crate::experimental_column_primitives::advise_huge_capacity(&mut values);
 	Ok(values)
 }
 
