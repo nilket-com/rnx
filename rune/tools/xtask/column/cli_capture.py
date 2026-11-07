@@ -35,7 +35,7 @@ def symbols(binary):
 	answer = {}
 	for role, fragments in {
 		"map": ["FunctionHandler", "::call_impl", "rnx_polars::column::script::map,"],
-		"worker": ["rnx_polars::column::apply_joined", "script::map"],
+		"worker": ["rnx_polars::column::apply_joined::<"],
 	}.items():
 		matches = [line.split()[0] for line in demangled if all(f in line for f in fragments)]
 		assert len(matches) == 1, (role, matches)

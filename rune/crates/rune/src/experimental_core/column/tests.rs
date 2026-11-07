@@ -2872,3 +2872,161 @@ fn predicate_recycled_slots_and_memory_boundary() {
 		);
 	}
 }
+
+#[test]
+fn explicit_reuse_bits_capacity_and_failure() {
+	for chain in [false, true] {
+		let mut ops = vec![
+			Op::Literal {
+				out: 1,
+				value: Value::F64(1.0),
+			},
+			Op::Binary {
+				out: 2,
+				op: Binary::Add,
+				lhs: 0,
+				rhs: 1,
+			},
+		];
+		if chain {
+			ops.push(Op::Binary {
+				out: 3,
+				op: Binary::Mul,
+				lhs: 2,
+				rhs: 1,
+			});
+		}
+		ops.push(Op::Return {
+			value: if chain { 3 } else { 2 },
+		});
+		let p = program(1, 4, &ops);
+		let plan = PreparedColumn::prepare(
+			&p,
+			0,
+			&[ColumnType::F64],
+			ColumnType::F64,
+			Limits::default(),
+		)
+		.unwrap();
+		for masked in [false, true] {
+			for n in [0usize, 1, 63, 65, 1025] {
+				let x: Vec<_> = (0..n)
+					.map(|i| if i % 5 == 0 { -0.0 } else { i as f64 })
+					.collect();
+				let bits = vec![0x55; n.div_ceil(8)];
+				let chunks = [ColumnChunk::new(
+					ColumnSlice::F64(&x),
+					if masked {
+						Some(BitSlice::new(&bits, 0, n).unwrap())
+					} else {
+						None
+					},
+				)
+				.unwrap()];
+				let cols = [Column::new(ColumnType::F64, &chunks).unwrap()];
+				for force in [true, false] {
+					let ColumnOutcome::Complete(fresh) =
+						plan.execute(&cols, options(100000, force), || false)
+					else {
+						panic!("fresh");
+					};
+					let mut previous = Vec::with_capacity(n);
+					previous.resize(n, f64::from_bits(0x7ff8000000000042));
+					let pointer = previous.as_ptr();
+					let ColumnOutcome::Complete(reused) =
+						plan.execute_reusing(&cols, options(100000, force), previous, || false)
+					else {
+						panic!("reuse");
+					};
+					assert_eq!(fresh.validity, reused.validity);
+					assert_eq!(fresh.remaining_work, reused.remaining_work);
+					let (ColumnValues::F64(a), ColumnValues::F64(b)) =
+						(fresh.values, reused.values)
+					else {
+						panic!("type");
+					};
+					assert_eq!(
+						a.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+						b.iter().map(|v| v.to_bits()).collect::<Vec<_>>()
+					);
+					if n > 0 && (chain || !masked) {
+						assert_eq!(pointer, b.as_ptr());
+					}
+					let big = vec![0.0; (n + 1) * 16];
+					let ColumnOutcome::Complete(small) =
+						plan.execute_reusing(&cols, options(100000, force), big, || false)
+					else {
+						panic!("shrink");
+					};
+					let ColumnValues::F64(small) = small.values else {
+						panic!("type");
+					};
+					assert!(small.capacity() <= n.saturating_mul(2));
+					assert!(matches!(
+						plan.execute_reusing(&cols, options(100000, force), b, || true),
+						ColumnOutcome::Replay {
+							reason: ColumnRefusal::Canceled,
+							..
+						}
+					));
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn explicit_reuse_spare_capacity_cannot_force_replay() {
+	let ops = [
+		Op::Literal {
+			out: 1,
+			value: Value::F64(1.0),
+		},
+		Op::Binary {
+			out: 2,
+			op: Binary::Add,
+			lhs: 0,
+			rhs: 1,
+		},
+		Op::Return { value: 2 },
+	];
+	let p = program(1, 3, &ops);
+	let mut plan = PreparedColumn::prepare(
+		&p,
+		0,
+		&[ColumnType::F64],
+		ColumnType::F64,
+		Limits::default(),
+	)
+	.unwrap();
+	let x = [1.0; 65];
+	let chunks = [ColumnChunk::new(ColumnSlice::F64(&x), None).unwrap()];
+	let columns = [Column::new(ColumnType::F64, &chunks).unwrap()];
+	let token = plan
+		.prepare_batch(&columns, options(100000, true), || false)
+		.unwrap();
+	let minimum = plan.retained_bytes() + token.owned_bytes();
+	drop(token);
+	// Every allowance admitting fresh storage but not the donor's spare capacity.
+	for extra in [0, 1, 8, 64, 65 * 8 - 1] {
+		plan.limit = minimum + extra;
+		let ColumnOutcome::Complete(fresh) =
+			plan.execute(&columns, options(100000, true), || false)
+		else {
+			panic!("fresh");
+		};
+		let donor = vec![17.0; 130];
+		let ColumnOutcome::Complete(reused) =
+			plan.execute_reusing(&columns, options(100000, true), donor, || false)
+		else {
+			panic!("spare capacity caused replay");
+		};
+		assert_eq!(fresh.path, reused.path);
+		assert_eq!(fresh.remaining_work, reused.remaining_work);
+		let ColumnValues::F64(values) = reused.values else {
+			panic!("type");
+		};
+		assert_eq!(values, vec![2.0; 65]);
+		assert!(values.capacity() < 130, "oversized backing was retained");
+	}
+}

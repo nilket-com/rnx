@@ -272,3 +272,22 @@ fn empty_chunks_and_f64_values() {
 		[2., 1., f64::INFINITY]
 	);
 }
+
+#[test]
+fn reuse_aliases_are_never_written() {
+	let mut k = prepare(
+		"pub fn map(x) { x + 1.0 }",
+		&[ColumnType::F64],
+		ColumnType::F64,
+	);
+	let x = Series::new("x".into(), &[1.0f64, 2.0, 3.0]);
+	let y = Series::new("y".into(), &[10.0f64, 20.0, 30.0]);
+	let pointer = y.f64().unwrap().cont_slice().unwrap().as_ptr();
+	let out =
+		column::apply_reusing(&mut k, &[&x], options(Mode::Auto), y.clone(), || false).unwrap();
+	assert_ne!(
+		pointer,
+		out.series.f64().unwrap().cont_slice().unwrap().as_ptr()
+	);
+	assert_eq!(y.f64().unwrap().cont_slice().unwrap(), &[10.0, 20.0, 30.0]);
+}

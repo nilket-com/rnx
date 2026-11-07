@@ -333,3 +333,168 @@ mod tests {
 		.unwrap();
 	}
 }
+
+/// Explicit consuming output reuse. Plain apply remains fresh.
+pub fn apply_reusing(
+	kernel: &mut Kernel,
+	series: &[&p::Series],
+	options: Options,
+	previous: p::Series,
+	canceled: impl FnMut() -> bool + Send,
+) -> Result<Applied, Error> {
+	kernel.reset_observation();
+	crate::engine::run("column_kernel.map", || {
+		apply_joined_reusing(kernel, series, options, previous, canceled)
+	})
+	.map_err(|error| Error::Engine(error.to_string()))?
+}
+fn apply_joined_reusing(
+	kernel: &mut Kernel,
+	series: &[&p::Series],
+	mut options: Options,
+	previous: p::Series,
+	canceled: impl FnMut() -> bool,
+) -> Result<Applied, Error> {
+	if series.len() != kernel.input_types().len() {
+		return Err(Error::Invalid("input arity"));
+	}
+	let mut room = kernel
+		.limits()
+		.bytes
+		.checked_sub(kernel.retained_bytes())
+		.and_then(|n| n.checked_sub(options.adapter_bytes))
+		.ok_or(Error::Memory)?;
+	let before = room;
+	let mut all = [Vec::new(), Vec::new(), Vec::new()];
+	for (i, (series, ty)) in series.iter().zip(kernel.input_types()).enumerate() {
+		let dtype = match ty {
+			ColumnType::I64 => p::DataType::Int64,
+			ColumnType::F64 => p::DataType::Float64,
+			ColumnType::Bool => p::DataType::Boolean,
+		};
+		if series.dtype() != &dtype {
+			return Err(Error::Invalid(
+				"physical input dtype differs from signature",
+			));
+		}
+		let count = series.chunks().len();
+		if count
+			.checked_mul(size_of::<Chunk<'_>>())
+			.is_none_or(|n| n > room)
+		{
+			return Err(Error::Memory);
+		}
+		all[i].try_reserve_exact(count).map_err(|_| Error::Memory)?;
+		room = room
+			.checked_sub(
+				all[i]
+					.capacity()
+					.checked_mul(size_of::<Chunk<'_>>())
+					.ok_or(Error::Memory)?,
+			)
+			.ok_or(Error::Memory)?;
+		for array in series.chunks() {
+			let values = match ty {
+				ColumnType::I64 => ColumnSlice::I64(
+					array
+						.as_any()
+						.downcast_ref::<PrimitiveArray<i64>>()
+						.ok_or(Error::Invalid("i64 chunk"))?
+						.values()
+						.as_slice(),
+				),
+				ColumnType::F64 => ColumnSlice::F64(
+					array
+						.as_any()
+						.downcast_ref::<PrimitiveArray<f64>>()
+						.ok_or(Error::Invalid("f64 chunk"))?
+						.values()
+						.as_slice(),
+				),
+				ColumnType::Bool => ColumnSlice::Bool(bits(
+					array
+						.as_any()
+						.downcast_ref::<BooleanArray>()
+						.ok_or(Error::Invalid("bool chunk"))?
+						.values(),
+				)?),
+			};
+			let validity = array.validity().map(bits).transpose()?;
+			all[i].push(Chunk { values, validity });
+		}
+	}
+	options.adapter_bytes = options
+		.adapter_bytes
+		.checked_add(before - room)
+		.ok_or(Error::Memory)?;
+	let mut inputs = [Input {
+		ty: ColumnType::I64,
+		chunks: &[],
+	}; 3];
+	for (i, ty) in kernel.input_types().iter().enumerate() {
+		inputs[i] = Input {
+			ty: *ty,
+			chunks: &all[i],
+		};
+	}
+	let output = kernel
+		.map_reusing(
+			&inputs[..series.len()],
+			options,
+			recover_f64(previous),
+			canceled,
+		)
+		.map_err(Error::Scalar)?;
+	match transfer(output) {
+		Ok(output) => Ok(output),
+		Err(error) => {
+			kernel.discard_output();
+			Err(error)
+		}
+	}
+}
+/// Recover without adding a shallow clone at any ownership layer.
+fn recover_f64(previous: p::Series) -> Option<Vec<f64>> {
+	if previous.dtype() != &p::DataType::Float64
+		|| previous.chunks().len() != 1
+		|| std::sync::Arc::strong_count(&previous.0) != 1
+		|| std::sync::Arc::weak_count(&previous.0) != 0
+	{
+		return None;
+	}
+	let mut chunks = previous.into_chunks();
+	let array = chunks[0]
+		.as_any_mut()
+		.downcast_mut::<PrimitiveArray<f64>>()?;
+	let array = std::mem::replace(array, PrimitiveArray::new_empty(ArrowDataType::Float64));
+	let (_, buffer, _) = array.into_inner();
+	if buffer.offset() != 0 || buffer.is_sliced() {
+		return None;
+	}
+	buffer.into_mut().right()
+}
+
+#[cfg(test)]
+mod reuse_tests {
+	use super::*;
+
+	fn series(values: Vec<f64>) -> p::Series {
+		p::Series::from_arrow("reuse".into(), Box::new(PrimitiveArray::from_vec(values))).unwrap()
+	}
+
+	#[test]
+	fn exclusive_recovery_and_alias_refusal() {
+		let values = vec![1.0, -0.0, f64::from_bits(0x7ff8000000000042)];
+		let ptr = values.as_ptr();
+		let recovered = recover_f64(series(values)).unwrap();
+		assert_eq!(ptr, recovered.as_ptr());
+		let original = series(recovered);
+		assert!(recover_f64(original.clone()).is_none());
+		assert_eq!(original.f64().unwrap().get(0), Some(1.0));
+		assert!(recover_f64(original.slice(1, 1)).is_none());
+		let recovered = std::thread::spawn(move || recover_f64(original).unwrap())
+			.join()
+			.unwrap();
+		assert_eq!(recovered[2].to_bits(), 0x7ff8000000000042);
+	}
+}

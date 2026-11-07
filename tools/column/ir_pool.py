@@ -14,6 +14,7 @@ import tempfile
 import traceback
 
 import ir_accounting
+from cli_symbols import symbols
 
 from ir_resources import compare_determinism, launch_budget, resources
 
@@ -68,6 +69,8 @@ def tooling(root):
 	assert not subprocess.check_output(["git", "status", "--porcelain", "--", "tools/xtask"], cwd=root, text=True).strip()
 	sys.path.insert(0, str(root / "tools/xtask/column"))
 	import cli_capture
+	# Keep the frozen capture recipe; resolve current sibling names exactly.
+	cli_capture.symbols = symbols
 	CAPTURE = cli_capture
 	return cli_capture
 

@@ -339,6 +339,146 @@ impl Kernel {
 			},
 		}
 	}
+	/// Consume optional exclusive output storage; no retained cache.
+	pub fn map_reusing(
+		&mut self,
+		inputs: &[Input<'_>],
+		options: Options,
+		mut previous: Option<Vec<f64>>,
+		mut canceled: impl FnMut() -> bool,
+	) -> Result<Output, Error> {
+		self.reset_observation();
+		let fail = |cause| Error {
+			row: None,
+			remaining_work: options.work,
+			cause,
+		};
+		let len = views::validate(inputs, self.input_types()).map_err(fail)?;
+		self.last.rows = len;
+		let room = self
+			.limits
+			.bytes
+			.checked_sub(self.retained_bytes)
+			.and_then(|n| n.checked_sub(options.adapter_bytes))
+			.ok_or_else(|| fail(Cause::Memory))?;
+		if canceled() {
+			self.last.path = Some(Path::Canceled);
+			return Err(fail(Cause::Canceled));
+		}
+		if options.mode != Mode::Reference && self.prepared.is_some() {
+			self.last.attempts = 1;
+			let attempt =
+				self.attempt_reusing(inputs, options, room, previous.take(), &mut canceled);
+			match attempt {
+				core::ColumnOutcome::Complete(result) => {
+					self.last.valid_rows = result.valid_rows;
+					self.last.path = Some(match result.path {
+						core::Path::Scalar => Path::ScalarPrimitives,
+						core::Path::Avx2 => Path::Avx2,
+					});
+					self.last.completed = true;
+					return Ok(Output {
+						values: result.values,
+						validity: result.validity,
+						len,
+						remaining_work: result.remaining_work,
+					});
+				}
+				core::ColumnOutcome::Replay {
+					reason: ColumnRefusal::Canceled,
+					..
+				} => {
+					self.last.path = Some(Path::Canceled);
+					return Err(fail(Cause::Canceled));
+				}
+				core::ColumnOutcome::Replay { reason, .. } => {
+					self.last.refusal = Some(reason);
+					self.last.replays = 1;
+					self.last.path = Some(Path::Replay);
+				}
+			}
+		} else {
+			self.last.path = Some(Path::ScalarFallback);
+			self.last.refusal = self.refusal;
+		}
+		drop(previous);
+		let result = scalar::run(
+			&self.scalar,
+			self.output,
+			inputs,
+			len,
+			self.limits,
+			room,
+			options,
+			&mut canceled,
+			&mut self.last,
+		);
+		self.last.completed = result.is_ok();
+		result
+	}
+	fn attempt_reusing(
+		&self,
+		inputs: &[Input<'_>],
+		options: Options,
+		room: usize,
+		previous: Option<Vec<f64>>,
+		canceled: &mut impl FnMut() -> bool,
+	) -> core::ColumnOutcome {
+		let Some(previous) = previous else {
+			return self.attempt(inputs, options, room, canceled);
+		};
+		let run = || -> Result<core::ColumnOutcome, ColumnRefusal> {
+			let (descriptors, bytes) = views::descriptors(inputs, room)?;
+			let empty = core::Column::new(ColumnType::I64, &[])?;
+			let mut columns = [empty; 3];
+			for (index, input) in inputs.iter().enumerate() {
+				columns[index] = core::Column::new(input.ty, &descriptors[index])?;
+			}
+			let cached = self.prepared.as_ref().expect("admitted handle");
+			// CK1's allowance is immutable. For bounded host memory, prepare a
+			// temporary plan with all live metadata deducted, including the cached
+			// plan. The unbounded ordinary path reuses the original plan directly.
+			let bounded;
+			let prepared = if self.limits.bytes != usize::MAX || options.adapter_bytes != 0 {
+				let Scalar::Core {
+					program, function, ..
+				} = &self.scalar
+				else {
+					unreachable!()
+				};
+				bounded = core::PreparedColumn::prepare(
+					program,
+					*function,
+					self.input_types(),
+					self.output,
+					Limits {
+						bytes: room.checked_sub(bytes).ok_or(ColumnRefusal::Memory)?,
+						..self.limits
+					},
+				)?;
+				&bounded
+			} else {
+				cached
+			};
+			Ok(prepared.execute_reusing(
+				&columns[..self.arity],
+				core::ColumnOptions {
+					work: options.work,
+					executor_limits: options.executor_limits,
+					force_scalar: options.mode == Mode::Portable,
+				},
+				previous,
+				canceled,
+			))
+		};
+		match run() {
+			Ok(outcome) => outcome,
+			Err(reason) => core::ColumnOutcome::Replay {
+				reason,
+				fault: None,
+			},
+		}
+	}
 }
 
 #[cfg(all(test, not(feature = "cross-verification")))]

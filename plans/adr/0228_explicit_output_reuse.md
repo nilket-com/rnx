@@ -1,6 +1,6 @@
 # ADR 0228: Explicit output reuse for column kernels
 
-Status: Proposed
+Status: Accepted
 
 After ADR 0227, warm 100M-row F64 const and add maps are still about 50–105 ms
 slower than Arrow and Polars. The chain gap is smaller: about 12–24 ms against
@@ -81,3 +81,5 @@ shared masked executor, or reroute those plans.
 Rejected for now: a session-owned recycling slot, which would need
 session-wide eviction and an idle timer to meet the constraint, and
 `MADV_FREE` retention. Plain `map` keeps paying for fresh pages by design.
+
+User-approved exception (review 29406): for the exact measured BUILD-v2 pair, flat F64 const permits +1 instruction per 1024-row block and flat axpy/I64 add permit +2, alongside exact reviewed per-call frame costs; every other path stays exact, and +1-per-call/block negative controls must fail.

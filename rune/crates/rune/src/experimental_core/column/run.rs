@@ -318,6 +318,161 @@ impl PreparedColumn {
 		};
 		Ok(PreparedToken { inner })
 	}
+	/// Consume exclusive previous F64 backing; unsupported paths allocate fresh.
+	/// Existing fresh preparation and execution frames are unchanged.
+	pub fn execute_reusing<'input>(
+		&self,
+		columns: &'input [Column<'input>],
+		options: ColumnOptions,
+		previous: Vec<f64>,
+		mut canceled: impl FnMut() -> bool,
+	) -> ColumnOutcome {
+		match self.allocate_batch_reusing(columns, options, previous, &mut canceled) {
+			Ok(batch) => batch.invoke(canceled),
+			Err((reason, fault)) => ColumnOutcome::Replay { reason, fault },
+		}
+	}
+
+	fn allocate_batch_reusing<'plan, 'input>(
+		&'plan self,
+		columns: &'input [Column<'input>],
+		options: ColumnOptions,
+		mut previous: Vec<f64>,
+		canceled: &mut impl FnMut() -> bool,
+	) -> core::result::Result<PreparedToken<'plan, 'input>, (ColumnRefusal, Option<Fault>)> {
+		let allocation = |error| (error, None);
+		if columns.len() != self.arity
+			|| columns
+				.iter()
+				.zip(self.input_types())
+				.any(|(c, ty)| c.ty != *ty)
+		{
+			return Err((ColumnRefusal::Type, None));
+		}
+		let len = columns[0].len;
+		if columns.iter().any(|c| c.len != len) {
+			return Err((ColumnRefusal::Bounds, None));
+		}
+		if options.executor_limits.frames == 0 || options.executor_limits.slots < self.frame_slots {
+			return Err((ColumnRefusal::Memory, None));
+		}
+		if canceled() {
+			return Err((ColumnRefusal::Canceled, None));
+		}
+		let masked = columns
+			.iter()
+			.any(|c| c.chunks.iter().any(|v| v.validity.is_some()));
+		let eligible = self.output == ColumnType::F64
+			&& (flat::eligible(self, columns, masked)
+				|| (self.special && self.driver() == Driver::F64));
+		let fits = len != 0
+			&& previous.capacity() >= len
+			&& len
+				.checked_mul(2)
+				.is_some_and(|max| previous.capacity() <= max);
+		if !eligible || !fits {
+			drop(previous);
+			return self.allocate_batch(columns, options, canceled);
+		}
+		previous.clear();
+
+		let mut room = self
+			.limit
+			.checked_sub(self.bytes)
+			.and_then(|n| n.checked_sub(core::mem::size_of::<PreparedToken<'_, '_>>()))
+			.ok_or((ColumnRefusal::Memory, None))?;
+		let mut validity = if masked {
+			Some(filled(len.div_ceil(8), 0u8, room).map_err(allocation)?)
+		} else {
+			None
+		};
+		if let Some(bits) = &validity {
+			room = room
+				.checked_sub(bits.capacity())
+				.ok_or((ColumnRefusal::Memory, None))?;
+		}
+		let mut valid = len;
+		if let Some(bits) = &mut validity {
+			valid = intersect_validity(columns, bits, len, canceled).map_err(allocation)?;
+		}
+
+		let charge = valid
+			.checked_mul(self.row_charge)
+			.filter(|&n| n <= options.work)
+			.ok_or((ColumnRefusal::Fuel, None))?;
+		let capacity_bytes = previous
+			.capacity()
+			.checked_mul(core::mem::size_of::<f64>())
+			.ok_or((ColumnRefusal::Memory, None))?;
+		let scratch_bytes = self
+			.scratch_count
+			.checked_mul(if self.boolean_plan { BLOCK / 64 } else { BLOCK })
+			.and_then(|n| n.checked_mul(8))
+			.and_then(|n| {
+				n.checked_add(if self.special {
+					0
+				} else {
+					self.nodes.len().checked_mul(8)?
+				})
+			})
+			.ok_or((ColumnRefusal::Memory, None))?;
+		if capacity_bytes
+			.checked_add(scratch_bytes)
+			.is_none_or(|bytes| bytes > room)
+		{
+			// Spare capacity must not turn an otherwise admissible fresh call into replay.
+			drop(previous);
+			drop(validity);
+			return self.allocate_batch(columns, options, canceled);
+		}
+		let values = if flat::eligible(self, columns, masked) {
+			Output::F64(crate::experimental_column_primitives::NumericOutput::new(
+				previous, len,
+			))
+		} else {
+			Output::Initialized(ColumnValues::F64(previous))
+		};
+		room = room
+			.checked_sub(values.bytes())
+			.ok_or((ColumnRefusal::Memory, None))?;
+		let scratch_len = self
+			.scratch_count
+			.checked_mul(if self.boolean_plan { BLOCK / 64 } else { BLOCK })
+			.ok_or((ColumnRefusal::Memory, None))?;
+		let scratch = filled(scratch_len, 0u64, room).map_err(allocation)?;
+		room = room
+			.checked_sub(scratch.capacity() * 8)
+			.ok_or((ColumnRefusal::Memory, None))?;
+		let row_values = filled(if self.special { 0 } else { self.nodes.len() }, 0u64, room)
+			.map_err(allocation)?;
+		let inner = match values {
+			Output::Initialized(values) => BatchKind::Initialized(PreparedBatch {
+				plan: self,
+				columns,
+				options,
+				values,
+				validity,
+				len,
+				charge,
+				valid_rows: valid,
+				scratch,
+				row_values,
+			}),
+			values => BatchKind::Flat(flat::FlatBatch {
+				plan: self,
+				columns,
+				options,
+				values,
+				validity,
+				len,
+				charge,
+				valid_rows: valid,
+				scratch,
+				row_values,
+			}),
+		};
+		Ok(PreparedToken { inner })
+	}
 }
 
 impl PreparedBatch<'_, '_> {

@@ -42,3 +42,19 @@ reuse with plain map at 100M warm. Then the 0224-harness timing with reuse
 cells, 5 process samples. Finally the host, integration, generated and cross
 gates and the commit checker. Publish the bench report only if every gate
 passes.
+
+Current validation (publication pending): the reviewed sibling entries, memory
+fallback and alias controls pass the local core and adapter tests. Targeted
+Miri passes both explicit-reuse tests. The memory fallback includes scratch
+space, so spare donor capacity cannot force an otherwise admissible fresh
+call into scalar replay. Script input-alias and cloned-donor controls run
+inside the adapter crate without widening the generated wrapper visibility.
+
+The exact plain-map comparison passes the user-approved, measured-pair
+exception with negative controls. The full expression/layout reuse matrix,
+F64 bit-pattern, refusal, alias, capacity and scaled allocation-retention
+controls pass. Targeted reuse Miri passes. Warm fault and five-process timing
+captures are complete; all four eligible reuse cells improve. The final host,
+integration, generated and cross gates remain required before publication.
+
+User-approved exception (review 29406): for the exact measured BUILD-v2 pair, flat F64 const permits +1 instruction per 1024-row block and flat axpy/I64 add permit +2, alongside exact reviewed per-call frame costs; every other path stays exact, and +1-per-call/block negative controls must fail.

@@ -60,6 +60,12 @@ fn explain(kernel: &ColumnKernel) -> String {
 	kernel.0.explain()
 }
 
+// Both script entry points use one cancellation type, so adding an entry does
+// not instantiate a second copy of the generic column driver stack.
+fn never_canceled() -> bool {
+	false
+}
+
 fn map(kernel: &mut ColumnKernel, inputs: Value) -> Result<Result<Series, String>, VmError> {
 	kernel.0.reset_observation();
 	// An acquire guard also makes remaining() None. Never treat that as an
@@ -100,7 +106,90 @@ fn map(kernel: &mut ColumnKernel, inputs: Value) -> Result<Result<Series, String
 				mode: Mode::Auto,
 				adapter_bytes: 0,
 			},
-			|| false,
+			never_canceled,
+		)
+	})();
+	// The worker owns a scoped copy of work. Commit only its final result or
+	// scalar prefix, once, after all worker scopes and output construction end.
+	let left = match &result {
+		Ok(output) => output.remaining_work,
+		Err(super::Error::Scalar(error)) => error.remaining_work,
+		Err(_) => work,
+	};
+	let Some(spent) = work.checked_sub(left) else {
+		kernel.0.discard_output();
+		return Err(VmError::budget_exhausted());
+	};
+	if budget::remaining() != Some(work) || budget::consume(spent).is_err() {
+		kernel.0.discard_output();
+		return Err(VmError::budget_exhausted());
+	}
+	match result {
+		Ok(output) => Ok(Ok(Series(output.series))),
+		Err(super::Error::Scalar(error)) => {
+			let exhausted = match &error.cause {
+				Cause::Core(failure) => {
+					failure.error.kind == rune::experimental_core::error::ErrorKind::FuelExhausted
+				}
+				Cause::Stock(error) => error.is_budget_exhausted(),
+				_ => false,
+			};
+			if exhausted {
+				Err(VmError::budget_exhausted())
+			} else {
+				Ok(Err(kernel.0.format_error(&error)))
+			}
+		}
+		Err(error) => Ok(Err(error.to_string())),
+	}
+}
+
+fn map_reusing(
+	kernel: &mut ColumnKernel,
+	inputs: Value,
+	previous: Series,
+) -> Result<Result<Series, String>, VmError> {
+	kernel.0.reset_observation();
+	// An acquire guard also makes remaining() None. Never treat that as an
+	// unlimited script budget; only the explicit Rust host API permits unlimited.
+	let Some(work) = budget::remaining() else {
+		return Ok(Err(
+			"column kernel map requires a finite script budget; none is installed".into(),
+		));
+	};
+	let result = (|| {
+		let inputs = inputs
+			.borrow_ref::<rune::runtime::Vec>()
+			.map_err(|_| super::Error::Invalid("expected a vector of Series"))?;
+		if inputs.len() != kernel.0.input_types().len() {
+			return Err(super::Error::Invalid("input arity"));
+		}
+		// Stack-owned leases retain every original wrapper across the joined
+		// worker. No shallow clone, rechunk, or full-column copy is required.
+		let mut guards = [None, None, None];
+		for (slot, value) in guards.iter_mut().zip(inputs.iter()) {
+			*slot = Some(
+				value
+					.borrow_ref::<Series>()
+					.map_err(|_| super::Error::Invalid("expected Series inputs"))?,
+			);
+		}
+		let first = &guards[0].as_ref().expect("validated arity").0;
+		let mut series = [first; 3];
+		for (slot, guard) in series.iter_mut().zip(guards.iter()).take(inputs.len()) {
+			*slot = &guard.as_ref().expect("validated lease").0;
+		}
+		super::apply_reusing(
+			&mut kernel.0,
+			&series[..inputs.len()],
+			Options {
+				work,
+				executor_limits: ExecutorLimits::default(),
+				mode: Mode::Auto,
+				adapter_bytes: 0,
+			},
+			previous.0,
+			never_canceled,
 		)
 	})();
 	// The worker owns a scoped copy of work. Commit only its final result or
@@ -176,6 +265,10 @@ pub(crate) fn install(module: &mut Module) -> Result<(), String> {
 	module.function_meta(explain).map_err(crate::err)?;
 	module
 		.function("map", map)
+		.build_associated::<ColumnKernel>()
+		.map_err(crate::err)?;
+	module
+		.function("map_reusing", map_reusing)
 		.build_associated::<ColumnKernel>()
 		.map_err(crate::err)?;
 	module.function_meta(last_path).map_err(crate::err)?;
@@ -396,5 +489,59 @@ mod tests {
 				assert!(!error.stacktrace().is_empty());
 			}
 		}
+	}
+
+	#[test]
+	fn script_reuse_input_alias_fails_without_writes() {
+		let y = PolarsSeries::new("y".into(), &[10.0f64, 20.0, 30.0]);
+		let mut vm = script_vm(
+			r#"pub fn run(y) {
+		let k = polars::column_kernel("pub fn map(x) { x + 1.0 }", "map", ["f64"], "f64").unwrap();
+		k.map_reusing([y], y)
+	}"#,
+		);
+		let value = rnx::rune::to_value(crate::generated::types::W_polars_core__series__Series(
+			y.clone(),
+		))
+		.unwrap();
+		let result = rnx::rune::runtime::budget::with(100000, || vm.call(["run"], (value,))).call();
+		match result {
+			Err(_) => {}
+			Ok(value) => {
+				let result: Result<rnx::rune::Value, String> =
+					rnx::rune::from_value(value).unwrap();
+				assert!(result.unwrap_err().contains("expected Series inputs"));
+			}
+		}
+		assert_eq!(y.f64().unwrap().cont_slice().unwrap(), &[10.0, 20.0, 30.0]);
+	}
+
+	#[test]
+	fn script_reuse_clone_leaves_original_unchanged() {
+		let mut vm = script_vm(
+			r#"pub fn run(x, y) {
+		let k = polars::column_kernel("pub fn map(x) { x + 1.0 }", "map", ["f64"], "f64").unwrap();
+		k.map_reusing([x], y.clone()).unwrap()
+	}"#,
+		);
+		let x = PolarsSeries::new("x".into(), &[1.0f64, 2.0, 3.0]);
+		let y = PolarsSeries::new("y".into(), &[10.0f64, 20.0, 30.0]);
+		let pointer = y.f64().unwrap().cont_slice().unwrap().as_ptr();
+		use crate::generated::types::W_polars_core__series__Series as Wrapper;
+		let result = rnx::rune::runtime::budget::with(100000, || {
+			vm.call(["run"], (Wrapper(x), Wrapper(y.clone())))
+		})
+		.call()
+		.unwrap();
+		let result: Wrapper = rnx::rune::from_value(result).unwrap();
+		assert_ne!(
+			pointer,
+			result.0.f64().unwrap().cont_slice().unwrap().as_ptr()
+		);
+		assert_eq!(
+			result.0.f64().unwrap().cont_slice().unwrap(),
+			&[2.0, 3.0, 4.0]
+		);
+		assert_eq!(y.f64().unwrap().cont_slice().unwrap(), &[10.0, 20.0, 30.0]);
 	}
 }

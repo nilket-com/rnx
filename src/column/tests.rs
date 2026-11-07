@@ -486,3 +486,72 @@ fn core_valid_rows_matches_reference_for_sliced_dirty_masks() {
 		}
 	}
 }
+
+#[test]
+fn explicit_reuse_refusal_sequence_matches_plain_map() {
+	let x = [1.0; 65];
+	let bits = [0x55; 9];
+	let chunks = [Chunk {
+		values: ColumnSlice::F64(&x),
+		validity: Some(BitSlice::new(&bits, 0, x.len()).unwrap()),
+	}];
+	let short = [Chunk {
+		values: ColumnSlice::F64(&x[..64]),
+		validity: None,
+	}];
+	for case in [
+		"type",
+		"bounds",
+		"frames",
+		"slots",
+		"cancel",
+		"fuel",
+		"validity-memory",
+		"scratch-memory",
+		"success",
+	] {
+		let mut k = kernel(
+			"pub fn map(x, y) { (x + y) * 2.0 }",
+			&[ColumnType::F64; 2],
+			ColumnType::F64,
+		);
+		let inputs = [
+			Input {
+				ty: if case == "type" {
+					ColumnType::I64
+				} else {
+					ColumnType::F64
+				},
+				chunks: &chunks,
+			},
+			Input {
+				ty: ColumnType::F64,
+				chunks: if case == "bounds" { &short } else { &chunks },
+			},
+		];
+		let mut opts = options(100000, Mode::Auto);
+		match case {
+			"frames" => opts.executor_limits.frames = 0,
+			"slots" => opts.executor_limits.slots = 0,
+			"fuel" => opts.work = 1,
+			"validity-memory" => k.limits.bytes = k.retained_bytes + 1,
+			"scratch-memory" => k.limits.bytes = k.retained_bytes + 4096,
+			_ => {}
+		}
+		let fresh = k.map(&inputs, opts, || case == "cancel");
+		let observation = format!("{:?}", k.last_path());
+		let reused = k.map_reusing(&inputs, opts, Some(vec![42.0; 65]), || case == "cancel");
+		assert_eq!(observation, format!("{:?}", k.last_path()), "{case}");
+		match (fresh, reused) {
+			(Ok(a), Ok(b)) => {
+				assert_eq!(a.remaining_work, b.remaining_work, "{case}");
+				assert_eq!(a.validity, b.validity);
+			}
+			(Err(a), Err(b)) => {
+				assert_eq!(a.remaining_work, b.remaining_work, "{case}");
+				assert_eq!(k.format_error(&a), k.format_error(&b), "{case}");
+			}
+			_ => panic!("different refusal: {case}"),
+		}
+	}
+}
