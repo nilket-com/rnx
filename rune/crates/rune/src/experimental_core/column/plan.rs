@@ -243,7 +243,10 @@ pub(super) fn prepare(
 		};
 		boolean_plan &= ty == ColumnType::Bool
 			&& match step {
-				Step::Binary(Binary::BitAnd | Binary::BitOr, ..) => {
+				Step::Binary(
+					Binary::BitAnd | Binary::BitOr | Binary::BitXor | Binary::Eq | Binary::Ne,
+					..,
+				) => {
 					boolean_pair = true;
 					true
 				}

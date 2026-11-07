@@ -114,6 +114,16 @@ pub(super) fn run(
 								left[i] |= right[i];
 							}
 						}
+						Binary::BitXor | Binary::Ne => {
+							for i in 0..words {
+								left[i] ^= right[i];
+							}
+						}
+						Binary::Eq => {
+							for i in 0..words {
+								left[i] = !(left[i] ^ right[i]);
+							}
+						}
 						_ => unreachable!("verified Boolean operation"),
 					}
 				}

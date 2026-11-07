@@ -1,6 +1,6 @@
 # ADR 0226: Packed Boolean XOR and equality
 
-Status: Proposed
+Status: Accepted
 
 Pure-Boolean plans using `^`, `==` or `!=` still run through the generic
 scalar executor at about 90 Ir/row flat, one lane at a time. That loop's

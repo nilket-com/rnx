@@ -1,5 +1,7 @@
 # Follow-ups
 
+- Gate policy: every record touching rnx `src/` must include `cross`; enforce this in the committed gate selector. ADR 0224 omitted it and left the time-module census pin stale.
+
 - ADR 0221: typed block execution for generic F64 chains, isolated from the
   shared executor and without adding callers to its operation helpers.
 

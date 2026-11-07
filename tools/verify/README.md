@@ -109,3 +109,15 @@ through `rnx project run`; changing engine flags must preserve lock/receipt
 identity. Each adapter graph runs its own `execution_routing` integration test
 against its actual binary, proving admitted pure code, pre-effect fallback for
 uncertified adapter calls and no retry after a terminal script effect.
+
+After a reviewed source change invalidates a live census registration pin, use
+`python3 -B tools/refresh_census.py --before OLD --after NEW --path src/FILE.rs`.
+The default validates without writing; add `--write` to apply the refresh.
+Every named old pin must match OLD, every current pinned file must match NEW,
+and unnamed drift is refused. Historical provenance and frozen cases are not
+updated. Run cross after applying the reviewed refresh.
+
+For the reviewed ADR 0224 registry repair, pass `--registry-before FILE` and
+`--registry-after FILE` with the same explicit revision pair. The helper binds
+the registry arrays, source hashes, exact added item and documentation delta
+to `fixtures/0224_registry_refresh.json`; it updates only `registry_rows`.

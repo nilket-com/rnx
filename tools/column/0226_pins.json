@@ -1,0 +1,126 @@
+{
+  "approval_seq": 29152,
+  "builds": [
+    {
+      "role": "baseline",
+      "source_commit": "45823ddaf2a5890afcafd9e06e45bd71a56a9a5c",
+      "sha256": "e787bf81f86f88120a2444c539686a103774bfc9e9d269d662abfad067c9f8bf"
+    },
+    {
+      "role": "candidate",
+      "source_commit": "79be56cb6b08708e6986252d07f70f906b906394",
+      "sha256": "3aa2babfde617b90f20030b9ada1d7475db3a4e59edb75d3ac805e2d596d9d37"
+    }
+  ],
+  "rules": {
+    "arithcmp": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 5,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "axpy": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -4,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "boolnot": {},
+    "f64add": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -1,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64and": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -1,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64chain": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -2,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64const": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -1,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64gt": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 7,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "f64le": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 7,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "i64add": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -2,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "i64eq": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": 7,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "mixedor": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -16,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    },
+    "multiply3": {
+      "<rune::experimental_core::column::PreparedColumn>::prepare": {
+        "constant_Ir": -4,
+        "calls": [
+          1,
+          1
+        ]
+      }
+    }
+  }
+}

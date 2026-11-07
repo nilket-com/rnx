@@ -1595,7 +1595,13 @@ fn boolean_plan_chunks_masks_and_consumers() {
 	let left = [0xa5; 140];
 	let right = [0x3c; 140];
 	let masks = [[0xff; 140], [0; 140], [0x69; 140]];
-	for op in [Binary::BitAnd, Binary::BitOr] {
+	for op in [
+		Binary::BitAnd,
+		Binary::BitOr,
+		Binary::BitXor,
+		Binary::Eq,
+		Binary::Ne,
+	] {
 		for consumer in [false, true] {
 			let mut ops = vec![Op::Binary {
 				out: 2,
@@ -1682,6 +1688,8 @@ fn boolean_plan_chunks_masks_and_consumers() {
 									let expected = match op {
 										Binary::BitAnd => a & b,
 										Binary::BitOr => a | b,
+										Binary::BitXor | Binary::Ne => a ^ b,
+										Binary::Eq => a == b,
 										_ => unreachable!(),
 									};
 									assert_eq!(
@@ -1737,7 +1745,7 @@ fn boolean_plan_chunks_masks_and_consumers() {
 #[test]
 fn boolean_plan_constants_not_and_classification() {
 	use crate::experimental_core::arithmetic::Unary;
-	let variants = [
+	let mut variants = vec![
 		// Constant source, NOT inside a packed chain, then a second consumer.
 		vec![
 			Op::Literal {
@@ -1807,8 +1815,78 @@ fn boolean_plan_constants_not_and_classification() {
 			Op::Return { value: 2 },
 		],
 	];
+	for op in [Binary::BitXor, Binary::Eq, Binary::Ne] {
+		for value in [false, true] {
+			for reverse in [false, true] {
+				variants.push(vec![
+					Op::Literal {
+						out: 2,
+						value: Value::Bool(value),
+					},
+					Op::Binary {
+						out: 3,
+						op,
+						lhs: if reverse { 2 } else { 0 },
+						rhs: if reverse { 0 } else { 2 },
+					},
+					Op::Binary {
+						out: 4,
+						op: Binary::BitAnd,
+						lhs: 3,
+						rhs: 1,
+					},
+					Op::Unary {
+						out: 5,
+						op: Unary::Not,
+						value: 4,
+					},
+					Op::Return { value: 5 },
+				]);
+			}
+		}
+	}
+	// Equality feeds AND at partial-word lengths; all operators share scratch.
+	variants.push(vec![
+		Op::Binary {
+			out: 2,
+			op: Binary::Eq,
+			lhs: 0,
+			rhs: 1,
+		},
+		Op::Binary {
+			out: 3,
+			op: Binary::BitAnd,
+			lhs: 2,
+			rhs: 0,
+		},
+		Op::Binary {
+			out: 4,
+			op: Binary::BitXor,
+			lhs: 3,
+			rhs: 1,
+		},
+		Op::Binary {
+			out: 5,
+			op: Binary::Ne,
+			lhs: 4,
+			rhs: 2,
+		},
+		Op::Binary {
+			out: 6,
+			op: Binary::BitOr,
+			lhs: 5,
+			rhs: 0,
+		},
+		Op::Unary {
+			out: 7,
+			op: Unary::Not,
+			value: 6,
+		},
+		Op::Return { value: 7 },
+	]);
+
 	for ops in variants {
-		let p = program(2, 6, &ops);
+		let p = program(2, 8, &ops);
 		let plan = PreparedColumn::prepare(
 			&p,
 			0,
@@ -1878,7 +1956,7 @@ fn boolean_plan_constants_not_and_classification() {
 			}
 		}
 	}
-	for op in [Binary::Eq, Binary::BitXor] {
+	for op in [Binary::Eq, Binary::Ne, Binary::BitXor] {
 		let p = program(
 			2,
 			4,
@@ -1899,7 +1977,7 @@ fn boolean_plan_constants_not_and_classification() {
 			],
 		);
 		assert!(
-			!PreparedColumn::prepare(
+			PreparedColumn::prepare(
 				&p,
 				0,
 				&[ColumnType::Bool; 2],

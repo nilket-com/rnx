@@ -3,7 +3,7 @@
   "baseline_rnx": "9bb28ebbde9abee7fbc83912df851cba0dacfc9c",
   "baseline_rune": "f0baf933382039f2b8c44b84a04532ba5703b459",
   "count": 244,
-  "registry_rows": 62,
+  "registry_rows": 63,
   "rows": [
     {
       "id": "0000",
@@ -1490,7 +1490,7 @@
       "src/json.rs": "644371197bcd97096be1a08674a1998b3941e479afbff19cc276d245e7ef6b6e",
       "src/path.rs": "c43463be50ac5f9292f72588d9db2508571c0cc8e3c4c3f2b93ba2661fe37051",
       "src/text.rs": "20890ac73f6b2acb37347a99e4079eb2b7072add1475caaa4954835610e98597",
-      "src/time.rs": "385c261666188494bc5bad847e79d7ba9e79c61b08346c7807e3603a4e848fe1",
+      "src/time.rs": "695782518a196a5338615e1c6576a780443c72d47615c0682530f22834e595c8",
       "src/web.rs": "a49430f3f7ff4f9e1d214cf0c8d06fd3dcb9cbb7e97a507959d0441f3b59b629"
     },
     "install_core": {

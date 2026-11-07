@@ -1,0 +1,40 @@
+{
+  "before_revision": "6d253fad410ee3caad778740c0a1f9e449e8dfec",
+  "after_revision": "45823ddaf2a5890afcafd9e06e45bd71a56a9a5c",
+  "before_source_sha256": "385c261666188494bc5bad847e79d7ba9e79c61b08346c7807e3603a4e848fe1",
+  "after_source_sha256": "695782518a196a5338615e1c6576a780443c72d47615c0682530f22834e595c8",
+  "before_count": 62,
+  "after_count": 63,
+  "added": {
+    "time::monotonic_ns": {
+      "doc": "monotonic_ns() -> i64: nanoseconds from the same process origin as monotonic_ms; never decreases, saturates at i64::MAX after about 292 years; units do not guarantee hardware resolution; not an epoch timestamp",
+      "hash": "0x5c1c33d96d14aa3a",
+      "item": "::time::monotonic_ns",
+      "kind": "function",
+      "path": "time::monotonic_ns",
+      "path_hash": "0x5c1c33d96d14aa3a"
+    }
+  },
+  "changed": {
+    "time::monotonic_ms": {
+      "before": {
+        "doc": "monotonic_ms() -> i64: milliseconds since first call in this process; never decreases; not an epoch timestamp",
+        "hash": "0x1572c2ba0ecbe999",
+        "item": "::time::monotonic_ms",
+        "kind": "function",
+        "path": "time::monotonic_ms",
+        "path_hash": "0x1572c2ba0ecbe999"
+      },
+      "after": {
+        "doc": "monotonic_ms() -> i64: milliseconds since the first monotonic clock call in this process; never decreases; not an epoch timestamp",
+        "hash": "0x1572c2ba0ecbe999",
+        "item": "::time::monotonic_ms",
+        "kind": "function",
+        "path": "time::monotonic_ms",
+        "path_hash": "0x1572c2ba0ecbe999"
+      }
+    }
+  },
+  "before_registry_sha256": "5767a20dbe00f6de1eb7f13d6004849d886f53797057a3ed40429fa3bdc0004c",
+  "after_registry_sha256": "76a52bfdde1da389e2ac3843851819011b4ab05b2fda1d1db1107f2a9c747954"
+}
