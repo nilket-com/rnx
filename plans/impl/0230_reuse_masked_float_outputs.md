@@ -25,3 +25,8 @@ Gates:
 6. 0224-harness timing for the six nullable cells;
 7. host, integration, generated and cross, then the commit checker.
 Publish only on all-PASS; the bench follower reports the six cells.
+
+Apply the user-approved fault-scope correction recorded in ADR 0230. Seal
+the measured binary and receipts; reject +1 output fault, a moved pointer,
+missing phases/cases, or a failed warm timing target. Total faults remain in
+the accepted report alongside the original failing receipt.

@@ -37,3 +37,9 @@ Acceptance against published `8d104dd1`:
 
 Stop rule unchanged: any plain-map per-row or per-block slope stops the work
 for attribution, with no codegen-tweak loop; a rule exception needs the user.
+
+User-approved correction (2026-11-08): for sliced-chunked-null, require zero
+warm output-execution faults with a stable donated pointer/capacity; report
+total setup faults. Keep the <=1% total warm-fault rule for the other layouts.
+The original total-fault FAIL remains recorded. No runtime change accompanies
+this criterion correction.

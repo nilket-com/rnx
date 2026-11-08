@@ -372,6 +372,7 @@ impl PreparedColumn {
 			.any(|c| c.chunks.iter().any(|v| v.validity.is_some()));
 		let eligible = self.output == ColumnType::F64
 			&& (flat::eligible(self, columns, masked)
+				|| masked_float::eligible(self, masked)
 				|| (self.special && self.driver() == Driver::F64));
 		let fits = len != 0
 			&& previous.capacity() >= len
@@ -433,13 +434,14 @@ impl PreparedColumn {
 			drop(validity);
 			return self.allocate_batch(columns, options, canceled);
 		}
-		let values = if flat::eligible(self, columns, masked) {
-			Output::F64(crate::experimental_column_primitives::NumericOutput::new(
-				previous, len,
-			))
-		} else {
-			Output::Initialized(ColumnValues::F64(previous))
-		};
+		let values =
+			if flat::eligible(self, columns, masked) || masked_float::eligible(self, masked) {
+				Output::F64(crate::experimental_column_primitives::NumericOutput::new(
+					previous, len,
+				))
+			} else {
+				Output::Initialized(ColumnValues::F64(previous))
+			};
 		room = room
 			.checked_sub(values.bytes())
 			.ok_or((ColumnRefusal::Memory, None))?;

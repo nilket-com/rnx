@@ -2949,7 +2949,7 @@ fn explicit_reuse_bits_capacity_and_failure() {
 						a.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
 						b.iter().map(|v| v.to_bits()).collect::<Vec<_>>()
 					);
-					if n > 0 && (chain || !masked) {
+					if n > 0 {
 						assert_eq!(pointer, b.as_ptr());
 					}
 					let big = vec![0.0; (n + 1) * 16];
@@ -3000,33 +3000,49 @@ fn explicit_reuse_spare_capacity_cannot_force_replay() {
 	)
 	.unwrap();
 	let x = [1.0; 65];
-	let chunks = [ColumnChunk::new(ColumnSlice::F64(&x), None).unwrap()];
-	let columns = [Column::new(ColumnType::F64, &chunks).unwrap()];
-	let token = plan
-		.prepare_batch(&columns, options(100000, true), || false)
-		.unwrap();
-	let minimum = plan.retained_bytes() + token.owned_bytes();
-	drop(token);
-	// Every allowance admitting fresh storage but not the donor's spare capacity.
-	for extra in [0, 1, 8, 64, 65 * 8 - 1] {
-		plan.limit = minimum + extra;
-		let ColumnOutcome::Complete(fresh) =
-			plan.execute(&columns, options(100000, true), || false)
-		else {
-			panic!("fresh");
-		};
-		let donor = vec![17.0; 130];
-		let ColumnOutcome::Complete(reused) =
-			plan.execute_reusing(&columns, options(100000, true), donor, || false)
-		else {
-			panic!("spare capacity caused replay");
-		};
-		assert_eq!(fresh.path, reused.path);
-		assert_eq!(fresh.remaining_work, reused.remaining_work);
-		let ColumnValues::F64(values) = reused.values else {
-			panic!("type");
-		};
-		assert_eq!(values, vec![2.0; 65]);
-		assert!(values.capacity() < 130, "oversized backing was retained");
+	for masked in [false, true] {
+		let bits = [0x55; 9];
+		let chunks = [ColumnChunk::new(
+			ColumnSlice::F64(&x),
+			if masked {
+				Some(BitSlice::new(&bits, 0, 65).unwrap())
+			} else {
+				None
+			},
+		)
+		.unwrap()];
+		let columns = [Column::new(ColumnType::F64, &chunks).unwrap()];
+		let token = plan
+			.prepare_batch(&columns, options(100000, true), || false)
+			.unwrap();
+		let minimum = plan.retained_bytes() + token.owned_bytes();
+		drop(token);
+		// Every allowance admitting fresh storage but not the donor's spare capacity.
+		for extra in [0, 1, 8, 64, 65 * 8 - 1] {
+			plan.limit = minimum + extra;
+			let ColumnOutcome::Complete(fresh) =
+				plan.execute(&columns, options(100000, true), || false)
+			else {
+				panic!("fresh");
+			};
+			let donor = vec![17.0; 130];
+			let ColumnOutcome::Complete(reused) =
+				plan.execute_reusing(&columns, options(100000, true), donor, || false)
+			else {
+				panic!("spare capacity caused replay");
+			};
+			assert_eq!(fresh.path, reused.path);
+			assert_eq!(fresh.remaining_work, reused.remaining_work);
+			let ColumnValues::F64(values) = reused.values else {
+				panic!("type");
+			};
+			assert_eq!(
+				values,
+				(0..65)
+					.map(|i| if !masked || i % 2 == 0 { 2.0 } else { 0.0 })
+					.collect::<Vec<_>>()
+			);
+			assert!(values.capacity() < 130, "oversized backing was retained");
+		}
 	}
 }

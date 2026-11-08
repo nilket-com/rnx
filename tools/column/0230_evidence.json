@@ -1,0 +1,14 @@
+{
+  "measured_commit": "6db3413be123052cf7e1cc19487df3cb5a64aae1",
+  "binary_sha256": "2a96271ce009d0ccc088620dd006f38e19b24403d638d0a57b16cb93f07f35fa",
+  "receipts": {
+    "CONTROLS-v1/RESULT.json": "35555abe7e90b3b38d1a4a1a0f03766a42867e30821178384c68044d6bbdd24c",
+    "MIRI-v1/RESULT.json": "4f872deb46c567b30d69f1e42e6812f933b5afbba19f9521e807a4e8ffda72d0",
+    "BUILD-v1/RESULT.json": "d13ca34acc4ec7b0566ae08ba19728d590e07bd12e7ba3500f13eca9509555bb",
+    "SMALL-v1/RESULT.json": "b22d917ad8e62dcae5f9d16161e9340610930a9004c7a5ff359ab93ae4bbb75e",
+    "FAULTS-v1/RESULT.json": "074946dd38373856a14f7f2f2bacdf922620c66afa50c835e6aa97b36012b60b",
+    "TIMING-EVIDENCE-v1/RESULT.json": "7224697ffad0838af781736173249f0cbb01cb2f6de782b10ce9eb75ce41908e",
+    "PHASES-v2/f64const/PHASES.json": "e2bdf31e92d594c17eeeb26fb013fc7614acf527a2367723bfefc1fd56dedfec",
+    "PHASES-v2/f64add/PHASES.json": "a780e85b4171da7b12840e6a520ad0beafb4d2cb9874589105bab460203b2ce2"
+  }
+}

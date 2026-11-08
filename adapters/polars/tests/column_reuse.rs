@@ -88,17 +88,23 @@ fn reuse_matrix_failure_and_retention() {
 			let fresh = column::apply(&mut k, &refs, options(1000000), || false).unwrap();
 			let expected = bits(&fresh.series);
 			let work = fresh.remaining_work;
+			let path = format!("{:?}", k.last_path());
+			let shared = fresh.series.clone();
+			let sliced = shared.slice(1, n - 1);
 			for donor in [
 				fresh.series,
 				floats(vec![99.0; n]),
 				floats(vec![99.0; n * 4]),
 				floats(vec![99.0; 1]),
+				shared.clone(),
+				sliced,
 			] {
 				let reused =
 					column::apply_reusing(&mut k, &refs, options(1000000), donor, || false)
 						.unwrap();
 				assert_eq!(bits(&reused.series), expected, "{source} layout {layout}");
 				assert_eq!(reused.remaining_work, work);
+				assert_eq!(format!("{:?}", k.last_path()), path);
 			}
 		}
 	}
@@ -146,10 +152,10 @@ fn reuse_matrix_failure_and_retention() {
 	.unwrap();
 	assert!(zero.series.is_empty());
 	// Warm metadata/thread initialization before observing process-wide allocation.
-	let small = floats(vec![1.0; 65]);
+	let small = Series::new("masked".into(), (0..65).map(|i| (i % 2 == 0).then_some(1.0)).collect::<Vec<_>>());
 	drop(column::apply(&mut k, &[&small], options(10000), || false).unwrap());
 	let before = rnx::allocation::live().unwrap();
-	let donor = floats(vec![0.0; 1 << 20]);
+	let donor = Series::new("masked".into(), (0..1 << 20).map(|i| (i % 2 == 0).then_some(0.0)).collect::<Vec<_>>());
 	let peak = rnx::allocation::live().unwrap();
 	assert!(peak >= before + 8 * (1 << 20));
 	let result = column::apply_reusing(&mut k, &[&small], options(10000), donor, || false).unwrap();
@@ -170,6 +176,8 @@ fn cases() -> Vec<(
 	&'static [i64],
 )> {
 	vec![
+		("pub fn map(x,y) { x - y }", &[ColumnType::F64, ColumnType::F64], ColumnType::F64, &[1, 2]),
+		("pub fn map(x,y) { x * y }", &[ColumnType::F64, ColumnType::F64], ColumnType::F64, &[1, 2]),
 		(
 			"pub fn map(x,y) { x & y }",
 			&[ColumnType::Bool, ColumnType::Bool],

@@ -247,6 +247,36 @@ mod tests {
 							));
 						}
 						assert_eq!(states[0], states[1]);
+						// Reuse and fallback cover the same offset/chunk/NaN matrix.
+						for capacity in [n, n.saturating_sub(1), (n + 1) * 3] {
+							let donor = vec![f64::from_bits(0x7ff8000000000099); capacity];
+							let pointer = donor.as_ptr();
+							let token = plan
+								.allocate_batch_reusing(&columns, options, donor, &mut || false)
+								.unwrap();
+							let ColumnOutcome::Complete(result) = token.invoke(|| false) else {
+								panic!("reuse");
+							};
+							let ColumnValues::F64(values) = result.values else {
+								panic!("type");
+							};
+							if n > 0 && capacity == n {
+								assert_eq!(pointer, values.as_ptr());
+							}
+							if n == 0 {
+								assert_eq!(values.capacity(), 0);
+							}
+							assert_eq!(
+								states[0],
+								(
+									values.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+									result.validity,
+									result.valid_rows,
+									result.remaining_work,
+									result.path
+								)
+							);
+						}
 						let charge = 100000 - states[0].3;
 						assert!(matches!(
 							plan.execute(
@@ -287,9 +317,30 @@ mod tests {
 								..
 							}
 						));
+						assert!(matches!(
+							plan.execute_reusing(&columns, options, vec![0.0; n], || false),
+							ColumnOutcome::Replay {
+								reason: ColumnRefusal::Memory,
+								..
+							}
+						));
 						plan.limit = old;
+						assert!(matches!(
+							plan.execute_reusing(&columns, options, vec![0.0; n], || true),
+							ColumnOutcome::Replay {
+								reason: ColumnRefusal::Canceled,
+								..
+							}
+						));
 						for stop in [0, 1, 2] {
-							let token = plan.prepare_batch(&columns, options, || false).unwrap();
+							let token = plan
+								.allocate_batch_reusing(
+									&columns,
+									options,
+									vec![0.0; n],
+									&mut || false,
+								)
+								.unwrap();
 							let mut calls = 0;
 							let outcome = token.invoke(|| {
 								let yes = calls >= stop;
