@@ -76,3 +76,50 @@ Send the publication packet with changed-route curves, unchanged-route proof,
 actual scratch/cancellation costs, and limitations. Publish only after review
 and all required gates pass. The bench follower reports driver-specific
 results and retains the shared 1024 decision; no cross-day comparison claims.
+
+## Disposition: withdrawn
+
+The 4096-row implementation is preserved in a verified local Git bundle,
+with its original SMALL, LARGE and TIMING receipts. No runtime change ships.
+Production predicate.rs and run.rs are restored exactly to published
+`bc4a2065b04f9f023f1275de63b7e15deabc37db`. Boundary tests and measurement tools, including exact pins, remain in the
+verified archive. The withdrawal commit changes only this paired documentation,
+as required by the commit checker.
+
+All large instruction-count gates passed. TIMING-v1 completed successfully
+as a capture but FAILED acceptance: at 100M, both motivating expressions had
+to improve by at least 5% in every layout. Four cells missed that target.
+There is no rescoring, retry, or post-result exception.
+
+| Expression | Layout | Before ms | After ms | Change |
+|---|---|---:|---:|---:|
+| i64eq_pair | flat | 92.0 | 82.2 | -10.7% |
+| i64eq_pair | alternating | 88.3 | 91.7 | +3.9% |
+| i64eq_pair | deterministic-random | 95.7 | 87.3 | -8.8% |
+| i64eq_pair | sliced-chunked-null | 77.5 | 72.1 | -6.9% |
+| mixedor | flat | 125.1 | 115.2 | -7.9% |
+| mixedor | alternating | 139.7 | 134.1 | -4.0% |
+| mixedor | deterministic-random | 133.7 | 129.8 | -2.9% |
+| mixedor | sliced-chunked-null | 104.9 | 103.5 | -1.3% |
+
+These are medians of six fresh processes, each with one first and five warm
+calls, exactly three AB and three BA rounds per cell, and a fixed 120-second
+cooldown per round. No first/warm case had separated slowdown ranges, but
+overlap does not establish equivalence. At 64K, flat arithmetic-then-compare
+had a 1.96x warm median with overlapping ranges. This is a warning signal,
+consistent with the larger fixed scratch zero-fill cost, not a proven cause.
+
+Flat gains did not establish the required broad benefit across null layouts.
+A future design may size scratch to input and choose block size once per call,
+with the size selected by evidence; it must be a separate record.
+
+Withdrawal validation: prove an empty production diff against the published
+baseline, run the final host/integration/generated/
+cross chain with receipt and exit checks, then the commit checker. The empty
+production diff replaces a redundant performance recapture. Retain all failed
+experimental receipts. No benchmark follower is needed for unshipped behavior.
+
+The initial withdrawal retained tests and tools; its core controls passed, but
+FINAL-v1 failed the sequence.withdrawal policy at preflight. The corrected
+withdrawal restores every non-plan file to the published baseline. No checker
+exception is introduced. The original failure receipt is retained.

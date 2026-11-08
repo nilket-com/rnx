@@ -1,6 +1,11 @@
 # ADR 0234: Predicate-driver block size
 
-Status: Accepted
+Status: Withdrawn
+
+The implementation was withdrawn after the installed all-layout timing target
+failed. Predicate execution and scratch sizing remain at 1024. Boundary tests
+and measurement tools are retained; the implementation plan records the results.
+The following is the original proposal, not shipped behavior.
 
 The read-only sweep on published `bc4a2065` does not justify changing the
 shared 1024-row block. It does identify a predicate-specific opportunity.
