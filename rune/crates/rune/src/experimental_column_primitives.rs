@@ -267,6 +267,77 @@ impl NumericOutput<f64> {
 		self.written += count;
 	}
 
+	/// Initialize an all-null block for the write-only masked F64 route.
+	pub(crate) fn zero_masked_block(&mut self, count: usize) {
+		let destination = self.destination(count);
+		// SAFETY: destination is a checked, writable spare-capacity slice.
+		// All-zero bytes initialize each f64 to positive zero; no old value
+		// is read. Publish coverage only after the complete write.
+		unsafe { destination.as_mut_ptr().write_bytes(0, count) };
+		self.written += count;
+	}
+
+	/// Write a complete masked block without reading the destination.
+	pub(crate) fn masked_block(
+		&mut self,
+		engine: Engine,
+		x: &[f64],
+		rhs: FloatRhs<'_>,
+		masks: &[u64],
+	) {
+		assert_eq!(masks.len(), x.len().div_ceil(64));
+		if let FloatRhs::Column(_, y) = rhs {
+			assert_eq!(x.len(), y.len());
+		}
+		let count = x.len();
+		let all = masks
+			.iter()
+			.enumerate()
+			.all(|(i, &m)| m == u64::MAX >> (64 - (count - i * 64).min(64)));
+		let out = self.destination(count);
+		#[cfg(target_arch = "x86_64")]
+		if engine.avx2 {
+			// SAFETY: runtime AVX2, equal input/destination lengths and one mask per
+			// 64 lanes. Separate write-only symbols never read destination storage.
+			unsafe {
+				if all {
+					match rhs {
+						FloatRhs::AddConstant(c) => simd::masked_all_constant_uninit(x, c, out),
+						FloatRhs::Column(op, y) => simd::masked_all_pair_uninit(op, x, y, out),
+					}
+				} else {
+					match rhs {
+						FloatRhs::AddConstant(c) => simd::masked_constant_uninit(x, c, out, masks),
+						FloatRhs::Column(FloatOp::Add, y) => {
+							simd::masked_pair_uninit::<1>(x, y, out, masks)
+						}
+						FloatRhs::Column(FloatOp::Sub, y) => {
+							simd::masked_pair_uninit::<2>(x, y, out, masks)
+						}
+						FloatRhs::Column(FloatOp::Mul, y) => {
+							simd::masked_pair_uninit::<3>(x, y, out, masks)
+						}
+					}
+				}
+			}
+			self.written += count;
+			return;
+		}
+		let _ = (engine, all);
+		for (i, (out, &a)) in out.iter_mut().zip(x).enumerate() {
+			let value = match rhs {
+				FloatRhs::AddConstant(c) => a + c,
+				FloatRhs::Column(FloatOp::Add, y) => a + y[i],
+				FloatRhs::Column(FloatOp::Sub, y) => a - y[i],
+				FloatRhs::Column(FloatOp::Mul, y) => a * y[i],
+			};
+			out.write(f64::from_bits(
+				value.to_bits() & 0u64.wrapping_sub((masks[i / 64] >> (i % 64)) & 1),
+			));
+		}
+		self.written += count;
+	}
+
 	pub(crate) fn floats(&mut self, engine: Engine, x: &[f64], c: f64) {
 		engine.floats_uninit(x, c, self.destination(x.len()));
 		self.written += x.len();
@@ -956,6 +1027,163 @@ mod simd {
 			i += 1;
 		}
 		failed
+	}
+
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
+	pub(super) fn masked_all_pair_uninit(
+		op: super::FloatOp,
+		x: &[f64],
+		y: &[f64],
+		out: &mut [core::mem::MaybeUninit<f64>],
+	) {
+		let n = x.len().min(y.len()).min(out.len());
+		let vector_end = n & !15;
+		macro_rules! apply {
+			($vector:ident, $scalar:tt) => {{
+				let mut i = 0;
+				// SAFETY: each load/store covers four lanes within the minimum
+				// input/output length. The exclusive destination is write-only.
+				unsafe {
+					macro_rules! vector {
+						($index:expr) => {{
+							let a = _mm256_loadu_pd(x.as_ptr().add($index));
+							let b = _mm256_loadu_pd(y.as_ptr().add($index));
+							_mm256_storeu_pd(out.as_mut_ptr().add($index).cast(), $vector(a, b));
+						}};
+					}
+					while i < vector_end {
+						vector!(i);
+						vector!(i + 4);
+						vector!(i + 8);
+						vector!(i + 12);
+						i += 16;
+					}
+					while i + 4 <= n {
+						vector!(i);
+						i += 4;
+					}
+				}
+				while i < n {
+					out[i].write(x[i] $scalar y[i]);
+					i += 1;
+				}
+			}};
+		}
+		match op {
+			super::FloatOp::Add => apply!(_mm256_add_pd, +),
+			super::FloatOp::Sub => apply!(_mm256_sub_pd, -),
+			super::FloatOp::Mul => apply!(_mm256_mul_pd, *),
+		}
+	}
+	#[target_feature(enable = "avx2")]
+	#[inline(never)]
+	pub(super) fn masked_all_constant_uninit(
+		x: &[f64],
+		c: f64,
+		out: &mut [core::mem::MaybeUninit<f64>],
+	) {
+		let n = x.len().min(out.len());
+		let vector_end = n & !15;
+		let constant = _mm256_set1_pd(c);
+		let mut i = 0;
+		// SAFETY: bounded four-lane accesses, unaligned loads/stores, and an
+		// exclusive output slice; no uninitialized element is ever read.
+		unsafe {
+			macro_rules! vector {
+				($index:expr) => {{
+					let value = _mm256_loadu_pd(x.as_ptr().add($index));
+					_mm256_storeu_pd(
+						out.as_mut_ptr().add($index).cast(),
+						_mm256_add_pd(value, constant),
+					);
+				}};
+			}
+			while i < vector_end {
+				vector!(i);
+				vector!(i + 4);
+				vector!(i + 8);
+				vector!(i + 12);
+				i += 16;
+			}
+			while i + 4 <= n {
+				vector!(i);
+				i += 4;
+			}
+		}
+		while i < n {
+			out[i].write(x[i] + c);
+			i += 1;
+		}
+	}
+	macro_rules! masked_uninit_body {
+		($x:ident, $y:expr, $c:expr, $out:ident, $masks:ident, $kind:expr) => {{
+			let (x, y, c, out, masks): (_, &[f64], f64, _, _) = ($x, $y, $c, $out, $masks);
+			let mut i = 0;
+			let constant = _mm256_set1_pd(c);
+			while i + 16 <= out.len() {
+				let bits = _mm256_set1_epi64x((masks[i / 64] >> (i % 64)) as i64);
+				macro_rules! vector {
+					($offset:expr, $shift:expr) => {{
+						let lanes =
+							_mm256_set_epi64x(8 << $shift, 4 << $shift, 2 << $shift, 1 << $shift);
+						let valid = _mm256_cmpeq_epi64(_mm256_and_si256(bits, lanes), lanes);
+						let a = _mm256_loadu_pd(x.as_ptr().add(i + $offset));
+						let b = if $kind == 0 {
+							constant
+						} else {
+							_mm256_loadu_pd(y.as_ptr().add(i + $offset))
+						};
+						let value = match $kind {
+							0 | 1 => _mm256_add_pd(a, b),
+							2 => _mm256_sub_pd(a, b),
+							_ => _mm256_mul_pd(a, b),
+						};
+						_mm256_storeu_pd(
+							out.as_mut_ptr().add(i + $offset).cast(),
+							_mm256_and_pd(value, _mm256_castsi256_pd(valid)),
+						);
+					}};
+				}
+				vector!(0, 0);
+				vector!(4, 4);
+				vector!(8, 8);
+				vector!(12, 12);
+				i += 16;
+			}
+			while i < out.len() {
+				let a = x[i];
+				let b = if $kind == 0 { c } else { y[i] };
+				let value = match $kind {
+					0 | 1 => a + b,
+					2 => a - b,
+					_ => a * b,
+				};
+				out[i].write(f64::from_bits(
+					value.to_bits() & 0u64.wrapping_sub(masks[i / 64] >> (i % 64) & 1),
+				));
+				i += 1;
+			}
+		}};
+	}
+
+	#[target_feature(enable = "avx2")]
+	pub(super) unsafe fn masked_constant_uninit(
+		x: &[f64],
+		c: f64,
+		out: &mut [core::mem::MaybeUninit<f64>],
+		masks: &[u64],
+	) {
+		masked_uninit_body!(x, &[], c, out, masks, 0);
+	}
+	#[target_feature(enable = "avx2")]
+	pub(super) unsafe fn masked_pair_uninit<const KIND: u8>(
+		x: &[f64],
+		y: &[f64],
+		out: &mut [core::mem::MaybeUninit<f64>],
+		masks: &[u64],
+	) {
+		masked_uninit_body!(x, y, 0.0, out, masks, KIND);
 	}
 
 	macro_rules! masked_float_body {

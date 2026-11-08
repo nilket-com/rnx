@@ -15,6 +15,8 @@ mod operands;
 
 #[path = "flat.rs"]
 mod flat;
+#[path = "masked_float.rs"]
+mod masked_float;
 use flat::Output;
 
 #[path = "boolean.rs"]
@@ -170,7 +172,11 @@ impl PreparedToken<'_, '_> {
 	pub fn invoke(self, mut canceled: impl FnMut() -> bool) -> ColumnOutcome {
 		match self.inner {
 			BatchKind::Initialized(batch) => batch.invoke(canceled),
-			BatchKind::Flat(batch) => match batch.run_flat(&mut canceled) {
+			BatchKind::Flat(batch) => match if batch.validity.is_some() {
+				masked_float::run(batch, &mut canceled)
+			} else {
+				batch.run_flat(&mut canceled)
+			} {
 				Ok(result) => ColumnOutcome::Complete(result),
 				Err((reason, fault)) => ColumnOutcome::Replay { reason, fault },
 			},
@@ -258,7 +264,9 @@ impl PreparedColumn {
 			.checked_mul(self.row_charge)
 			.filter(|&n| n <= options.work)
 			.ok_or((ColumnRefusal::Fuel, None))?;
-		let values = if flat::eligible(self, columns, masked) {
+		let values = if flat::eligible(self, columns, masked)
+			|| masked_float::eligible(self, masked)
+		{
 			Output::reserve(self.output, len, room).map_err(allocation)?
 		} else {
 			Output::Initialized(match self.output {
