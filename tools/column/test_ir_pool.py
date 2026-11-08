@@ -40,7 +40,7 @@ class Controls(unittest.TestCase):
 		self.assertNotEqual(p.returncode, 0)
 		self.assertIn("requires assertions", p.stderr)
 
-	def test_tooling_failure_writes_receipt_and_sends_notice(self):
+	def test_tooling_failure_writes_receipt_without_notifier(self):
 		import json
 		import tempfile
 		from pathlib import Path
@@ -52,9 +52,7 @@ class Controls(unittest.TestCase):
 				"--valgrind", tmp, "--resources", tmp, "--mode", "preflight"]
 			with patch("sys.argv", argv), patch.object(ir_pool, "tooling", side_effect=RuntimeError("injected tooling setup failure")), patch.object(ir_pool.subprocess, "run") as send:
 				self.assertEqual(ir_pool.main(), 1)
-				send.assert_called_once()
-				self.assertEqual(send.call_args.args[0][:2], ["chatctl", "send"])
-				self.assertIn(str(out / "NOTICE.txt"), send.call_args.args[0])
+				send.assert_not_called()
 			self.assertEqual(json.loads((out / "RESULT.json").read_text())["status"], "FAIL")
 			self.assertIn("injected tooling setup failure", (out / "RESULT.json").read_text())
 			self.assertIn("EXIT FAIL", (out / "NOTICE.txt").read_text())

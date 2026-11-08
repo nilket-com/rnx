@@ -19,7 +19,6 @@ def main():
 	parser = argparse.ArgumentParser(description=__doc__)
 	parser.add_argument("--out", required=True, type=Path)
 	parser.add_argument("--scope", choices=("host", "adapter", "all"), default="all")
-	parser.add_argument("--notify", action="store_true")
 	parser.add_argument("--cli", action="store_true", help="build and check the real adapter CLI after all prerequisites")
 	parser.add_argument("--release", action="store_true", help="use the production release profile for --cli")
 	parser.add_argument("--remote", help="preflight BatchMode access before remote gates")
@@ -103,8 +102,6 @@ def main():
 		receipt.write_text(json.dumps(result, indent=2) + "\n")
 		notice = out / "NOTICE.txt"
 		notice.write_text(f'0205 {args.scope} development prerequisites/controls EXIT {result["status"]}. Receipt: {receipt}\n')
-		if args.notify:
-			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", notice.read_text().split(". Receipt:")[0], "--body-file", str(notice)], check=True)
 		print(notice.read_text().strip())
 	return 0 if result["status"] == "PASS" else 1
 

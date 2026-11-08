@@ -65,11 +65,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/044/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/044/observation.json"
         }
       },
       "proposed_after": {
@@ -237,11 +237,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/089/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/089/observation.json"
         }
       },
       "proposed_after": {
@@ -473,11 +473,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/098/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/098/observation.json"
         }
       },
       "proposed_after": {
@@ -668,11 +668,11 @@
       "before_provenance": {
         "stock": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-stock/055/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-stock/055/observation.json"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-fresh/055/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-fresh/055/observation.json"
         }
       },
       "proposed_after": {
@@ -769,11 +769,11 @@
       "before_provenance": {
         "stock": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-stock/056/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-stock/056/observation.json"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-fresh/056/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/tuple-let-fresh/056/observation.json"
         }
       },
       "proposed_after": {
@@ -887,11 +887,11 @@
       "before_provenance": {
         "stock": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-stock/151/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-stock/151/observation.json"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-fresh/151/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-fresh/151/observation.json"
         }
       },
       "proposed_after": {
@@ -988,11 +988,11 @@
       "before_provenance": {
         "stock": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-stock/154/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-stock/154/observation.json"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-fresh/154/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/deferred-index-fresh/154/observation.json"
         }
       },
       "proposed_after": {
@@ -1118,11 +1118,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/040/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/040/observation.json"
         }
       },
       "proposed_after": {
@@ -1289,11 +1289,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/041/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/041/observation.json"
         }
       },
       "proposed_after": {
@@ -1460,11 +1460,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/042/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/042/observation.json"
         }
       },
       "proposed_after": {
@@ -1649,11 +1649,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/075/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/075/observation.json"
         }
       },
       "proposed_after": {
@@ -1838,11 +1838,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/076/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/076/observation.json"
         }
       },
       "proposed_after": {
@@ -2009,11 +2009,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/077/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/077/observation.json"
         }
       },
       "proposed_after": {
@@ -2198,11 +2198,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/078/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/078/observation.json"
         }
       },
       "proposed_after": {
@@ -2389,11 +2389,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/079/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/079/observation.json"
         }
       },
       "proposed_after": {
@@ -2578,11 +2578,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/080/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/080/observation.json"
         }
       },
       "proposed_after": {
@@ -2767,11 +2767,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/081/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/081/observation.json"
         }
       },
       "proposed_after": {
@@ -2938,11 +2938,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/082/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/082/observation.json"
         }
       },
       "proposed_after": {
@@ -3127,11 +3127,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/083/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/083/observation.json"
         }
       },
       "proposed_after": {
@@ -3316,11 +3316,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/085/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/085/observation.json"
         }
       },
       "proposed_after": {
@@ -3487,11 +3487,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/096/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/096/observation.json"
         }
       },
       "proposed_after": {
@@ -3658,11 +3658,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/097/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/097/observation.json"
         }
       },
       "proposed_after": {
@@ -3847,11 +3847,11 @@
       "before_provenance": {
         "stock": {
           "kind": "frozen stock plus accepted Intentional D1b/c/d migrations; not a D1e replay",
-          "path": "/home/me/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
+          "path": "~/work/.worktrees/rune-0185-f1c/crates/rune/src/experimental_core/tests/callback_sort_stock.tsv"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/090/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates1/legacy-gates5/strict131/090/observation.json"
         }
       },
       "proposed_after": {
@@ -3972,11 +3972,11 @@
       "before_provenance": {
         "stock": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/format-specs-stock/254/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/format-specs-stock/254/observation.json"
         },
         "fresh": {
           "kind": "accepted D1d raw receipt",
-          "path": "/home/me/work/.reviews/0185-d1d-final-gates3/full32-resume/format-specs-fresh/254/observation.json"
+          "path": "~/work/.reviews/0185-d1d-final-gates3/full32-resume/format-specs-fresh/254/observation.json"
         }
       },
       "proposed_after": {

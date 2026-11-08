@@ -12,8 +12,8 @@ python3 rune/tools/xtask/supplemental/run.py --root "$PWD" \
   --launch --unit rune-supplemental-cold --require-overlap
 ```
 
-Add `--notify-chatd` when terminal notification to Codex is wanted. Do not poll.
-A service exit can also be awaited externally. `--workers` only reduces the
+External launchers may notify on the terminal receipt. Do not poll.
+Await the service exit directly. `--workers` only reduces the
 resource-derived limit. Launch enforces MemoryMax, zero swap and group cleanup.
 
 After an interruption, use the same output path and identity with `--resume`.

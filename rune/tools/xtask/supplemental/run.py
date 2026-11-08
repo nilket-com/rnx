@@ -192,7 +192,6 @@ def main():
 	parser.add_argument('--workers', type=int)
 	parser.add_argument('--launch', action='store_true')
 	parser.add_argument('--unit', default='rune-supplemental-miri')
-	parser.add_argument('--notify-chatd', action='store_true')
 	parser.add_argument('--require-overlap', action='store_true')
 	args = parser.parse_args()
 	args.require_overlap = args.require_overlap or args.scope == 'tooling-short'
@@ -240,11 +239,8 @@ def main():
 		path = directory / ('INVOCATION-' + uuid.uuid4().hex + '.json')
 		atomic_json(path, result)
 		print(result['status'] + ': ' + str(path), flush=True)
-		if args.notify_chatd:
-			notice = path.with_suffix('.txt')
-			notice.write_text('ADR0210 supplemental Miri ' + result['status'] + '. Receipt: ' + str(path) + '\n')
-			subprocess.run(['chatctl', 'send', '--as', 'sluice', '--to', 'codex', '--conversation', 'rune-native',
-				'--summary', 'ADR0210 supplemental Miri EXIT ' + result['status'], '--body-file', str(notice)], check=True)
+		notice = path.with_suffix('.txt')
+		notice.write_text('ADR0210 supplemental Miri ' + result['status'] + '. Receipt: ' + str(path) + '\n')
 	return 0 if result['status'] == 'PASS' else 1
 
 

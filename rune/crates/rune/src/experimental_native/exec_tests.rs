@@ -1524,11 +1524,11 @@ fn p1c_maps_parser_synthetic_lines() {
 	assert_eq!(heap.path.as_deref(), Some("[heap]"));
 	assert!(heap.writable() && !heap.executable());
 
-	let spaced = "7f1c2b000000-7f1c2b022000 r-xp 0001a000 fd:01 1234567                    /home/u/dir with spaces/lib x.so (deleted)";
+	let spaced = "7f1c2b000000-7f1c2b022000 r-xp 0001a000 fd:01 1234567                    /tmp/dir with spaces/lib x.so (deleted)";
 	let spaced = parse_maps_line(spaced).unwrap();
 	assert_eq!(
 		spaced.path.as_deref(),
-		Some("/home/u/dir with spaces/lib x.so (deleted)")
+		Some("/tmp/dir with spaces/lib x.so (deleted)")
 	);
 	assert_eq!((spaced.offset, spaced.perms.as_str()), (0x1a000, "r-xp"));
 

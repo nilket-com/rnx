@@ -43,7 +43,7 @@ contains an ASLR-dependent address. The object/nested-parent row therefore
 observes parent length; the separate nested-child row observes the access error.
 The original raw table and failed check are retained, not normalized.
 
-Local raw receipts: `/home/me/work/.reviews/0185-s-len-clone-stock3`.
+Local raw receipts: `~/work/.reviews/0185-s-len-clone-stock3`.
 The initial discovery run (`...stock1`) is preserved: it used the old generic
 BadArgumentCount classifier and formatted nested values directly, encountering
 Debug's depth cap at depth 64. The final table uses explicit ArgumentCount and

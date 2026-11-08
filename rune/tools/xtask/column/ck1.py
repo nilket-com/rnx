@@ -20,7 +20,6 @@ def main():
 	parser.add_argument("--out", required=True, type=Path)
 	parser.add_argument("--probe", action="store_true", help="build and validate the production column measurement probe after prerequisites")
 	parser.add_argument("--full", action="store_true", help="run the full Rune library suite after prerequisites")
-	parser.add_argument("--notify", action="store_true", help="send only the terminal receipt to Codex via chatd")
 	parser.add_argument("--ck2", action="store_true", help="CK2 validity-aware primitive record")
 	parser.add_argument("--budget", action="store_true", help="B1 ambient-budget controls before the optional full suite")
 	parser.add_argument("--budget-halt", action="store_true", help="B2 terminal host budget errors before the optional full suite")
@@ -101,8 +100,6 @@ def main():
 		receipt.write_text(json.dumps(result, indent=2) + "\n")
 		notice = out / "NOTICE.txt"
 		notice.write_text(f'{record} development prerequisites/focused controls EXIT {result["status"]}. Receipt: {receipt}\n')
-		if args.notify:
-			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", f'{record} development prerequisites/focused controls EXIT {result["status"]}', "--body-file", str(notice)], check=True)
 		print(notice.read_text().strip())
 	return 0 if result["status"] == "PASS" else 1
 

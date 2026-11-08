@@ -20,7 +20,7 @@ DIAGNOSTICS = frozenset(('scalar_while', 'range', 'b1_calls', 'n2_i64', 'n2_bool
 ALLOWED = frozenset(('tools/xtask/measure/seal_evidence.py', 'tools/xtask/measure/test_seal_evidence.py', 'tools/xtask/measure/counter_controller.py', 'tools/xtask/measure/counter_packet.py', 'tools/xtask/measure/test_counter_native_mappings.py', 'tools/xtask/measure/callgrind_rules.py', 'tools/xtask/measure/n5_qualification.py',
 	'tools/xtask/measure/test_n5_qualification.py', 'tools/xtask/measure/qualifications/n5.json',
 	'tools/xtask/measure/qualifications/n5-proof.json', 'tools/xtask/src/measure_checks.rs'))
-PROOF_SHA256 = 'cfabcdaa7885535f5465a65e11b53916dc4fbf1bddfa17586403298f9c486d6c'
+PROOF_SHA256 = '23164a58f61a0ea5338b8ea990ba6647901133806ed8ba4d0b85d2cd68832af4'
 POLICY = dict(schema=1, record='N5', baseline_milestone='N4', candidate_commit=CANDIDATE,
 	tip_commit=TIP, profile='cgu1', plan_commit=PLAN,
 	entries=[dict(rule='exact-host-invocation-entry', symbol=INVOKE, calls=1000,

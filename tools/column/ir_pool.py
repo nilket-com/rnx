@@ -253,7 +253,6 @@ def main():
 	finally:
 		terminal_json(o / "RESULT.json", result)
 		n = o / "NOTICE.txt"; n.write_text(f"rnx0206 parallel Ir {args.mode} EXIT {result['status']}. Receipt: {o / 'RESULT.json'}")
-		subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", f"rnx0206 parallel Ir {args.mode} EXIT {result['status']}", "--body-file", str(n)], check=True)
 	return 0 if result["status"] == "PASS" else 1
 
 

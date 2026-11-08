@@ -26,8 +26,7 @@ def main():
 	parser = argparse.ArgumentParser(description=__doc__)
 	parser.add_argument("--prerequisite", required=True, type=Path)
 	parser.add_argument("--out", required=True, type=Path)
-	parser.add_argument("--valgrind-root", type=Path, default=Path("/home/me/opt/valgrind"))
-	parser.add_argument("--notify", action="store_true")
+	parser.add_argument("--valgrind-root", type=Path, required=True)
 	args = parser.parse_args()
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
@@ -116,8 +115,6 @@ def main():
 		receipt.write_text(json.dumps(result, indent=2) + "\n")
 		notice = out / "NOTICE.txt"
 		notice.write_text(f'CK1 signed kernel gate EXIT {result["status"]}. Receipt: {receipt}. Attribute saved failure evidence read-only before code/rule changes.\n')
-		if args.notify:
-			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", f'CK1 signed kernel gate EXIT {result["status"]}', "--body-file", str(notice)], check=True)
 		print(notice.read_text().strip())
 	return 0 if result["status"] == "PASS" else 1
 

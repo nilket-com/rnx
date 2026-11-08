@@ -15,15 +15,15 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def main():
 	parser = argparse.ArgumentParser(description=__doc__)
-	parser.add_argument("--host", default="strix")
+	parser.add_argument("--host", required=True)
+	parser.add_argument("--remote-root", required=True, help="absolute verifier-owned work root")
 	parser.add_argument("--out", required=True, type=Path)
 	parser.add_argument("--memory-bytes", required=True, type=int)
 	parser.add_argument("--signers", type=Path, default=Path.home() / ".ssh/allowed_signers")
-	parser.add_argument("--notify", action="store_true")
 	args = parser.parse_args()
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
-	result = {"status": "FAIL"}
+	result = {"status": "FAIL", "host": args.host, "remote_root": args.remote_root, "memory_bytes": args.memory_bytes}
 	try:
 		subprocess.run(["python3", "-B", str(ROOT / "ci/disk_space.py"), "--path", str(ROOT), "--path", str(out)], check=True)
 		assert args.memory_bytes > 0
@@ -37,7 +37,8 @@ def main():
 		ssh = ["ssh", "-oBatchMode=yes", "-oConnectTimeout=15", args.host]
 		subprocess.run(ssh + ["true"], check=True)
 		label = "rnx-0205-" + candidate[:8] + "-" + out.name
-		remote = "/home/rnxverify/target/" + label
+		assert args.remote_root.startswith("/") and "\n" not in args.remote_root, "invalid remote work root"
+		remote = args.remote_root.rstrip("/") + "/" + label
 		prefix = "/tmp/" + label
 		bundle = out / "source.bundle"
 		subprocess.run(["git", "bundle", "create", str(bundle), "HEAD"], cwd=ROOT, check=True)
@@ -64,7 +65,7 @@ def main():
 		with (out / "remote.stdout").open("x") as stdout, (out / "remote.stderr").open("x") as stderr:
 			done = subprocess.run(ssh + [shlex.join(command)], stdout=stdout, stderr=stderr)
 		# Read the terminal receipt once, only after the blocking remote command exits.
-		receipt = subprocess.run(ssh + ["sudo", "-n", "-u", "rnxverify", "cat", remote + "/acceptance/RESULT.json"], check=True, capture_output=True)
+		receipt = subprocess.run(ssh + [shlex.join(["sudo", "-n", "-u", "rnxverify", "cat", remote + "/acceptance/RESULT.json"])], check=True, capture_output=True)
 		(out / "ACCEPTANCE.json").write_bytes(receipt.stdout)
 		accepted = json.loads(receipt.stdout)
 		result.update(candidate=candidate, remote=remote, memory_bytes=args.memory_bytes,
@@ -82,8 +83,6 @@ def main():
 		summary = "0205 fresh acceptance EXIT " + result["status"]
 		notice = out / "NOTICE.txt"
 		notice.write_text(summary + ". Receipt: " + str(receipt) + "\n")
-		if args.notify:
-			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", summary, "--body-file", str(notice)], check=True)
 	return 0 if result["status"] == "PASS" else 1
 
 

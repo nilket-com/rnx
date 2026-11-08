@@ -79,7 +79,6 @@ def main():
 		notice = out / "NOTICE.txt"
 		summary = config["label"] + " EXIT " + result["status"]
 		notice.write_text(summary + ". Receipt " + str(receipt) + ".\n")
-		subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", summary, "--body-file", str(notice)], check=True)
 	return 0 if result["status"] == "PASS" else 1
 
 

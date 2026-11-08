@@ -12,7 +12,10 @@
   exposed local controllers returning zero after recording a failed assertion;
   its parent PASS was superseded by a FAIL correction before acceptance.
 
-- Cleanup record: remove agent notification coupling and machine-specific paths from legacy column tooling (`rune/tools/xtask/column/ck1.py`, `cli_capture.py`, `measure.py`, `probe/build.rs`, and `fixtures/native/TABLE.json`); keep notifications in external launchers.
+- Tool-test discovery: rename the duplicate `test_protocol.py` modules or isolate
+  their imports so column-suite discovery cannot select the measure-suite module.
+  ADR 0231 preserved the discovery failure and verified every column test file
+  in a separate process; fix the aggregate discovery command in a tooling record.
 
 - Boolean plan output ownership remains initialized; consider separately from ADR 0222's numeric output owner.
 

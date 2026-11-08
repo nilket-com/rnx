@@ -3,7 +3,7 @@
 Run the ordered local checks with:
 
 ```sh
-python3 -B tools/column/verify.py --scope adapter --cli --out target/0205/dev-unique --notify
+python3 -B tools/column/verify.py --scope adapter --cli --out target/0205/dev-unique
 ```
 
 Every output directory must be new. The command pins source files, checks the
@@ -17,7 +17,7 @@ acceptance or performance evidence.
 For long jobs use the durable launcher with the declared exact memory ceiling:
 
 ```sh
-python3 -B tools/column/launch.py --unit rnx-0205-unique --cwd /absolute/rnx --hosts /absolute/hosts.json -- python3 -B tools/column/verify.py --scope adapter --cli --release --out target/0205/release-unique --notify
+python3 -B tools/column/launch.py --unit rnx-0205-unique --cwd /absolute/rnx --hosts /absolute/hosts.json -- python3 -B tools/column/verify.py --scope adapter --cli --release --out target/0205/release-unique
 ```
 
 The launcher propagates PATH and SSH_AUTH_SOCK, sets MemoryMax to the JSON
@@ -28,7 +28,7 @@ and tools must remain fixed for the entire run.
 After source review and signed implementation, launch fresh acceptance:
 
 ```sh
-python3 -B tools/column/accept_remote.py --host strix --memory-bytes 25769803776 --out target/0205/fresh-unique --notify
+python3 -B tools/column/accept_remote.py --host "$VERIFIER_HOST" --remote-root "$VERIFIER_ROOT" --memory-bytes 25769803776 --out target/0205/fresh-unique
 ```
 
 This requires a clean signed checkout, its signed parent, SSH agent and BatchMode
@@ -149,3 +149,6 @@ For a subsequent tooling-only amendment, `--verified-prerequisites RESULT` can
 reuse that paired candidate's successful prerequisites and production CLI run;
 the receipt and every stage log are hashed, and current tooling controls still
 run in the final clean clone. Any product change invalidates this reuse.
+
+Gate tools write terminal receipts and exit nonzero on failure. External launchers
+may notify after exit; no messaging service is required by these tools.

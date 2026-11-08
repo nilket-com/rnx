@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -15,6 +16,7 @@ parser.add_argument('--mode',choices=('preflight','full'),required=True)
 parser.add_argument('--out',type=Path,required=True)
 parser.add_argument('--build-receipt',type=Path,required=True)
 parser.add_argument('--rune-root',type=Path,required=True)
+parser.add_argument('--valgrind-root',type=Path,required=True)
 args=parser.parse_args()
 sys.path.insert(0,str(args.rune_root.resolve(strict=True)/'tools/xtask/measure'))
 import callgrind
@@ -67,10 +69,11 @@ try:
 		for p,h in pins.items():assert sha(p)==h,p
 		assert subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()==source_commit
 		assert not subprocess.check_output(['git','status','--porcelain'],cwd=ROOT,text=True).strip()
-	vgroot=Path('/home/me/opt/valgrind')
+	vgroot=args.valgrind_root.resolve(strict=True)
 	result['dependencies']=runtime.dependency_snapshot([Path(x['binary']) for x in build['builds'].values()]+[vgroot/'bin/valgrind',vgroot/'bin/vgdb',Path('/usr/bin/gdb'),Path('/usr/bin/python3')])
 	result['profiler']=runtime.tool_tree(vgroot)
-	env={'PATH':'/home/me/.cargo/bin:/usr/local/bin:/usr/bin:/bin','HOME':'/home/me','LANG':'C','LC_ALL':'C','POLARS_MAX_THREADS':'1'}
+	env={'PATH':os.defpath,'HOME':str(Path.home()),'LANG':'C','LC_ALL':'C','POLARS_MAX_THREADS':'1'}
+	result['environment']=env
 	families=[(kind,policy) for kind in KERNELS for policy in ('legacy','execution-off','execution-on')]+[('host','legacy'),('callback','legacy')]
 	if mode=='preflight':families=[('loops','execution-on'),('numeric_calls','legacy'),('callback','legacy')]
 	deadline=time.monotonic()+21600
@@ -120,5 +123,4 @@ finally:
 	(out/'RESULT.json').write_text(json.dumps(result,indent=2)+'\n')
 	summary='0205 existing-path '+mode+' EXIT '+result['status'];notice=out/'NOTICE.txt'
 	notice.write_text(summary+'. Receipt: '+str(out/'RESULT.json')+'\n')
-	subprocess.run(['chatctl','send','--as','sluice','--to','codex','--conversation','rune-native','--summary',summary,'--body-file',str(notice)],check=True)
 raise SystemExit(0 if result['status']=='PASS' else 1)

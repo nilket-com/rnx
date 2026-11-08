@@ -60,22 +60,22 @@
       "bytes": 2775
     },
     "trace": {
-      "path": "/home/me/work/rune/target/n5/cgu1-fib-counts-b04c17f8/TRACE.json",
+      "path": "~/work/rune/target/n5/cgu1-fib-counts-b04c17f8/TRACE.json",
       "sha256": "bbcca74445ddb5bc845797c76dfb513603616d4cd16e709b9b7bf2a1b37d9b6e",
       "bytes": 387741
     },
     "binary": {
       "bytes": 14258096,
-      "path": "/home/me/work/target/n5-b04c17f8/builds/candidate-cgu1-on/run/target/release/p2-probe-harness",
+      "path": "~/work/target/n5-b04c17f8/builds/candidate-cgu1-on/run/target/release/p2-probe-harness",
       "sha256": "2bc238d6f64d4dc7a21dc51cf41ba56fc00d3088c9542cf05ea07db00f69853f"
     },
     "source": {
-      "path": "/home/me/work/rune/tools/xtask/measure/kernels/fib.rn",
+      "path": "~/work/rune/tools/xtask/measure/kernels/fib.rn",
       "sha256": "d1d605ea61c5b09f421465beae93e45998506423e3aace2ce1c825f7afa578c1",
       "bytes": 88
     },
     "stream": {
-      "path": "/home/me/work/target/n5-b04c17f8/callgrind-cgu1/data/fib_main.txt",
+      "path": "~/work/target/n5-b04c17f8/callgrind-cgu1/data/fib_main.txt",
       "sha256": "bd02dd78733c6258ae3f67158ea2a44dc67fa2ba45c3a16cc02e38b751e2a004",
       "bytes": 303000
     },

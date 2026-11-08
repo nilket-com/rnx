@@ -109,7 +109,6 @@ def main():
 	parser.add_argument("--mode", choices=["preflight", "large"], required=True)
 	parser.add_argument("--preflight", type=Path)
 	parser.add_argument("--resume-from", type=Path)
-	parser.add_argument("--notify", action="store_true")
 	args = parser.parse_args()
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
@@ -224,8 +223,6 @@ def main():
 		cli_cache.atomic_json(out / "RESULT.json", result)
 		notice = out / "NOTICE.txt"
 		notice.write_text(f"CK2 CLI {args.mode} capture EXIT {result['status']}. Receipt: {out / 'RESULT.json'}\n")
-		if args.notify:
-			subprocess.run(["chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", f"CK2 CLI {args.mode} capture EXIT {result['status']}", "--body-file", str(notice)], check=True)
 	return 0 if result["status"] == "PASS" else 1
 
 

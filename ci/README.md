@@ -66,3 +66,13 @@ its paired documents and setting the ADR's opening `Status: Withdrawn`.
 Finish or withdraw the open record before starting a prerequisite. The checker
 reports sequence violations with the offending commit and rule in JSON.
 The cutoff is fixed policy, with no command-line override.
+
+# Tracked-file hygiene
+
+Preflight also runs `ci/hygiene.py` and its isolated controls. Live tracked code,
+tools and data cannot embed private home-root paths or the agent messaging
+executable. Historical documents are grandfathered only by the exact path/blob
+pairs in `hygiene_history.json`; any edited or new document must be clean.
+Use `--index` or `--revision REV` to scan the corresponding Git objects.
+Notification is an external launcher concern; repository tools persist terminal
+receipts and exit nonzero on failure.

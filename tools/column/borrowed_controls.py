@@ -57,7 +57,6 @@ def main():
 	parser.add_argument("--out", required=True, type=Path)
 	parser.add_argument("--scope", choices=["core", "host", "miri", "all"], default="all")
 	parser.add_argument("--resume", action="store_true")
-	parser.add_argument("--notify-chatd", action="store_true")
 	args = parser.parse_args()
 	out = args.out.resolve()
 	result = {"status": "FAIL", "scope": args.scope, "stages": []}
@@ -97,10 +96,8 @@ def main():
 		out.mkdir(parents=True, exist_ok=True)
 		receipt = out / ("INVOCATION-" + uuid.uuid4().hex + ".json")
 		atomic_json(receipt, result)
-		if args.notify_chatd:
-			notice = receipt.with_suffix(".txt")
-			notice.write_text(str(receipt) + "\n")
-			subprocess.run(["/home/me/.local/bin/chatctl", "send", "--as", "sluice", "--to", "codex", "--conversation", "rune-native", "--summary", "ADR0212 " + args.scope + " controls EXIT " + result["status"], "--body-file", str(notice)], check=True)
+		notice = receipt.with_suffix(".txt")
+		notice.write_text(str(receipt) + "\n")
 		print(result["status"], receipt)
 	return 0 if result["status"] == "PASS" else 1
 

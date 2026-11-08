@@ -2444,7 +2444,7 @@
   },
   "full_fuel": 100000,
   "max_frontier": 4096,
-  "frontier_source": "/home/me/work/.reviews/0185-r0187-exec-prep3/sources/103.rn",
+  "frontier_source": "~/work/.reviews/0185-r0187-exec-prep3/sources/103.rn",
   "bounds": {
     "cpu_s": 25,
     "wall_s": 30,
@@ -2455,7 +2455,7 @@
   "fuel_frontier_policy": {
     "policy": "Fuel-frontier",
     "cases": "0 through first full success inclusive, every integer once, hard maximum4096",
-    "source": "/home/me/work/.reviews/0185-r0187-exec-prep3/sources/103.rn"
+    "source": "~/work/.reviews/0185-r0187-exec-prep3/sources/103.rn"
   },
   "runtime_controls": [
     "absent",
@@ -2477,8 +2477,8 @@
       "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdin_pipe": true,
       "fuel": 100000,
-      "source_origin": "/home/me/work/.reviews/0185-r0187-exec-prep3/classifier-control-0.rn",
-      "stdin_origin": "/home/me/work/.reviews/0185-r0187-exec-prep3/classifier-control-0.stdin",
+      "source_origin": "~/work/.reviews/0185-r0187-exec-prep3/classifier-control-0.rn",
+      "stdin_origin": "~/work/.reviews/0185-r0187-exec-prep3/classifier-control-0.stdin",
       "stdin_spec": {
         "hex": ""
       }
@@ -2493,8 +2493,8 @@
       "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdin_pipe": true,
       "fuel": 100000,
-      "source_origin": "/home/me/work/.reviews/0185-r0187-exec-prep3/classifier-control-1.rn",
-      "stdin_origin": "/home/me/work/.reviews/0185-r0187-exec-prep3/classifier-control-1.stdin",
+      "source_origin": "~/work/.reviews/0185-r0187-exec-prep3/classifier-control-1.rn",
+      "stdin_origin": "~/work/.reviews/0185-r0187-exec-prep3/classifier-control-1.stdin",
       "stdin_spec": {
         "hex": ""
       }

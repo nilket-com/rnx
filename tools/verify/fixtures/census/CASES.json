@@ -1,13 +1,13 @@
 [
 	{
 		"id": "0000",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0000.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0000.rn",
 		"compiled_sha256": "dc09654969c967777d03f1b9afd34818eeffea874b17914f3bbf28a5f16d8766",
 		"source_bytes": 793,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/adapters/polars/tests/generated_e2e.rn",
+				"origin": "~/work/.worktrees/rnx-0185/adapters/polars/tests/generated_e2e.rn",
 				"mode": "raw",
 				"original_sha256": "dc09654969c967777d03f1b9afd34818eeffea874b17914f3bbf28a5f16d8766",
 				"prefix_bytes": 0,
@@ -27,13 +27,13 @@
 	},
 	{
 		"id": "0001",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0001.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0001.rn",
 		"compiled_sha256": "8e03ab3cf1f1b8c7e77b32a3b631b17b8489e6543e3c7dc20c0557a8f4ed54d7",
 		"source_bytes": 1627,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/demos/01_mortgage.rn",
+				"origin": "~/work/.worktrees/rnx-0185/demos/01_mortgage.rn",
 				"mode": "raw",
 				"original_sha256": "8e03ab3cf1f1b8c7e77b32a3b631b17b8489e6543e3c7dc20c0557a8f4ed54d7",
 				"prefix_bytes": 0,
@@ -53,13 +53,13 @@
 	},
 	{
 		"id": "0002",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0002.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0002.rn",
 		"compiled_sha256": "97fa752c6ad5c2da4c638d18108048ce58dd36dcec5c28a9ee82cbef6c97236e",
 		"source_bytes": 1901,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/demos/02_orders.rn",
+				"origin": "~/work/.worktrees/rnx-0185/demos/02_orders.rn",
 				"mode": "raw",
 				"original_sha256": "97fa752c6ad5c2da4c638d18108048ce58dd36dcec5c28a9ee82cbef6c97236e",
 				"prefix_bytes": 0,
@@ -79,13 +79,13 @@
 	},
 	{
 		"id": "0003",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0003.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0003.rn",
 		"compiled_sha256": "2ab9e5f64115efa5f06c5481659ee4215d9ad13ee2c85a73c88315b8d7ba9b46",
 		"source_bytes": 1933,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/demos/03_report.rn",
+				"origin": "~/work/.worktrees/rnx-0185/demos/03_report.rn",
 				"mode": "raw",
 				"original_sha256": "2ab9e5f64115efa5f06c5481659ee4215d9ad13ee2c85a73c88315b8d7ba9b46",
 				"prefix_bytes": 0,
@@ -105,13 +105,13 @@
 	},
 	{
 		"id": "0004",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0004.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0004.rn",
 		"compiled_sha256": "fe220e826940f64ede4fdca2860ee6100566e1211c5258ba14ccacb03c731064",
 		"source_bytes": 975,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/demos/candle/model.rn",
+				"origin": "~/work/.worktrees/rnx-0185/demos/candle/model.rn",
 				"mode": "raw",
 				"original_sha256": "fe220e826940f64ede4fdca2860ee6100566e1211c5258ba14ccacb03c731064",
 				"prefix_bytes": 0,
@@ -131,13 +131,13 @@
 	},
 	{
 		"id": "0005",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0005.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0005.rn",
 		"compiled_sha256": "e3a1e4215f864e2e56057420ac807338f7aff2a9a7c46f6490127e7ddfa0317d",
 		"source_bytes": 1308,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/demos/candle/search.rn",
+				"origin": "~/work/.worktrees/rnx-0185/demos/candle/search.rn",
 				"mode": "raw",
 				"original_sha256": "e3a1e4215f864e2e56057420ac807338f7aff2a9a7c46f6490127e7ddfa0317d",
 				"prefix_bytes": 0,
@@ -157,13 +157,13 @@
 	},
 	{
 		"id": "0006",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0006.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0006.rn",
 		"compiled_sha256": "201f4d1c565d3f76383edbd4d97da81858bc2550733d43cab328cbb67c385149",
 		"source_bytes": 1843,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/demos/polars/sales.rn",
+				"origin": "~/work/.worktrees/rnx-0185/demos/polars/sales.rn",
 				"mode": "raw",
 				"original_sha256": "201f4d1c565d3f76383edbd4d97da81858bc2550733d43cab328cbb67c385149",
 				"prefix_bytes": 0,
@@ -183,13 +183,13 @@
 	},
 	{
 		"id": "0007",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0007.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0007.rn",
 		"compiled_sha256": "bc1133a41e03afcc13d781bd50f914835c492dfcc6674dc29e8b9bb752f458a3",
 		"source_bytes": 4047,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/journey.rn",
+				"origin": "~/work/.worktrees/rnx-0185/journey.rn",
 				"mode": "raw",
 				"original_sha256": "bc1133a41e03afcc13d781bd50f914835c492dfcc6674dc29e8b9bb752f458a3",
 				"prefix_bytes": 0,
@@ -209,13 +209,13 @@
 	},
 	{
 		"id": "0008",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0008.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0008.rn",
 		"compiled_sha256": "601bc73131cdb8d0a5e152c0b31e8071a2102af245646712e79f7aaa72d4243a",
 		"source_bytes": 634,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0074/diag-join-order.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0074/diag-join-order.rn",
 				"mode": "raw",
 				"original_sha256": "601bc73131cdb8d0a5e152c0b31e8071a2102af245646712e79f7aaa72d4243a",
 				"prefix_bytes": 0,
@@ -235,13 +235,13 @@
 	},
 	{
 		"id": "0009",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0009.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0009.rn",
 		"compiled_sha256": "c8c51156cfca174754f6344a325936e760313b72106b12a958160add275d8c76",
 		"source_bytes": 466,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0079/probe/scripts/ctrlc.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0079/probe/scripts/ctrlc.rn",
 				"mode": "raw",
 				"original_sha256": "c8c51156cfca174754f6344a325936e760313b72106b12a958160add275d8c76",
 				"prefix_bytes": 0,
@@ -261,13 +261,13 @@
 	},
 	{
 		"id": "0010",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0010.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0010.rn",
 		"compiled_sha256": "259f02e0f89922c8979fc515240ded198c15e149111509a47aca49b43e7a937e",
 		"source_bytes": 3825,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0079/probe/scripts/smoke.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0079/probe/scripts/smoke.rn",
 				"mode": "raw",
 				"original_sha256": "259f02e0f89922c8979fc515240ded198c15e149111509a47aca49b43e7a937e",
 				"prefix_bytes": 0,
@@ -287,13 +287,13 @@
 	},
 	{
 		"id": "0011",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0011.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0011.rn",
 		"compiled_sha256": "dd72e6569ca821076c35e138c85d959f211ecf91bca1af84120b47de8c371261",
 		"source_bytes": 798,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0079/probe/scripts/starve.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0079/probe/scripts/starve.rn",
 				"mode": "raw",
 				"original_sha256": "dd72e6569ca821076c35e138c85d959f211ecf91bca1af84120b47de8c371261",
 				"prefix_bytes": 0,
@@ -313,13 +313,13 @@
 	},
 	{
 		"id": "0012",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0012.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0012.rn",
 		"compiled_sha256": "dd01ac5fdacd8a933f560e5851a711ab07f8f8e9be823ba8004c5234d5ae34c9",
 		"source_bytes": 501,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0079/probe/scripts/starve_denied.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0079/probe/scripts/starve_denied.rn",
 				"mode": "raw",
 				"original_sha256": "dd01ac5fdacd8a933f560e5851a711ab07f8f8e9be823ba8004c5234d5ae34c9",
 				"prefix_bytes": 0,
@@ -339,13 +339,13 @@
 	},
 	{
 		"id": "0013",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0013.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0013.rn",
 		"compiled_sha256": "4e826b8653441bb543f8e5c0c38e362a8f9ca65f131185adabb427adaf839a0a",
 		"source_bytes": 559,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0079/probe/scripts/starve_nested_callback.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0079/probe/scripts/starve_nested_callback.rn",
 				"mode": "raw",
 				"original_sha256": "4e826b8653441bb543f8e5c0c38e362a8f9ca65f131185adabb427adaf839a0a",
 				"prefix_bytes": 0,
@@ -365,13 +365,13 @@
 	},
 	{
 		"id": "0014",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0014.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0014.rn",
 		"compiled_sha256": "090496acd6b9ef5359409f315b24e9800b01d52b99daab993f72c402f6417642",
 		"source_bytes": 723,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0129/workflow.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0129/workflow.rn",
 				"mode": "raw",
 				"original_sha256": "090496acd6b9ef5359409f315b24e9800b01d52b99daab993f72c402f6417642",
 				"prefix_bytes": 0,
@@ -391,13 +391,13 @@
 	},
 	{
 		"id": "0015",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0015.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0015.rn",
 		"compiled_sha256": "f458ee3f76463fb1ac2be88b1bba45fd3394c4f9a8c49d090fed4929cd611c16",
 		"source_bytes": 1133,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0131/workflow.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0131/workflow.rn",
 				"mode": "raw",
 				"original_sha256": "f458ee3f76463fb1ac2be88b1bba45fd3394c4f9a8c49d090fed4929cd611c16",
 				"prefix_bytes": 0,
@@ -417,13 +417,13 @@
 	},
 	{
 		"id": "0016",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0016.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0016.rn",
 		"compiled_sha256": "ca926ec4b31a9498c7170ce064c89743bf0b2220b881e03a84c96759e9d70ef1",
 		"source_bytes": 5133,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0133/workflow-u1.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0133/workflow-u1.rn",
 				"mode": "raw",
 				"original_sha256": "ca926ec4b31a9498c7170ce064c89743bf0b2220b881e03a84c96759e9d70ef1",
 				"prefix_bytes": 0,
@@ -443,13 +443,13 @@
 	},
 	{
 		"id": "0017",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0017.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0017.rn",
 		"compiled_sha256": "a5892bb368c5743c24165958af8e0001ef03fd118a970ec16c88a5bdf2003715",
 		"source_bytes": 7609,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0133/workflow-u2.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0133/workflow-u2.rn",
 				"mode": "raw",
 				"original_sha256": "a5892bb368c5743c24165958af8e0001ef03fd118a970ec16c88a5bdf2003715",
 				"prefix_bytes": 0,
@@ -469,13 +469,13 @@
 	},
 	{
 		"id": "0018",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0018.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0018.rn",
 		"compiled_sha256": "cc3dd16e0cfbf970bdc1c880907aa927865d8b60c83dd75d867d92449e2a7e95",
 		"source_bytes": 7750,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0133/workflow-u3.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0133/workflow-u3.rn",
 				"mode": "raw",
 				"original_sha256": "cc3dd16e0cfbf970bdc1c880907aa927865d8b60c83dd75d867d92449e2a7e95",
 				"prefix_bytes": 0,
@@ -495,13 +495,13 @@
 	},
 	{
 		"id": "0019",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0019.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0019.rn",
 		"compiled_sha256": "febf66a4fd51b4d43ba3d8eb4d92babca3c71e33fc6fcbf7252fdf9a96a744f7",
 		"source_bytes": 3661,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0134/e1_search.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0134/e1_search.rn",
 				"mode": "raw",
 				"original_sha256": "febf66a4fd51b4d43ba3d8eb4d92babca3c71e33fc6fcbf7252fdf9a96a744f7",
 				"prefix_bytes": 0,
@@ -521,13 +521,13 @@
 	},
 	{
 		"id": "0020",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0020.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0020.rn",
 		"compiled_sha256": "07f323207777cb40cd31ce6c66258ba9a07a56ecec771a21977e8fc2d58d8ab9",
 		"source_bytes": 3624,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0134/e2_stats.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0134/e2_stats.rn",
 				"mode": "raw",
 				"original_sha256": "07f323207777cb40cd31ce6c66258ba9a07a56ecec771a21977e8fc2d58d8ab9",
 				"prefix_bytes": 0,
@@ -547,13 +547,13 @@
 	},
 	{
 		"id": "0021",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0021.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0021.rn",
 		"compiled_sha256": "19d6894a946e9e75cbd57c27a82b2046c0d43f61274f92de08a4b21078b50a52",
 		"source_bytes": 4713,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0134/e3_rank.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0134/e3_rank.rn",
 				"mode": "raw",
 				"original_sha256": "19d6894a946e9e75cbd57c27a82b2046c0d43f61274f92de08a4b21078b50a52",
 				"prefix_bytes": 0,
@@ -573,13 +573,13 @@
 	},
 	{
 		"id": "0022",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0022.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0022.rn",
 		"compiled_sha256": "2edaa079a63d21542cbc38312f333a1e7730841e36654063f06f4e27152a1a1b",
 		"source_bytes": 5544,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0136/workflow-u1c.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0136/workflow-u1c.rn",
 				"mode": "raw",
 				"original_sha256": "2edaa079a63d21542cbc38312f333a1e7730841e36654063f06f4e27152a1a1b",
 				"prefix_bytes": 0,
@@ -599,13 +599,13 @@
 	},
 	{
 		"id": "0023",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0023.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0023.rn",
 		"compiled_sha256": "dd7da7bcb0a3fccb33a08d9c8cc4454f0ea711b7de1edc11b92e4786171024ba",
 		"source_bytes": 2222,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0137/e4_pooled_duplicates.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0137/e4_pooled_duplicates.rn",
 				"mode": "raw",
 				"original_sha256": "dd7da7bcb0a3fccb33a08d9c8cc4454f0ea711b7de1edc11b92e4786171024ba",
 				"prefix_bytes": 0,
@@ -625,13 +625,13 @@
 	},
 	{
 		"id": "0024",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0024.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0024.rn",
 		"compiled_sha256": "eb1ab9738e3254adda584f48e7ea2e62624b43d08910f5637a25b9b8c70c59c3",
 		"source_bytes": 2661,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0137/e5_tour.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0137/e5_tour.rn",
 				"mode": "raw",
 				"original_sha256": "eb1ab9738e3254adda584f48e7ea2e62624b43d08910f5637a25b9b8c70c59c3",
 				"prefix_bytes": 0,
@@ -651,13 +651,13 @@
 	},
 	{
 		"id": "0025",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0025.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0025.rn",
 		"compiled_sha256": "8353d3df77b651218da75e329e59fc5596e8c8d1345299f856d17074a7735536",
 		"source_bytes": 5700,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0139/workflow-u4.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0139/workflow-u4.rn",
 				"mode": "raw",
 				"original_sha256": "8353d3df77b651218da75e329e59fc5596e8c8d1345299f856d17074a7735536",
 				"prefix_bytes": 0,
@@ -677,13 +677,13 @@
 	},
 	{
 		"id": "0026",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0026.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0026.rn",
 		"compiled_sha256": "f6c566af45c3d552468f0c3c5a5357dde32e99e6928b0b760d756df85120580b",
 		"source_bytes": 9232,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0143/e6_topics.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0143/e6_topics.rn",
 				"mode": "raw",
 				"original_sha256": "f6c566af45c3d552468f0c3c5a5357dde32e99e6928b0b760d756df85120580b",
 				"prefix_bytes": 0,
@@ -703,13 +703,13 @@
 	},
 	{
 		"id": "0027",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0027.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0027.rn",
 		"compiled_sha256": "86bdb86049ee485d0fd335fd9ec0409e2044379802f67d0dc83ded997b0437f3",
 		"source_bytes": 108,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0144/brace.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0144/brace.rn",
 				"mode": "raw",
 				"original_sha256": "86bdb86049ee485d0fd335fd9ec0409e2044379802f67d0dc83ded997b0437f3",
 				"prefix_bytes": 0,
@@ -729,13 +729,13 @@
 	},
 	{
 		"id": "0028",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0028.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0028.rn",
 		"compiled_sha256": "fe7b29a869c579a50614172ec3c2504217befd94a2887a6d46ce0346d089792a",
 		"source_bytes": 110,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0144/bracket.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0144/bracket.rn",
 				"mode": "raw",
 				"original_sha256": "fe7b29a869c579a50614172ec3c2504217befd94a2887a6d46ce0346d089792a",
 				"prefix_bytes": 0,
@@ -755,13 +755,13 @@
 	},
 	{
 		"id": "0029",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0029.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0029.rn",
 		"compiled_sha256": "704aafca1544a0629f771c177f045d204511da628ca2d209a1b7ac3958cb2d56",
 		"source_bytes": 9398,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0144/e6_multiline.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0144/e6_multiline.rn",
 				"mode": "raw",
 				"original_sha256": "704aafca1544a0629f771c177f045d204511da628ca2d209a1b7ac3958cb2d56",
 				"prefix_bytes": 0,
@@ -781,13 +781,13 @@
 	},
 	{
 		"id": "0030",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0030.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0030.rn",
 		"compiled_sha256": "d90b1314eae9885ac1a4efd0a5d5706f0729f2791f53334981e1a3c6735a7ebb",
 		"source_bytes": 137,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0144/format.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0144/format.rn",
 				"mode": "raw",
 				"original_sha256": "d90b1314eae9885ac1a4efd0a5d5706f0729f2791f53334981e1a3c6735a7ebb",
 				"prefix_bytes": 0,
@@ -807,13 +807,13 @@
 	},
 	{
 		"id": "0031",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0031.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0031.rn",
 		"compiled_sha256": "2c67874f209cd8e01d5ba192b107bfb2058660c34e6fac4311ca405d35e8bdd8",
 		"source_bytes": 110,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0144/println.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0144/println.rn",
 				"mode": "raw",
 				"original_sha256": "2c67874f209cd8e01d5ba192b107bfb2058660c34e6fac4311ca405d35e8bdd8",
 				"prefix_bytes": 0,
@@ -833,13 +833,13 @@
 	},
 	{
 		"id": "0032",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0032.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0032.rn",
 		"compiled_sha256": "a86d1da3aa77799d85c70b57f627b12ca4230e3ffa75de2abdbe142de73026d3",
 		"source_bytes": 9231,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0145/e7_traffic.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0145/e7_traffic.rn",
 				"mode": "raw",
 				"original_sha256": "a86d1da3aa77799d85c70b57f627b12ca4230e3ffa75de2abdbe142de73026d3",
 				"prefix_bytes": 0,
@@ -859,13 +859,13 @@
 	},
 	{
 		"id": "0033",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0033.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0033.rn",
 		"compiled_sha256": "786f15968b1a11e0601541959daad1ddd1911769b000b3b9bb9fc6275645e085",
 		"source_bytes": 687,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0146/dep_candle.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0146/dep_candle.rn",
 				"mode": "raw",
 				"original_sha256": "786f15968b1a11e0601541959daad1ddd1911769b000b3b9bb9fc6275645e085",
 				"prefix_bytes": 0,
@@ -885,13 +885,13 @@
 	},
 	{
 		"id": "0034",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0034.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0034.rn",
 		"compiled_sha256": "8ee44854a9c35bb3b978bf07b3b7e0ccf806d77f6c1c3b87e3aaf8d13fea23a2",
 		"source_bytes": 10359,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0146/u5_rerank.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0146/u5_rerank.rn",
 				"mode": "raw",
 				"original_sha256": "8ee44854a9c35bb3b978bf07b3b7e0ccf806d77f6c1c3b87e3aaf8d13fea23a2",
 				"prefix_bytes": 0,
@@ -911,13 +911,13 @@
 	},
 	{
 		"id": "0035",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0035.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0035.rn",
 		"compiled_sha256": "cb8a3fa097d1e4f260762d46d7f2eb4ad03d0fa9ee05f21650bdd8f9f7425c12",
 		"source_bytes": 812,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0148/dep_candle.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0148/dep_candle.rn",
 				"mode": "raw",
 				"original_sha256": "cb8a3fa097d1e4f260762d46d7f2eb4ad03d0fa9ee05f21650bdd8f9f7425c12",
 				"prefix_bytes": 0,
@@ -937,13 +937,13 @@
 	},
 	{
 		"id": "0036",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0036.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0036.rn",
 		"compiled_sha256": "33d67381fe2f91639ecb37d6a66f2024f29871c91eb64d188871213033a57391",
 		"source_bytes": 7262,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0148/u6_nli.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0148/u6_nli.rn",
 				"mode": "raw",
 				"original_sha256": "33d67381fe2f91639ecb37d6a66f2024f29871c91eb64d188871213033a57391",
 				"prefix_bytes": 0,
@@ -963,13 +963,13 @@
 	},
 	{
 		"id": "0037",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0037.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0037.rn",
 		"compiled_sha256": "70ba94d8e24ee03f825c1db605b8aaccaf5408e4dc7435478e3bf59006cc82d5",
 		"source_bytes": 816,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0149/dep_candle.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0149/dep_candle.rn",
 				"mode": "raw",
 				"original_sha256": "70ba94d8e24ee03f825c1db605b8aaccaf5408e4dc7435478e3bf59006cc82d5",
 				"prefix_bytes": 0,
@@ -989,13 +989,13 @@
 	},
 	{
 		"id": "0038",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0038.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0038.rn",
 		"compiled_sha256": "2ccd1f11229857dec3e329ddc015aa64eae4cfecf889882f605801335d81bedc",
 		"source_bytes": 6936,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0149/u7_generate.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0149/u7_generate.rn",
 				"mode": "raw",
 				"original_sha256": "2ccd1f11229857dec3e329ddc015aa64eae4cfecf889882f605801335d81bedc",
 				"prefix_bytes": 0,
@@ -1015,13 +1015,13 @@
 	},
 	{
 		"id": "0039",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0039.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0039.rn",
 		"compiled_sha256": "ce84fbabcf03cc30221069feb9755e7f06dbaf2f477f1031d885be5f359d55bb",
 		"source_bytes": 134,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/block.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/block.rn",
 				"mode": "raw",
 				"original_sha256": "ce84fbabcf03cc30221069feb9755e7f06dbaf2f477f1031d885be5f359d55bb",
 				"prefix_bytes": 0,
@@ -1041,13 +1041,13 @@
 	},
 	{
 		"id": "0040",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0040.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0040.rn",
 		"compiled_sha256": "c6fe0071fad390b1450b9bf877d4dc4835d5b7bbc8661d3e58c2384154fe6f18",
 		"source_bytes": 181,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/const.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/const.rn",
 				"mode": "raw",
 				"original_sha256": "c6fe0071fad390b1450b9bf877d4dc4835d5b7bbc8661d3e58c2384154fe6f18",
 				"prefix_bytes": 0,
@@ -1067,13 +1067,13 @@
 	},
 	{
 		"id": "0041",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0041.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0041.rn",
 		"compiled_sha256": "1a349658d718399ee8572c4e6d7e8ed2f76ae90cfe9f6e928d65b71338eeda03",
 		"source_bytes": 143,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/for.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/for.rn",
 				"mode": "raw",
 				"original_sha256": "1a349658d718399ee8572c4e6d7e8ed2f76ae90cfe9f6e928d65b71338eeda03",
 				"prefix_bytes": 0,
@@ -1093,13 +1093,13 @@
 	},
 	{
 		"id": "0042",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0042.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0042.rn",
 		"compiled_sha256": "e453c83c060820bb8d74cffab7f30d33447839c8602a43adbb6ee586faee7b10",
 		"source_bytes": 136,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/if.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/if.rn",
 				"mode": "raw",
 				"original_sha256": "e453c83c060820bb8d74cffab7f30d33447839c8602a43adbb6ee586faee7b10",
 				"prefix_bytes": 0,
@@ -1119,13 +1119,13 @@
 	},
 	{
 		"id": "0043",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0043.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0043.rn",
 		"compiled_sha256": "4843ea668f5b7a0512c59c38773b25e8dfa1dabe99f7ecc8c576c4d4850eb800",
 		"source_bytes": 2232,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/u7_prefix.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/u7_prefix.rn",
 				"mode": "raw",
 				"original_sha256": "4843ea668f5b7a0512c59c38773b25e8dfa1dabe99f7ecc8c576c4d4850eb800",
 				"prefix_bytes": 0,
@@ -1145,13 +1145,13 @@
 	},
 	{
 		"id": "0044",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0044.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0044.rn",
 		"compiled_sha256": "a7aa2fe83f7e71eaa7d5fd7a423236733eb0facc32114d041036833c239b1469",
 		"source_bytes": 7033,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/u7_restored.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/u7_restored.rn",
 				"mode": "raw",
 				"original_sha256": "a7aa2fe83f7e71eaa7d5fd7a423236733eb0facc32114d041036833c239b1469",
 				"prefix_bytes": 0,
@@ -1171,13 +1171,13 @@
 	},
 	{
 		"id": "0045",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0045.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0045.rn",
 		"compiled_sha256": "5de379e01418b3a7294d432009f9b04560c0a23f18363a1abb2b100b0993095a",
 		"source_bytes": 143,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0150/while.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0150/while.rn",
 				"mode": "raw",
 				"original_sha256": "5de379e01418b3a7294d432009f9b04560c0a23f18363a1abb2b100b0993095a",
 				"prefix_bytes": 0,
@@ -1197,13 +1197,13 @@
 	},
 	{
 		"id": "0046",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0046.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0046.rn",
 		"compiled_sha256": "5dd61184cd7b654537d7d685bd54e8ae5bc9e426ba261bffd7135370b79384c8",
 		"source_bytes": 9646,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0151/u8_rerank_dev.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0151/u8_rerank_dev.rn",
 				"mode": "raw",
 				"original_sha256": "5dd61184cd7b654537d7d685bd54e8ae5bc9e426ba261bffd7135370b79384c8",
 				"prefix_bytes": 0,
@@ -1223,13 +1223,13 @@
 	},
 	{
 		"id": "0047",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0047.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0047.rn",
 		"compiled_sha256": "eb167e46c60cf8c1c4115ab5c6d798c044e3f8af17157aadd25cd5f4d170e2d8",
 		"source_bytes": 9610,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/probes/0153/triage.rn",
+				"origin": "~/work/.worktrees/rnx-0185/probes/0153/triage.rn",
 				"mode": "raw",
 				"original_sha256": "eb167e46c60cf8c1c4115ab5c6d798c044e3f8af17157aadd25cd5f4d170e2d8",
 				"prefix_bytes": 0,
@@ -1249,13 +1249,13 @@
 	},
 	{
 		"id": "0048",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0048.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0048.rn",
 		"compiled_sha256": "8868a951ace7043c404218d4ed4aefd744201cdfbb5836d7c797f0687e5914d4",
 		"source_bytes": 399,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/servers/http-postgres/examples/app.rn",
+				"origin": "~/work/.worktrees/rnx-0185/servers/http-postgres/examples/app.rn",
 				"mode": "raw",
 				"original_sha256": "8868a951ace7043c404218d4ed4aefd744201cdfbb5836d7c797f0687e5914d4",
 				"prefix_bytes": 0,
@@ -1275,13 +1275,13 @@
 	},
 	{
 		"id": "0049",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0049.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0049.rn",
 		"compiled_sha256": "2186ecfa8adbe9f0a995293812fa003aba38ce4abc8067f160ad6efb8f715be1",
 		"source_bytes": 1749,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/servers/http-postgres/examples/fixture.rn",
+				"origin": "~/work/.worktrees/rnx-0185/servers/http-postgres/examples/fixture.rn",
 				"mode": "raw",
 				"original_sha256": "2186ecfa8adbe9f0a995293812fa003aba38ce4abc8067f160ad6efb8f715be1",
 				"prefix_bytes": 0,
@@ -1301,13 +1301,13 @@
 	},
 	{
 		"id": "0050",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0050.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0050.rn",
 		"compiled_sha256": "707d8cd11e9ffe7d42d9dbd50b2a66fc1a656b0e05f97e6ae9c19fea71638695",
 		"source_bytes": 22,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/duplicate/a.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/duplicate/a.rn",
 				"mode": "raw",
 				"original_sha256": "707d8cd11e9ffe7d42d9dbd50b2a66fc1a656b0e05f97e6ae9c19fea71638695",
 				"prefix_bytes": 0,
@@ -1327,13 +1327,13 @@
 	},
 	{
 		"id": "0051",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0051.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0051.rn",
 		"compiled_sha256": "a8020dc7657598c9571e18e50f3cb78d215cf6ff5af09027771ca79f0a4d38db",
 		"source_bytes": 36,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/duplicate/main.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/duplicate/main.rn",
 				"mode": "raw",
 				"original_sha256": "a8020dc7657598c9571e18e50f3cb78d215cf6ff5af09027771ca79f0a4d38db",
 				"prefix_bytes": 0,
@@ -1353,13 +1353,13 @@
 	},
 	{
 		"id": "0052",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0052.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0052.rn",
 		"compiled_sha256": "55e830d7e14c95ab9a678ec8ffe24999bf229bb436ed63ef57dd9dc5fe0d059f",
 		"source_bytes": 31,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/fault/broken.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/fault/broken.rn",
 				"mode": "raw",
 				"original_sha256": "55e830d7e14c95ab9a678ec8ffe24999bf229bb436ed63ef57dd9dc5fe0d059f",
 				"prefix_bytes": 0,
@@ -1379,13 +1379,13 @@
 	},
 	{
 		"id": "0053",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0053.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0053.rn",
 		"compiled_sha256": "6a26accfb44728a34053ba1923135cbc54ac05af76a7bb00c2bbae69302b3d14",
 		"source_bytes": 78,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/fault/main.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/fault/main.rn",
 				"mode": "raw",
 				"original_sha256": "6a26accfb44728a34053ba1923135cbc54ac05af76a7bb00c2bbae69302b3d14",
 				"prefix_bytes": 0,
@@ -1405,13 +1405,13 @@
 	},
 	{
 		"id": "0054",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0054.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0054.rn",
 		"compiled_sha256": "02bc38d21193287c03117110b6b27f95625acfdfc00b13a542cdda2c84555655",
 		"source_bytes": 11,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/misplaced/a.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/misplaced/a.rn",
 				"mode": "raw",
 				"original_sha256": "02bc38d21193287c03117110b6b27f95625acfdfc00b13a542cdda2c84555655",
 				"prefix_bytes": 0,
@@ -1431,13 +1431,13 @@
 	},
 	{
 		"id": "0055",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0055.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0055.rn",
 		"compiled_sha256": "5ced0a6734ff8d67903c5475352d40d9747f38be18bf76f438b7c506bf4d7093",
 		"source_bytes": 21,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/misplaced/b.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/misplaced/b.rn",
 				"mode": "raw",
 				"original_sha256": "5ced0a6734ff8d67903c5475352d40d9747f38be18bf76f438b7c506bf4d7093",
 				"prefix_bytes": 0,
@@ -1457,13 +1457,13 @@
 	},
 	{
 		"id": "0056",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0056.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0056.rn",
 		"compiled_sha256": "88c2619c7c9ea3c3dd8009de5afd3fe6beed3b42cc96efc64b2715bf55e1afdd",
 		"source_bytes": 40,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/misplaced/main.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/misplaced/main.rn",
 				"mode": "raw",
 				"original_sha256": "88c2619c7c9ea3c3dd8009de5afd3fe6beed3b42cc96efc64b2715bf55e1afdd",
 				"prefix_bytes": 0,
@@ -1483,13 +1483,13 @@
 	},
 	{
 		"id": "0057",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0057.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0057.rn",
 		"compiled_sha256": "910cdf95549cf0fc86e54c8b03716586aa36145e87fbc4e54955bd5f4937e8b1",
 		"source_bytes": 34,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/missing/main.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/missing/main.rn",
 				"mode": "raw",
 				"original_sha256": "910cdf95549cf0fc86e54c8b03716586aa36145e87fbc4e54955bd5f4937e8b1",
 				"prefix_bytes": 0,
@@ -1509,13 +1509,13 @@
 	},
 	{
 		"id": "0058",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0058.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0058.rn",
 		"compiled_sha256": "0404244da19f97cb513c286a61ba894814141130db7478abeb68e359901ce0ea",
 		"source_bytes": 22,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/a/b.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/a/b.rn",
 				"mode": "raw",
 				"original_sha256": "0404244da19f97cb513c286a61ba894814141130db7478abeb68e359901ce0ea",
 				"prefix_bytes": 0,
@@ -1535,13 +1535,13 @@
 	},
 	{
 		"id": "0059",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0059.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0059.rn",
 		"compiled_sha256": "622caecc2318b914d796c0dd692175581e24586bc42f9a50bb055ba9394d1e49",
 		"source_bytes": 45,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/a.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/a.rn",
 				"mode": "raw",
 				"original_sha256": "622caecc2318b914d796c0dd692175581e24586bc42f9a50bb055ba9394d1e49",
 				"prefix_bytes": 0,
@@ -1561,13 +1561,13 @@
 	},
 	{
 		"id": "0060",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0060.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0060.rn",
 		"compiled_sha256": "1079eba7f0bc102e781474a2bb792bb3edba3ae9dc589177bab5d4898e0266db",
 		"source_bytes": 25,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/c/mod.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/c/mod.rn",
 				"mode": "raw",
 				"original_sha256": "1079eba7f0bc102e781474a2bb792bb3edba3ae9dc589177bab5d4898e0266db",
 				"prefix_bytes": 0,
@@ -1587,13 +1587,13 @@
 	},
 	{
 		"id": "0061",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0061.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0061.rn",
 		"compiled_sha256": "0eb2c48f3eaaef834889b8b4423eb1c06bba9f5241d02519783f15eb7c50d777",
 		"source_bytes": 25,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/c.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/c.rn",
 				"mode": "raw",
 				"original_sha256": "0eb2c48f3eaaef834889b8b4423eb1c06bba9f5241d02519783f15eb7c50d777",
 				"prefix_bytes": 0,
@@ -1613,13 +1613,13 @@
 	},
 	{
 		"id": "0062",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0062.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0062.rn",
 		"compiled_sha256": "5f10062c395c5fb71bef76ea771df9a7f33b0c02d3f75c7cced0c7120b9c9498",
 		"source_bytes": 24,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/inline/deep/leaf.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/inline/deep/leaf.rn",
 				"mode": "raw",
 				"original_sha256": "5f10062c395c5fb71bef76ea771df9a7f33b0c02d3f75c7cced0c7120b9c9498",
 				"prefix_bytes": 0,
@@ -1639,13 +1639,13 @@
 	},
 	{
 		"id": "0063",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0063.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0063.rn",
 		"compiled_sha256": "b3d3331b7d0ad4db7a6461415bce26a8e62f11260fe37a310fdc0c2386e2c728",
 		"source_bytes": 53,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/inline/deep.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/inline/deep.rn",
 				"mode": "raw",
 				"original_sha256": "b3d3331b7d0ad4db7a6461415bce26a8e62f11260fe37a310fdc0c2386e2c728",
 				"prefix_bytes": 0,
@@ -1665,13 +1665,13 @@
 	},
 	{
 		"id": "0064",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0064.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0064.rn",
 		"compiled_sha256": "615054f9fda27ddc04c38662d19485a25293974ab3562b74d377a41bfbe9944b",
 		"source_bytes": 110,
 		"origins": [
 			{
 				"cohort": "external-65",
-				"origin": "/home/me/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/main.rn",
+				"origin": "~/work/.worktrees/rnx-0185/tests/fixtures/modules/mixed/main.rn",
 				"mode": "raw",
 				"original_sha256": "615054f9fda27ddc04c38662d19485a25293974ab3562b74d377a41bfbe9944b",
 				"prefix_bytes": 0,
@@ -1691,7 +1691,7 @@
 	},
 	{
 		"id": "0065",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0065.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0065.rn",
 		"compiled_sha256": "605e39808f4a42887db190495b5dd4fff790f7708d3cd6a9b55bd692b764b774",
 		"source_bytes": 811,
 		"origins": [
@@ -1707,7 +1707,7 @@
 	},
 	{
 		"id": "0066",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0066.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0066.rn",
 		"compiled_sha256": "4c9b29f9019775bb8628ac6ca0afd09feb6a058fbddff34da77185d1cd134b8a",
 		"source_bytes": 1645,
 		"origins": [
@@ -1723,7 +1723,7 @@
 	},
 	{
 		"id": "0067",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0067.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0067.rn",
 		"compiled_sha256": "1920d1c1fdf3ce75875fa776976d5ec368a150bfc01a54ce97c99f76e32303dc",
 		"source_bytes": 1919,
 		"origins": [
@@ -1739,7 +1739,7 @@
 	},
 	{
 		"id": "0068",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0068.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0068.rn",
 		"compiled_sha256": "e854f0d5184f58b3f7f5e61f5a26acee7cc0b658d844dc2cf472ffa86018a8d8",
 		"source_bytes": 1951,
 		"origins": [
@@ -1755,7 +1755,7 @@
 	},
 	{
 		"id": "0069",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0069.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0069.rn",
 		"compiled_sha256": "eb3cc66d60388321a020460b0b3f9e93432140de0e029d350af327b67cf5456b",
 		"source_bytes": 993,
 		"origins": [
@@ -1771,7 +1771,7 @@
 	},
 	{
 		"id": "0070",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0070.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0070.rn",
 		"compiled_sha256": "57101ddb0e6c1332bcd8a25bb53c2e7e5bc451937dd433a81226091153519bdc",
 		"source_bytes": 1326,
 		"origins": [
@@ -1787,7 +1787,7 @@
 	},
 	{
 		"id": "0071",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0071.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0071.rn",
 		"compiled_sha256": "7776eb34f600923cff2cd7a02c2210b1d17c2ca73ed6d9ab4c3ecfc29f636009",
 		"source_bytes": 1861,
 		"origins": [
@@ -1803,7 +1803,7 @@
 	},
 	{
 		"id": "0072",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0072.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0072.rn",
 		"compiled_sha256": "b5a176c80b85ccecdca3b4f964021e3c2c7b15f69d7fac7157a44f8c3d33b9d7",
 		"source_bytes": 4065,
 		"origins": [
@@ -1819,7 +1819,7 @@
 	},
 	{
 		"id": "0073",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0073.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0073.rn",
 		"compiled_sha256": "1bf2bcf9d931a4aab0deae6ba1dd80387fc64536f120f42deba6e544e1739acc",
 		"source_bytes": 652,
 		"origins": [
@@ -1835,7 +1835,7 @@
 	},
 	{
 		"id": "0074",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0074.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0074.rn",
 		"compiled_sha256": "b81767f75bda38f1cd48751c8be829ae09f5cf3c2d4424dd4a372ad15bbd26b2",
 		"source_bytes": 484,
 		"origins": [
@@ -1851,7 +1851,7 @@
 	},
 	{
 		"id": "0075",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0075.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0075.rn",
 		"compiled_sha256": "be811ada39bf1f842f39ffeeb2aa97b2249a8e871e592b69681e3d7115567ba1",
 		"source_bytes": 3843,
 		"origins": [
@@ -1867,7 +1867,7 @@
 	},
 	{
 		"id": "0076",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0076.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0076.rn",
 		"compiled_sha256": "c56d5ec239b3805e3560d0e621b7a72569166db9ded2438e25eb2085f87ee92d",
 		"source_bytes": 816,
 		"origins": [
@@ -1883,7 +1883,7 @@
 	},
 	{
 		"id": "0077",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0077.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0077.rn",
 		"compiled_sha256": "2a2635d56e3dd8af455c943f2eede7b4a56e194e9a8ebb9e2fe06f0b85fc6925",
 		"source_bytes": 519,
 		"origins": [
@@ -1899,7 +1899,7 @@
 	},
 	{
 		"id": "0078",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0078.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0078.rn",
 		"compiled_sha256": "88aa65c9ef2b655c6f078971dce65a29e5eda1578c4cf386f0be008bcffa24e2",
 		"source_bytes": 577,
 		"origins": [
@@ -1915,7 +1915,7 @@
 	},
 	{
 		"id": "0079",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0079.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0079.rn",
 		"compiled_sha256": "22832e0b05dd07995a57a4817603798150ff1bd6cc85ad8f4f703e06a33a2c3e",
 		"source_bytes": 741,
 		"origins": [
@@ -1931,7 +1931,7 @@
 	},
 	{
 		"id": "0080",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0080.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0080.rn",
 		"compiled_sha256": "3e0cb0c86d4281f55a64cacea82aa45c503c0b0d3028d19f22f50f4897686243",
 		"source_bytes": 1151,
 		"origins": [
@@ -1947,7 +1947,7 @@
 	},
 	{
 		"id": "0081",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0081.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0081.rn",
 		"compiled_sha256": "4ab637c744f1cd1d5ff2c4a136496f8da4fac42ecaf11e174aa99381dd83df0f",
 		"source_bytes": 5151,
 		"origins": [
@@ -1963,7 +1963,7 @@
 	},
 	{
 		"id": "0082",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0082.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0082.rn",
 		"compiled_sha256": "5715f2f04d7c1559038f0f86ecfdfc30f7a34d3b5bde221c894aa9be876e83b3",
 		"source_bytes": 7627,
 		"origins": [
@@ -1979,7 +1979,7 @@
 	},
 	{
 		"id": "0083",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0083.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0083.rn",
 		"compiled_sha256": "31d26475861162323eba207e284c0d4766a5ebfcb3476c26cb4400278a0b37f2",
 		"source_bytes": 7768,
 		"origins": [
@@ -1995,7 +1995,7 @@
 	},
 	{
 		"id": "0084",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0084.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0084.rn",
 		"compiled_sha256": "4482ed645d1d8bb158ae948a4ca77d64f14696d96cf9277d68732c80b6602b95",
 		"source_bytes": 3679,
 		"origins": [
@@ -2011,7 +2011,7 @@
 	},
 	{
 		"id": "0085",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0085.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0085.rn",
 		"compiled_sha256": "3484699a7850522698e17bb3e7412827621a80061ba4ce4299e68a81ee7ca25e",
 		"source_bytes": 3642,
 		"origins": [
@@ -2027,7 +2027,7 @@
 	},
 	{
 		"id": "0086",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0086.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0086.rn",
 		"compiled_sha256": "88e864a69405c9c858e1587006cf440c2b42055ab85ac171bd038365e021324d",
 		"source_bytes": 4731,
 		"origins": [
@@ -2043,7 +2043,7 @@
 	},
 	{
 		"id": "0087",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0087.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0087.rn",
 		"compiled_sha256": "2a1d4006724c4bb3b8bc7866b04a4518176345ee81144bd764461456e7661dec",
 		"source_bytes": 5562,
 		"origins": [
@@ -2059,7 +2059,7 @@
 	},
 	{
 		"id": "0088",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0088.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0088.rn",
 		"compiled_sha256": "48571160aad7a49a58b7e2671f90efd3c232821535a418778d16ee58f2b15e60",
 		"source_bytes": 2240,
 		"origins": [
@@ -2075,7 +2075,7 @@
 	},
 	{
 		"id": "0089",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0089.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0089.rn",
 		"compiled_sha256": "99f0f020838b2e33c9e9a223385de0b48418a1ec2d4b8b3b625f4861dffc85b4",
 		"source_bytes": 2679,
 		"origins": [
@@ -2091,7 +2091,7 @@
 	},
 	{
 		"id": "0090",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0090.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0090.rn",
 		"compiled_sha256": "0cbbce50cdecf5e4cbd7073b233569c4c2c7a7540306cfa13657b671b7c963eb",
 		"source_bytes": 5718,
 		"origins": [
@@ -2107,7 +2107,7 @@
 	},
 	{
 		"id": "0091",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0091.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0091.rn",
 		"compiled_sha256": "07813b69488fa0559d5827ebd282c16e08c998bdfb27cd5472b00bbc220ae875",
 		"source_bytes": 9250,
 		"origins": [
@@ -2123,7 +2123,7 @@
 	},
 	{
 		"id": "0092",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0092.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0092.rn",
 		"compiled_sha256": "c2eec532e40381766f2811e36f609457884934a45819f467f7d14b3a05ea33f5",
 		"source_bytes": 126,
 		"origins": [
@@ -2139,7 +2139,7 @@
 	},
 	{
 		"id": "0093",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0093.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0093.rn",
 		"compiled_sha256": "9a6e6c3bb0f350e2a09c1c87146d0270763cc3479dcc15712a2c70fe84b35488",
 		"source_bytes": 128,
 		"origins": [
@@ -2155,7 +2155,7 @@
 	},
 	{
 		"id": "0094",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0094.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0094.rn",
 		"compiled_sha256": "f78d2278d7dee75427d99d47ff8b7123d938e6a72860398f0bc4bb6dece4b2ae",
 		"source_bytes": 9416,
 		"origins": [
@@ -2171,7 +2171,7 @@
 	},
 	{
 		"id": "0095",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0095.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0095.rn",
 		"compiled_sha256": "cb208b2d5318d1452713ea75b4c69dc7ca0250f2c77419fe99e1e99f5cd22031",
 		"source_bytes": 155,
 		"origins": [
@@ -2187,7 +2187,7 @@
 	},
 	{
 		"id": "0096",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0096.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0096.rn",
 		"compiled_sha256": "8db15e66323e0cc5892acd22add7eeabe513ecaa1f3cf963d2336f519f6b6b0c",
 		"source_bytes": 128,
 		"origins": [
@@ -2203,7 +2203,7 @@
 	},
 	{
 		"id": "0097",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0097.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0097.rn",
 		"compiled_sha256": "7916b5874f289bd236b1f1cead8d3923a9fd27846d489f8013fb728e72bb369a",
 		"source_bytes": 9249,
 		"origins": [
@@ -2219,7 +2219,7 @@
 	},
 	{
 		"id": "0098",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0098.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0098.rn",
 		"compiled_sha256": "5bbfa2bd9b54c801a59dddd4478f1710205989b355e3374b17c9491436de4773",
 		"source_bytes": 705,
 		"origins": [
@@ -2235,7 +2235,7 @@
 	},
 	{
 		"id": "0099",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0099.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0099.rn",
 		"compiled_sha256": "238cc921055a45a583125c1b0265241e286f87caf1679b0613b81db7ec3eef27",
 		"source_bytes": 10377,
 		"origins": [
@@ -2251,7 +2251,7 @@
 	},
 	{
 		"id": "0100",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0100.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0100.rn",
 		"compiled_sha256": "d1d672683d60d0d8a2b3baff2625a6637df64cca1d0cdeb8b05211e47420e7dc",
 		"source_bytes": 830,
 		"origins": [
@@ -2267,7 +2267,7 @@
 	},
 	{
 		"id": "0101",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0101.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0101.rn",
 		"compiled_sha256": "bc59943c6f57a6b85caebad0faa5535099372bfa120d844cbb5d646b7d89c3a1",
 		"source_bytes": 7280,
 		"origins": [
@@ -2283,7 +2283,7 @@
 	},
 	{
 		"id": "0102",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0102.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0102.rn",
 		"compiled_sha256": "f0cbc74648926731c6b2d13579b5060c4fe104c79064ba0f8135861a63a8364b",
 		"source_bytes": 834,
 		"origins": [
@@ -2299,7 +2299,7 @@
 	},
 	{
 		"id": "0103",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0103.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0103.rn",
 		"compiled_sha256": "eaa756804d3430105679a2f6e9eb0d77780ce292ba4f946e099a0023084fab63",
 		"source_bytes": 6954,
 		"origins": [
@@ -2315,7 +2315,7 @@
 	},
 	{
 		"id": "0104",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0104.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0104.rn",
 		"compiled_sha256": "81061b706835664dd219470000127ae33d17bacd5d7bcb68388aadb14c93e439",
 		"source_bytes": 152,
 		"origins": [
@@ -2331,7 +2331,7 @@
 	},
 	{
 		"id": "0105",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0105.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0105.rn",
 		"compiled_sha256": "bd14aa38b2d56f380d951151f9680918f1ce75189e330f1993f4b296055b1371",
 		"source_bytes": 199,
 		"origins": [
@@ -2347,7 +2347,7 @@
 	},
 	{
 		"id": "0106",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0106.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0106.rn",
 		"compiled_sha256": "4c294ba8a7f79c797af8c60ed133afa5c323d19373aa2de9b30eaf0452b6e77f",
 		"source_bytes": 161,
 		"origins": [
@@ -2363,7 +2363,7 @@
 	},
 	{
 		"id": "0107",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0107.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0107.rn",
 		"compiled_sha256": "98b218676e3af35307c84b416e47a06fbb676d92590c0172e6dd38bdf067d724",
 		"source_bytes": 154,
 		"origins": [
@@ -2379,7 +2379,7 @@
 	},
 	{
 		"id": "0108",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0108.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0108.rn",
 		"compiled_sha256": "68afca2633b11cf1ee94c45e7f7445405642b631e6ded63a1fe369111e871f1a",
 		"source_bytes": 2250,
 		"origins": [
@@ -2395,7 +2395,7 @@
 	},
 	{
 		"id": "0109",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0109.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0109.rn",
 		"compiled_sha256": "a50bb8bb3930e2a34f76fd998106bc67523bf503a43e85b38d5f7427ac924131",
 		"source_bytes": 7051,
 		"origins": [
@@ -2411,7 +2411,7 @@
 	},
 	{
 		"id": "0110",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0110.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0110.rn",
 		"compiled_sha256": "f1595a4b9be3e534cc39474dcfd70a13bf29ea1e0fd6763d681baf5c062d1082",
 		"source_bytes": 161,
 		"origins": [
@@ -2427,7 +2427,7 @@
 	},
 	{
 		"id": "0111",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0111.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0111.rn",
 		"compiled_sha256": "349c3364b9a4990aba08090ec9070b3ae9ca45050e30e843de3237df555a54ec",
 		"source_bytes": 9664,
 		"origins": [
@@ -2443,7 +2443,7 @@
 	},
 	{
 		"id": "0112",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0112.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0112.rn",
 		"compiled_sha256": "851a54b6f0de08a848fbaa320676f0b4620bd14ac67670a6ac15117930fcfbd2",
 		"source_bytes": 9628,
 		"origins": [
@@ -2459,7 +2459,7 @@
 	},
 	{
 		"id": "0113",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0113.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0113.rn",
 		"compiled_sha256": "f8236f71d8c3a57acdea9f4e0be5fdaf7486c1fcc5021cba0bf079437671fe15",
 		"source_bytes": 417,
 		"origins": [
@@ -2475,7 +2475,7 @@
 	},
 	{
 		"id": "0114",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0114.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0114.rn",
 		"compiled_sha256": "707430f459b1a7092477203423d8d4ad37ab3c25f6b8e8a68b2e498ac3238564",
 		"source_bytes": 1767,
 		"origins": [
@@ -2491,7 +2491,7 @@
 	},
 	{
 		"id": "0115",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0115.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0115.rn",
 		"compiled_sha256": "7ff8e4ffba38258311be74d9916eee378455bce9a4a3a6ad9c1333f183bcbe8b",
 		"source_bytes": 40,
 		"origins": [
@@ -2507,7 +2507,7 @@
 	},
 	{
 		"id": "0116",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0116.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0116.rn",
 		"compiled_sha256": "9f9085227b88373284fde70910789e77bd41dec1a73113181d4df1235f3f837a",
 		"source_bytes": 54,
 		"origins": [
@@ -2523,7 +2523,7 @@
 	},
 	{
 		"id": "0117",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0117.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0117.rn",
 		"compiled_sha256": "ab4d4da5e71673e6dcefadfdc67261db6f70f43a15825689a926ae8f07e6c4c2",
 		"source_bytes": 49,
 		"origins": [
@@ -2539,7 +2539,7 @@
 	},
 	{
 		"id": "0118",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0118.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0118.rn",
 		"compiled_sha256": "680d8ae7d0d8e59a248ab6dac77ec823323df992966271a5c2bf4aa932f5ecd7",
 		"source_bytes": 96,
 		"origins": [
@@ -2555,7 +2555,7 @@
 	},
 	{
 		"id": "0119",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0119.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0119.rn",
 		"compiled_sha256": "4d28b95f4515016f4f4846e38066fe5e3b7e9d5c0b224bc82c08fec6e06f799f",
 		"source_bytes": 29,
 		"origins": [
@@ -2571,7 +2571,7 @@
 	},
 	{
 		"id": "0120",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0120.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0120.rn",
 		"compiled_sha256": "7142b5d58828cce9fd7560964e7d4f0da73c386b23cfcb75d9846dba41996e07",
 		"source_bytes": 39,
 		"origins": [
@@ -2587,7 +2587,7 @@
 	},
 	{
 		"id": "0121",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0121.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0121.rn",
 		"compiled_sha256": "ca34da1bd12d03b22d8ea82ec8b7a8448bd459bdf284953ccd079d576be129c8",
 		"source_bytes": 58,
 		"origins": [
@@ -2603,7 +2603,7 @@
 	},
 	{
 		"id": "0122",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0122.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0122.rn",
 		"compiled_sha256": "019365150f7f0712d62abaa42edb53f60c88efe7d5bdcce8dd0caf3a676c6eeb",
 		"source_bytes": 52,
 		"origins": [
@@ -2619,7 +2619,7 @@
 	},
 	{
 		"id": "0123",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0123.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0123.rn",
 		"compiled_sha256": "5dd364be871596993204d2a9d050c020833516ed1962c05a740e107e3df26336",
 		"source_bytes": 63,
 		"origins": [
@@ -2635,7 +2635,7 @@
 	},
 	{
 		"id": "0124",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0124.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0124.rn",
 		"compiled_sha256": "08bdb325e4dafadd8be2e1dd48c7377f734ac02f799f0030b502f0c44f8de06e",
 		"source_bytes": 40,
 		"origins": [
@@ -2651,7 +2651,7 @@
 	},
 	{
 		"id": "0125",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0125.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0125.rn",
 		"compiled_sha256": "8987c5ffe44661c8759e30642ff96bf73f9c048b267165d0bb0bc827a0b00bab",
 		"source_bytes": 43,
 		"origins": [
@@ -2667,7 +2667,7 @@
 	},
 	{
 		"id": "0126",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0126.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0126.rn",
 		"compiled_sha256": "da5788f6e09199e009eba506562fb7d87c2a2aa77bd9e81a9ee428c9378dbc27",
 		"source_bytes": 43,
 		"origins": [
@@ -2683,7 +2683,7 @@
 	},
 	{
 		"id": "0127",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0127.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0127.rn",
 		"compiled_sha256": "768ba398d9ee1eb0569c2d2dfc7b29616b5e290575b638eab65e43477a982d2d",
 		"source_bytes": 71,
 		"origins": [
@@ -2699,7 +2699,7 @@
 	},
 	{
 		"id": "0128",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0128.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0128.rn",
 		"compiled_sha256": "ed638bd5097934d712905c8c3d3b58d4bef5e4536589e0d30e32e08ee8573a5c",
 		"source_bytes": 42,
 		"origins": [
@@ -2715,7 +2715,7 @@
 	},
 	{
 		"id": "0129",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0129.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0129.rn",
 		"compiled_sha256": "0255a2ec81d83c4573df8903475e96691a05e143b9f9b7bcd293e9399ee42275",
 		"source_bytes": 128,
 		"origins": [
@@ -2731,7 +2731,7 @@
 	},
 	{
 		"id": "0130",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0130.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0130.rn",
 		"compiled_sha256": "5386e69554c5c8c96caaa82858af3bb02ebad95fc7e1d63b053fe803c0fa9488",
 		"source_bytes": 175,
 		"origins": [
@@ -2752,7 +2752,7 @@
 	},
 	{
 		"id": "0131",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0131.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0131.rn",
 		"compiled_sha256": "f9275506f040664de541f19973c70ebd63c31ddcb8dea37c6c0b0825404b2946",
 		"source_bytes": 176,
 		"origins": [
@@ -2781,7 +2781,7 @@
 	},
 	{
 		"id": "0132",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0132.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0132.rn",
 		"compiled_sha256": "a2086859703a38b58eb232810c7285183ad354b2b38e965b921779eb14c4e7d1",
 		"source_bytes": 302,
 		"origins": [
@@ -2802,7 +2802,7 @@
 	},
 	{
 		"id": "0133",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0133.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0133.rn",
 		"compiled_sha256": "0a5b7d72826429525459db8d3ab0426a4bbdd56bb3d3d2aba0e86914b0a986ff",
 		"source_bytes": 461,
 		"origins": [
@@ -2837,7 +2837,7 @@
 	},
 	{
 		"id": "0134",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0134.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0134.rn",
 		"compiled_sha256": "c0024aede30ac67113cc53c36437452d581ded63747d01525e94873a0b895a2f",
 		"source_bytes": 117,
 		"origins": [
@@ -2858,7 +2858,7 @@
 	},
 	{
 		"id": "0135",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0135.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0135.rn",
 		"compiled_sha256": "8692206eb813c2e1e819bade4525166d6e7ef2dfe0d3ec102bdc9281098a94a6",
 		"source_bytes": 561,
 		"origins": [
@@ -2899,7 +2899,7 @@
 	},
 	{
 		"id": "0136",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0136.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0136.rn",
 		"compiled_sha256": "67cb8b5d41fcae673fbf23431539953500312818b5933c9a24b444aaf2e86f8b",
 		"source_bytes": 475,
 		"origins": [
@@ -2920,7 +2920,7 @@
 	},
 	{
 		"id": "0137",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0137.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0137.rn",
 		"compiled_sha256": "a7e3ecc004da8096d8949d4a76c3777fa7d0acfd1d82d851a52681865354bd95",
 		"source_bytes": 1019,
 		"origins": [
@@ -2967,7 +2967,7 @@
 	},
 	{
 		"id": "0138",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0138.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0138.rn",
 		"compiled_sha256": "c98a6f8222f26c3c084f592812d2b75bd8b4f3be0f9f544cf56cf6d0eedbf60b",
 		"source_bytes": 395,
 		"origins": [
@@ -2988,7 +2988,7 @@
 	},
 	{
 		"id": "0139",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0139.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0139.rn",
 		"compiled_sha256": "7faf8a228054833f5ea4a9d7722f268ae80c4fa7e7981790a9a1a8a09652fa2f",
 		"source_bytes": 1397,
 		"origins": [
@@ -3041,7 +3041,7 @@
 	},
 	{
 		"id": "0140",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0140.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0140.rn",
 		"compiled_sha256": "fe10848c0ff2a97a8677e98f0aadfc7ce5673ed370a2294f05241142ccc9fbd5",
 		"source_bytes": 426,
 		"origins": [
@@ -3062,7 +3062,7 @@
 	},
 	{
 		"id": "0141",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0141.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0141.rn",
 		"compiled_sha256": "dd0b823a899203763a028ce503e879952a26ab459f68ee41b2a570c9638fb38a",
 		"source_bytes": 427,
 		"origins": [
@@ -3091,7 +3091,7 @@
 	},
 	{
 		"id": "0142",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0142.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0142.rn",
 		"compiled_sha256": "5d2cce14509eb6d55ef68ae44ff4c6f2aedb09aefcd08a238b918d4cffa6daff",
 		"source_bytes": 108,
 		"origins": [
@@ -3112,7 +3112,7 @@
 	},
 	{
 		"id": "0143",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0143.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0143.rn",
 		"compiled_sha256": "42b21417b64b386499e285f616bdb57ed321568d1bd91b764013f4efabb0077c",
 		"source_bytes": 518,
 		"origins": [
@@ -3147,7 +3147,7 @@
 	},
 	{
 		"id": "0144",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0144.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0144.rn",
 		"compiled_sha256": "91bd66ae149c007eb3f5d9eab2dcfc9d42a57206c4ae3f217f3bc4910e2c483f",
 		"source_bytes": 287,
 		"origins": [
@@ -3168,7 +3168,7 @@
 	},
 	{
 		"id": "0145",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0145.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0145.rn",
 		"compiled_sha256": "d1b8c53863b812a50f8cb1bf662e3e75258971b2b0e320fa1bca717be6be88d8",
 		"source_bytes": 788,
 		"origins": [
@@ -3209,7 +3209,7 @@
 	},
 	{
 		"id": "0146",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0146.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0146.rn",
 		"compiled_sha256": "93d3b1f10ab45b87464c0848d862c3291c62e08f04c289a214f4a6684e1038d8",
 		"source_bytes": 498,
 		"origins": [
@@ -3230,7 +3230,7 @@
 	},
 	{
 		"id": "0147",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0147.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0147.rn",
 		"compiled_sha256": "217b08dfeec11ea1fc07d598e42c9c62c89e6e14146e6dfcc3dbf12fa5b368d0",
 		"source_bytes": 1269,
 		"origins": [
@@ -3277,7 +3277,7 @@
 	},
 	{
 		"id": "0148",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0148.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0148.rn",
 		"compiled_sha256": "ea6d0f4e6d71782d89b468dfba3e5eeacd0729f90577f6c408e2f7d454850e15",
 		"source_bytes": 154,
 		"origins": [
@@ -3298,7 +3298,7 @@
 	},
 	{
 		"id": "0149",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0149.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0149.rn",
 		"compiled_sha256": "4501b92530f94613a7190bdd91d0ab92c3a4af17344c9e83286fecfaddad13a3",
 		"source_bytes": 155,
 		"origins": [
@@ -3327,7 +3327,7 @@
 	},
 	{
 		"id": "0150",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0150.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0150.rn",
 		"compiled_sha256": "d1cf90a414c5f81424bc4abeb8991cbd82f68f6cb97bf1be72b07c0b00e0a7bd",
 		"source_bytes": 459,
 		"origins": [
@@ -3348,7 +3348,7 @@
 	},
 	{
 		"id": "0151",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0151.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0151.rn",
 		"compiled_sha256": "8dde1d447e209fe2f797002c04033d21173d4736479ae314bca57b8366167aa5",
 		"source_bytes": 597,
 		"origins": [
@@ -3383,7 +3383,7 @@
 	},
 	{
 		"id": "0152",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0152.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0152.rn",
 		"compiled_sha256": "b0ab6474a6ac88a53096a8028980f561eaadb41bef37e2170378fb75581c39c7",
 		"source_bytes": 295,
 		"origins": [
@@ -3404,7 +3404,7 @@
 	},
 	{
 		"id": "0153",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0153.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0153.rn",
 		"compiled_sha256": "a39d9398d66a1785564da91adb19128bcc334ea717d1d48927403ef112640bd4",
 		"source_bytes": 875,
 		"origins": [
@@ -3445,7 +3445,7 @@
 	},
 	{
 		"id": "0154",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0154.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0154.rn",
 		"compiled_sha256": "900999d0546695073310d4f7d4601d04431b30f33bbb22c4d132198c3e879933",
 		"source_bytes": 633,
 		"origins": [
@@ -3466,7 +3466,7 @@
 	},
 	{
 		"id": "0155",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0155.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0155.rn",
 		"compiled_sha256": "afd699b782c36e451e1636f637d7905a98bbfe38a47a98529cd963851d6a0ebd",
 		"source_bytes": 1491,
 		"origins": [
@@ -3513,7 +3513,7 @@
 	},
 	{
 		"id": "0156",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0156.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0156.rn",
 		"compiled_sha256": "c79041f42eb84ba03b1329b88b2b52d61b8dc956edd124ebcfebd1b5690ee49a",
 		"source_bytes": 168,
 		"origins": [
@@ -3534,7 +3534,7 @@
 	},
 	{
 		"id": "0157",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0157.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0157.rn",
 		"compiled_sha256": "7a8ba74fee982378f2c8e2b980f490e7f680789f15b92a645984cf857913a4a8",
 		"source_bytes": 169,
 		"origins": [
@@ -3563,7 +3563,7 @@
 	},
 	{
 		"id": "0158",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0158.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0158.rn",
 		"compiled_sha256": "5a287bdb5c352d47e4fe4479a436fdb3c0dc2a5d28c10ce85acd21d2fc942ac1",
 		"source_bytes": 208,
 		"origins": [
@@ -3584,7 +3584,7 @@
 	},
 	{
 		"id": "0159",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0159.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0159.rn",
 		"compiled_sha256": "6523354b03c1137d7a433dd33bb8902b786e96a8863f7910332d53fbb4bb551f",
 		"source_bytes": 360,
 		"origins": [
@@ -3619,7 +3619,7 @@
 	},
 	{
 		"id": "0160",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0160.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0160.rn",
 		"compiled_sha256": "807f307e12f0a511739b0655e64324f21799ea2fa74907f56813fba78cf37eb9",
 		"source_bytes": 213,
 		"origins": [
@@ -3640,7 +3640,7 @@
 	},
 	{
 		"id": "0161",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0161.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0161.rn",
 		"compiled_sha256": "1e9bcb700bbd486582801d5d30db1e1d6d4324e97ca300458f668e28ff11ad8a",
 		"source_bytes": 556,
 		"origins": [
@@ -3681,7 +3681,7 @@
 	},
 	{
 		"id": "0162",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0162.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0162.rn",
 		"compiled_sha256": "b70d3a96dc244bc465353b22a0e1401dde9e222a09861d7c0db0cbe932369bdf",
 		"source_bytes": 365,
 		"origins": [
@@ -3702,7 +3702,7 @@
 	},
 	{
 		"id": "0163",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0163.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0163.rn",
 		"compiled_sha256": "70a16441dffb48cbc64f3fe9e333cd819e6cb7824b959adb540954e51cfeee0c",
 		"source_bytes": 904,
 		"origins": [
@@ -3749,7 +3749,7 @@
 	},
 	{
 		"id": "0164",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0164.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0164.rn",
 		"compiled_sha256": "6465baee51842b70c6ceb91b548c6d148003a0ccadd4a0010caee77bd299f8dd",
 		"source_bytes": 246,
 		"origins": [
@@ -3770,7 +3770,7 @@
 	},
 	{
 		"id": "0165",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0165.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0165.rn",
 		"compiled_sha256": "4c5710023df0bf7a1801ad5ed1355c34f0dcc62556ea9859c1ebdda39f3ab8a5",
 		"source_bytes": 1133,
 		"origins": [
@@ -3823,7 +3823,7 @@
 	},
 	{
 		"id": "0166",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0166.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0166.rn",
 		"compiled_sha256": "0fe0e00342c704958245f08b3366e092df1847fd97abda3d2e4e2b79af88802b",
 		"source_bytes": 189,
 		"origins": [
@@ -3844,7 +3844,7 @@
 	},
 	{
 		"id": "0167",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0167.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0167.rn",
 		"compiled_sha256": "fc5118b043e0b78637b00dea997191048b173f37f123bee51f65f1bf33cf69a4",
 		"source_bytes": 1305,
 		"origins": [
@@ -3903,7 +3903,7 @@
 	},
 	{
 		"id": "0168",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0168.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0168.rn",
 		"compiled_sha256": "7c634939018d739395d746f3c830a1e67333a12c72738a614d9d268bb6dd0010",
 		"source_bytes": 519,
 		"origins": [
@@ -3924,7 +3924,7 @@
 	},
 	{
 		"id": "0169",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0169.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0169.rn",
 		"compiled_sha256": "e8ecb2e84ccbcbd339d9aa03fb73dfaa450389fdaa1860a2c881c8b543ce7233",
 		"source_bytes": 1807,
 		"origins": [
@@ -3989,7 +3989,7 @@
 	},
 	{
 		"id": "0170",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0170.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0170.rn",
 		"compiled_sha256": "eae6517c8204d68f3944d57ac507b3e80510d2591d9f0854fa37d51dd4eec79d",
 		"source_bytes": 131,
 		"origins": [
@@ -4010,7 +4010,7 @@
 	},
 	{
 		"id": "0171",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0171.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0171.rn",
 		"compiled_sha256": "864b6d6def5fffc7685d7cc2dc4b2c18466b60b3066120259fb2e68aeb57ce82",
 		"source_bytes": 132,
 		"origins": [
@@ -4039,7 +4039,7 @@
 	},
 	{
 		"id": "0172",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0172.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0172.rn",
 		"compiled_sha256": "4bba24c2c2a62b1c998e74437e1baad155d68cf795ef36b5f91f6efce2cdc828",
 		"source_bytes": 94,
 		"origins": [
@@ -4060,7 +4060,7 @@
 	},
 	{
 		"id": "0173",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0173.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0173.rn",
 		"compiled_sha256": "b4f099687c3972c5381e6c232aabf914da24d1d6f7b037025acec7b03a2630b4",
 		"source_bytes": 209,
 		"origins": [
@@ -4095,7 +4095,7 @@
 	},
 	{
 		"id": "0174",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0174.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0174.rn",
 		"compiled_sha256": "d3a438e3e668ee976eb59937498d5465394688c79289db4505531e85a231e78c",
 		"source_bytes": 89,
 		"origins": [
@@ -4116,7 +4116,7 @@
 	},
 	{
 		"id": "0175",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0175.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0175.rn",
 		"compiled_sha256": "1e0e4a666358ae3155f10708851b21f8038a275fd37e8be708d6983047c1de97",
 		"source_bytes": 281,
 		"origins": [
@@ -4157,7 +4157,7 @@
 	},
 	{
 		"id": "0176",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0176.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0176.rn",
 		"compiled_sha256": "d441785ac108a66845e941e7490580b067cf422df9d25846fe79c25980eff5bd",
 		"source_bytes": 46,
 		"origins": [
@@ -4178,7 +4178,7 @@
 	},
 	{
 		"id": "0177",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0177.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0177.rn",
 		"compiled_sha256": "c242d2845aa358c8c22205e006de8b3e21ed5db5f8ad78de4e2c7731d4b905d5",
 		"source_bytes": 310,
 		"origins": [
@@ -4225,7 +4225,7 @@
 	},
 	{
 		"id": "0178",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0178.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0178.rn",
 		"compiled_sha256": "73ae7e6012f599d1229960a0fa78997de621ed1f2429b433b5d55bfd2513be31",
 		"source_bytes": 77,
 		"origins": [
@@ -4246,7 +4246,7 @@
 	},
 	{
 		"id": "0179",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0179.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0179.rn",
 		"compiled_sha256": "6098506fbfe29717d9f94e1cb308b0b2370d9aa80ab8f00275a8d8aab1fa23ca",
 		"source_bytes": 370,
 		"origins": [
@@ -4299,7 +4299,7 @@
 	},
 	{
 		"id": "0180",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0180.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0180.rn",
 		"compiled_sha256": "fee016a233bf5c60451e0e4bc01e6fbaeed99d85d1e9031347bf75d4cd7bbf80",
 		"source_bytes": 135,
 		"origins": [
@@ -4320,7 +4320,7 @@
 	},
 	{
 		"id": "0181",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0181.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0181.rn",
 		"compiled_sha256": "a7b406ff9b67f528c6a556655567f55d2a7195862be876565bb3dc2109caf585",
 		"source_bytes": 488,
 		"origins": [
@@ -4379,7 +4379,7 @@
 	},
 	{
 		"id": "0182",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0182.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0182.rn",
 		"compiled_sha256": "066d01d61ed2b88194351e25f97ed0f2ddb074afdd7950b42a6dc33726ee4586",
 		"source_bytes": 218,
 		"origins": [
@@ -4400,7 +4400,7 @@
 	},
 	{
 		"id": "0183",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0183.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0183.rn",
 		"compiled_sha256": "d821381cc2cbf20ac4bb92a369c08506d7adbea76d712189a7b420540bf5aa77",
 		"source_bytes": 689,
 		"origins": [
@@ -4465,7 +4465,7 @@
 	},
 	{
 		"id": "0184",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0184.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0184.rn",
 		"compiled_sha256": "5a05a641ec95794b4cb6ae0a19c30c8866d62ec82b4b0128aef3cf491ecca87d",
 		"source_bytes": 303,
 		"origins": [
@@ -4486,7 +4486,7 @@
 	},
 	{
 		"id": "0185",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0185.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0185.rn",
 		"compiled_sha256": "f079e89ec99ca59bc8afc07ab3861b666582dfc488567acd17b40359ebb3a84c",
 		"source_bytes": 304,
 		"origins": [
@@ -4515,7 +4515,7 @@
 	},
 	{
 		"id": "0186",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0186.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0186.rn",
 		"compiled_sha256": "e5b34e598acf59900649a0c47a169adb342d9fcf0dab78601ff01ff6d9e8d26c",
 		"source_bytes": 313,
 		"origins": [
@@ -4536,7 +4536,7 @@
 	},
 	{
 		"id": "0187",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0187.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0187.rn",
 		"compiled_sha256": "acd91f289e8d1fdaa38277b629e2f2dbb3c04d218beb8dc638c4ea60c5534a67",
 		"source_bytes": 600,
 		"origins": [
@@ -4571,7 +4571,7 @@
 	},
 	{
 		"id": "0188",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0188.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0188.rn",
 		"compiled_sha256": "0e478269b3d13057066fbdd586379af365bf4b3915c8c4d550ade419baff265a",
 		"source_bytes": 97,
 		"origins": [
@@ -4592,7 +4592,7 @@
 	},
 	{
 		"id": "0189",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0189.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0189.rn",
 		"compiled_sha256": "3d1fbf9303683beaa2cf1ef6ef6cb1518e7e75ed9870e141dc866110a43bd701",
 		"source_bytes": 680,
 		"origins": [
@@ -4633,7 +4633,7 @@
 	},
 	{
 		"id": "0190",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0190.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0190.rn",
 		"compiled_sha256": "9431e8f36b29cfaab3cb5a58c5c66ca60b47407e2c5b32f6137cdf4e1caf9cb6",
 		"source_bytes": 76,
 		"origins": [
@@ -4654,7 +4654,7 @@
 	},
 	{
 		"id": "0191",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0191.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0191.rn",
 		"compiled_sha256": "26210b8f000a2c988e1956e85963caaad4dc8f43066e1e8f7ca5df1fceeec92c",
 		"source_bytes": 739,
 		"origins": [
@@ -4701,7 +4701,7 @@
 	},
 	{
 		"id": "0192",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0192.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0192.rn",
 		"compiled_sha256": "fd4987ef5c9c982b49f9d729f2cc9a8f173b1140b2880bd585c69ef182bb71d8",
 		"source_bytes": 84,
 		"origins": [
@@ -4722,7 +4722,7 @@
 	},
 	{
 		"id": "0193",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0193.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0193.rn",
 		"compiled_sha256": "ef373e74102fee9bfa2e37bcae89d5d1896af7deb68513ffb7ac19f12099be09",
 		"source_bytes": 806,
 		"origins": [
@@ -4775,7 +4775,7 @@
 	},
 	{
 		"id": "0194",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0194.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0194.rn",
 		"compiled_sha256": "ee67c2d36658ef24b2e9d69b27b7b334bf272e5df277eb168b6681621042f2e7",
 		"source_bytes": 84,
 		"origins": [
@@ -4796,7 +4796,7 @@
 	},
 	{
 		"id": "0195",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0195.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0195.rn",
 		"compiled_sha256": "96bc63c71aca7c25e1b40aee2336cc4eb947fff4873681b24a33ace9f02869e4",
 		"source_bytes": 873,
 		"origins": [
@@ -4855,7 +4855,7 @@
 	},
 	{
 		"id": "0196",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0196.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0196.rn",
 		"compiled_sha256": "364d962b10746faeaad188672530a1bf6a0e23438237cc660b4bc94f65f977a8",
 		"source_bytes": 84,
 		"origins": [
@@ -4876,7 +4876,7 @@
 	},
 	{
 		"id": "0197",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0197.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0197.rn",
 		"compiled_sha256": "ad96a5a321449e1d03be5359274b9f759123a3a1c5462c8f35d385f77ea76138",
 		"source_bytes": 940,
 		"origins": [
@@ -4941,7 +4941,7 @@
 	},
 	{
 		"id": "0198",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0198.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0198.rn",
 		"compiled_sha256": "0d7174ee52c798f8075d7ec0432e8ab979fa2fc0d73d54175cbd1f2660a99cf3",
 		"source_bytes": 84,
 		"origins": [
@@ -4962,7 +4962,7 @@
 	},
 	{
 		"id": "0199",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0199.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0199.rn",
 		"compiled_sha256": "7c801d47706a45e749de8c378f8900ca6578b13d5477d48feac9be6bc0ad69ee",
 		"source_bytes": 1007,
 		"origins": [
@@ -5033,7 +5033,7 @@
 	},
 	{
 		"id": "0200",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0200.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0200.rn",
 		"compiled_sha256": "669cc3938b4d00ade66e7181a63c16085a0bbc4d1a079994d4ce776656c95f59",
 		"source_bytes": 84,
 		"origins": [
@@ -5054,7 +5054,7 @@
 	},
 	{
 		"id": "0201",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0201.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0201.rn",
 		"compiled_sha256": "3fdf168739319ab9cbae83ccfcc1ed4d047cf81f9398fe55cdd1023f5b2ff0a3",
 		"source_bytes": 1074,
 		"origins": [
@@ -5131,7 +5131,7 @@
 	},
 	{
 		"id": "0202",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0202.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0202.rn",
 		"compiled_sha256": "b04ee960533cde5a70e1a69e556e0948f625941ae111daab773d29f125595885",
 		"source_bytes": 84,
 		"origins": [
@@ -5152,7 +5152,7 @@
 	},
 	{
 		"id": "0203",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0203.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0203.rn",
 		"compiled_sha256": "787de85ab0deaf204cb71c14e1082d5c0d4e69caae9f4c22e8bc3ac9ce0ddf17",
 		"source_bytes": 1141,
 		"origins": [
@@ -5235,7 +5235,7 @@
 	},
 	{
 		"id": "0204",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0204.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0204.rn",
 		"compiled_sha256": "edb1527dc9d073c9d3d05c7c24cc586607227664477eee51ea88818330360af3",
 		"source_bytes": 177,
 		"origins": [
@@ -5256,7 +5256,7 @@
 	},
 	{
 		"id": "0205",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0205.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0205.rn",
 		"compiled_sha256": "99ac455460a45e9ef2485f7cae2d945ad48b9d7bfd261d8c155b32be5a33b832",
 		"source_bytes": 1301,
 		"origins": [
@@ -5345,7 +5345,7 @@
 	},
 	{
 		"id": "0206",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0206.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0206.rn",
 		"compiled_sha256": "b2971b5d55d43e9cfd096ee702aca26bff4643a6fa31a84345e279a4631ff929",
 		"source_bytes": 19,
 		"origins": [
@@ -5361,7 +5361,7 @@
 	},
 	{
 		"id": "0207",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0207.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0207.rn",
 		"compiled_sha256": "2f45e3449adf4c23c482dcdaf590a5ead4fa899777870994540cd489cb7f05dc",
 		"source_bytes": 37,
 		"origins": [
@@ -5377,7 +5377,7 @@
 	},
 	{
 		"id": "0208",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0208.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0208.rn",
 		"compiled_sha256": "4c22e5b16d3be5af71a6f123388b7a1f838cc3b5cb61e1413277c850652e4156",
 		"source_bytes": 38,
 		"origins": [
@@ -5393,7 +5393,7 @@
 	},
 	{
 		"id": "0209",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0209.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0209.rn",
 		"compiled_sha256": "dc9ae3a3b2fca0b18ecc0c519ea6e49d8cdb57a7db6e0cde0f098c08c590fa76",
 		"source_bytes": 67,
 		"origins": [
@@ -5409,7 +5409,7 @@
 	},
 	{
 		"id": "0210",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0210.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0210.rn",
 		"compiled_sha256": "c51df032ee4554adb6828eba680cad7ba1935f4c1b571cd12bcfca31e4f06c9c",
 		"source_bytes": 35,
 		"origins": [
@@ -5425,7 +5425,7 @@
 	},
 	{
 		"id": "0211",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0211.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0211.rn",
 		"compiled_sha256": "9725e20f177dfdceeb6119566258c195362b77839dd6fbcea1ff071609d7f252",
 		"source_bytes": 34,
 		"origins": [
@@ -5441,7 +5441,7 @@
 	},
 	{
 		"id": "0212",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0212.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0212.rn",
 		"compiled_sha256": "ea466e4ac79629e6b1b8da4aab6d8d4564ad88b1b9dcf1ab54198ee03b13cb63",
 		"source_bytes": 44,
 		"origins": [
@@ -5457,7 +5457,7 @@
 	},
 	{
 		"id": "0213",
-		"path": "/home/me/work/.reviews/0185-h0-host-study1/inputs/0213.rn",
+		"path": "~/work/.reviews/0185-h0-host-study1/inputs/0213.rn",
 		"compiled_sha256": "f6122112a495a84af89a780312aa560fc360829f0a656034f4338c31e8370fb1",
 		"source_bytes": 35,
 		"origins": [
@@ -5473,7 +5473,7 @@
 	},
 	{
 		"id": "allow-00",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-00.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-00.rn",
 		"compiled_sha256": "607270f2b9de4e2f0809a10b08306bacb54593d08501b209ebb85056fed2e1e2",
 		"source_bytes": 30,
 		"origins": [
@@ -5485,7 +5485,7 @@
 	},
 	{
 		"id": "allow-01",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-01.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-01.rn",
 		"compiled_sha256": "2f82000674224eecf34d04711ee9ef806a2f39d103231266a931196ec606508d",
 		"source_bytes": 33,
 		"origins": [
@@ -5497,7 +5497,7 @@
 	},
 	{
 		"id": "allow-02",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-02.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-02.rn",
 		"compiled_sha256": "16edc8c0bd622e1e05cbe0483cb597662a0f3e8887c10a11bd1abba80d528ad2",
 		"source_bytes": 44,
 		"origins": [
@@ -5509,7 +5509,7 @@
 	},
 	{
 		"id": "allow-03",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-03.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-03.rn",
 		"compiled_sha256": "52d0029c449ec80bc9ce7caae005ea5666f73670379dddedf878005828eb3339",
 		"source_bytes": 31,
 		"origins": [
@@ -5521,7 +5521,7 @@
 	},
 	{
 		"id": "allow-04",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-04.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-04.rn",
 		"compiled_sha256": "a44d4e951f0a5b9c57b2888e57e31a746991a74ec11610b48dbfdeef3b3af89c",
 		"source_bytes": 33,
 		"origins": [
@@ -5533,7 +5533,7 @@
 	},
 	{
 		"id": "allow-05",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-05.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-05.rn",
 		"compiled_sha256": "cc3cc36665bd6bc368c8e100375d11dba05018d57085fbb541b0914e6d5f4f03",
 		"source_bytes": 35,
 		"origins": [
@@ -5545,7 +5545,7 @@
 	},
 	{
 		"id": "allow-06",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-06.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-06.rn",
 		"compiled_sha256": "85a6f2aec267186bef78857057395c10ce9102f12a9993d8b87b650ca02fe721",
 		"source_bytes": 28,
 		"origins": [
@@ -5557,7 +5557,7 @@
 	},
 	{
 		"id": "allow-07",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-07.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-07.rn",
 		"compiled_sha256": "1b8cef1282da98702f29c45b5cba817f1c66133840f0bab6ada4500ea9b08489",
 		"source_bytes": 33,
 		"origins": [
@@ -5569,7 +5569,7 @@
 	},
 	{
 		"id": "allow-08",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-08.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-08.rn",
 		"compiled_sha256": "57a50f4e3d6b88d0a15852474cc8b6433abaadee3eecba7f0b51b2c4006f5506",
 		"source_bytes": 32,
 		"origins": [
@@ -5581,7 +5581,7 @@
 	},
 	{
 		"id": "allow-09",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-09.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-09.rn",
 		"compiled_sha256": "fa3b1c274fd375e20d6910e6c49626b2fc310cd24ab21c3fbc325c5e9c5f6901",
 		"source_bytes": 36,
 		"origins": [
@@ -5593,7 +5593,7 @@
 	},
 	{
 		"id": "allow-10",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-10.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-10.rn",
 		"compiled_sha256": "25cbb51c9faf35900461a5be4e38bb53aae19e224734e037e4f9bd5b407378b7",
 		"source_bytes": 35,
 		"origins": [
@@ -5605,7 +5605,7 @@
 	},
 	{
 		"id": "allow-11",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-11.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-11.rn",
 		"compiled_sha256": "95223f2fb01b1f193063251bea1623f98887de234522c5eaed0faf01ce9a8fef",
 		"source_bytes": 37,
 		"origins": [
@@ -5617,7 +5617,7 @@
 	},
 	{
 		"id": "allow-12",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-12.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-12.rn",
 		"compiled_sha256": "37da09e779710e44eda8dadd6209a333162ac63fd55165f9e424ba4a40716ec9",
 		"source_bytes": 38,
 		"origins": [
@@ -5629,7 +5629,7 @@
 	},
 	{
 		"id": "allow-13",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-13.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-13.rn",
 		"compiled_sha256": "f4f87a2f0f8ab3dd645e3902b56c5f3c288cc4516e94342f9ee3ad2c3ac9bbbf",
 		"source_bytes": 37,
 		"origins": [
@@ -5641,7 +5641,7 @@
 	},
 	{
 		"id": "allow-14",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-14.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-14.rn",
 		"compiled_sha256": "a0661d443d4cd0ebaa601ee505a2a721f2cc3b2e302053ef7afbfa6868301236",
 		"source_bytes": 41,
 		"origins": [
@@ -5653,7 +5653,7 @@
 	},
 	{
 		"id": "allow-15",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-15.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-15.rn",
 		"compiled_sha256": "6cf817360b158b3d86d3296ab356f6965d7be0fb8634079a025b4591ba70dce6",
 		"source_bytes": 37,
 		"origins": [
@@ -5665,7 +5665,7 @@
 	},
 	{
 		"id": "allow-16",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-16.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-16.rn",
 		"compiled_sha256": "68a69bc8aaa5b22691e9d824e9f69387cb307bceadfda8578d2c142d474b4917",
 		"source_bytes": 35,
 		"origins": [
@@ -5677,7 +5677,7 @@
 	},
 	{
 		"id": "allow-17",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-17.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-17.rn",
 		"compiled_sha256": "20675b2ccf173131216c70a900c875d84f92ffd63669df60dd55ce1ddd2769a1",
 		"source_bytes": 38,
 		"origins": [
@@ -5689,7 +5689,7 @@
 	},
 	{
 		"id": "allow-18",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-18.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-18.rn",
 		"compiled_sha256": "25e4775564c0240e80e8e34553f8dc10fe2dc72f96719310d7c3611dfc6a8909",
 		"source_bytes": 38,
 		"origins": [
@@ -5701,7 +5701,7 @@
 	},
 	{
 		"id": "allow-19",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-19.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-19.rn",
 		"compiled_sha256": "eb991adf2d35042e5d83471aaa9ca210ea280efd4c32a6a1ca3f6a75ae4a4ecd",
 		"source_bytes": 38,
 		"origins": [
@@ -5713,7 +5713,7 @@
 	},
 	{
 		"id": "allow-20",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-20.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-20.rn",
 		"compiled_sha256": "831a6d7dc8b633dff211d66f9088a8223c657f608e93e4b7745ffba5bec88c0a",
 		"source_bytes": 47,
 		"origins": [
@@ -5725,7 +5725,7 @@
 	},
 	{
 		"id": "allow-21",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-21.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-21.rn",
 		"compiled_sha256": "20d504d480701243b2431a2500e7430e9fcedd023adb6f4ae74bd42d4f5b7cd4",
 		"source_bytes": 40,
 		"origins": [
@@ -5737,7 +5737,7 @@
 	},
 	{
 		"id": "allow-22",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-22.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-22.rn",
 		"compiled_sha256": "656c5fb6348241de3ddb90b995139614e785121126e243e769c36bc5d4b8016a",
 		"source_bytes": 36,
 		"origins": [
@@ -5749,7 +5749,7 @@
 	},
 	{
 		"id": "allow-23",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-23.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-23.rn",
 		"compiled_sha256": "73d6bc1f5f283d64df9acb9dd28d298e7374c776d960bb75975b2c4d65354470",
 		"source_bytes": 33,
 		"origins": [
@@ -5761,7 +5761,7 @@
 	},
 	{
 		"id": "allow-24",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-24.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-24.rn",
 		"compiled_sha256": "7274e7b6bd88bd418c6a48f0f728c54fcf7ab269f5b13cce40e6d078bbfa7359",
 		"source_bytes": 39,
 		"origins": [
@@ -5773,7 +5773,7 @@
 	},
 	{
 		"id": "allow-25",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-25.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-25.rn",
 		"compiled_sha256": "606ca0783712bcd4b9c4ebf22ae10254562b4ff8db7e4f69908d4c552fb297fa",
 		"source_bytes": 42,
 		"origins": [
@@ -5785,7 +5785,7 @@
 	},
 	{
 		"id": "allow-26",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-26.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-26.rn",
 		"compiled_sha256": "904f91d401678d6ee36ac6d3b3fc5192b57e7f206b2af78a4c1fb62b3b734b45",
 		"source_bytes": 39,
 		"origins": [
@@ -5797,7 +5797,7 @@
 	},
 	{
 		"id": "allow-27",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-27.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-27.rn",
 		"compiled_sha256": "06e977fb212bbc5225ea71a291152a23f001573fa7a3debf2a2741a310737154",
 		"source_bytes": 34,
 		"origins": [
@@ -5809,7 +5809,7 @@
 	},
 	{
 		"id": "allow-28",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-28.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-28.rn",
 		"compiled_sha256": "0d9212be7249f748d0af478532e3d63441b16918fa48b29e7d6d06ecba154e2c",
 		"source_bytes": 37,
 		"origins": [
@@ -5821,7 +5821,7 @@
 	},
 	{
 		"id": "allow-29",
-		"path": "/home/me/work/.reviews/0185-r0187-census1/inputs/allow-29.rn",
+		"path": "~/work/.reviews/0185-r0187-census1/inputs/allow-29.rn",
 		"compiled_sha256": "7637e28d8d8f9acd505da894758ed4b42461920612145d4ecdd9c3f82de4bcfa",
 		"source_bytes": 40,
 		"origins": [

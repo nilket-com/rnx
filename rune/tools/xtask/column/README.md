@@ -1,6 +1,6 @@
 CK1 prerequisites run with one command, before any expensive gate:
 
-    python3 -B tools/xtask/column/ck1.py --out target/ck1-development-NEW --notify
+    python3 -B tools/xtask/column/ck1.py --out target/ck1-development-NEW
 
 The output directory must be new. Add --probe for release probe controls and
 --full for the full library suite, both after prerequisites. The staged-artifact
@@ -10,8 +10,8 @@ standalone std/core primitive controls, Clippy and column controls run in that
 order. Commands block on exit, with stdout and diagnostics in distinct files.
 The final RESULT.json binds source hashes and the parent commit; development
 receipts explicitly include uncommitted files and are not signed release proof.
-Do not modify source while a job is running. --notify sends only a terminal
-chatd receipt; no watcher or polling is involved.
+Do not modify source while a job is running. External launchers may notify
+on the terminal receipt; no watcher or polling is needed.
 
 The dependency baseline has no CK1 exceptions. Normal/build edges and enabled
 features are checked for execution/native-code on x86_64 Linux and aarch64
@@ -31,7 +31,7 @@ in the separate rnx record. No publication follows from development controls.
 
 After a clean signed implementation and its --probe prerequisite PASS, run:
 
-    python3 -B tools/xtask/column/measure.py --prerequisite PATH/RESULT.json --out target/ck1-kernel-NEW --notify
+    python3 -B tools/xtask/column/measure.py --prerequisite PATH/RESULT.json --valgrind-root "$VALGRIND_ROOT" --out target/ck1-kernel-NEW
 
 This checks the exact commit/signature/source/binary bindings, uses the shared
 CPU2 measurement lease and unchanged load/memory/thermal/PMU policy, and captures
@@ -46,7 +46,7 @@ kernel measurements do not replace the rnx script end-to-end headline.
 The B1 ambient-budget record reuses these prerequisites and adds focused budget
 controls before the full suite:
 
-    python3 -B tools/xtask/column/ck1.py --budget --full --out target/b1-development-NEW --notify
+    python3 -B tools/xtask/column/ck1.py --budget --full --out target/b1-development-NEW
 
 No column kernel measurement is added by this flag. B1 receipts identify record
 B1 and require its signed-source regression and fresh-clone/Miri checks before
@@ -55,7 +55,7 @@ also carry SSH_AUTH_SOCK and preflight BatchMode access before transfer.
 
 B2 adds terminal host-budget-error controls with the same ordered prerequisites:
 
-    python3 -B tools/xtask/column/ck1.py --budget --budget-halt --full --out target/b2-development-NEW --notify
+    python3 -B tools/xtask/column/ck1.py --budget --budget-halt --full --out target/b2-development-NEW
 
 The budget-halt flag adds constructor/predicate, actual VM equivalence and
 uncatchable host error controls. Existing VM and budget paths are unchanged.
@@ -63,7 +63,7 @@ uncatchable host error controls. Existing VM and budget paths are unchanged.
 CK2 implements ADR 0206. Its whole-map ceilings are in CK2.json; they are not
 CK1's preallocated kernel ceilings. Start with:
 
-    python3 -B tools/xtask/column/ck1.py --ck2 --out target/ck2-development-NEW --notify
+    python3 -B tools/xtask/column/ck1.py --ck2 --out target/ck2-development-NEW
 
 Both this command and the general xtask verification prerequisite run records.py
 before formatting, Clippy or expensive tests. Starting after the fixed published
