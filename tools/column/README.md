@@ -152,3 +152,50 @@ run in the final clean clone. Any product change invalidates this reuse.
 
 Gate tools write terminal receipts and exit nonzero on failure. External launchers
 may notify after exit; no messaging service is required by these tools.
+
+## Record acceptance (ADR 0232)
+
+`gate_policy.py select --out target/RECORD/SELECTION.json --stages STAGES`
+selects canonical stages from `accept.py`. It computes the entire plan/impl
+record diff from the plan's parent; callers cannot choose a narrower baseline.
+Changes under `src/`, `rune/crates/`, `tools/project/`, or `tools/verify/`, or to root/Rune Cargo
+manifests and locks or `tools/verify.py`, automatically require `cross`.
+Renames consider both names. Selection during development is allowed, but final
+acceptance requires the clean, signed-for-review implementation checkout.
+
+Run selected commands through `child_result.run`, retaining each returned
+`validation` reference keyed by stage name in an evidence JSON object. Then run
+`gate_policy.py finalize --selection SELECTION --evidence EVIDENCE --out FINAL`.
+Finalization checks the candidate, current source, policy, canonical commands,
+required stages, log hashes and child receipts. `accept.py` does this for its
+full suite; a proportional chain must declare `acceptance_scope: "final"` and
+supply its selection. Development controls alone are not publication evidence.
+The final PASS is the documented publication gate: this is not a Git push hook
+and does not intercept arbitrary pushes.
+
+Receipt-producing Python children are explicitly registered in `child_result.py`.
+They must publish their semantic result with `publish`, or bind an existing
+controller-owned result with `bind` (the Rust cross controller). Raw command
+adapters have an explicit allowlist and retain exit status plus durable logs;
+an unknown producer cannot silently become a raw command. Producers require an
+explicit `--out`; for `chain.py` it must equal the `--config` directory.
+A fresh invocation context binds source content, executable bits, candidate,
+command and declared recipe environment. Only allowlisted key names and a digest
+are stored, never environment values; terminal/session/SSH variables are excluded.
+Success requires both exit zero and a fresh bound PASS.
+Missing, malformed, stale and failed receipts fail closed. Artifacts are synced
+before terminal receipts. Existing attempt directories are never overwritten.
+
+An explicit producer `--resume` may replace a prior PASS only after archiving
+its exact original bytes; a completed FAIL is not reusable evidence. The resumed
+producer remains responsible for validating each reused stage. Parent evidence
+also verifies the original logs and context. Historical receipts without this
+binding cannot be retroactively promoted to final acceptance. Remote acceptance
+binds a fresh invocation, candidate, source and bootstrap recipe and requires
+remote finalization. Existing measurement-specific binary/profile checks remain
+in force alongside these controller contracts.
+
+The aggregate column tool-test command is:
+`python3 -B -m unittest discover -s tools/column -p 'test_*.py'`.
+Its protocol test has a unique module name so imports from the measurement
+suite cannot shadow it.

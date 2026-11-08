@@ -1,4 +1,6 @@
 """Resume an unchanged fresh source after its failed full-Polars inventory prerequisite."""
+import gate_policy
+import child_result
 import argparse
 import hashlib
 import importlib.util
@@ -94,13 +96,16 @@ def main():
 			exact()
 			before = time.monotonic()
 			with (out / (name + '.stdout')).open('x') as stdout, (out / (name + '.stderr')).open('x') as stderr:
-				p = subprocess.run(command, cwd=root, env=env, stdout=stdout, stderr=stderr, timeout=10800)
-			result['checks'].append({'name': name, 'command': command, 'exit': p.returncode, 'seconds': time.monotonic() - before})
-			output = finish_stage(root, name, out)
+				p = child_result.run(command, root=root, cwd=root, env=env, stdout=stdout, stderr=stderr, timeout=10800, after=lambda: finish_stage(root, name, out))
+			result['checks'].append({'name': name, 'command': command, 'exit': p.returncode, 'seconds': time.monotonic() - before, 'validation': p.validation})
+			output = p.declared_output
 			if output is not None:
 				result['checks'][-1]['declared_output'] = output
 			exact()
 			assert p.returncode == 0, (name, p.returncode)
+		selection = gate_policy.select(root, out, None)
+		refs = {r['name']: r['validation'] for r in result['reused_checks'] + result['checks'] if 'validation' in r}
+		result['finalization'] = gate_policy.finalize(selection, {n: refs[n] for n, _ in selection['stages']}, root)
 		result['status'] = 'PASS'
 	except BaseException as error:
 		result['error'] = repr(error)
@@ -108,7 +113,7 @@ def main():
 	finally:
 		result['seconds'] = time.monotonic() - started
 		result['resume_controller_sha256'] = sha(Path(__file__))
-		(out / 'RESULT.json').write_text(json.dumps(result, indent=2) + '\n')
+		child_result.publish(out / "RESULT.json", result)
 	print(result['status'], str(out / 'RESULT.json'))
 	return 0 if result['status'] == 'PASS' else 1
 

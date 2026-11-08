@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """ADR 0212 proportional controls with durable per-stage receipts and no retries."""
+import child_result
 import argparse
 import json
 import os
@@ -59,7 +60,7 @@ def main():
 	parser.add_argument("--resume", action="store_true")
 	args = parser.parse_args()
 	out = args.out.resolve()
-	result = {"status": "FAIL", "scope": args.scope, "stages": []}
+	result = {"status": "FAIL", "acceptance_scope": "development", "scope": args.scope, "stages": []}
 	try:
 		subprocess.run([sys.executable, "-B", str(ROOT / "ci/disk_space.py"), "--path", str(ROOT), "--path", str(out)], check=True)
 		stages = commands(args.scope)
@@ -73,6 +74,7 @@ def main():
 					raise RuntimeError("source changed before " + name)
 				attempt, reused = run.begin(name)
 				if reused is not None:
+					child_result.evidence(reused["validation"], child_result.source(ROOT))
 					result["stages"].append(reused)
 					continue
 				command = [part.replace("{attempt}", str(attempt)) for part in command]
@@ -80,12 +82,12 @@ def main():
 				start = time.monotonic()
 				with log.open("x") as stream:
 					try:
-						child = subprocess.run(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT, timeout=7200)
+						child = child_result.run(command, cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT, timeout=7200)
 					except (subprocess.TimeoutExpired, OSError) as error:
 						stream.write("\nLaunch/timeout failure: " + repr(error) + "\n")
 						child = subprocess.CompletedProcess(command, 124)
 				passed = child.returncode == 0 and source_identity() == pins and (not tests or positive_tests(log.read_text()))
-				row = run.finish(attempt, "PASS" if passed else "FAIL", [log], command=command, exit=child.returncode, seconds=time.monotonic() - start)
+				row = run.finish(attempt, "PASS" if passed else "FAIL", [log], command=command, validation=getattr(child, "validation", None), exit=child.returncode, seconds=time.monotonic() - start)
 				result["stages"].append(row)
 				if not passed:
 					raise RuntimeError(name + " failed")
@@ -95,7 +97,7 @@ def main():
 	finally:
 		out.mkdir(parents=True, exist_ok=True)
 		receipt = out / ("INVOCATION-" + uuid.uuid4().hex + ".json")
-		atomic_json(receipt, result)
+		child_result.publish(receipt, result)
 		notice = receipt.with_suffix(".txt")
 		notice.write_text(str(receipt) + "\n")
 		print(result["status"], receipt)

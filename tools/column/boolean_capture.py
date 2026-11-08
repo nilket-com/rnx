@@ -1,3 +1,4 @@
+import child_result
 import argparse,json,os,platform,shutil,subprocess,sys,traceback
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]
@@ -61,5 +62,5 @@ try:
 	r.update(status=verdict['status'],head=head,records=raw,cases=[y for x,y in records],acceptance=verdict)
 except BaseException as e:r.update(error=repr(e),traceback=traceback.format_exc())
 finally:
-	atomic_json(OUT/'RESULT.json',r);(OUT/'NOTICE.txt').write_text(str(OUT/'RESULT.json')+'\n')
+	child_result.publish(OUT/'RESULT.json',r);(OUT/'NOTICE.txt').write_text(str(OUT/'RESULT.json')+'\n')
 raise SystemExit(0 if r['status']=='PASS' else 1)

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """0205 fresh-clone acceptance: inherited gates plus column and production CLI controls."""
+import gate_policy
+import child_result
 import argparse
 import hashlib
 import json
@@ -17,9 +19,9 @@ MANIFESTS = ["Cargo.toml", "tools/project/Cargo.toml", "adapters/candle/Cargo.to
 	"demos/polars/Cargo.toml", "servers/http-postgres/Cargo.toml"]
 
 
-def commands(out):
+def commands(out, root=ROOT):
 	# The verifier only permits ignored in-tree output below this directory.
-	cross_out = ROOT / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16])
+	cross_out = root / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16])
 	cargo = ["cargo", "+1.98.1"]
 	steps = [("commit-discipline", ["python3", "-B", "ci/preflight.py"])]
 	steps += [("fetch-" + m.replace("/", "-"), cargo + ["fetch", "--locked", "--manifest-path", m]) for m in MANIFESTS]
@@ -49,7 +51,7 @@ def commands(out):
 	steps += [
 		("cross", ["python3", "-B", "tools/verify.py", "cross", "--suite", "all", "--jobs", "4", "--out", str(cross_out)]),
 		("production-cli-build", cargo + ["build", "--locked", "--release", "--manifest-path", "adapters/polars/Cargo.toml", "--bin", "rnx-polars"]),
-		("production-cli-controls", ["python3", "-B", "tools/column/cli.py", "--binary", str(ROOT / "adapters/polars/target/release/rnx-polars"), "--out", str(out / "cli")]),
+		("production-cli-controls", ["python3", "-B", "tools/column/cli.py", "--binary", str(root / "adapters/polars/target/release/rnx-polars"), "--out", str(out / "cli")]),
 	]
 	assert len({name for name, _ in steps}) == len(steps)
 	return steps
@@ -59,6 +61,7 @@ def main():
 	parser = argparse.ArgumentParser(description=__doc__)
 	parser.add_argument("--candidate", required=True)
 	parser.add_argument("--out", required=True, type=Path)
+	parser.add_argument("--remote-context", type=Path)
 	parser.add_argument("--plan", action="store_true", help="emit commands without running any jobs")
 	args = parser.parse_args()
 	out = args.out.resolve()
@@ -76,6 +79,13 @@ def main():
 	try:
 		subprocess.run(["python3", "-B", str(ROOT / "ci/disk_space.py"), "--path", str(ROOT), "--path", str(out)], check=True)
 		exact()
+		if args.remote_context:
+			context = json.loads(args.remote_context.read_text())
+			if context["candidate"] != args.candidate or context["source"] != child_result.source(ROOT):
+				raise ValueError("remote source context differs")
+			result["remote_context"] = context
+		selection = gate_policy.select(ROOT, out, candidate=args.candidate)
+		child_result.atomic_json(out / "SELECTION.json", selection)
 		assert not env.get("CARGO_TARGET_DIR"), "fresh acceptance requires native workspace targets"
 		for manifest in MANIFESTS:
 			assert not (ROOT / manifest).parent.joinpath("target").exists(), "fresh target already exists"
@@ -83,13 +93,14 @@ def main():
 			exact()
 			before = time.monotonic()
 			with (out / (name + ".stdout")).open("x") as stdout, (out / (name + ".stderr")).open("x") as stderr:
-				done = subprocess.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=10800)
-			result["checks"].append({"name": name, "exit": done.returncode, "command": command, "seconds": time.monotonic() - before})
-			output = finish_stage(ROOT, name, out)
+				done = child_result.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=10800, after=lambda: finish_stage(ROOT, name, out))
+			result["checks"].append({"name": name, "exit": done.returncode, "command": command, "seconds": time.monotonic() - before, "validation": done.validation})
+			output = done.declared_output
 			if output is not None:
 				result["checks"][-1]["declared_output"] = output
 			exact()
 			assert done.returncode == 0, f"{name} failed"
+		result["finalization"] = gate_policy.finalize(selection, {r["name"]: r["validation"] for r in result["checks"]}, ROOT)
 		result["status"] = "PASS"
 	except BaseException as error:
 		result["error"] = repr(error)
@@ -97,7 +108,7 @@ def main():
 	finally:
 		result["seconds"] = time.monotonic() - start
 		result["controller_sha256"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-		(out / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n")
+		child_result.publish(out / "RESULT.json", result)
 	print(result["status"], str(out / "RESULT.json"))
 	return 0 if result["status"] == "PASS" else 1
 

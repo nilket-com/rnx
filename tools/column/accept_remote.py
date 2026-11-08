@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Bundle a signed candidate and block on fresh acceptance under the verifier account."""
+import child_result
 import argparse
 import hashlib
 import json
@@ -9,6 +10,7 @@ import re
 import shlex
 import subprocess
 import traceback
+import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -54,9 +56,14 @@ def main():
 			"python3 -B ci/disk_space.py --path . --path " + quote(remote),
 			"git verify-commit HEAD",
 			"git -c gpg.ssh.allowedSignersFile=" + quote(prefix + ".signers") + " verify-commit HEAD^",
-			"exec python3 -B tools/column/accept.py --candidate " + quote(candidate) + " --out " + quote(remote + "/acceptance"), "",
+			"exec python3 -B tools/column/accept.py --candidate " + quote(candidate) + " --out " + quote(remote + "/acceptance") + " --remote-context " + quote(prefix + ".context.json"), "",
 		]))
-		for source, target in ((bundle, prefix + ".bundle"), (bootstrap, prefix + ".sh"), (args.signers, prefix + ".signers")):
+		context = {"schema": 1, "invocation": uuid.uuid4().hex, "candidate": candidate,
+			"source": child_result.source(ROOT), "host": args.host, "remote": remote,
+			"memory_bytes": args.memory_bytes, "bootstrap_sha256": child_result.digest(bootstrap)}
+		context_file = out / "REMOTE-CONTEXT.json"
+		child_result.atomic_json(context_file, context)
+		for source, target in ((context_file, prefix + ".context.json"), (bundle, prefix + ".bundle"), (bootstrap, prefix + ".sh"), (args.signers, prefix + ".signers")):
 			subprocess.run(["scp", "-q", "-oBatchMode=yes", str(source), args.host + ":" + target], check=True)
 		subprocess.run(ssh + ["chmod", "644", prefix + ".signers"], check=True)
 		command = ["systemd-run", "--user", "--wait", "--unit=" + label, "--service-type=exec",
@@ -70,7 +77,7 @@ def main():
 		accepted = json.loads(receipt.stdout)
 		result.update(candidate=candidate, remote=remote, memory_bytes=args.memory_bytes,
 			bundle_sha256=hashlib.sha256(bundle.read_bytes()).hexdigest(), acceptance_sha256=hashlib.sha256(receipt.stdout).hexdigest(), exit=done.returncode)
-		assert done.returncode == 0 and accepted["status"] == "PASS" and accepted["candidate"] == candidate
+		result["validation"] = child_result.validate_remote(done.returncode, accepted, context)
 		assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip() == candidate
 		assert not subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip()
 		result["status"] = "PASS"
@@ -79,7 +86,7 @@ def main():
 		(out / "TRACEBACK.txt").write_text(traceback.format_exc())
 	finally:
 		receipt = out / "RESULT.json"
-		receipt.write_text(json.dumps(result, indent=2) + "\n")
+		child_result.publish(receipt, result)
 		summary = "0205 fresh acceptance EXIT " + result["status"]
 		notice = out / "NOTICE.txt"
 		notice.write_text(summary + ". Receipt: " + str(receipt) + "\n")

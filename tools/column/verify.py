@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Ordered 0205 prerequisites and controls; terminal receipts, no job polling."""
+import child_result
 import argparse
 import hashlib
 import importlib.util
@@ -29,7 +30,7 @@ def main():
 	out.mkdir(parents=True, exist_ok=False)
 	start = time.monotonic()
 	env = dict(os.environ, CARGO_BUILD_JOBS="4", PYTHONDONTWRITEBYTECODE="1")
-	result = {"record": "0205", "status": "FAIL", "checks": [], "source_pins": {}}
+	result = {"acceptance_scope": "development", "record": "0205", "status": "FAIL", "checks": [], "source_pins": {}}
 	pins = result["source_pins"]
 	def exact():
 		for name, digest in pins.items():
@@ -37,8 +38,8 @@ def main():
 	def run(name, command):
 		exact()
 		with (out / (name + ".stdout")).open("x") as stdout, (out / (name + ".stderr")).open("x") as stderr:
-			completed = subprocess.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=7200)
-		result["checks"].append({"name": name, "exit": completed.returncode})
+			completed = child_result.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=7200)
+		result["checks"].append({"name": name, "exit": completed.returncode, "validation": completed.validation})
 		exact()
 		if completed.returncode:
 			raise RuntimeError(f"{name} failed: {completed.returncode}")
@@ -99,7 +100,7 @@ def main():
 	finally:
 		result["seconds"] = time.monotonic() - start
 		receipt = out / "RESULT.json"
-		receipt.write_text(json.dumps(result, indent=2) + "\n")
+		child_result.publish(receipt, result)
 		notice = out / "NOTICE.txt"
 		notice.write_text(f'0205 {args.scope} development prerequisites/controls EXIT {result["status"]}. Receipt: {receipt}\n')
 		print(notice.read_text().strip())

@@ -1,4 +1,5 @@
 """ADR0221 durable large capture of the reviewed binaries, without rebuilding."""
+import child_result
 import argparse
 import json
 import platform
@@ -72,7 +73,7 @@ def main():
 	except BaseException as e:
 		result.update(error=repr(e), traceback=traceback.format_exc())
 	finally:
-		ir_pool.terminal_json(out / 'RESULT.json', result)
+		child_result.publish(out / 'RESULT.json', result)
 		(out / 'NOTICE.txt').write_text(str(out / 'RESULT.json') + '\n')
 	return 0 if result['status'] == 'PASS' else 1
 

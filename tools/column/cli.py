@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Actual CLI routing/fuel controls; called after ordered prerequisites/build."""
+import child_result
 import argparse
 import hashlib
 import json
@@ -87,7 +88,7 @@ def main():
 		(out / "TRACEBACK.txt").write_text(traceback.format_exc())
 	finally:
 		result["seconds"] = time.monotonic() - start
-		(out / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n")
+		child_result.publish(out / "RESULT.json", result)
 	return 0 if result["status"] == "PASS" else 1
 
 

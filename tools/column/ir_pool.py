@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Durable parallel whole-map instruction counts; cycles are reported separately."""
+import child_result
 import argparse
 import hashlib
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -251,7 +252,7 @@ def main():
 	except BaseException as error:
 		result.update(status="FAIL", error=repr(error), traceback=traceback.format_exc())
 	finally:
-		terminal_json(o / "RESULT.json", result)
+		child_result.publish(o / "RESULT.json", result)
 		n = o / "NOTICE.txt"; n.write_text(f"rnx0206 parallel Ir {args.mode} EXIT {result['status']}. Receipt: {o / 'RESULT.json'}")
 	return 0 if result["status"] == "PASS" else 1
 

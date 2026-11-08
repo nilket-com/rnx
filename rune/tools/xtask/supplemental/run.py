@@ -5,9 +5,11 @@ import concurrent.futures
 import json
 import os
 from pathlib import Path
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[4] / "tools/column"))
+import child_result
 import shutil
 import subprocess
-import sys
 import traceback
 
 from admission import admit
@@ -201,6 +203,8 @@ def main():
 	if directory.is_relative_to(root) and not directory.is_relative_to(root / 'target/xtask-verify'):
 		parser.error('in-source output must be under target/xtask-verify')
 	subprocess.run([sys.executable, "-B", str(root / "ci/disk_space.py"), "--path", str(root), "--path", str(directory)], check=True)
+	if args.launch and os.environ.get(child_result.CONTEXT):
+		parser.error("bound validation must wait for execution; omit --launch")
 	if args.launch:
 		limits = admit(*resources(), manifest['measured_peak_rss_bytes'], args.workers)
 		command = ['systemd-run', '--user', '--unit=' + args.unit,
@@ -237,7 +241,7 @@ def main():
 		# Invocation receipts never overwrite earlier failures or interrupted work.
 		import uuid
 		path = directory / ('INVOCATION-' + uuid.uuid4().hex + '.json')
-		atomic_json(path, result)
+		child_result.publish(path, result)
 		print(result['status'] + ': ' + str(path), flush=True)
 		notice = path.with_suffix('.txt')
 		notice.write_text('ADR0210 supplemental Miri ' + result['status'] + '. Receipt: ' + str(path) + '\n')

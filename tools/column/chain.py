@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Run declared gate stages from one pinned input manifest; block until each exits."""
+import gate_policy
+import child_result
 import argparse
 import hashlib
 import json
@@ -24,12 +26,15 @@ def check(reference):
 def main():
 	parser = argparse.ArgumentParser(description=__doc__)
 	parser.add_argument("--config", type=Path, required=True)
+	parser.add_argument("--out", type=Path, help="explicit binding for a parent controller; must equal config directory")
 	args = parser.parse_args()
 	config = json.loads(args.config.read_text())
 	config_pin = pin(args.config)
 	out = args.config.parent
+	if args.out is not None and args.out.resolve() != out.resolve():
+		raise ValueError("chain output must equal config directory")
 	assert not (out / "RESULT.json").exists(), "terminal receipt already exists"
-	result = {"status": "FAIL", "candidate": config["candidate"], "tip": config["tip"], "checks": [], "config": config_pin}
+	result = {"status": "FAIL", "acceptance_scope": config.get("acceptance_scope", "development"), "candidate": config["candidate"], "tip": config["tip"], "checks": [], "config": config_pin}
 	started = time.monotonic()
 	def exact():
 		check(config_pin)
@@ -39,6 +44,10 @@ def main():
 			check(reference)
 	try:
 		exact()
+		selection = config.get("selection")
+		if result["acceptance_scope"] not in {"development", "final"}: raise ValueError("unknown chain scope")
+		if result["acceptance_scope"] == "final":
+			gate_policy.check_selection(selection, config["repo"])
 		for reference in config["prerequisites"]:
 			check(reference)
 			assert json.loads(Path(reference["path"]).read_text())["status"] == "PASS", reference["path"]
@@ -60,14 +69,15 @@ def main():
 			if stage.get("cooldown_seconds"):
 				time.sleep(stage["cooldown_seconds"])
 			with (out / (stage["name"] + ".stdout")).open("x") as stdout, (out / (stage["name"] + ".stderr")).open("x") as stderr:
-				completed = subprocess.run(stage["command"], cwd=config["repo"], stdout=stdout, stderr=stderr, timeout=stage["timeout"])
-			row = {"name": stage["name"], "exit": completed.returncode}
+				completed = child_result.run(stage["command"], root=config["repo"], cwd=config["repo"], stdout=stdout, stderr=stderr, timeout=stage["timeout"])
+			row = {"name": stage["name"], "exit": completed.returncode, "validation": completed.validation}
 			result["checks"].append(row)
 			if Path(stage["receipt"]).exists():
 				row["receipt"] = pin(stage["receipt"])
 			assert completed.returncode == 0, stage["name"]
 			assert json.loads(Path(stage["receipt"]).read_text())["status"] == "PASS", stage["name"]
 			exact()
+		if result["acceptance_scope"] == "final": result["finalization"] = gate_policy.finalize(selection, {r["name"]: r["validation"] for r in result["checks"]}, config["repo"])
 		result["status"] = "PASS"
 	except BaseException as error:
 		result["error"] = repr(error)
@@ -75,7 +85,7 @@ def main():
 	finally:
 		result["seconds"] = time.monotonic() - started
 		receipt = out / "RESULT.json"
-		receipt.write_text(json.dumps(result, indent=2) + "\n")
+		child_result.publish(receipt, result)
 		notice = out / "NOTICE.txt"
 		summary = config["label"] + " EXIT " + result["status"]
 		notice.write_text(summary + ". Receipt " + str(receipt) + ".\n")

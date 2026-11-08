@@ -4,9 +4,11 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[4] / "tools/column"))
+import child_result
 import re
 import subprocess
-import sys
 import time
 import traceback
 
@@ -220,7 +222,7 @@ def main():
 		(out / "TRACEBACK.txt").write_text(traceback.format_exc())
 	finally:
 		result["seconds"] = time.monotonic() - start
-		cli_cache.atomic_json(out / "RESULT.json", result)
+		child_result.publish(out / "RESULT.json", result)
 		notice = out / "NOTICE.txt"
 		notice.write_text(f"CK2 CLI {args.mode} capture EXIT {result['status']}. Receipt: {out / 'RESULT.json'}\n")
 	return 0 if result["status"] == "PASS" else 1

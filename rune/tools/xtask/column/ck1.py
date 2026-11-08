@@ -5,6 +5,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[4] / "tools/column"))
+import child_result
 import subprocess
 import time
 import traceback
@@ -97,7 +100,7 @@ def main():
 	finally:
 		result["seconds"] = time.monotonic() - started
 		receipt = out / "RESULT.json"
-		receipt.write_text(json.dumps(result, indent=2) + "\n")
+		child_result.publish(receipt, result)
 		notice = out / "NOTICE.txt"
 		notice.write_text(f'{record} development prerequisites/focused controls EXIT {result["status"]}. Receipt: {receipt}\n')
 		print(notice.read_text().strip())

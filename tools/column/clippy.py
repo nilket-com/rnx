@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Fail on any Clippy diagnostic absent from the exact published rnx source."""
+import child_result
 import argparse
 from collections import Counter
 import json
@@ -84,7 +85,7 @@ def main():
 			raise RuntimeError(f"{role} Clippy failed; see {out}")
 	added = sets["candidate"] - sets["published"]
 	result = {"status": "FAIL" if added else "PASS", "published": BASE, "existing": sorted(sets["published"].items(), key=repr), "candidate": sorted(sets["candidate"].items(), key=repr), "added": sorted(added.items(), key=repr)}
-	(out / "RESULT.json").write_text(json.dumps(result, indent=2) + "\n")
+	child_result.publish(out / "RESULT.json", result)
 	if added:
 		raise RuntimeError(f"new Clippy diagnostics: {added!r}")
 

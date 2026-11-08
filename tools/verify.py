@@ -5,6 +5,7 @@ Observation, source binding, comparison, and acceptance belong to the checked-in
 Rust controller. This launcher never changes the product manifest or lock.
 """
 
+import sys
 import argparse
 import json
 import os
@@ -160,6 +161,11 @@ def main():
 							   env=env, stdout=stdout, stderr=stderr, check=True)
 	if not (output / "bound-verification-child").is_file():
 		raise RuntimeError("the Rust controller did not bind an executable; see controller.stderr")
+
+	# The Rust result is authoritative; the Python launcher only binds it.
+	sys.path.insert(0, str(controller_root / "tools/column"))
+	import child_result
+	child_result.bind(output / "RESULT.json")
 
 
 if __name__ == "__main__":

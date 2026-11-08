@@ -1,4 +1,7 @@
 """Finish reviewed acceptance after a test-only cross-harness configuration fix."""
+import accept
+import gate_policy
+import child_result
 import argparse
 import hashlib
 import json
@@ -94,17 +97,20 @@ def main():
 		steps = [
 			('inventory-preflight', ['python3', '-B', 'tools/column/inventories.py', '--preflight', '--out', str(out / 'inventory-preflight')]),
 			prerequisites,
-			('cross', ['python3', '-B', 'tools/verify.py', 'cross', '--suite', 'all', '--jobs', '4', '--out', str(out / 'cross')]),
+			('cross', dict(accept.commands(out))['cross']),
 			('fresh-inventories', ['python3', '-B', 'tools/column/inventories.py', '--out', str(out / 'inventories')]),
 		]
 		for name, command in steps:
 			exact()
 			before = time.monotonic()
 			with (out / (name + '.stdout')).open('x') as stdout, (out / (name + '.stderr')).open('x') as stderr:
-				p = subprocess.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=21600)
-			result['checks'].append({'name': name, 'command': command, 'exit': p.returncode, 'seconds': time.monotonic() - before})
+				p = child_result.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=21600)
+			result['checks'].append({'name': name, 'command': command, 'exit': p.returncode, 'seconds': time.monotonic() - before, 'validation': p.validation})
 			exact()
 			assert p.returncode == 0, name
+		selection = gate_policy.select(ROOT, out, ['cross'])
+		refs = {r['name']: r['validation'] for r in result['reused_checks'] + result['checks'] if 'validation' in r}
+		result['finalization'] = gate_policy.finalize(selection, {n: refs[n] for n, _ in selection['stages']}, ROOT)
 		result['status'] = 'PASS'
 	except BaseException as error:
 		result['error'] = repr(error)
@@ -112,7 +118,7 @@ def main():
 	finally:
 		result['seconds'] = time.monotonic() - started
 		result['controller_sha256'] = sha(Path(__file__))
-		(out / 'RESULT.json').write_text(json.dumps(result, indent=2) + '\n')
+		child_result.publish(out / "RESULT.json", result)
 	print(result['status'], str(out / 'RESULT.json'))
 	return 0 if result['status'] == 'PASS' else 1
 
