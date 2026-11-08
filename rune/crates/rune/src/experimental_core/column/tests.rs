@@ -3046,3 +3046,97 @@ fn explicit_reuse_spare_capacity_cannot_force_replay() {
 		}
 	}
 }
+
+#[test]
+fn predicate_packed_i64_all_ops_offsets_chunks_and_nulls() {
+	let values = [i64::MIN, i64::MAX, -1, 0, 1, 2, -2, 7];
+	let lengths: &[usize] = if cfg!(miri) {
+		&[0, 4, 65]
+	} else {
+		&[0, 1, 3, 4, 5, 63, 64, 65, 1023, 1024, 1025]
+	};
+	for &len in lengths {
+		let x: Vec<_> = (0..len + 3).map(|i| values[i % values.len()]).collect();
+		let y: Vec<_> = (0..len + 5)
+			.map(|i| values[(i * 3 + 1) % values.len()])
+			.collect();
+		for pattern in [None, Some(0xff), Some(0), Some(0xaa), Some(0x95)] {
+			let validity = vec![pattern.unwrap_or(0xff); (len + 7).div_ceil(8)];
+			let cut = len / 2;
+			let make = |v, start, n| {
+				ColumnChunk::new(
+					v,
+					pattern.map(|_| BitSlice::new(&validity, start, n).unwrap()),
+				)
+				.unwrap()
+			};
+			let xs = [
+				make(ColumnSlice::I64(&x[3..3 + cut]), 3, cut),
+				make(ColumnSlice::I64(&x[3 + cut..]), 3 + cut, len - cut),
+			];
+			let ys = [make(ColumnSlice::I64(&y[5..]), 5, len)];
+			let columns = [
+				Column::new(ColumnType::I64, &xs).unwrap(),
+				Column::new(ColumnType::I64, &ys).unwrap(),
+			];
+			for op in [
+				Binary::Eq,
+				Binary::Ne,
+				Binary::Lt,
+				Binary::Le,
+				Binary::Gt,
+				Binary::Ge,
+			] {
+				for representation in 0..3 {
+					let (lhs, rhs) = match representation {
+						0 => (0, 1),
+						1 => (0, 2),
+						_ => (2, 1),
+					};
+					let p = program(
+						2,
+						4,
+						&[
+							Op::Literal {
+								out: 2,
+								value: Value::I64(i64::MIN),
+							},
+							Op::Binary {
+								out: 3,
+								op,
+								lhs,
+								rhs,
+							},
+							Op::Return { value: 3 },
+						],
+					);
+					let plan = PreparedColumn::prepare(
+						&p,
+						0,
+						&[ColumnType::I64; 2],
+						ColumnType::Bool,
+						Limits::default(),
+					)
+					.unwrap();
+					let mut results = Vec::new();
+					for force_scalar in [true, false] {
+						let ColumnOutcome::Complete(r) =
+							plan.execute(&columns, options(1000000, force_scalar), || false)
+						else {
+							panic!("refused")
+						};
+						assert_eq!(r.path, Path::Scalar);
+						let ColumnValues::Bool(bits) = r.values else {
+							panic!("type")
+						};
+						results.push((bits, r.validity, r.valid_rows, r.remaining_work));
+					}
+					assert_eq!(
+						results[0], results[1],
+						"len={len} op={op:?} repr={representation} pattern={pattern:?}"
+					);
+				}
+			}
+		}
+	}
+}

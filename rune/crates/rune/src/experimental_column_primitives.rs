@@ -434,6 +434,137 @@ fn float_pair_uninit(op: FloatOp, x: &[f64], y: &[f64], out: &mut [MaybeUninit<f
 	}
 }
 
+/// Signed predicate operations; kept separate from arithmetic primitives.
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum I64Comparison {
+	Eq,
+	Ne,
+	Lt,
+	Le,
+	Gt,
+	Ge,
+}
+impl I64Comparison {
+	fn reversed(self) -> Self {
+		match self {
+			Self::Eq => Self::Eq,
+			Self::Ne => Self::Ne,
+			Self::Lt => Self::Gt,
+			Self::Le => Self::Ge,
+			Self::Gt => Self::Lt,
+			Self::Ge => Self::Le,
+		}
+	}
+	fn scalar(self, x: i64, y: i64) -> bool {
+		match self {
+			Self::Eq => x == y,
+			Self::Ne => x != y,
+			Self::Lt => x < y,
+			Self::Le => x <= y,
+			Self::Gt => x > y,
+			Self::Ge => x >= y,
+		}
+	}
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum I64CompareInput<'a> {
+	Column(&'a [i64]),
+	Constant(i64),
+}
+impl I64CompareInput<'_> {
+	fn check(self, len: usize) {
+		if let Self::Column(v) = self {
+			assert!(v.len() >= len);
+		}
+	}
+}
+
+impl Engine {
+	/// Writes complete 64-bit words only. None leaves output untouched; the
+	/// caller retains the existing scalar comparison for the remaining lanes.
+	pub(crate) fn packed_i64_comparison(
+		self,
+		op: I64Comparison,
+		x: I64CompareInput<'_>,
+		y: I64CompareInput<'_>,
+		out: &mut [u64],
+		len: usize,
+	) -> Option<usize> {
+		x.check(len);
+		y.check(len);
+		assert!(out.len() >= len.div_ceil(64));
+		if !self.avx2 {
+			return None;
+		}
+		let words = len / 64;
+		let out = &mut out[..words];
+		#[cfg(target_arch = "x86_64")]
+		{
+			use I64CompareInput::{Column, Constant};
+			macro_rules! dispatch {
+				($op:expr, $x:expr, $y:expr, $eq:ident, $ne:ident, $lt:ident, $le:ident, $gt:ident, $ge:ident) => {
+					// SAFETY: Engine runtime detection dominates every target-feature
+					// call. Inputs contain len lanes; each output word consumes exactly
+					// 64 of them. Slices guarantee output cannot alias either input.
+					unsafe {
+						match $op {
+							I64Comparison::Eq => simd::$eq($x, $y, out),
+							I64Comparison::Ne => simd::$ne($x, $y, out),
+							I64Comparison::Lt => simd::$lt($x, $y, out),
+							I64Comparison::Le => simd::$le($x, $y, out),
+							I64Comparison::Gt => simd::$gt($x, $y, out),
+							I64Comparison::Ge => simd::$ge($x, $y, out),
+						}
+					}
+				};
+			}
+			match (x, y) {
+				(Column(x), Column(y)) => dispatch!(
+					op,
+					x,
+					y,
+					compare_eq_pair,
+					compare_ne_pair,
+					compare_lt_pair,
+					compare_le_pair,
+					compare_gt_pair,
+					compare_ge_pair
+				),
+				(Column(x), Constant(y)) => dispatch!(
+					op,
+					x,
+					y,
+					compare_eq_const,
+					compare_ne_const,
+					compare_lt_const,
+					compare_le_const,
+					compare_gt_const,
+					compare_ge_const
+				),
+				(Constant(x), Column(y)) => dispatch!(
+					op.reversed(),
+					y,
+					x,
+					compare_eq_const,
+					compare_ne_const,
+					compare_lt_const,
+					compare_le_const,
+					compare_gt_const,
+					compare_ge_const
+				),
+				(Constant(x), Constant(y)) => out.fill(if op.scalar(x, y) { u64::MAX } else { 0 }),
+			}
+		}
+		#[cfg(not(target_arch = "x86_64"))]
+		{
+			let _ = (op, out);
+			unreachable!("AVX2 engine unavailable on this architecture");
+		}
+		Some(words * 64)
+	}
+}
+
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct Engine {
 	avx2: bool,
@@ -840,6 +971,94 @@ impl Engine {
 #[cfg(target_arch = "x86_64")]
 mod simd {
 	use core::arch::x86_64::*;
+	// Distinct non-generic predicate symbols. Existing SIMD kernels gain no callers.
+	macro_rules! packed_comparison {
+		($pair:ident, $constant:ident, $x:ident, $y:ident, $compare:expr, $invert:expr) => {
+			#[target_feature(enable = "avx2")]
+			#[inline(never)]
+			pub(super) fn $pair(a: &[i64], b: &[i64], out: &mut [u64]) {
+				for (word, output) in out.iter_mut().enumerate() {
+					let mut bits = 0u64;
+					for lane in (0..64).step_by(4) {
+						// SAFETY: safe wrapper proves 64 input lanes per output word;
+						// unaligned loads support sliced Arrow inputs.
+						let $x =
+							unsafe { _mm256_loadu_si256(a.as_ptr().add(word * 64 + lane).cast()) };
+						let $y =
+							unsafe { _mm256_loadu_si256(b.as_ptr().add(word * 64 + lane).cast()) };
+						let mask = _mm256_movemask_pd(_mm256_castsi256_pd($compare)) as u64;
+						bits |= (mask ^ $invert) << lane;
+					}
+					*output = bits;
+				}
+			}
+			#[target_feature(enable = "avx2")]
+			#[inline(never)]
+			pub(super) fn $constant(a: &[i64], b: i64, out: &mut [u64]) {
+				let $y = _mm256_set1_epi64x(b);
+				for (word, output) in out.iter_mut().enumerate() {
+					let mut bits = 0u64;
+					for lane in (0..64).step_by(4) {
+						// SAFETY: safe wrapper proves 64 input lanes per output word.
+						let $x =
+							unsafe { _mm256_loadu_si256(a.as_ptr().add(word * 64 + lane).cast()) };
+						let mask = _mm256_movemask_pd(_mm256_castsi256_pd($compare)) as u64;
+						bits |= (mask ^ $invert) << lane;
+					}
+					*output = bits;
+				}
+			}
+		};
+	}
+	packed_comparison!(
+		compare_eq_pair,
+		compare_eq_const,
+		x,
+		y,
+		_mm256_cmpeq_epi64(x, y),
+		0
+	);
+	packed_comparison!(
+		compare_ne_pair,
+		compare_ne_const,
+		x,
+		y,
+		_mm256_cmpeq_epi64(x, y),
+		15
+	);
+	packed_comparison!(
+		compare_lt_pair,
+		compare_lt_const,
+		x,
+		y,
+		_mm256_cmpgt_epi64(y, x),
+		0
+	);
+	packed_comparison!(
+		compare_le_pair,
+		compare_le_const,
+		x,
+		y,
+		_mm256_cmpgt_epi64(x, y),
+		15
+	);
+	packed_comparison!(
+		compare_gt_pair,
+		compare_gt_const,
+		x,
+		y,
+		_mm256_cmpgt_epi64(x, y),
+		0
+	);
+	packed_comparison!(
+		compare_ge_pair,
+		compare_ge_const,
+		x,
+		y,
+		_mm256_cmpgt_epi64(y, x),
+		15
+	);
+
 	// Raw-pointer helpers are private to the safe wrapper. Each full vector is
 	// inside the provided range, accesses are unaligned, and tails are scalar.
 	#[target_feature(enable = "avx2")]
@@ -2314,5 +2533,97 @@ mod explicit_block_tests {
 				assert_eq!((b[0], b[n + 1]), (1, n as i64 + 2));
 			}
 		}
+	}
+}
+
+#[cfg(test)]
+mod packed_i64_comparison_tests {
+	use super::*;
+
+	#[test]
+	fn full_words_parity_and_untouched_tails() {
+		if std::env::var_os("RNX_REQUIRE_AVX2").is_some() {
+			assert!(
+				Engine::new(false).avx2(),
+				"required hardware path unavailable"
+			);
+		}
+		let values = [i64::MIN, i64::MAX, -1, 0, 1, 2, -2, 7];
+		for len in [0usize, 1, 3, 4, 5, 63, 64, 65, 1023, 1024, 1025] {
+			let a: std::vec::Vec<_> = (0..len + 3).map(|i| values[i % 8]).collect();
+			let b: std::vec::Vec<_> = (0..len + 5).map(|i| values[(i * 3 + 1) % 8]).collect();
+			for op in [
+				I64Comparison::Eq,
+				I64Comparison::Ne,
+				I64Comparison::Lt,
+				I64Comparison::Le,
+				I64Comparison::Gt,
+				I64Comparison::Ge,
+			] {
+				for (x, y) in [
+					(
+						I64CompareInput::Column(&a[3..]),
+						I64CompareInput::Column(&b[5..]),
+					),
+					(
+						I64CompareInput::Column(&a[3..]),
+						I64CompareInput::Constant(i64::MIN),
+					),
+					(
+						I64CompareInput::Constant(i64::MAX),
+						I64CompareInput::Column(&b[5..]),
+					),
+					(I64CompareInput::Constant(-1), I64CompareInput::Constant(0)),
+				] {
+					for force_scalar in [true, false] {
+						let engine = Engine::new(force_scalar);
+						let mut out = std::vec![0xdead_beef_dead_beef; len.div_ceil(64) + 1];
+						let done = engine.packed_i64_comparison(op, x, y, &mut out, len);
+						assert_eq!(done, engine.avx2().then_some(len / 64 * 64));
+						let completed = done.unwrap_or(0);
+						for (word, &actual) in out.iter().enumerate() {
+							if word >= completed / 64 {
+								assert_eq!(actual, 0xdead_beef_dead_beef);
+								continue;
+							}
+							let lane = |v: I64CompareInput<'_>, i| match v {
+								I64CompareInput::Column(v) => v[i],
+								I64CompareInput::Constant(v) => v,
+							};
+							let expected = (0..64).fold(0, |bits, bit| {
+								bits | (u64::from(
+									op.scalar(lane(x, word * 64 + bit), lane(y, word * 64 + bit)),
+								) << bit)
+							});
+							assert_eq!(actual, expected, "{op:?} len={len} word={word}");
+						}
+					}
+				}
+			}
+		}
+	}
+
+	#[test]
+	#[should_panic]
+	fn refuses_short_input_before_dispatch() {
+		Engine::new(true).packed_i64_comparison(
+			I64Comparison::Eq,
+			I64CompareInput::Column(&[1]),
+			I64CompareInput::Constant(1),
+			&mut [0],
+			64,
+		);
+	}
+
+	#[test]
+	#[should_panic]
+	fn refuses_short_output_before_dispatch() {
+		Engine::new(true).packed_i64_comparison(
+			I64Comparison::Eq,
+			I64CompareInput::Constant(1),
+			I64CompareInput::Constant(1),
+			&mut [],
+			1,
+		);
 	}
 }

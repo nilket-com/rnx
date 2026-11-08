@@ -257,6 +257,64 @@ impl<'a> Sources<'a> {
 	}
 }
 
+type I64Compare = fn(Binary, Value<'_>, Value<'_>, &mut [u64], usize);
+
+fn i64_comparison_scalar(op: Binary, a: Value<'_>, b: Value<'_>, out: &mut [u64], len: usize) {
+	match op {
+		Binary::Eq => dispatch!(a, b, comparisons::<false, 0>, out, len),
+		Binary::Ne => dispatch!(a, b, comparisons::<false, 1>, out, len),
+		Binary::Lt => dispatch!(a, b, comparisons::<false, 2>, out, len),
+		Binary::Le => dispatch!(a, b, comparisons::<false, 3>, out, len),
+		Binary::Gt => dispatch!(a, b, comparisons::<false, 4>, out, len),
+		Binary::Ge => dispatch!(a, b, comparisons::<false, 5>, out, len),
+		_ => unreachable!("verified I64 comparison"),
+	}
+}
+
+fn i64_comparison_avx2(op: Binary, a: Value<'_>, b: Value<'_>, out: &mut [u64], len: usize) {
+	use crate::experimental_column_primitives::{Engine, I64CompareInput, I64Comparison};
+	fn input(value: Value<'_>) -> Option<I64CompareInput<'_>> {
+		match value {
+			Value::Integers(v) => Some(I64CompareInput::Column(v)),
+			Value::Constant(v) => Some(I64CompareInput::Constant(v as i64)),
+			_ => None,
+		}
+	}
+	fn tail(value: Value<'_>, start: usize) -> Value<'_> {
+		match value {
+			Value::Integers(v) => Value::Integers(&v[start..]),
+			Value::Constant(v) => Value::Constant(v),
+			_ => unreachable!("packed I64 operand"),
+		}
+	}
+	let operation = match op {
+		Binary::Eq => I64Comparison::Eq,
+		Binary::Ne => I64Comparison::Ne,
+		Binary::Lt => I64Comparison::Lt,
+		Binary::Le => I64Comparison::Le,
+		Binary::Gt => I64Comparison::Gt,
+		Binary::Ge => I64Comparison::Ge,
+		_ => unreachable!("verified I64 comparison"),
+	};
+	if let (Some(x), Some(y)) = (input(a), input(b)) {
+		// The primitive keeps its own cached feature guard at the safe boundary.
+		if let Some(done) = Engine::new(false).packed_i64_comparison(operation, x, y, out, len) {
+			debug_assert_eq!(done % 64, 0, "packed comparison word boundary");
+			if done < len {
+				i64_comparison_scalar(
+					op,
+					tail(a, done),
+					tail(b, done),
+					&mut out[done / 64..],
+					len - done,
+				);
+			}
+			return;
+		}
+	}
+	i64_comparison_scalar(op, a, b, out, len);
+}
+
 fn numeric_comparison(
 	op: Binary,
 	ty: ColumnType,
@@ -305,6 +363,12 @@ pub(super) fn run(
 	let ColumnValues::Bool(output) = &mut values else {
 		unreachable!("predicate output")
 	};
+	let i64_compare: I64Compare =
+		if crate::experimental_column_primitives::Engine::new(options.force_scalar).avx2() {
+			i64_comparison_avx2
+		} else {
+			i64_comparison_scalar
+		};
 	let mut cursors = [Cursor::default(); 3];
 	let mut left = [0; WORDS];
 	let mut right = [0; WORDS];
@@ -371,14 +435,15 @@ pub(super) fn run(
 					continue;
 				}
 				Step::Binary(op, a, b) if plan.nodes[a].ty != ColumnType::Bool => {
-					numeric_comparison(
-						op,
-						plan.nodes[a].ty,
-						source.numeric(plan.nodes[a].operand),
-						source.numeric(plan.nodes[b].operand),
-						&mut left[..words],
-						count,
-					);
+					let ty = plan.nodes[a].ty;
+					let a = source.numeric(plan.nodes[a].operand);
+					let b = source.numeric(plan.nodes[b].operand);
+					if ty == ColumnType::I64 {
+						i64_compare(op, a, b, &mut left[..words], count);
+					} else {
+						// F64 retains a direct call; no per-block indirect dispatch.
+						numeric_comparison(op, ty, a, b, &mut left[..words], count);
+					}
 				}
 				Step::Binary(op, a, b) => {
 					source.boolean(plan.nodes[a].operand, &mut left[..words]);
