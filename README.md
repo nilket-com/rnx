@@ -94,8 +94,10 @@ Already-formatted files are not rewritten. Run `rnx fmt --help` for the command.
 
 One-shot file, project and adapter runs use the execution engine by default.
 Programs outside its supported subset select the legacy engine before execution.
-A runtime failure is terminal and is never retried. Eval, interactive sessions,
-Jupyter and servers continue to use the legacy engine.
+A runtime failure is terminal and is never retried. One-shot eval uses the
+execution engine in interpreted slices, with async and unsupported forms selecting
+legacy before execution. `rnx eval --engine=legacy` explicitly selects legacy.
+Interactive sessions, Jupyter and servers continue to use the legacy engine.
 
 Use `rnx run --engine=legacy FILE` to force legacy execution. `--debug-engine`
 reports engine selection and the requested native policy on stderr; it does

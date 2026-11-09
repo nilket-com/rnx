@@ -1,0 +1,420 @@
+//! Cheap standalone preflight: no Rune or rnx dependency or runtime build.
+use quote::ToTokens;
+use syn::{
+	visit::{self, Visit},
+	visit_mut::{self, VisitMut},
+};
+fn canonical(stream: proc_macro2::TokenStream) -> String {
+	stream
+		.into_iter()
+		.map(|t| match t {
+			proc_macro2::TokenTree::Group(g) => {
+				let (a, b) = match g.delimiter() {
+					proc_macro2::Delimiter::Brace => ("{", "}"),
+					proc_macro2::Delimiter::Bracket => ("[", "]"),
+					proc_macro2::Delimiter::Parenthesis => ("(", ")"),
+					proc_macro2::Delimiter::None => ("<none>", "</none>"),
+				};
+				format!("{a} {} {b}", canonical(g.stream()))
+			}
+			t => t.to_string(),
+		})
+		.collect::<Vec<_>>()
+		.join(" ")
+}
+fn tokens(t: &impl ToTokens) -> String {
+	canonical(t.to_token_stream())
+}
+fn parsed(s: &str) -> String {
+	canonical(s.parse().unwrap())
+}
+fn require(ok: bool, why: &str) -> Result<(), String> {
+	if ok {
+		Ok(())
+	} else {
+		Err(why.into())
+	}
+}
+// Diagnostic token positions are zero-based within the named region. Literal
+// tokens stay whole, including embedded spaces; punctuation is not discarded.
+fn diagnostic_tokens(text: &str) -> Vec<String> {
+	fn flatten(stream: proc_macro2::TokenStream, out: &mut Vec<String>) {
+		for token in stream {
+			if let proc_macro2::TokenTree::Group(g) = token {
+				out.push(format!("open:{:?}", g.delimiter()));
+				flatten(g.stream(), out);
+				out.push(format!("close:{:?}", g.delimiter()));
+			} else {
+				out.push(token.to_string());
+			}
+		}
+	}
+	let mut out = Vec::new();
+	flatten(text.parse().expect("canonical Rust tokens"), &mut out);
+	out
+}
+fn equal(region: &str, complete: &str, sliced: &str) -> Result<(), String> {
+	if complete == sliced {
+		return Ok(());
+	}
+	let a = diagnostic_tokens(complete);
+	let b = diagnostic_tokens(sliced);
+	let pos = a
+		.iter()
+		.zip(&b)
+		.position(|(a, b)| a != b)
+		.unwrap_or(a.len().min(b.len()));
+	let context =
+		|v: &[String]| v[pos.saturating_sub(5).min(v.len())..(pos + 6).min(v.len())].join(" ");
+	Err(format!(
+		"{region}: first differing token {pos}; complete [{}]; sliced [{}]",
+		context(&a),
+		context(&b)
+	))
+}
+#[derive(Default)]
+struct Methods {
+	methods: Vec<syn::ImplItemFn>,
+}
+impl<'a> Visit<'a> for Methods {
+	fn visit_impl_item_fn(&mut self, f: &'a syn::ImplItemFn) {
+		self.methods.push(f.clone());
+	}
+}
+fn method(file: &syn::File, name: &str) -> Result<syn::ImplItemFn, String> {
+	let mut v = Methods::default();
+	v.visit_file(file);
+	let mut found = v.methods.into_iter().filter(|f| f.sig.ident == name);
+	let first = found.next().ok_or(format!("missing {name}"))?;
+	require(found.next().is_none(), &format!("duplicate {name}"))?;
+	Ok(first)
+}
+#[derive(Default)]
+struct Regions {
+	op: Vec<Vec<syn::Stmt>>,
+	enrich: Vec<syn::Block>,
+	cleanup: Vec<syn::Block>,
+	charged: Vec<syn::Block>,
+}
+impl<'a> Visit<'a> for Regions {
+	fn visit_expr_if(&mut self, e: &'a syn::ExprIf) {
+		if tokens(&e.cond) == parsed("instruction.charged") {
+			self.charged.push(e.then_branch.clone());
+		}
+		visit::visit_expr_if(self, e);
+	}
+	fn visit_block(&mut self, b: &'a syn::Block) {
+		for (i, s) in b.stmts.iter().enumerate() {
+			if tokens(s) == parsed("pc += 1;") {
+				self.op.push(b.stmts[i..].to_vec());
+			}
+		}
+		visit::visit_block(self, b);
+	}
+	fn visit_arm(&mut self, a: &'a syn::Arm) {
+		if let syn::Expr::Block(b) = a.body.as_ref() {
+			if tokens(&a.pat) == parsed("Err(e)") && tokens(&b.block).contains("enrich_error") {
+				self.enrich.push(b.block.clone());
+			}
+			if tokens(&a.pat) == parsed("Err(mut failure)") {
+				self.cleanup.push(b.block.clone());
+			}
+		}
+		visit::visit_arm(self, a);
+	}
+}
+// Only these relative paths occur in the copied opcode region. All other tokens
+// remain exact. The checker refuses any other parent qualification in the region.
+struct CorePaths {
+	error: Option<String>,
+}
+impl VisitMut for CorePaths {
+	fn visit_macro_mut(&mut self, m: &mut syn::Macro) {
+		match macro_paths(m.tokens.clone()) {
+			Ok(t) => m.tokens = t,
+			Err(e) => self.error = Some(e),
+		}
+	}
+
+	fn visit_path_mut(&mut self, p: &mut syn::Path) {
+		let names: Vec<_> = p.segments.iter().map(|s| s.ident.to_string()).collect();
+		if names.starts_with(&["super".into(), "super".into()]) {
+			let allowed = (names.len() >= 4 && names[2..4] == ["value", "Type"])
+				|| names[2..] == ["region", "recursion", "observe_return"];
+			if !allowed {
+				self.error = Some(format!("unreviewed child path: {}", tokens(p)));
+				return;
+			}
+			p.segments = p.segments.iter().skip(1).cloned().collect();
+		}
+		visit_mut::visit_path_mut(self, p)
+	}
+}
+fn macro_paths(stream: proc_macro2::TokenStream) -> Result<proc_macro2::TokenStream, String> {
+	use proc_macro2::{Group, TokenStream, TokenTree};
+	let input: Vec<_> = stream.into_iter().collect();
+	let mut out = TokenStream::new();
+	let mut i = 0;
+	while i < input.len() {
+		if let TokenTree::Group(g) = &input[i] {
+			out.extend([TokenTree::Group(Group::new(
+				g.delimiter(),
+				macro_paths(g.stream())?,
+			))]);
+			i += 1;
+			continue;
+		}
+		let prefix: TokenStream = input[i..input.len().min(i + 6)].iter().cloned().collect();
+		if canonical(prefix) == parsed("super::super::") {
+			let tail: TokenStream = input[i..input.len().min(i + 10)].iter().cloned().collect();
+			require(
+				canonical(tail) == parsed("super::super::value::Type"),
+				"unreviewed path in macro tokens",
+			)?;
+			i += 3;
+		}
+		out.extend([input[i].clone()]);
+		i += 1;
+	}
+	Ok(out)
+}
+struct HostAdapter {
+	count: usize,
+	error: Option<String>,
+}
+impl VisitMut for HostAdapter {
+	fn visit_expr_mut(&mut self, e: &mut syn::Expr) {
+		if let syn::Expr::MethodCall(c) = e {
+			if c.method == "budgeted_sliced_intrinsic" {
+				self.count += 1;
+				let expected: syn::Expr=syn::parse_str("self.budgeted_sliced_intrinsic(code, store, function, frame.base, out, callee, args_start, args_len, &mut fuel,)").unwrap();
+				if tokens(e) != tokens(&expected) {
+					self.error = Some("host adapter hook changed".into());
+					return;
+				}
+				*e=syn::parse_str("self.intrinsic(code, store, function, frame.base, out, callee, args_start, args_len,)").unwrap();
+				return;
+			}
+		}
+		visit_mut::visit_expr_mut(self, e)
+	}
+}
+fn stmts(s: &[syn::Stmt]) -> String {
+	s.iter().map(tokens).collect::<Vec<_>>().join(" ")
+}
+fn guard(fixed: &str, sliced: &str) -> Result<(), String> {
+	let a = syn::parse_file(fixed).map_err(|e| e.to_string())?;
+	let b = syn::parse_file(sliced).map_err(|e| e.to_string())?;
+	let complete = method(&a, "invoke_args")?;
+	let resume = method(&b, "resume_sliced")?;
+	let mut ar = Regions::default();
+	ar.visit_block(&complete.block);
+	let mut br = Regions::default();
+	br.visit_block(&resume.block);
+	require(
+		ar.op.len() == 1 && br.op.len() == 1,
+		"opcode region missing or duplicated",
+	)?;
+	require(
+		ar.enrich.len() == 1 && br.enrich.len() == 1,
+		"enrichment missing or duplicated",
+	)?;
+	require(
+		ar.cleanup.len() == 1 && br.cleanup.len() == 1,
+		"cleanup missing or duplicated",
+	)?;
+	require(
+		ar.charged.len() == 1 && br.charged.len() == 1,
+		"charge block missing or duplicated",
+	)?;
+	let mut charge = br.charged[0].clone();
+	require(
+		charge
+			.stmts
+			.last()
+			.is_some_and(|s| tokens(s) == parsed("soft -= 1;")),
+		"soft debit position",
+	)?;
+	charge.stmts.pop();
+	require(
+		tokens(&charge) == tokens(&ar.charged[0]),
+		"charge/cancellation hook drift",
+	)?;
+	let mut adapter = HostAdapter {
+		count: 0,
+		error: None,
+	};
+	for stmt in &mut br.op[0] {
+		adapter.visit_stmt_mut(stmt);
+	}
+	require(adapter.count == 1, "host adapter count")?;
+	if let Some(e) = adapter.error {
+		return Err(e);
+	}
+	let mut paths = CorePaths { error: None };
+	for stmt in &mut br.op[0] {
+		paths.visit_stmt_mut(stmt);
+	}
+	if let Some(e) = paths.error {
+		return Err(e);
+	}
+
+	equal(
+		"opcode/post-call transfer",
+		&stmts(&ar.op[0]),
+		&stmts(&br.op[0]),
+	)?;
+	equal(
+		"error enrichment",
+		&tokens(&ar.enrich[0]),
+		&tokens(&br.enrich[0]),
+	)?;
+	// The terminal wrapper differs; the cleanup expression itself must be exact.
+	let expected=parsed("{ let result: core::result::Result<Root, Failure> = CLEANUP; match result { Err(failure) => SliceOutcome::Failed(failure), Ok(_) => unreachable!(), } }");
+	let mut cb = br.cleanup[0].clone();
+	let first = cb.stmts.first_mut().ok_or("missing terminal cleanup")?;
+	let syn::Stmt::Local(local) = first else {
+		return Err("terminal cleanup is not bound".into());
+	};
+	let init = local.init.as_mut().ok_or("missing cleanup initializer")?;
+	let syn::Expr::Block(cleanup) = init.expr.as_ref() else {
+		return Err("cleanup block missing".into());
+	};
+	equal(
+		"terminal cleanup",
+		&tokens(&ar.cleanup[0]),
+		&tokens(&cleanup.block),
+	)?;
+	init.expr = Box::new(syn::parse_str("CLEANUP").unwrap());
+	require(tokens(&cb) == expected, "terminal conversion hook changed")?;
+	let fail = method(&b, "sliced_failure")?;
+	let mut blocks = FindCleanup::default();
+	blocks.visit_block(&fail.block);
+	require(
+		blocks.found.len() == 1 && tokens(&blocks.found[0]) == tokens(&ar.cleanup[0]),
+		"cancel/drop cleanup drift",
+	)?;
+	// Hooks outside opcode body are exact syntax, with unique occurrences.
+	let rt = tokens(&resume.block);
+
+	for (name,hook) in [
+  ("checkpoint", "if instruction.charged && soft == 0 { self.commit_pc(frame_index, pc)?; return Ok(None); } let mut transferred = false; let result ="),
+  ("soft debit", "soft -= 1;"),
+  ("terminal complete", "Ok(None) => SliceOutcome::Limited, Ok(Some(value)) => SliceOutcome::Complete(store.export(value)),")
+ ] {let h=parsed(hook);require(rt.matches(&h).count()==1,&format!("{name} hook changed or duplicated"))?;}
+	let hard = parsed(
+		"fuel = fuel.checked_sub(1).ok_or_else(|| error(ErrorKind::FuelExhausted))?; soft -= 1;",
+	);
+	require(rt.contains(&hard), "soft debit moved before hard debit")?;
+	Ok(())
+}
+#[derive(Default)]
+struct FindCleanup {
+	found: Vec<syn::Block>,
+}
+impl<'a> Visit<'a> for FindCleanup {
+	fn visit_block(&mut self, b: &'a syn::Block) {
+		if b.stmts
+			.first()
+			.is_some_and(|s| tokens(s).starts_with("let numeric_context ="))
+		{
+			self.found.push(b.clone());
+		}
+		visit::visit_block(self, b)
+	}
+}
+fn mutation_controls(a: &str, b: &str) -> Result<(), String> {
+	let message = equal(
+		"diagnostic control",
+		&parsed("value + 1"),
+		&parsed("value - 1"),
+	)
+	.unwrap_err();
+	require(
+		message.contains("first differing token 1")
+			&& message.contains("complete [value + 1]")
+			&& message.contains("sliced [value - 1]"),
+		"token difference diagnostic control",
+	)?;
+	for (from, to) in [
+		("pc += 1;", "pc += 2;"),
+		(
+			"self.frames.clear();",
+			"self.frames.clear(); self.frames.clear();",
+		),
+		("soft -= 1;", "soft -= 2;"),
+		(
+			"instruction.charged && soft == 0",
+			"instruction.charged && soft == 1",
+		),
+		(
+			"Ok(None) => SliceOutcome::Limited",
+			"Ok(None) => SliceOutcome::Failed(failure)",
+		),
+		("&mut fuel,", "&mut soft,"),
+	] {
+		require(b.contains(from), &format!("mutation anchor absent: {from}"))?;
+		require(
+			guard(a, &b.replacen(from, to, 1)).is_err(),
+			&format!("accepted mutation {from}"),
+		)?;
+	}
+	for (from, to) in [
+		("pc += 1;", "pc += 2;"),
+		(
+			"self.frames.clear();",
+			"self.frames.clear(); self.frames.clear();",
+		),
+	] {
+		require(a.contains(from), "fixed mutation missing")?;
+		require(
+			guard(&a.replacen(from, to, 1), b).is_err(),
+			"accepted fixed mutation",
+		)?;
+	}
+	// AST mutations prove extra/reordered dispatch arms are rejected.
+	for duplicate in [false, true] {
+		let mut file = syn::parse_file(b).map_err(|e| e.to_string())?;
+		let mut mutation = ArmMutation {
+			duplicate,
+			count: 0,
+		};
+		mutation.visit_file_mut(&mut file);
+		require(mutation.count == 1, "dispatch mutation count")?;
+		require(
+			guard(a, &file.to_token_stream().to_string()).is_err(),
+			"accepted extra/reordered arm",
+		)?;
+	}
+	Ok(())
+}
+struct ArmMutation {
+	duplicate: bool,
+	count: usize,
+}
+impl VisitMut for ArmMutation {
+	fn visit_expr_match_mut(&mut self, m: &mut syn::ExprMatch) {
+		if tokens(&m.expr) == parsed("instruction.op") {
+			self.count += 1;
+			if self.duplicate {
+				m.arms.insert(0, m.arms[0].clone());
+			} else {
+				m.arms.swap(0, 1);
+			}
+		}
+		visit_mut::visit_expr_match_mut(self, m)
+	}
+}
+fn main() {
+	let root = std::env::args().nth(1).expect("repository root required");
+	let base = std::path::Path::new(&root).join("rune/crates/rune/src/experimental_core");
+	let a = std::fs::read_to_string(base.join("execute.rs")).unwrap();
+	let b = std::fs::read_to_string(base.join("execute/sliced.rs")).unwrap();
+	match guard(&a, &b).and_then(|_| mutation_controls(&a, &b)) {
+		Ok(()) => println!("PASS: executor token drift guard and mutation controls"),
+		Err(e) => {
+			eprintln!("FAIL: {e}");
+			std::process::exit(1)
+		}
+	}
+}

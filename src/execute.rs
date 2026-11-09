@@ -440,3 +440,43 @@ mod budget_tests {
 		assert!(exhausted);
 	}
 }
+
+/// Fresh one-shot eval outcome. Only the internal soft limit is resumable.
+#[allow(clippy::large_enum_variant)] // Preserve the inline engine Failure without another allocation.
+pub(crate) enum FreshOutcome {
+	Complete(rune::experimental_core::value::Root),
+	Budget,
+	Interrupted,
+	Failed(rune::experimental_core::execute::Failure),
+}
+
+pub(crate) fn slice_fresh(
+	prepared: rune::experimental_core::execute::PreparedInvocation<'_>,
+	total: usize,
+) -> FreshOutcome {
+	use rune::experimental_core::{error::ErrorKind, execute::SliceOutcome};
+	let mut invocation = match prepared.start_sliced(total) {
+		Ok(invocation) => invocation,
+		Err(error) => return FreshOutcome::Failed(error),
+	};
+	loop {
+		match invocation.resume(core::num::NonZeroUsize::new(SLICE).unwrap()) {
+			SliceOutcome::Complete(_) if crate::host::interrupted() => {
+				return FreshOutcome::Interrupted;
+			}
+			SliceOutcome::Complete(root) => return FreshOutcome::Complete(root),
+			SliceOutcome::Limited => {
+				if crate::host::interrupted() {
+					return FreshOutcome::Interrupted;
+				}
+				if invocation.remaining_work() == 0 {
+					return FreshOutcome::Budget;
+				}
+			}
+			SliceOutcome::Failed(error) if error.error.kind == ErrorKind::FuelExhausted => {
+				return FreshOutcome::Budget;
+			}
+			SliceOutcome::Failed(error) => return FreshOutcome::Failed(error),
+		}
+	}
+}

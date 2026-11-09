@@ -350,6 +350,13 @@ struct Retained {
 	map: SourceMap,
 }
 
+pub(crate) enum EvalValue {
+	Legacy(Value),
+	Fresh(one_shot::FreshValue),
+}
+
+mod one_shot;
+
 pub struct Session {
 	/// The compile-time context, owned, so an input cannot be compiled
 	/// against one context and run against another, and so no caller can
@@ -614,7 +621,12 @@ impl Session {
 		input: &str,
 		on_armed: impl FnOnce(usize) -> std::result::Result<(), E>,
 	) -> std::result::Result<std::result::Result<Value, Failure>, E> {
-		let result = self.eval_input(input, on_armed)?;
+		let result = self
+			.eval_input(input, on_armed, None)?
+			.map(|value| match value {
+				EvalValue::Legacy(value) => value,
+				EvalValue::Fresh(_) => unreachable!("persistent session does not select fresh"),
+			});
 		if let Err(message) = self.lifecycle.finish(result.is_err()) {
 			self.http.cancel();
 			return Ok(Err(Failure::Runtime {
@@ -625,11 +637,40 @@ impl Session {
 
 		Ok(result)
 	}
+	/// One-shot entry only: never routes an existing persistent session.
+	pub(crate) fn eval_one_shot(
+		&mut self,
+		input: &str,
+		options: crate::engine::Options,
+	) -> std::result::Result<EvalValue, Failure> {
+		if !self.inputs.is_empty() || !self.state.is_empty() {
+			return Err(Failure::Refused(
+				"one-shot eval requires an unused session".into(),
+			));
+		}
+		let result = self
+			.eval_input(
+				input,
+				|_| Ok::<(), std::convert::Infallible>(()),
+				Some(options),
+			)
+			.unwrap();
+		if let Err(message) = self.lifecycle.finish(result.is_err()) {
+			self.http.cancel();
+			return Err(Failure::Runtime {
+				message,
+				origin: None,
+			});
+		}
+		result
+	}
+
 	fn eval_input<E>(
 		&mut self,
 		input: &str,
 		on_armed: impl FnOnce(usize) -> std::result::Result<(), E>,
-	) -> std::result::Result<std::result::Result<Value, Failure>, E> {
+		options: Option<crate::engine::Options>,
+	) -> std::result::Result<std::result::Result<EvalValue, Failure>, E> {
 		if self.over_ceiling {
 			return Ok(Err(Failure::OverCeiling {
 				live: super::memory::live().unwrap_or(0),
@@ -645,7 +686,7 @@ impl Session {
 		self.inputs.push(input.to_owned());
 		let number = self.inputs.len();
 		on_armed(number)?;
-		let result = self.eval_inner(input, number);
+		let result = self.eval_inner(input, number, options);
 		if result.is_err() {
 			// A failed input publishes nothing, but its text stays so an origin
 			// recorded against it (there is none) could never dangle.
@@ -653,7 +694,12 @@ impl Session {
 		Ok(result)
 	}
 
-	fn eval_inner(&mut self, input: &str, number: usize) -> std::result::Result<Value, Failure> {
+	fn eval_inner(
+		&mut self,
+		input: &str,
+		number: usize,
+		options: Option<crate::engine::Options>,
+	) -> std::result::Result<EvalValue, Failure> {
 		// The wrapper is one byte of `{` before the input; wrapped offsets map
 		// to input offsets by subtracting it.
 		let wrapped = format!("{{{input}\n}}");
@@ -850,6 +896,19 @@ impl Session {
 			}
 		};
 		self.last_generated = generated.text.clone();
+		if let Some(options) = options {
+			if !awaits && options.choice != crate::engine::EngineChoice::Legacy {
+				if let Some(result) = self.try_fresh_eval(&generated, options) {
+					return result.map(|value| {
+						self.declarations = declarations;
+						self.names = names;
+						EvalValue::Fresh(value)
+					});
+				}
+			} else {
+				options.selected("legacy", if awaits { Some("Await") } else { None });
+			}
+		}
 		let unit = Arc::try_new(compiled).map_err(|e| Failure::Refused(e.to_string()))?;
 		// Entries whose unit nothing can call any more go before this input's
 		// entry is registered, so the bookkeeping stays proportional to the
@@ -875,7 +934,7 @@ impl Session {
 		self.merge(delta)?;
 		self.declarations = declarations;
 		self.names = names;
-		Ok(value)
+		Ok(EvalValue::Legacy(value))
 	}
 
 	/// Merge one input's published delta into the session's state. Entries the

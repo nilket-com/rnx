@@ -92,3 +92,127 @@ No automatic correction round, profile change, helper duplication or exception.
 Review addition: the mandatory Rust-token drift guard runs from ci/preflight.py,
 not only as a unit test. An unmirrored edit must fail preflight before review.
 Implement and review the guard/mutation controls alongside the source.
+
+## Implemented boundary and development evidence
+
+The complete execute.rs source is byte-identical to 4ea32429 after removing
+only the child-module declaration and explicit public re-export. The sliced
+module has a copied operation body, post-call transfer, enrichment and cleanup.
+The standalone ci/execute_guard tool uses syn/quote/proc-macro2 without building
+Rune or rnx. Preflight invokes it with its own cached target directory. The
+measured warm guard run was about 1.4 seconds including compilation checks.
+Mutation controls reject unmirrored edits, extra/reordered arms and hook changes.
+Errors identify the first differing token position, context on both sides and
+region. Path normalization applies only to reviewed AST paths and macro token
+paths, never literal strings or arbitrary identifiers.
+
+The rustfmt::skip annotation on the module is a formatting exemption: rustfmt
+changed optional commas and arm braces in the copied body, which the deliberately
+strict token comparison treats as drift. Preserve the complete body's token form
+and mirrored layout instead of broadening normalization. This does not exempt
+other source or the checker itself from formatting.
+
+DEV-v1 stopped on that token difference. DEV-v2 stopped on duplicate module
+wiring produced by the scratch restoration script. Both were corrected before
+DEV-v3, which passed executor controls and host/eval type checking. The fixed
+source byte proof and repaired angle-bracket symbol-selector controls pass.
+These are development controls, not acceptance of runtime migration. The first
+paired identity and fixed-vector gates remain mandatory; no tolerance is added.
+
+## User-approved measured exception
+
+The user-approved narrow exception (review seq30084) accepts the measured
+BUILD-v1 pair: baseline e7537fa1c88b8e5637535210a8f012bce8e648f4 and candidate
+88627390e59ee85bf5057b0ecc15d4ce578688f1. It authorizes remaining tests,
+not publication. All prior identity STOP evidence remains disclosed.
+
+The exact binary hashes, workload/function inventories and deltas are committed
+in tools/column/fixed_route_0237.json. The scorer re-parses retained profiles and
+verifies their hashes and binary identities. It rejects any unlisted function,
+case, size or binary pair, and any additional instruction or per-n-step cost.
+No general tolerance, extrapolated workload allowance or future candidate
+permission is introduced. Unknown/JIT address-keyed differences and system
+counts are frozen to this capture as well; no new noise band is granted.
+
+Program instruction deltas, candidate minus baseline:
+
+| Workload | Native | n=1 | n=5 | Two-point delta formula |
+|---|---|---:|---:|---|
+| awfy_permute | off | +203296 | +1016504 | -6 + (203302) * n |
+| awfy_permute | on | +179989 | +180305 | 179910 + (79) * n |
+| awfy_sieve | off | +30238 | +151214 | -6 + (30244) * n |
+| awfy_sieve | on | +612 | +1084 | 494 + (118) * n |
+| fib | off | +88550 | +375124 | 33813/2 + (143287/2) * n |
+| fib | on | +250841 | +251053 | 250788 + (53) * n |
+| loops | off | +19996 | +100004 | -6 + (20002) * n |
+| loops | on | +152 | +160 | 150 + (2) * n |
+| numeric_calls | off | +29996 | +150004 | -6 + (30002) * n |
+| numeric_calls | on | +443 | +451 | 441 + (2) * n |
+| shared_rows | off | +9 | +69 | -6 + (15) * n |
+| shared_rows | on | -9 | +51 | -24 + (15) * n |
+| vec_iter_bool | off | -33341 | -166673 | -8 + (-33333) * n |
+| vec_iter_bool | on | +102 | -630 | 285 + (-183) * n |
+| vec_iter_i64 | off | +9995 | +49999 | -6 + (10001) * n |
+| vec_iter_i64 | on | +233 | -447 | 403 + (-170) * n |
+
+Formulas describe the two measured sizes only. Interpreted-path costs grow with
+work, and some native-on deltas also grow; they are not all fixed setup costs.
+These are instruction counts, not wall-time measurements. Shared caller and
+compiler partition effects are consistent with the evidence, not proof that
+every resumable design must pay this cost. ADR0234 failed timing, not the same
+identity criterion. Keeping fixed source byte-identical did not keep fixed
+machine code or instruction counts identical.
+
+The identity report is now reviewed evidence for this candidate, not a blanket
+waiver. Behavioral eval, signal cancellation, fuel/no-repeat, ownership/Miri,
+host/integration/generated/cross, preflight and commit checks still must pass.
+Any production correction invalidates the measured-pair reuse until reviewed
+and revalidated. Tooling/docs-only amendments must prove runtime source identity
+to the measured candidate. Bring the completed packet back before publication.
+
+## Budget diagnostic recovery
+
+The behavioral budget test initially expected the word `budget`. Both fresh
+and explicit-legacy eval actually emitted the identical established diagnostic
+`halted: 100 instructions exceeded`, exited 1, and printed `once` exactly once.
+The test now checks that exact text and identifies the variant and stderr on
+failure. This is a test-only correction; runtime sources and the measured binary
+pair are unchanged. The original failed receipt is retained.
+
+## Host lint recovery
+
+The first final host run stopped on two Clippy diagnostics: the intentionally
+large inline Failure variant and an unnecessary test-only drop of Root. A
+scoped lint allowance preserves the allocation-free outcome representation;
+the test retains its result binding without the no-op drop. The exact diff
+contains no operational runtime changes. The token guard and preflight pass.
+The measured-pair exception and prior behavior/Miri evidence are retained under
+this lint-only and test-only scope; the full host/integration/generated/cross
+sequence is rerun. Publication still requires review.
+
+## Compact pins and final host lint recovery
+
+The second host run found the same large-enum lint on the CLI FreshOutcome.
+It now carries the same scoped allowance. An exact-diff proof against the
+behavior-tested revision permits only those two lint attributes and the prior
+test-only binding correction; operational runtime code is unchanged.
+
+The exception policy stores SHA-256 digests of canonical JSON containing each
+partition function inventory and its nonzero delta vector, plus function counts
+and delta totals. Revisions, binary hashes, workloads and system deltas remain
+explicit. This preserves the original exact gate, including zero-delta inventory
+membership. The full original policy and raw profiles remain local evidence.
+The compact policy is 14,868 bytes. Ten controls pass, including redistributed
+counts and zero-delta unlisted functions; rescoring the retained profiles passes.
+The full final sequence is restarted; no publication authorization is implied.
+
+## Routing inventory recovery
+
+Final v3 passed host checks and commit discipline, then stopped on the stale
+one-shot eval source witness. The test/controller-only routing inventory now
+recognizes eval_one_shot with pre-effect fallback; blocked entry counts are
+derived from the entries and fall from eleven to ten. Its API description now
+acknowledges sliced invocation. Historical probe snapshots remain unchanged.
+README distinguishes interpreted sliced eval from the remaining legacy sessions,
+Jupyter and servers. Production runtime code is unchanged. Final v4 restarts
+the complete required sequence and sends one terminal notification on exit.

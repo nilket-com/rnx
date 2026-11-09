@@ -485,11 +485,11 @@ fn entries() -> Vec<Entry> {
 		},
 		Entry {
 			name: "one-shot-eval",
-			route: Blocked,
+			route: Fallback,
 			file: "src/lib.rs",
 			owner: "serve",
-			call: "METHOD eval",
-			needs: "Ctrl-C cancellation requires a separately designed resumable boundary",
+			call: "METHOD eval_one_shot",
+			needs: "fresh interpreted slices; async and unsupported forms select legacy before effects, as does explicit --engine=legacy; no runtime retry",
 		},
 		Entry {
 			name: "config",
@@ -823,7 +823,7 @@ fn synchronous_and_byte_boundaries() -> Result<Json> {
 	>;
 	let _: PrepareEntry = Executor::prepare;
 	Ok(
-		json!({"Bytes":"no Root type; HTTP input envelope cannot be imported","executor_api":"synchronous invoke, exclusive cancellation, no resumable polling/slice API"}),
+		json!({"Bytes":"no Root type; HTTP input envelope cannot be imported","executor_api":"synchronous complete invoke and exclusive resumable sliced invocation; async remains legacy"}),
 	)
 }
 

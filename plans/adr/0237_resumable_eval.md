@@ -188,3 +188,54 @@ The complete-path gap is deferred to its own record and fixed-route gates.
 Review addition: the mandatory Rust-token drift guard runs from ci/preflight.py,
 not only as a unit test. An unmirrored edit must fail preflight before review.
 Implement and review the guard/mutation controls alongside the source.
+
+## User-approved measured exception
+
+The user-approved narrow exception (review seq30084) accepts the measured
+BUILD-v1 pair: baseline e7537fa1c88b8e5637535210a8f012bce8e648f4 and candidate
+88627390e59ee85bf5057b0ecc15d4ce578688f1. It authorizes remaining tests,
+not publication. All prior identity STOP evidence remains disclosed.
+
+The exact binary hashes, workload/function inventories and deltas are committed
+in tools/column/fixed_route_0237.json. The scorer re-parses retained profiles and
+verifies their hashes and binary identities. It rejects any unlisted function,
+case, size or binary pair, and any additional instruction or per-n-step cost.
+No general tolerance, extrapolated workload allowance or future candidate
+permission is introduced. Unknown/JIT address-keyed differences and system
+counts are frozen to this capture as well; no new noise band is granted.
+
+Program instruction deltas, candidate minus baseline:
+
+| Workload | Native | n=1 | n=5 | Two-point delta formula |
+|---|---|---:|---:|---|
+| awfy_permute | off | +203296 | +1016504 | -6 + (203302) * n |
+| awfy_permute | on | +179989 | +180305 | 179910 + (79) * n |
+| awfy_sieve | off | +30238 | +151214 | -6 + (30244) * n |
+| awfy_sieve | on | +612 | +1084 | 494 + (118) * n |
+| fib | off | +88550 | +375124 | 33813/2 + (143287/2) * n |
+| fib | on | +250841 | +251053 | 250788 + (53) * n |
+| loops | off | +19996 | +100004 | -6 + (20002) * n |
+| loops | on | +152 | +160 | 150 + (2) * n |
+| numeric_calls | off | +29996 | +150004 | -6 + (30002) * n |
+| numeric_calls | on | +443 | +451 | 441 + (2) * n |
+| shared_rows | off | +9 | +69 | -6 + (15) * n |
+| shared_rows | on | -9 | +51 | -24 + (15) * n |
+| vec_iter_bool | off | -33341 | -166673 | -8 + (-33333) * n |
+| vec_iter_bool | on | +102 | -630 | 285 + (-183) * n |
+| vec_iter_i64 | off | +9995 | +49999 | -6 + (10001) * n |
+| vec_iter_i64 | on | +233 | -447 | 403 + (-170) * n |
+
+Formulas describe the two measured sizes only. Interpreted-path costs grow with
+work, and some native-on deltas also grow; they are not all fixed setup costs.
+These are instruction counts, not wall-time measurements. Shared caller and
+compiler partition effects are consistent with the evidence, not proof that
+every resumable design must pay this cost. ADR0234 failed timing, not the same
+identity criterion. Keeping fixed source byte-identical did not keep fixed
+machine code or instruction counts identical.
+
+The identity report is now reviewed evidence for this candidate, not a blanket
+waiver. Behavioral eval, signal cancellation, fuel/no-repeat, ownership/Miri,
+host/integration/generated/cross, preflight and commit checks still must pass.
+Any production correction invalidates the measured-pair reuse until reviewed
+and revalidated. Tooling/docs-only amendments must prove runtime source identity
+to the measured candidate. Bring the completed packet back before publication.

@@ -159,7 +159,7 @@ rnx — a Rune scripting environment
   rnx version               this build, and the Rune it is pinned to
   rnx help                  this
 
-Flags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off (default: on), --debug-engine (requested policy).";
+Flags for `eval`, before SOURCE: --budget N, --engine=legacy, --native=on|off, --debug-engine (fresh eval uses interpreted slices).\nFlags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off (default: on), --debug-engine (requested policy).";
 
 /// Run rnx's normal CLI with the supplied trusted native extensions.
 ///
@@ -355,16 +355,46 @@ fn serve(
 		return pipe_control::run(args.get(1).map(String::as_str));
 	}
 	if args.first().is_some_and(|s| s == "eval") {
-		let source = args.get(1).ok_or("eval needs source")?.clone();
+		let mut at = 1;
+		let mut eval_options = engine::Options::default();
+		let mut eval_budget = None;
+		while let Some(arg) = args.get(at) {
+			match arg.as_str() {
+				"--debug-engine" => eval_options.debug = true,
+				"--engine=legacy" => eval_options.choice = engine::EngineChoice::Legacy,
+				"--native=on" => eval_options.native = true,
+				"--native=off" => eval_options.native = false,
+				"--budget" => {
+					at += 1;
+					eval_budget = Some(
+						args.get(at)
+							.ok_or("--budget needs a number")?
+							.parse::<usize>()?,
+					);
+				}
+				_ => break,
+			}
+			at += 1;
+		}
+		let source = args.get(at).ok_or("eval needs source")?.clone();
 		host::running_a_script();
 		let mut session = session::Session::new(context)?
 			.with_http(http.clone())
 			.with_lifecycle(lifecycle.clone());
-		match session.eval(&source) {
+		if let Some(budget) = eval_budget {
+			session.set_budget(budget);
+		}
+		match session.eval_one_shot(&source, eval_options) {
+			Ok(session::EvalValue::Fresh(value)) => {
+				if let Err(message) = value.show(&session.fields()) {
+					eprintln!("{}", presentation::error(&format!("error: {message}")));
+					terminal::exit(1);
+				}
+			}
 			// What a returned value means is decided in one place, so `eval`
 			// and `run` cannot disagree about what a failure is. The renderer
 			// stays each entry point's own; record 0018 decision 4 says why.
-			Ok(value) => match runner::returned(&value) {
+			Ok(session::EvalValue::Legacy(value)) => match runner::returned(&value) {
 				Ok(value) => {
 					if !runner::is_unit(&value) {
 						// A shell entry point renders the whole value or reports

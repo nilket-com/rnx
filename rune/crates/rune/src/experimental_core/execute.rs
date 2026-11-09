@@ -21,6 +21,10 @@ use super::{
 };
 use crate::alloc::{Box, Vec};
 
+#[rustfmt::skip]
+mod sliced;
+pub use sliced::{SliceOutcome, SlicedInvocation};
+
 const MAX_FRAMES: usize = {
 	let frames = isize::MAX as usize / core::mem::size_of::<Frame>();
 	let locations = isize::MAX as usize / core::mem::size_of::<Location>();

@@ -12,6 +12,8 @@ def main():
 	parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[1])
 	args = parser.parse_args()
 	root = Path(git(args.repo, "rev-parse", "--show-toplevel").strip())
+	subprocess.run(["cargo", "run", "--locked", "--quiet", "--target-dir", str(root / "target/execute-guard"), "--manifest-path", str(root / "ci/execute_guard/Cargo.toml"), "--", str(root)], cwd=root, check=True)
+
 	subprocess.run([sys.executable, "-B", str(root / "ci/hygiene.py"), "--repo", str(root)], cwd=root, check=True)
 	subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(root / "ci"), "-p", "test_hygiene.py"], cwd=root, check=True)
 	subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(root / "ci"),
