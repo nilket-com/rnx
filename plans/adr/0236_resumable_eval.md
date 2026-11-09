@@ -1,6 +1,10 @@
 # ADR 0236: Resumable invocation for one-shot eval
 
-Status: Accepted
+Status: Withdrawn
+
+Withdrawn: the macro extraction changed fixed interpreter machine code and
+introduced workload-dependent instruction costs. No production or tooling
+changes ship. The proposal below records the experiment, not shipped behavior.
 
 Base: published 4ea32429a886a9ddc22f2d29c98b08a5fa3dbd36.
 Design accepted; the concrete operation-sharing boundary requires review before production edits.
@@ -48,7 +52,8 @@ over a subsequent budget check; hard exhaustion otherwise terminates. Errors
 retain remaining fuel and are never converted into resumable Limited.
 
 Host operations remain atomic with respect to soft slicing and may exceed a
-slice. They draw from the same hard allowance through the existing bridge;
+slice. On the sliced path they draw from the same hard allowance through a new scoped
+operation-boundary wrapper;
 never install a fresh total on every host call or resume. No host TLS guard,
 borrow of a temporary stack, or active callback may escape a resume call.
 Synchronous host calls cannot be preempted. Interrupt latency is bounded by
@@ -127,8 +132,9 @@ is not a user instruction. Capture failure diagnostics before releasing frames.
 Parity covers value, stdout/stderr, exit status, source location, call-chain
 meaning, host-effect order, lifecycle cleanup and cancellation outcomes.
 Existing finite fuel units remain the fresh core's instruction accounting;
-legacy and fresh instruction counts need not match. Exact budget/frontier parity
-is required between sliced and complete fresh execution. Against legacy, require
+legacy and fresh instruction counts need not match. Exact opcode budget/frontier parity
+is required between sliced and complete fresh execution; budget-aware host
+consumption is additionally charged only on sliced execution (ruling below). Against legacy, require
 bounded termination, error precedence and existing documented budget behavior;
 record any differing low-budget frontier explicitly, not as an exact match.
 
@@ -158,3 +164,14 @@ Behavioral results cannot authorize continuation past a failed identity gate.
 Any fixed-loop identity or vector change stops work for review; no automatic
 inline-attribute correction rounds. The interpreted-only eval policy must appear
 in CLI route diagnostics or verbose output when native execution is requested.
+
+Host-budget ruling: the complete fresh host bridge does not reconcile ambient
+host consumption with its local opcode fuel. Sliced execution now installs a
+finite ambient scope around each host call, reconciles its consumption before
+returning (also on host failure/panic), and restores the outer scope. No TLS
+survives suspension. Sliced/complete parity is exact for opcode charging; sliced
+execution additionally charges budget-aware host work. This deliberate difference
+preserves legacy eval's bounded host-work contract. Arbitrary uncooperative host
+code remains non-preemptible. Totals use the finite usize::MAX-1 cap, as legacy
+eval does. A missing or increased ambient balance fails closed, never mints fuel.
+The complete-path gap is deferred to its own record and fixed-route gates.
