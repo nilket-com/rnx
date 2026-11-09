@@ -1,6 +1,11 @@
 # ADR 0235: AVX2 arithmetic in the F64 driver
 
-Status: Accepted
+Status: Withdrawn
+
+Withdrawn after the final authorized correction retained portable per-block
+instruction growth. No production or tooling changes ship. The following
+proposal and exception history describe the experiment, not shipped behavior.
+See the paired implementation record for results and disposition.
 
 The read-only probe against published 1fe8ba598fefd521088b8354d884a81c92c4f9dd
 found that separate AVX2 arithmetic primitives reduced warm 100M-row times by
@@ -63,3 +68,33 @@ Acceptance against published 1fe8ba598fefd521088b8354d884a81c92c4f9dd:
 Stop on unexpected instance/identity drift or unchanged-path per-row or
 per-block growth. Attribute and bring a decision before another structural
 attempt; a rule exception needs the user. Do not weaken targets after results.
+
+
+## Reviewed fault-replay identity exception
+
+The user approved a narrow exception for `masked::first_fault` after the
+bounded correction. BUILD-v4/IDENTITY-v4 retains its original FAIL: this
+cold overflow-replay routine differs in type-dispatch layout. All other
+246 protected routines must remain identical under the resolved identity
+check. This is not permission for hot-path or forced-scalar row/block growth.
+
+The measured pair is baseline
+`1fe8ba598fefd521088b8354d884a81c92c4f9dd` and candidate
+`85fc88d5f69b766c23fa751284f8d8628967e65e`, with binary SHA-256 values
+`5bd6e58c186a315d1c86e10021eadb4bbe619361f69ab21b770d91da4b3c2b94`
+and `70babba1e59d147bc6cfef0e86ae05145682d76badd870e362d18ef55681461c`.
+Later test/tooling-only amendments require explicit production-scope proof.
+
+Behavioral acceptance requires
+`column::tests::first_fault_replay_preserves_flat_masked_and_generic_errors`:
+flat and masked fused execution and generic pair-operation chains must
+report the same first fault row, Overflow cause, remaining work, source
+location, call chain and formatted error as reference execution, in automatic
+and portable modes. Invalid-lane overflow must be ignored. This supplements
+the existing core boundary/fault-row and exhaustive fuel-stop controls.
+The new control must pass before the identity exception is accepted.
+
+SMALL captures retain their measurement-only receipts. Promotion requires
+separate acceptance scoring, reviewed fixed setup pins with +1 rejection
+controls, and no new hot-path or forced-scalar slope. A slope stops the
+record; no further production correction is authorized.
