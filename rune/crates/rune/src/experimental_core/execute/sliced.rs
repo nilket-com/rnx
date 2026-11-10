@@ -7,11 +7,21 @@ use super::*;
 /// Dropping it releases the continuation without executing another instruction.
 #[must_use = "resume or cancel the invocation"]
 pub struct SlicedInvocation<'a> {
-	executor: &'a mut Executor,
-	program: &'a Program,
-	store: &'a mut Store,
-	remaining: usize,
-	active: bool,
+	pub(super) executor: &'a mut Executor,
+	pub(super) program: &'a Program,
+	pub(super) store: &'a mut Store,
+	pub(super) remaining: usize,
+	pub(super) active: bool,
+	pub(super) cross: Option<CrossState<'a>>,
+}
+
+pub(super) struct CrossState<'a> {
+	pub(super) programs: &'a [crate::experimental_core::domain::Member],
+	pub(super) owners: Vec<u32>,
+	pub(super) failure_frames: Vec<(u32, Option<Location>)>,
+	pub(super) truncated: bool,
+	pub(super) last_owner: u32,
+	pub(super) departed: Option<Frame>,
 }
 
 impl core::fmt::Debug for SlicedInvocation<'_> {
@@ -67,6 +77,7 @@ impl<'a> PreparedInvocation<'a> {
 			store: self.store,
 			remaining: fuel,
 			active: true,
+			cross: None,
 		})
 	}
 }
@@ -88,6 +99,7 @@ impl SlicedInvocation<'_> {
 			self.store,
 			&mut self.remaining,
 			slice.get(),
+			&mut self.cross,
 		);
 		if !matches!(result, SliceOutcome::Limited) {
 			self.active = false;
@@ -103,8 +115,13 @@ impl SlicedInvocation<'_> {
 			return sliced_lifecycle_failure(self.remaining);
 		}
 		self.active = false;
+		let code=if let Some(state)=&mut self.cross {
+			state.capture(&self.executor.frames);
+			if let Some(owner)=state.owners.last(){state.last_owner = *owner;}
+			state.current().map(|p|&p.code).unwrap_or(&self.program.code)
+		}else{&self.program.code};
 		let failure = self.executor.sliced_failure(
-			&self.program.code,
+			code,
 			self.store,
 			error(ErrorKind::Cancelled),
 			None,
@@ -139,7 +156,7 @@ fn sliced_lifecycle_failure(fuel: usize) -> Failure {
 
 impl Executor {
 	#[allow(clippy::too_many_arguments)]
-	fn sliced_failure(
+	pub(super) fn sliced_failure(
 		&mut self,
 		code: &Code,
 		store: &mut Store,
@@ -205,7 +222,17 @@ impl Executor {
 		start: u32,
 		count: u32,
 		fuel: &mut usize,
+		cross: &Option<CrossState<'_>>,
 	) -> Result<()> {
+		if let Some(state)=cross {
+			if id==super::super::code::SORT_BEGIN && count==2 {
+				let target=function.args.get(start as usize+1).and_then(|n|self.slots.get(base+*n as usize)).copied();
+				let owner=target.and_then(|v|match v {Value::Function{code,..}=>Some(code),Value::Heap(_)=>store.closure_parts(v).ok().map(|p|p.0),_=>None});
+				if let Some(program)=owner.and_then(|id|state.program(id).ok()) {
+					return self.sort_call(&program.code,store,function,base,out,id,start,count);
+				}
+			}
+		}
 		if code.host(id).is_none() {
 			return self.intrinsic(code, store, function, base, out, id, start, count);
 		}
@@ -240,6 +267,7 @@ impl Executor {
 		store: &mut Store,
 		remaining: &mut usize,
 		slice: usize,
+		cross: &mut Option<CrossState<'_>>,
 	) -> SliceOutcome {
 		let mut fuel = *remaining;
 		let mut soft = slice;
@@ -249,6 +277,7 @@ impl Executor {
 		let mut panic_message = None;
 		let result: Result<Option<Value>> = (|| {
 			'frames: loop {
+				let code=if let Some(state)=cross { let program=state.current()?;state.last_owner=program.code.id(); &program.code }else{code};
 				let frame = *self
 					.frames
 					.last()
@@ -351,7 +380,7 @@ impl Executor {
 										store.retain(value)?;
 										let out = frame.out;
 										self.commit_pc(frame_index, pc)?;
-										self.leave(store)?;
+										self.sliced_leave(store,cross)?;
 										transferred = true;
 
 										if let Some(out) = out {
@@ -368,46 +397,9 @@ impl Executor {
 									args_start,
 									args_len,
 								} => {
-									let called = get(value)?;
-									match called {
-										Value::Function {
-											code: owner,
-											id: callee,
-										} => {
-											// Keep the plain-function validation and dispatch path unchanged.
-											if owner != code.id() {
-												return Err(error(ErrorKind::Type));
-											}
-											let target = code
-												.function(callee)
-												.ok_or_else(|| error(ErrorKind::InvalidCode))?;
-											if target.parameters != args_len {
-												return Err(error(ErrorKind::Type));
-											}
-											call = Some((out, callee, args_start, args_len));
-										}
-										Value::Heap(_) => {
-											self.call_closure(
-												code,
-												store,
-												function,
-												frame.base,
-												frame_index,
-												pc,
-												source_pc,
-												out,
-												called,
-												args_start,
-												args_len,
-											)
-											.map_err(|failure| {
-												setup_cleanup_error = failure.cleanup_error;
-												failure.error
-											})?;
-											transferred = true;
-										}
-										_ => return Err(error(ErrorKind::Type)),
-									}
+                                    self.sliced_call_value(code,store,function,frame.base,frame_index,pc,source_pc,out,get(value)?,args_start,args_len,cross)
+                                        .map_err(|failure| { setup_cleanup_error=failure.cleanup_error;failure.error })?;
+                                    transferred=true;
 								}
 
 								Op::Range { out, start, end } => {
@@ -592,7 +584,7 @@ impl Executor {
 									store.retain(value)?;
 									let out = frame.out;
 									self.commit_pc(frame_index, pc)?;
-									self.leave(store)?;
+									self.sliced_leave(store,cross)?;
 									transferred = true;
 
 									if let Some(out) = out {
@@ -722,6 +714,7 @@ impl Executor {
 								self.commit_pc(frame_index, pc)?;
 								match code.function(callee) {
 									Some(callee_code) => {
+                                        Self::cross_prepare_owner(cross,code.id())?;
 										let source_args = &function.args[args_start as usize
 											..args_start as usize + args_len as usize];
 										self.push_call(
@@ -743,12 +736,13 @@ impl Executor {
 											setup_cleanup_error = f.cleanup_error;
 											f.error
 										})?;
+                                        Self::cross_publish_owner(cross,code.id());
 										transferred = true;
 									}
 									None => self.budgeted_sliced_intrinsic(
 										code, store, function, frame.base, out, callee, args_start,
 										args_len,
-									 &mut fuel, )?,
+									 &mut fuel, cross, )?,
 								}
 							}
 
@@ -810,6 +804,10 @@ impl Executor {
 				}
 			}
 		})();
+		let code=if let Some(state)=cross {
+			if result.is_err(){state.capture(&self.frames);}
+			state.program(state.last_owner).map(|p| &p.code).unwrap_or(code)
+		}else{code};
 		*remaining = fuel;
 		match result {
 			Ok(None) => SliceOutcome::Limited,

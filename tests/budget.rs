@@ -192,9 +192,17 @@ fn the_budget_is_written_in_one_place_in_the_source() {
 		"the host module can see the budget"
 	);
 	let main = std::fs::read_to_string("src/lib.rs").unwrap();
+	// Eval has a separate budget variable; match the run-path binding exactly.
+	let is_run_budget_assignment = |line: &str| {
+		line.split_once('=')
+			.is_some_and(|(lhs, _)| matches!(lhs.trim(), "budget" | "let mut budget"))
+	};
+	assert!(!is_run_budget_assignment("let mut eval_budget = None;"));
+	assert!(!is_run_budget_assignment("eval_budget = Some(value);"));
+	assert!(is_run_budget_assignment("budget = unexpected_value;"));
 	let sets: Vec<&str> = main
 		.lines()
-		.filter(|l| l.contains("budget =") && !l.trim_start().starts_with("//"))
+		.filter(|l| is_run_budget_assignment(l))
 		.collect();
 	assert_eq!(
 		sets.len(),

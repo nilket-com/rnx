@@ -61,6 +61,7 @@ impl FormatAuthority {
 ///
 /// Function values made by one program are foreign to every other program.
 pub struct Program {
+	pub(crate) epoch: Option<super::provenance::Epoch>,
 	pub(crate) formatting: FormatAuthority,
 	pub(crate) code: Code,
 	functions: Vec<Hash>,
@@ -72,6 +73,7 @@ impl Program {
 	#[cfg(test)]
 	pub(crate) fn for_diagnostics_test(code: Code) -> Self {
 		Self {
+			epoch: None,
 			code,
 			formatting: FormatAuthority::new(None, false),
 			functions: Vec::new(),
@@ -472,6 +474,7 @@ impl Collector {
 		let formatting =
 			FormatAuthority::new(context.format_snapshot(), !entry_ineligible.is_empty());
 		Ok(Program {
+			epoch: Some(context.execution_epoch.snapshot()?),
 			formatting,
 			code: self.transaction.finish()?,
 			functions,

@@ -1137,6 +1137,7 @@ mod tests {
 				Default::default(),
 				Default::default(),
 				None,
+				None, // Test runtime has no compiling Context provenance.
 			))
 			.unwrap()
 		}

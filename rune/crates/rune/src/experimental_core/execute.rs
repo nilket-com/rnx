@@ -23,6 +23,9 @@ use crate::alloc::{Box, Vec};
 
 #[rustfmt::skip]
 mod sliced;
+mod cross;
+#[cfg(test)]
+pub(crate) use cross::inject_stage as inject_cross_stage;
 pub use sliced::{SliceOutcome, SlicedInvocation};
 
 const MAX_FRAMES: usize = {

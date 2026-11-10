@@ -3,7 +3,7 @@
 mod syntax;
 mod weights;
 use rune::experimental_core::{
-	error::{ErrorKind, Refusal},
+	error::Refusal,
 	execute::Executor,
 	frontend,
 	heap::{Limits, Store},
@@ -505,7 +505,7 @@ fn entries() -> Vec<Entry> {
 			file: "src/session.rs",
 			owner: "execute",
 			call: "CALL Vm::new",
-			needs: "cross-program functions, shared identity, partial mutation and resumable slices",
+			needs: "engine cross-program calls ready; persistent state, reset, ceilings and routing require session wiring",
 		},
 		Entry {
 			name: "worker-jupyter",
@@ -723,65 +723,63 @@ fn session_blocker() -> Result<Json> {
 	legacy.close()?;
 	life.close()?;
 	let (context, life, _) = context()?;
-	let mut store = Store::new(Limits::default()).map_err(|e| format!("{e:?}"))?;
-	let mut executor = Executor::new().map_err(|e| format!("{e:?}"))?;
-	executor
-		.set_host_runtime(Some(rune::sync::Arc::try_new(context.runtime()?)?))
+	use rune::experimental_core::domain::{CrossOutcome, ProgramDomain};
+	let runtime = rune::sync::Arc::try_new(context.runtime()?)?;
+	let mut domain = ProgramDomain::new(Limits::default(), Default::default(), runtime)
 		.map_err(|e| format!("{e:?}"))?;
-	let mut state = store.root_record(None, &[]).map_err(|e| format!("{e:?}"))?;
-	let mut programs = Vec::new();
+	let mut state = domain.record().map_err(|e| format!("{e:?}"))?;
 	let mut fresh = Vec::new();
-	for (i, source) in generated.iter().take(2).enumerate() {
-		let program = frontend::compile(
-			&mut sources(source),
-			&context,
-			&mut Diagnostics::new(),
-			i as u64,
-		)
-		.map_err(|e| format!("{e:?}"))?;
-		let entry = program
-			.function(Hash::type_hash(["main"]))
-			.ok_or("missing generated entry")?;
-		assert!(program.entry_eligible(entry));
-		match executor.invoke(&program, &mut store, entry, &[&state], 10_000) {
-			Ok(result) => {
-				assert_eq!(i, 0);
-				let delta = store.root_get(&result, 0).map_err(|e| format!("{e:?}"))?;
-				let value = store.root_get(&result, 1).map_err(|e| format!("{e:?}"))?;
-				fresh.push(json!({"returned":store.root_scalar(&value).map_err(|e|format!("{e:?}"))? .map(|s|format!("{s:?}"))}));
-				store.root_release(value).unwrap();
-				store.root_release(result).unwrap();
-				store.root_release(state).unwrap();
-				state = delta;
+	for (i, source) in generated.iter().enumerate() {
+		let key = domain
+			.compile_insert(
+				&context,
+				&mut sources(source),
+				&mut Diagnostics::new(),
+				i as u64,
+			)
+			.map_err(|e| format!("{e:?}"))?;
+		let entry = domain
+			.function(&key, Hash::type_hash(["main"]))
+			.map_err(|e| format!("{e:?}"))?;
+		let result = {
+			let mut invocation = domain
+				.start(&key, entry, &[&state], 10_000)
+				.map_err(|e| format!("{e:?}"))?;
+			loop {
+				match invocation.resume(core::num::NonZeroUsize::new(1).unwrap()) {
+					CrossOutcome::Limited => {}
+					CrossOutcome::Complete(result) => break result,
+					CrossOutcome::Failed(failure) => {
+						return Err(failure.message().to_string().into());
+					}
+				}
 			}
-			Err(failure) => {
-				assert_eq!(i, 1);
-				assert_eq!(failure.error.kind, ErrorKind::Type);
-				assert_eq!(failure.error.refusal, None);
-				assert!(
-					failure
-						.message(&program)
-						.to_string()
-						.contains("another program")
-				);
-				let shared = store
-					.root_field(&state, "shared")
-					.map_err(|e| format!("{e:?}"))?;
-				assert_eq!(store.root_len(&shared).map_err(|e| format!("{e:?}"))?, 2);
-				store.root_release(shared).unwrap();
-				fresh.push(json!({"runtime_failure":failure.message(&program).to_string(),"refusal":null,"shared_len_after":2}));
-			}
-		}
-		programs.push(program);
+		};
+		let delta = domain.get(&result, 0).map_err(|e| format!("{e:?}"))?;
+		let value = domain.get(&result, 1).map_err(|e| format!("{e:?}"))?;
+		let scalar = domain.scalar(&value).map_err(|e| format!("{e:?}"))?;
+		let returned = match scalar {
+			Some(rune::experimental_core::value::Scalar::I64(n)) => n,
+			Some(rune::experimental_core::value::Scalar::U64(n)) => i64::try_from(n)?,
+			_ => return Err("session witness did not return an integer".into()),
+		};
+		assert_eq!(returned, values[i]);
+		fresh.push(json!({"returned":returned}));
+		drop(value);
+		drop(result);
+		drop(state);
+		state = delta;
+		domain.collect_programs().map_err(|e| format!("{e:?}"))?;
 	}
-	assert_eq!(programs.len(), 2);
-	store.root_release(state).unwrap();
-	store.close().map_err(|e| format!("{e:?}"))?;
+	drop(state);
+	domain.collect_programs().map_err(|e| format!("{e:?}"))?;
+	domain.close().map_err(|e| format!("{e:?}"))?;
 	life.close()?;
 	Ok(
-		json!({"inputs":inputs,"generated_sources":generated,"legacy":values,"execution":fresh,"verdict":"blocked: never retry after runtime effects"}),
+		json!({"inputs":inputs,"generated_sources":generated,"legacy":values,"execution":fresh,"verdict":"engine-ready: persistent-session wiring pending"}),
 	)
 }
+
 fn synchronous_and_byte_boundaries() -> Result<Json> {
 	// Exhaustive: a new Root representation requires an explicit inventory decision.
 	fn represented(t: Type) -> &'static str {
@@ -842,7 +840,7 @@ fn registered_host_shapes_and_source_entry_paths_match_policy() {
 	policy_rows(root).unwrap();
 }
 #[test]
-fn retained_function_fails_after_mutation_so_session_fallback_is_unsafe() {
+fn retained_function_crosses_programs_with_session_wiring_pending() {
 	session_blocker().unwrap();
 }
 

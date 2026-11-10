@@ -376,6 +376,8 @@ impl fmt::Display for ContextType {
 /// * And native type definitions.
 #[derive(Default)]
 pub struct Context {
+	#[cfg(feature = "execution")]
+	pub(crate) execution_epoch: crate::experimental_core::provenance::State,
 	/// Unique modules installed in the context.
 	unique: HashSet<&'static str>,
 	/// Whether or not to include the prelude when constructing a new unit.
@@ -619,6 +621,8 @@ impl Context {
 			self.deprecations.try_clone()?,
 			#[cfg(feature = "execution")]
 			self.format.snapshot(),
+			#[cfg(feature = "execution")]
+			Some(self.execution_epoch.snapshot()?),
 		))
 	}
 
@@ -632,6 +636,8 @@ impl Context {
 	where
 		M: AsRef<Module>,
 	{
+		#[cfg(feature = "execution")]
+		self.execution_epoch.invalidate()?;
 		let module = module.as_ref();
 		tracing::trace!("installing");
 

@@ -17,6 +17,8 @@ use super::FunctionHandler;
 /// * Built-in type checks.
 #[derive(Default, TryClone)]
 pub struct RuntimeContext {
+	#[cfg(feature = "execution")]
+	pub(crate) execution_epoch: Option<crate::experimental_core::provenance::Epoch>,
 	/// Registered native function handlers.
 	functions: hash::Map<FunctionHandler>,
 	/// Named constant values
@@ -40,8 +42,13 @@ impl RuntimeContext {
 		#[cfg(feature = "execution")] formatting: Option<
 			crate::sync::Arc<crate::function::formatting::Certificate>,
 		>,
+		#[cfg(feature = "execution")] execution_epoch: Option<
+			crate::experimental_core::provenance::Epoch,
+		>,
 	) -> Self {
 		Self {
+			#[cfg(feature = "execution")]
+			execution_epoch,
 			functions,
 			constants,
 			construct,

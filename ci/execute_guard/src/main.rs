@@ -29,11 +29,7 @@ fn parsed(s: &str) -> String {
 	canonical(s.parse().unwrap())
 }
 fn require(ok: bool, why: &str) -> Result<(), String> {
-	if ok {
-		Ok(())
-	} else {
-		Err(why.into())
-	}
+	if ok { Ok(()) } else { Err(why.into()) }
 }
 // Diagnostic token positions are zero-based within the named region. Literal
 // tokens stay whole, including embedded spaces; punctuation is not discarded.
@@ -187,18 +183,118 @@ impl VisitMut for HostAdapter {
 		if let syn::Expr::MethodCall(c) = e {
 			if c.method == "budgeted_sliced_intrinsic" {
 				self.count += 1;
-				let expected: syn::Expr=syn::parse_str("self.budgeted_sliced_intrinsic(code, store, function, frame.base, out, callee, args_start, args_len, &mut fuel,)").unwrap();
+				let expected: syn::Expr=syn::parse_str("self.budgeted_sliced_intrinsic(code, store, function, frame.base, out, callee, args_start, args_len, &mut fuel, cross,)").unwrap();
 				if tokens(e) != tokens(&expected) {
 					self.error = Some("host adapter hook changed".into());
 					return;
 				}
-				*e=syn::parse_str("self.intrinsic(code, store, function, frame.base, out, callee, args_start, args_len,)").unwrap();
+				*e = syn::parse_str(
+					"self.intrinsic(code, store, function, frame.base, out, callee, args_start, args_len,)",
+				)
+				.unwrap();
 				return;
 			}
 		}
 		visit_mut::visit_expr_mut(self, e)
 	}
 }
+
+// Narrow ADR0238 hooks. Their complete-side semantics and sliced call sites
+// are both pinned as syntax; all non-hook operation tokens remain compared.
+struct CrossHooks {
+	call_value: usize,
+	leave: usize,
+	prepare: usize,
+	publish: usize,
+	error: Option<String>,
+}
+impl VisitMut for CrossHooks {
+	fn visit_arm_mut(&mut self, a: &mut syn::Arm) {
+		if tokens(&a.pat) == parsed("Op::CallValue {out,value,args_start,args_len,}") {
+			self.call_value += 1;
+			if tokens(a.body.as_ref()) != parsed(CROSS_CALL) {
+				self.error = Some("cross CallValue hook drift".into());
+				return;
+			}
+			a.body = Box::new(syn::parse_str(COMPLETE_CALL).unwrap());
+			return;
+		}
+		visit_mut::visit_arm_mut(self, a);
+	}
+	fn visit_block_mut(&mut self, b: &mut syn::Block) {
+		b.stmts.retain(|s| {
+			let t = tokens(s);
+			if t == parsed("Self::cross_prepare_owner(cross,code.id())?;") {
+				self.prepare += 1;
+				false
+			} else if t == parsed("Self::cross_publish_owner(cross,code.id());") {
+				self.publish += 1;
+				false
+			} else {
+				true
+			}
+		});
+		visit_mut::visit_block_mut(self, b);
+	}
+	fn visit_expr_mut(&mut self, e: &mut syn::Expr) {
+		if let syn::Expr::MethodCall(c) = e {
+			if c.method == "sliced_leave" {
+				self.leave += 1;
+				if tokens(e) != parsed("self.sliced_leave(store,cross)") {
+					self.error = Some("cross leave hook drift".into());
+					return;
+				}
+				*e = syn::parse_str("self.leave(store)").unwrap();
+				return;
+			}
+		}
+		visit_mut::visit_expr_mut(self, e);
+	}
+}
+const COMPLETE_CALL: &str = r###"{
+								let called = get(value)?;
+								match called {
+									Value::Function {
+										code: owner,
+										id: callee,
+									} => {
+										// Keep the plain-function validation and dispatch path unchanged.
+										if owner != code.id() {
+											return Err(error(ErrorKind::Type));
+										}
+										let target = code
+											.function(callee)
+											.ok_or_else(|| error(ErrorKind::InvalidCode))?;
+										if target.parameters != args_len {
+											return Err(error(ErrorKind::Type));
+										}
+										call = Some((out, callee, args_start, args_len));
+									}
+									Value::Heap(_) => {
+										self.call_closure(
+											code,
+											store,
+											function,
+											frame.base,
+											frame_index,
+											pc,
+											source_pc,
+											out,
+											called,
+											args_start,
+											args_len,
+										)
+										.map_err(|failure| {
+											setup_cleanup_error = failure.cleanup_error;
+											failure.error
+										})?;
+										transferred = true;
+									}
+									_ => return Err(error(ErrorKind::Type)),
+								}
+							}"###;
+const CROSS_CALL: &str = r###"{self.sliced_call_value(code,store,function,frame.base,frame_index,pc,source_pc,out,get(value)?,args_start,args_len,cross).map_err(|failure| {setup_cleanup_error=failure.cleanup_error;failure.error})?;transferred=true;}"###;
+
 fn stmts(s: &[syn::Stmt]) -> String {
 	s.iter().map(tokens).collect::<Vec<_>>().join(" ")
 }
@@ -240,6 +336,31 @@ fn guard(fixed: &str, sliced: &str) -> Result<(), String> {
 		tokens(&charge) == tokens(&ar.charged[0]),
 		"charge/cancellation hook drift",
 	)?;
+	// Validate the fixed hook before substituting the sliced hook.
+	require(
+		stmts(&ar.op[0]).contains(&parsed(COMPLETE_CALL)),
+		"complete CallValue hook drift",
+	)?;
+	let mut cross = CrossHooks {
+		call_value: 0,
+		leave: 0,
+		prepare: 0,
+		publish: 0,
+		error: None,
+	};
+	for stmt in &mut br.op[0] {
+		cross.visit_stmt_mut(stmt);
+	}
+	if let Some(error) = cross.error {
+		return Err(error);
+	}
+	require(
+		(cross.call_value, cross.leave, cross.prepare, cross.publish) == (1, 2, 1, 1),
+		&format!(
+			"cross hook counts: {:?}",
+			(cross.call_value, cross.leave, cross.prepare, cross.publish)
+		),
+	)?;
 	let mut adapter = HostAdapter {
 		count: 0,
 		error: None,
@@ -270,7 +391,9 @@ fn guard(fixed: &str, sliced: &str) -> Result<(), String> {
 		&tokens(&br.enrich[0]),
 	)?;
 	// The terminal wrapper differs; the cleanup expression itself must be exact.
-	let expected=parsed("{ let result: core::result::Result<Root, Failure> = CLEANUP; match result { Err(failure) => SliceOutcome::Failed(failure), Ok(_) => unreachable!(), } }");
+	let expected = parsed(
+		"{ let result: core::result::Result<Root, Failure> = CLEANUP; match result { Err(failure) => SliceOutcome::Failed(failure), Ok(_) => unreachable!(), } }",
+	);
 	let mut cb = br.cleanup[0].clone();
 	let first = cb.stmts.first_mut().ok_or("missing terminal cleanup")?;
 	let syn::Stmt::Local(local) = first else {
@@ -297,11 +420,23 @@ fn guard(fixed: &str, sliced: &str) -> Result<(), String> {
 	// Hooks outside opcode body are exact syntax, with unique occurrences.
 	let rt = tokens(&resume.block);
 
-	for (name,hook) in [
-  ("checkpoint", "if instruction.charged && soft == 0 { self.commit_pc(frame_index, pc)?; return Ok(None); } let mut transferred = false; let result ="),
-  ("soft debit", "soft -= 1;"),
-  ("terminal complete", "Ok(None) => SliceOutcome::Limited, Ok(Some(value)) => SliceOutcome::Complete(store.export(value)),")
- ] {let h=parsed(hook);require(rt.matches(&h).count()==1,&format!("{name} hook changed or duplicated"))?;}
+	for (name, hook) in [
+		(
+			"checkpoint",
+			"if instruction.charged && soft == 0 { self.commit_pc(frame_index, pc)?; return Ok(None); } let mut transferred = false; let result =",
+		),
+		("soft debit", "soft -= 1;"),
+		(
+			"terminal complete",
+			"Ok(None) => SliceOutcome::Limited, Ok(Some(value)) => SliceOutcome::Complete(store.export(value)),",
+		),
+	] {
+		let h = parsed(hook);
+		require(
+			rt.matches(&h).count() == 1,
+			&format!("{name} hook changed or duplicated"),
+		)?;
+	}
 	let hard = parsed(
 		"fuel = fuel.checked_sub(1).ok_or_else(|| error(ErrorKind::FuelExhausted))?; soft -= 1;",
 	);
@@ -338,6 +473,18 @@ fn mutation_controls(a: &str, b: &str) -> Result<(), String> {
 	)?;
 	for (from, to) in [
 		("pc += 1;", "pc += 2;"),
+		(
+			"Self::cross_prepare_owner(cross,code.id())?;",
+			"Self::cross_prepare_owner(cross,0)?;",
+		),
+		(
+			"Self::cross_publish_owner(cross,code.id());",
+			"Self::cross_publish_owner(cross,0);",
+		),
+		(
+			"self.sliced_leave(store,cross)",
+			"self.sliced_leave(store,None)",
+		),
 		(
 			"self.frames.clear();",
 			"self.frames.clear(); self.frames.clear();",

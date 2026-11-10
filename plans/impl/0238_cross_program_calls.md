@@ -2,7 +2,7 @@
 
 Status: Accepted
 
-Paired ADR: ../adr/0238_cross_program_calls.md. Implementation has not started.
+Paired ADR: ../adr/0238_cross_program_calls.md. Implementation is local; required gates passed and publication review is pending.
 
 1. Pin 2ed1b182. Read the sliced invocation module, CallValue, call_closure,
    sorting's SORT_BEGIN and comparator path, iterator validation, enrich_error,
@@ -76,7 +76,7 @@ target/0238. Each receipt binds revision, command, environment and child
 result; success requires process success and semantic success. When a queued
 sequence fails, report the failing stage at once. No retry-to-pass, no polling.
 
-Results: pending. Publication: not authorized at draft stage.
+Results: PASS with the reviewed exception below. Publication requires review.
 
 ## Boundary review additions
 
@@ -97,3 +97,106 @@ The ADR's Boundary review section supersedes Store-wide collection. Add:
   default RuntimeContext refused.
 - Single sliced loop: eval_sliced and every 0237 token control pass unchanged;
   recursion within one program keeps coherent owner state.
+
+## Implementation audit
+
+The implementation uses the existing sliced operation loop with a parallel
+program-owner stack. Frame and Executor layouts and the fixed operation loop
+remain unchanged. Owner capacity is reserved before argument transfer;
+publication after frame setup cannot allocate. A failed leave truncates owner
+state to the actual frame stack, retaining a departed frame for diagnostics.
+Test-only injection covers failures before/after publication and return.
+Setup failures preserve both the primary error and cleanup failure through
+StartError; only its Prepare/Refused variant permits fallback.
+
+Context::install invalidates the private epoch before inspecting the module,
+including duplicate/no-op and failed installs. Its trait installer callbacks
+mutate only under that entry. StdFormatEpoch is private construction-time
+format authority; its module installation still passes through install.
+The test-only raw-hash fixture is not an embedding API. Runtime snapshots
+retain their original epoch. A different Context, newer epoch or unstamped
+runtime cannot enter the domain.
+
+The host bridge copies closed scalar/String inputs into legacy values; it
+rejects function/aggregate inputs and accepts only certified closed outputs.
+It exposes neither Store nor Root to a callback. Domain handles hold Weak
+registry metadata, and no public method returns raw Root or mutable Store.
+Collection traverses registered roots plus pending Store work, through payload
+children and closure program owners, with a visited set for cycles. The keep
+set is complete before membership changes. Drain failures preserve programs
+and distinguish refusal before consumption from failure after consumption.
+
+CrossFailure borrows the program set and exposes program-resolved frames;
+the ordinary Failure call_chain is cleared because its bare locations cannot
+represent several source namespaces. Materialization is fallible and does not
+replace the primary failure. Missing metadata renders function unavailable.
+Iterator admission is unchanged: an argument of unknown arity cannot be used
+as map(f); the supported local closure map(|x|f(x)) exercises foreign callbacks.
+Persistent-session routing remains Blocked; only the engine witness changes.
+
+Reusable controls: tools/column/cross_program_controls.py, with development,
+behavior and Miri scopes. Receipts bind source, command, declared environment,
+child exit, semantic test presence and log digest. Development controls and the
+existing executor suite passed before signing; final evidence is listed below.
+
+## Reviewed measurement exception (2026-11-10)
+
+The user approved an exact measured-pair exception after the identity STOP.
+It binds baseline 2ed1b182e1464c5abae4ce4042774fa41e8956cc and measured
+candidate 1a3196d4ea88dcb397f544644d44bd4d784a81e2, with binary hashes in
+fixed_route_0238.json. The 32 listed workload/size/native-mode pairs bind
+function inventory and delta digests (including zero-delta membership), plus
+system totals. One-extra-instruction controls reject growth in every case.
+There is no extrapolation, general tolerance or publication authorization.
+A runtime-changing rebuild invalidates this exception. Tool/doc-only amends
+must prove runtime source identity to the measured revision.
+
+At n=5, native-off total deltas range from -0.305% to +0.0844%; seven of eight
+improve, while Bool-vector increases. Native-on totals range from -0.1430%
+to +0.1225%, predominantly fixed setup/system costs. Native vector I64/Bool
+retain positive program growth of +680/+732 instructions from n=1 to n=5;
+these are explicitly pinned, not classified as noise or fixed cost.
+
+PreparedInvocation::invoke grows from 6573 to 16616 bytes chiefly because
+native-cache construction (formerly a call to region::cache::build) is inlined.
+The file route includes this wrapper in its measured boundary. A separate
+provenance-only build changes 20 protected shapes, while leaving the seven
+invoke_args, host_call and push_closure_call sizes unchanged; it grows the
+wrapper only to 6647 bytes. This attributes some drift to provenance, but not
+all full-candidate drift. Equal sizes alone do not prove instruction identity.
+
+Evidence: target/0238/ATTRIBUTION.md, ATTRIBUTION-DATA.json,
+FUNCTION-GROWTH.json, MEASUREMENT-v1-CAPTURE.json, MEASUREMENT-v1/RESULT.json,
+PREPARED-ATTRIBUTION and PROVENANCE-v2/RESULT.json. Original strict FAIL receipts
+remain intact. cross_program_exception.py rescoring requires the original
+binary hashes and rechecks raw profile hashes and accounting before acceptance.
+
+## Final gate evidence
+
+The measured runtime is retained through lint-only annotations/spacing, test
+and tooling amendments; exact inverse-edit source proofs bind the original
+binaries. Approved rescoring and 65 negative controls pass in
+`target/0238/APPROVED-EXCEPTION-v1.json`.
+
+`target/0238/REMAINING-v4/RESULT.json` records final host Clippy, Rune Clippy,
+root tests, inventory, adapter unit/integration, generated projects, cross,
+production CLI build/controls, preflight and commit discipline PASS on
+15a3d77e66393f391ab8a694c0db7d52010c715f (before this evidence-only amendment).
+Behavior PASS is retained from REMAINING-v2: domain, existing executor/token,
+eval CLI and session witness. The reuse receipts prove the scoped subsequent
+tooling/test differences.
+
+The initial monolithic Miri suite exceeded its three-hour timeout. It was
+replaced by exact-name shards using the existing ADR 0210 durable runner,
+prepared-target isolation and memory admission. The live inventory must equal
+all 18 domain and 6 sliced tests, with no omissions or ignored tests.
+REMAINING-v3/miri/RESULT.json records all shards PASS with strict provenance.
+
+Root tests exposed an inherited source-layout assertion that counted
+`eval_budget` as `budget`. The checked source files and test were identical to
+the published baseline (BUDGET-PREEXISTING.json). The test-only repair matches
+the run binding exactly and retains detection of unexpected assignments.
+The complete root suite passed afterward; no runtime fix was needed.
+
+No general performance band is introduced by this record. Persistent-session
+routing remains blocked pending its own integration record.

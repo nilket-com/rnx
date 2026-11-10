@@ -70,11 +70,13 @@ pub(crate) mod code;
 pub mod column;
 mod d1_message;
 mod detail;
+pub mod domain;
 pub mod error;
 mod error_class;
 pub mod execute;
 pub mod heap;
 pub(crate) mod nominal;
+pub(crate) mod provenance;
 mod receiver_domain;
 pub mod value;
 

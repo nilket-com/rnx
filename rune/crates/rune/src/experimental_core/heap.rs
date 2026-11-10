@@ -28,6 +28,7 @@ mod vec_constructors;
 mod vec_resize;
 pub use formatting::FormatLimits;
 mod boxed_iterator;
+mod programs;
 mod ranges;
 mod roots;
 mod sorting;
