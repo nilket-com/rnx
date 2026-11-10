@@ -12,6 +12,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 BASE = "c32a6ba77e8318a8c763b0c2eaac336cdebfde48"
+POLARS_LINT_ARGS = ('--', '-Wclippy::erasing_op')
 
 
 def diagnostics(path, root):
@@ -76,7 +77,7 @@ def main():
 				# Review 26075: retain the existing preview test diagnostic in the
 				# comparison instead of letting its default deny stop the baseline.
 				# New column modules still deny warnings and all Clippy lints.
-				command += ["--", "-Wclippy::erasing_op"]
+				command += list(POLARS_LINT_ARGS)
 			else:
 				command += ["--no-default-features"]
 			completed = subprocess.run(command, cwd=directory, env=env, stdout=stdout, stderr=stderr, timeout=7200)

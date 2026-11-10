@@ -72,12 +72,21 @@ def run(stage, out, root=ROOT):
 			sets = []
 			for role, directory in [('baseline', base), ('candidate', root)]:
 				log = out/f'{i}-{role}-clippy.log'
-				invoke(command + ['--message-format=json'], directory, log)
+				# Match the established adapter Clippy recipe: keep the existing
+				# preview erasing_op diagnostic in the comparison, not as a deny
+				# that aborts the baseline before its diagnostics are collected.
+				invoke(clippy_command(command, stage), directory, log)
 				sets.append(diagnostics(log, directory))
 			if sets[1] - sets[0]: raise ValueError('new Clippy diagnostics: ' + repr(sets[1] - sets[0]))
 			row['baseline'] = baseline
 		rows.append(row)
 	return rows
+
+
+def clippy_command(command, stage):
+	from clippy import POLARS_LINT_ARGS
+	return command + ['--message-format=json'] + (
+		list(POLARS_LINT_ARGS) if stage == 'clippy-adapter-polars' else [])
 
 
 def main():
@@ -89,7 +98,15 @@ def main():
 		r.update(checks=run(a.stage, out), status='PASS')
 	except Exception: r['error'] = traceback.format_exc()
 	finally:
+		if a.stage == 'suite-adapter-polars':
+			try:
+				from stage_outputs import finish_stage
+				r['declared_output'] = finish_stage(ROOT, 'polars-suite', out)
+			except Exception:
+				r.update(status='FAIL', output_error=traceback.format_exc())
 		r['artifacts'] = {str(p): child.digest(p) for p in out.glob('*.log')}
+		if r.get('declared_output'):
+			p = r['declared_output']['archive']; r['artifacts'][p] = child.digest(p)
 		child.publish(out/'RESULT.json', r)
 		print(r['status'], out/'RESULT.json', flush=True)
 	return r['status'] != 'PASS'

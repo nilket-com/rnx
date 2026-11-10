@@ -131,7 +131,7 @@ pub(crate) fn write(
 		"oracle_skipped": oracle_skipped.iter().map(|(p, r)| serde_json::json!({"path": p, "reason": r})).collect::<Vec<_>>(),
 		"entries": out.entries,
 	});
-	let surface = serde_json::to_string_pretty(&surface).unwrap() + "\n";
+	let surface = serde_json::to_string(&surface).unwrap() + "\n";
 	let adapter = PathBuf::from(&args[2]);
 	let files: Vec<(PathBuf, String)> = vec![
 		(adapter.join("src/generated/types.rs"), types),

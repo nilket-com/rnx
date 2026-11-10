@@ -944,3 +944,5 @@ works, `Err(value)` gives an empty 500 with the value redacted from public logs.
 Error hooks follow the same rule; `routes()` still requires a bare route table.
 Thus a handler can return `web::html(200, markup)` directly, and use `?` for
 fallible intermediate calls. Nested `Ok(Ok(response))` is refused.
+
+Historical probe data and measurement provenance: see [Archived data](ARCHIVED-DATA.md).

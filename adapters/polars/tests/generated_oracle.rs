@@ -12129,7 +12129,7 @@ fn generated_bindings_match_polars() {
     let verified = results.iter().filter(|r| ["match", "row_order_differs", "both_error", "both_panic"].contains(&r["status"].as_str().unwrap())).count();
     let out = serde_json::json!({"cases": CASES.len(), "verified": verified, "tally": tally, "results": results});
     let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("oracle-results.json");
-    std::fs::write(&path, serde_json::to_string_pretty(&out).unwrap() + "\n").unwrap();
+    std::fs::write(&path, serde_json::to_string(&out).unwrap() + "\n").unwrap();
     eprintln!("oracle tally: {tally:?}");
     assert!(bad.is_empty(), "{} case(s) failed:\n{}", bad.len(), bad.join("\n"));
 }

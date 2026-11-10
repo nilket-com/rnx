@@ -2,7 +2,7 @@
 
 Status: Accepted
 
-Paired ADR: ../adr/0240_repository_data_cleanup.md. Implementation has not started.
+Paired ADR: ../adr/0240_repository_data_cleanup.md. Phase 1 implemented; validation pending.
 
 1. Pin cd7e36e9. Inventory every tracked non-source file and every file over
    16 KiB in rnx and rnx-bench: path, size, duplicate group, and reader
@@ -46,3 +46,29 @@ lives outside both git and target/. Message Claude only for design questions,
 gate failures and the packet, as requests.
 
 Results: pending. Publication: not authorized at draft stage.
+
+Reviewed implementation boundary: enforce duplicates on data only. Retain
+exact reasoned duplicate groups for immutable imported records, separately
+packaged assets and the unresolved 0072 default/versioned sample outputs.
+Use a new archive catalog; historical plans remain untouched. Keep uncertain
+fixtures and scorer/test dependencies. The large-data rule also checks an
+existing path crossing from below 1 MiB in the plan baseline to at least
+1 MiB now, unless explicitly allowed.
+
+Archive restoration verified both repository bundles and every tracked
+regular file against the inventory. rnx removes the reviewed historical
+measurement files, compacts the two active Polars JSON outputs without
+changing their values, and updates their generators. No runtime source
+changes. Benchmark cleanup follows in its own signed follower pair. Final
+gate receipts and exact removal/retention lists belong in the packet.
+
+The first adapter-suite run passed its tests but exposed producer receipt
+binding before declared oracle-output cleanup. Move the existing validated
+cleanup inside the suite producer before publication; preserve all failures
+and test the ordering. The failed wrapper receipt remains in the packet.
+
+The second validation stopped on a pre-existing Polars preview Clippy deny.
+Share the existing Polars lint arguments between both Clippy runners, retaining
+exact diagnostic multiplicity checks. Other stages retain their lint policy.
+Final validation uses a fresh offline clone of the amended implementation;
+retain both earlier failed receipts without relabeling them.

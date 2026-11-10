@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "index": "INDEX.json",
+  "index_sha256": "977ce4ea330439ebc741daa5300f49d8bb7db2d0cd4379ee3bc645b87d5c853b",
+  "repositories": [
+    {
+      "repository": "rnx",
+      "revision": "66624931b7f96929738354d40e7ac96fe16d09de",
+      "bundle": "rnx.bundle",
+      "sha256": "46d2e4b0d548703a2442096827cae263f22150c05aa9a067d4edcf9d6aa4c041",
+      "restored": true
+    },
+    {
+      "repository": "rnx-bench",
+      "revision": "9a2c70ab940c21601564477e41b69d91fc6dde91",
+      "bundle": "rnx-bench.bundle",
+      "sha256": "d0beaddec6153bfa3de7297b9a036e7c059847058f92b645fa5c5fecdddfcd17",
+      "restored": true
+    }
+  ]
+}

@@ -66,6 +66,8 @@ def main():
 		if blob(original) != expected or not violations(original):
 			raise ValueError("historical exemption does not match baseline: " + path)
 	failures = scan(args.repo, exemptions, args.revision, args.index)
+	import data_hygiene
+	failures += [dict(path=p, rules=[reason]) for p, reason in data_hygiene.scan(args.repo, args.revision, args.index)]
 	print(json.dumps({"status": "FAIL" if failures else "PASS", "failures": failures}, indent=2))
 	return bool(failures)
 

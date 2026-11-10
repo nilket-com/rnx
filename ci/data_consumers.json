@@ -1,0 +1,1067 @@
+{
+  "duplicate_exemptions": {
+    "159dddf8f78d0ef89e16516c4aea81570d437ea5f466b1bfb53570dd2a2ac1fc": {
+      "paths": [
+        "probes/0072/samples/results-0.55.2.json",
+        "probes/0072/samples/results.json"
+      ],
+      "reason": "ADR 0240 unresolved producer closure retained: 0072 sample generator writes both default and versioned results; keep the exact pair until reader migration is reviewed."
+    },
+    "4639f90dd6033d0f1ab913ee1c3144cab783858aff2c516952281de5e5d03dc2": {
+      "paths": [
+        "plans/0196_embedding_inventory.txt",
+        "rune/plans/R1b-embedding-inventory.txt"
+      ],
+      "reason": "Immutable historical embedding inventory copied during Rune import; do not rewrite either historical record."
+    },
+    "d0d98982b526773481c785db289280664cc0fe0cbfc8b844021df755cdfea71d": {
+      "paths": [
+        "rune/editors/code/assets/logo.png",
+        "rune/site/static/img/logo.png"
+      ],
+      "reason": "Identical logo required in separate editor-package and website asset trees; independent packaging roots."
+    }
+  },
+  "entries": {
+    "adapters/polars/oracle-results.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 1135192,
+      "reason": "ADR 0240 conservative retention: Polars tests consume generated inventory/oracle. Offline cheap regeneration is not yet established; compact without dropping fields."
+    },
+    "adapters/polars/surface.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 6950792,
+      "reason": "ADR 0240 conservative retention: Polars tests consume generated inventory/oracle. Offline cheap regeneration is not yet established; compact without dropping fields."
+    },
+    "ci/data_consumers.json": {
+      "class": "source-configuration",
+      "max_bytes": 1048576,
+      "reason": "Reviewed data consumer and retention policy, not captured data."
+    },
+    "demos/notebooks/04_polars_sales.ipynb": {
+      "class": "reviewed-retention",
+      "max_bytes": 16668,
+      "reason": "ADR 0240 conservative retention: Supported editor grammar or demonstration notebook; not measurement debris."
+    },
+    "demos/notebooks/06_candle_search.ipynb": {
+      "class": "reviewed-retention",
+      "max_bytes": 19408,
+      "reason": "ADR 0240 conservative retention: Supported editor grammar or demonstration notebook; not measurement debris."
+    },
+    "plans/0033_startup_measurements.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 30505,
+      "reason": "ADR 0240 conservative retention: Immutable historical record; archive locator supplied in a new catalog, never rewrite historical plan documents."
+    },
+    "plans/0205_column_kernel_adapter.txt": {
+      "class": "reviewed-retention",
+      "max_bytes": 19919,
+      "reason": "ADR 0240 conservative retention: Immutable historical record; archive locator supplied in a new catalog, never rewrite historical plan documents."
+    },
+    "probes/0072/samples/results-0.54.4.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 270833,
+      "reason": "ADR 0240 conservative retention: Polars inventory producer/extractor dependency; retain until exact producer/sample/lock closure proven."
+    },
+    "probes/0072/samples/results-0.55.2.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 265805,
+      "reason": "ADR 0240 conservative retention: Polars inventory producer/extractor dependency; retain until exact producer/sample/lock closure proven."
+    },
+    "probes/0072/samples/results.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 265805,
+      "reason": "ADR 0240 conservative retention: Polars inventory producer/extractor dependency; retain until exact producer/sample/lock closure proven."
+    },
+    "probes/0072/samples/selection.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 253611,
+      "reason": "ADR 0240 conservative retention: Polars inventory producer/extractor dependency; retain until exact producer/sample/lock closure proven."
+    },
+    "probes/0120/reach-0.55.2.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 27584,
+      "reason": "ADR 0240 conservative retention: External lexical reader candidates require read-vs-write and indirect-path review."
+    },
+    "probes/0127/frozen-0.55.2.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 1227306,
+      "reason": "ADR 0240 conservative retention: Active release frozen_bindings input."
+    },
+    "rune/assets/icon.xcf": {
+      "class": "reviewed-retention",
+      "max_bytes": 44181,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/assets/logo.xcf": {
+      "class": "reviewed-retention",
+      "max_bytes": 26305,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/assets/social.png": {
+      "class": "reviewed-retention",
+      "max_bytes": 22603,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/benches/benches/benchmarks/data/aoc_2020_19b.txt": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const INPUT: &str = include_str!(\"data/aoc_2020_19b.txt\");",
+        "path": "rune/benches/benches/benchmarks/aoc_2020_19b.rs"
+      },
+      "max_bytes": 17354,
+      "reason": "Confirmed include_str regression/benchmark input; keep bytes until generator equivalence is demonstrated."
+    },
+    "rune/crates/rune-wasm/package-lock.json": {
+      "class": "source-configuration",
+      "max_bytes": 49407,
+      "reason": "Build, dependency, policy or executable manifest."
+    },
+    "rune/crates/rune/src/doc/static/fonts/FiraSans-Medium.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 132780,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/FiraSans-Regular.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 129188,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/NanumBarunGothic-Regular.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 1489920,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/SourceCodePro-It.ttf.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 62096,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/SourceCodePro-Regular.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 74052,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/SourceCodePro-Semibold.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 74132,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/SourceSerif4-Bold.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 81320,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/doc/static/fonts/SourceSerif4-Regular.woff2": {
+      "class": "reviewed-retention",
+      "max_bytes": 76180,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/crates/rune/src/experimental_core/frontend/field_receiver_contract.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"field_receiver_contract.json\")).unwrap()",
+        "path": "rune/crates/rune/src/experimental_core/frontend/field_receiver_tests.rs"
+      },
+      "max_bytes": 32920,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/frontend/frame_budget_contract.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let data: Json = serde_json::from_str(include_str!(\"frame_budget_contract.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/frame_budget_tests.rs"
+      },
+      "max_bytes": 25589,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/frontend/proven_receiver_contract.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"proven_receiver_contract.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 34864,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/frontend/vec_resize_contract.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let original: Json = serde_json::from_str(include_str!(\"vec_resize_contract.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/store_budget_tests.rs"
+      },
+      "max_bytes": 27951,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/callback_sort_dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let dispositions = read_json(include_str!(\"../../callback_sort_dispositions.json\"));",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/callback_sort/contract.rs"
+      },
+      "max_bytes": 39041,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/callback_sort_inputs.tsv": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const INPUTS: &str = include_str!(\"../../callback_sort_inputs.tsv\");",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/callback_sort/frozen_controls.rs"
+      },
+      "max_bytes": 45789,
+      "reason": "Confirmed include_str regression/benchmark input; keep bytes until generator equivalence is demonstrated."
+    },
+    "rune/crates/rune/src/experimental_core/tests/callback_sort_raw_bindings.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 50853,
+      "reason": "ADR 0240 conservative retention: Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/callback_sort_retained.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 482455,
+      "reason": "ADR 0240 conservative retention: Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/cmp_ordering_dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../../cmp_ordering_dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/cmp_ordering/contract.rs"
+      },
+      "max_bytes": 70858,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/cmp_ordering_inputs.tsv": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let frozen = include_str!(\"../../cmp_ordering_inputs.tsv\");",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/cmp_ordering/contract.rs"
+      },
+      "max_bytes": 60684,
+      "reason": "Confirmed include_str regression/benchmark input; keep bytes until generator equivalence is demonstrated."
+    },
+    "rune/crates/rune/src/experimental_core/tests/differential/differential_cases.tsv": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const CASES: &str = include_str!(\"differential/differential_cases.tsv\");",
+        "path": "rune/crates/rune/src/experimental_core/tests/differential.rs"
+      },
+      "max_bytes": 37144,
+      "reason": "Confirmed include_str regression/benchmark input; keep bytes until generator equivalence is demonstrated."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/byte_strings/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 36956,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/constructors/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 53083,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/constructors/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 45900,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1b_diagnostics.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let document: Json = serde_json::from_str(include_str!(\"d1b_diagnostics.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1b_diagnostics.rs"
+      },
+      "max_bytes": 65582,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1c_diagnostics.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let document: Json = serde_json::from_str(include_str!(\"d1c_diagnostics.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1c_diagnostics.rs"
+      },
+      "max_bytes": 48757,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1c_record_diagnostics.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"d1c_record_diagnostics.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1c_diagnostics.rs"
+      },
+      "max_bytes": 127946,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1d_intentional_diagnostics.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 17389,
+      "reason": "ADR 0240 conservative retention: Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1d_numeric_diagnostics.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let doc: Json = serde_json::from_str(include_str!(\"d1d_numeric_diagnostics.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1c_diagnostics.rs"
+      },
+      "max_bytes": 35693,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1e_intentional_diagnostics.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"d1e_intentional_diagnostics.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/d1e_diagnostics.rs"
+      },
+      "max_bytes": 59811,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/deferred_index/retained.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "PINS.get_or_init(|| serde_json::from_str(include_str!(\"retained.json\")).unwrap())",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/deferred_index/retained.rs"
+      },
+      "max_bytes": 22726,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_host/fresh_expectations.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const C10_FRESH_EXPECTATIONS: &str = include_str!(\"fresh_expectations.json\");",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_host/contract.rs"
+      },
+      "max_bytes": 40305,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/c18b3e_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let rule = &super::object_order::admitted(include_str!(\"c18b3e_admissions.json\"), rule);",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/contract.rs"
+      },
+      "max_bytes": 17771,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 156910,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 398884,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/s6_progressions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let rule = &super::object_order::admitted(include_str!(\"s6_progressions.json\"), rule);",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/contract.rs"
+      },
+      "max_bytes": 707441,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/enum_variants/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 69718,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/enum_variants/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 57131,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/expression_calls/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 29101,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/expression_calls/disposition.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/move_captures/disposition.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 18458,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 43216,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 65304,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/host_bridge/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 27649,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 468629,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 460004,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/freeze.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let freeze: Json = serde_json::from_str(include_str!(\"byte_strings/freeze.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/byte_strings.rs"
+      },
+      "max_bytes": 17251,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_receivers/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 21795,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_receivers/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 30143,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_terminals/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 218967,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_terminals/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 236344,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_terminals/freeze.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let freeze: Json = serde_json::from_str(include_str!(\"byte_strings/freeze.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/byte_strings.rs"
+      },
+      "max_bytes": 18109,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/labeled_blocks/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 24308,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/loop_binders/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 27664,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/method_diagnostics/after.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 50622,
+      "reason": "ADR 0240 conservative retention: Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/method_diagnostics/all_consumers.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"method_diagnostics/all_consumers.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/method_diagnostics.rs"
+      },
+      "max_bytes": 303617,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/method_diagnostics/before.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 52393,
+      "reason": "ADR 0240 conservative retention: Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 32704,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 41780,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/move_captures/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 24146,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/move_captures/disposition.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/move_captures/disposition.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 44102,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/nominal_clone/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 34614,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/numeric_methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 143081,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/numeric_methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 216820,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_keys/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 26502,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_keys/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 25937,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 73679,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 128047,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/supplement_cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const SUPPLEMENT: &str = include_str!(\"object_methods/supplement_cases.json\");",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods.rs"
+      },
+      "max_bytes": 20466,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_order/c17b_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let c17b: Json = serde_json::from_str(include_str!(\"c17b_admissions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/methods/contract.rs"
+      },
+      "max_bytes": 29433,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_order/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 29925,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_order/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 41464,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/option_methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 61253,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/option_methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 97149,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/remaining_patterns/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 31187,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/s7a_runtime.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let document: Json = serde_json::from_str(include_str!(\"s7a_runtime.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/s7a_runtime.rs"
+      },
+      "max_bytes": 20755,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/s7b1_host_outputs.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../s7b1_host_outputs.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_host/contract.rs"
+      },
+      "max_bytes": 57409,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 35645,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms/policies.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const C12_POLICIES: &str = include_str!(\"policies.json\");",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms/frozen.rs"
+      },
+      "max_bytes": 29257,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b1_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let c18b1: Json = serde_json::from_str(include_str!(\"c18b1_admissions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/methods/contract.rs"
+      },
+      "max_bytes": 338628,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3d_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let rule = &super::object_order::admitted(include_str!(\"c18b3d_admissions.json\"), rule);",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/contract.rs"
+      },
+      "max_bytes": 97516,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/c18b3e_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let rule = &super::object_order::admitted(include_str!(\"c18b3e_admissions.json\"), rule);",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/contract.rs"
+      },
+      "max_bytes": 29593,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 239826,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 324388,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/static_methods/s6_progressions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let rule = &super::object_order::admitted(include_str!(\"s6_progressions.json\"), rule);",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/dynamic_methods/contract.rs"
+      },
+      "max_bytes": 716514,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/text_methods/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 74048,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/text_methods/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 87123,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/text_methods/freeze.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let freeze: Json = serde_json::from_str(include_str!(\"byte_strings/freeze.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/byte_strings.rs"
+      },
+      "max_bytes": 43869,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/text_pipeline/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 65650,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/text_pipeline/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 57218,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/text_pipeline/freeze.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let freeze: Json = serde_json::from_str(include_str!(\"byte_strings/freeze.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/byte_strings.rs"
+      },
+      "max_bytes": 35039,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/type_values/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 48775,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/type_values/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 67932,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/vec_local/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 19394,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/c18b3c_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "let rule = &super::object_order::admitted(include_str!(\"c18b3c_admissions.json\"), rule);",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/contract.rs"
+      },
+      "max_bytes": 20982,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"../tests/gap_hunt/numeric_methods/cases.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/frontend/proven_receiver_tests.rs"
+      },
+      "max_bytes": 147045,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/dispositions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "serde_json::from_str(include_str!(\"gap_hunt/captures/dispositions.json\")).unwrap();",
+        "path": "rune/crates/rune/src/experimental_core/tests/c11c_stopgap.rs"
+      },
+      "max_bytes": 847904,
+      "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_native/fixtures/r1_region_bytes.txt": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const R1_BYTES: &str = include_str!(\"fixtures/r1_region_bytes.txt\");",
+        "path": "rune/crates/rune/src/experimental_native/fuel_tests.rs"
+      },
+      "max_bytes": 21716,
+      "reason": "Confirmed include_str regression/benchmark input; keep bytes until generator equivalence is demonstrated."
+    },
+    "rune/editors/code/assets/logo.png": {
+      "class": "reviewed-retention",
+      "max_bytes": 19879,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/editors/code/package-lock.json": {
+      "class": "source-configuration",
+      "max_bytes": 254009,
+      "reason": "Build, dependency, policy or executable manifest."
+    },
+    "rune/editors/code/syntaxes/rune.tmLanguage.json": {
+      "class": "source-configuration",
+      "max_bytes": 25107,
+      "reason": "Supported editor grammar or demonstration notebook; not measurement debris."
+    },
+    "rune/plans/CK1-borrowed-column-primitives.txt": {
+      "class": "reviewed-retention",
+      "max_bytes": 19067,
+      "reason": "ADR 0240 conservative retention: Immutable historical record; archive locator supplied in a new catalog, never rewrite historical plan documents."
+    },
+    "rune/site/content/posts/2023-10-10-is-alphabetic-doc.png": {
+      "class": "reviewed-retention",
+      "max_bytes": 23246,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/site/static/img/logo.png": {
+      "class": "reviewed-retention",
+      "max_bytes": 19879,
+      "reason": "ADR 0240 conservative retention: Documentation/UI asset; keep attribution, not benchmark evidence."
+    },
+    "rune/site/syntaxes/rune.sublime-syntax": {
+      "class": "source-configuration",
+      "max_bytes": 39685,
+      "reason": "Supported editor grammar or demonstration notebook; not measurement debris."
+    },
+    "rune/tools/xtask/column/dependencies.json": {
+      "class": "source-configuration",
+      "max_bytes": 328006,
+      "reason": "Reviewed dependency/feature baseline consumed by dependency checker."
+    },
+    "rune/tools/xtask/corpus/l1-cases.tsv": {
+      "class": "reviewed-retention",
+      "max_bytes": 376181,
+      "reason": "ADR 0240 conservative retention: Source snapshots are test input, not redundant authored code; dedupe requires preserving distinct corpus identities and source-pin checks."
+    },
+    "rune/tools/xtask/fixtures/native/DEPTH-BINDING.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 453866,
+      "reason": "ADR 0240 conservative retention: Native/readiness corpus, traversed by xtask manifests and root routing inventory."
+    },
+    "rune/tools/xtask/fixtures/native/TABLE.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 122245,
+      "reason": "ADR 0240 conservative retention: Native/readiness corpus, traversed by xtask manifests and root routing inventory."
+    },
+    "rune/tools/xtask/manifests/miri.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const MANIFEST: &str = include_str!(\"../manifests/miri.json\");",
+        "path": "rune/tools/xtask/src/miri.rs"
+      },
+      "max_bytes": 56530,
+      "reason": "Build, dependency, policy or executable manifest."
+    },
+    "rune/tools/xtask/measure/qualifications/n3-proof.json": {
+      "class": "source-configuration",
+      "max_bytes": 22435,
+      "reason": "Pinned native qualification proof consumed and tested by n3_qualification; historical origin does not make it unused."
+    },
+    "servers/http-postgres/dependency-graph.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 323847,
+      "reason": "ADR 0240 conservative retention: No confirmed consumer classification; absence of literal references is not absence of an indirect reader."
+    },
+    "tools/0231_metadata_redactions.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 28796,
+      "reason": "ADR 0240 conservative retention: No confirmed consumer classification; absence of literal references is not absence of an indirect reader."
+    },
+    "tools/column/0220_pins.json": {
+      "class": "source-configuration",
+      "max_bytes": 52557,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/column/0221_pins.json": {
+      "class": "source-configuration",
+      "max_bytes": 78234,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/column/0223_shapes.json": {
+      "class": "source-configuration",
+      "max_bytes": 131601,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/column/0227_pins.json": {
+      "class": "source-configuration",
+      "max_bytes": 197430,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/column/0228_pins.json": {
+      "class": "source-configuration",
+      "max_bytes": 250046,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/column/0229_pins.json": {
+      "class": "source-configuration",
+      "max_bytes": 56928,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/column/0233_pins.json": {
+      "class": "source-configuration",
+      "max_bytes": 86749,
+      "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
+    },
+    "tools/project/resolved-graph.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 17111,
+      "reason": "ADR 0240 conservative retention: No confirmed consumer classification; absence of literal references is not absence of an indirect reader."
+    },
+    "tools/verify/fixtures/census/CASES.json": {
+      "class": "reviewed-retention",
+      "max_bytes": 173639,
+      "reason": "ADR 0240 conservative retention: Test/build fixture family; generated alternatives require equivalence and offline proof."
+    },
+    "tools/verify/fixtures/census_manifest.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const MANIFEST: &str = include_str!(\"../../tools/verify/fixtures/census_manifest.json\");",
+        "path": "src/verification/census.rs"
+      },
+      "max_bytes": 48609,
+      "reason": "Test/build fixture family; generated alternatives require equivalence and offline proof."
+    },
+    "tools/verify/fixtures/enrollment/manifest.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "const MANIFEST: &str = include_str!(\"../../tools/verify/fixtures/enrollment/manifest.json\");",
+        "path": "src/verification/enrollment.rs"
+      },
+      "max_bytes": 101280,
+      "reason": "Test/build fixture family; generated alternatives require equivalence and offline proof."
+    }
+  },
+  "schema": 1
+}
