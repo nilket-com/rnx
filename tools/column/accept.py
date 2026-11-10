@@ -53,6 +53,11 @@ def commands(out, root=ROOT):
 		("production-cli-build", cargo + ["build", "--locked", "--release", "--manifest-path", "adapters/polars/Cargo.toml", "--bin", "rnx-polars"]),
 		("production-cli-controls", ["python3", "-B", "tools/column/cli.py", "--binary", str(root / "adapters/polars/target/release/rnx-polars"), "--out", str(out / "cli")]),
 	]
+	for name in ('rune-suite', 'rune-clippy', 'project-suite', 'project-clippy',
+		'suite-adapter-candle', 'suite-adapter-polars', 'suite-adapter-postgres',
+		'clippy-adapter-candle', 'clippy-adapter-polars', 'clippy-adapter-postgres'):
+		steps.append((name, ['python3', '-B', 'tools/column/suite_stage.py', '--stage', name, '--out', str(out/name)]))
+	steps.append(('fixed-route', ['python3', '-B', 'tools/column/fixed_route_gate.py', '--out', str(out/'fixed-route')]))
 	assert len({name for name, _ in steps}) == len(steps)
 	return steps
 

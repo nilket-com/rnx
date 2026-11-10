@@ -21,7 +21,7 @@ ENV_KEYS = frozenset({'RUSTFLAGS', 'RUSTDOCFLAGS', 'RUSTUP_TOOLCHAIN', 'RUSTC',
 ENV_PREFIXES = ('CARGO_', 'RNX_')
 PRODUCERS = frozenset(('tools/column/' + n + '.py') for n in (
 	'accept', 'verify', 'clippy', 'inventories', 'cli', 'resume', 'recover_cross', 'chain', 'borrowed_controls', 'ir_pool', 'old_path', 'boolean_capture', 'f64_plan_capture',
-	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate')) | {'tools/verify.py',
+	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate', 'fixed_route_gate', 'suite_stage', 'miri_exact')) | {'tools/verify.py',
 	'rune/tools/xtask/column/ck1.py', 'rune/tools/xtask/column/measure.py',
 	'rune/tools/xtask/column/cli_capture.py', 'rune/tools/xtask/supplemental/run.py'}
 LEAVES = {'ci/preflight.py', 'ci/disk_space.py', 'ci/hygiene.py', 'ci/commit_subjects.py',
@@ -169,10 +169,27 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 		atomic_json(directory / 'CONTEXT.json', ctx)
 		row['context'] = ctx
 		if kind == 'producer': clean_env[CONTEXT] = str((directory / 'CONTEXT.json').resolve())
+		test_command = Path(command[0]).name == 'cargo' and 'test' in command and '--list' not in command
+		if test_command:
+			from suite_stage import discovered
+			discovery = command[:command.index('--')] if '--' in command else command[:]
+			# Keep filters and ignored policy, remove execution-thread settings.
+			tail = command[command.index('--')+1:] if '--' in command else []
+			discovery += ['--'] + [v for v in tail if not v.startswith('--test-threads')] + ['--list']
+			with (directory/'discovery.log').open('x') as log:
+				done = subprocess.run(discovery, cwd=cwd, env=clean_env, stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
+			if done.returncode: raise ValueError('test discovery failed')
+			row['discovery'] = discovered((directory/'discovery.log').read_text())
 		child = subprocess.run(command, cwd=cwd, env=clean_env, stdout=stdout, stderr=stderr, timeout=timeout)
 		row['process_exit'] = child.returncode
 		if after is not None: row['declared_output'] = after()
 		if child.returncode != 0: raise ValueError('child exit is nonzero')
+		if test_command:
+			from suite_stage import executed
+			if stdout is None or not isinstance(getattr(stdout, 'name', None), str): raise ValueError('test execution requires a named log')
+			stdout.flush()
+			row['test_count'] = executed(Path(stdout.name).read_text())
+
 		if head(root) != ctx['candidate'] or source(root) != ctx['source']: raise ValueError('source changed during child')
 		if kind == 'producer': row['producer'] = validate(directory, ctx, child.returncode)
 		row['status'] = 'PASS'
@@ -192,6 +209,7 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 		if not artifacts and row['status'] == 'PASS':
 			row.update(status='FAIL', error='stage has no log evidence')
 			child = subprocess.CompletedProcess(command, 1)
+		if (directory/'discovery.log').exists(): artifacts[str((directory/'discovery.log').resolve())] = digest(directory/'discovery.log')
 		row['artifacts'] = artifacts
 		atomic_json(directory / 'RESULT.json', row)
 	child.declared_output = row.get('declared_output')

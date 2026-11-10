@@ -1,0 +1,26 @@
+import unittest
+from required_stages import required, affected
+from suite_stage import discovered, executed
+from miri_exact import manifest
+
+
+class Coverage(unittest.TestCase):
+	def test_before_graph_retains_removed_dependents(self):
+		old={'Cargo.toml':['tools/project/Cargo.toml'],'tools/project/Cargo.toml':[]};new={'Cargo.toml':[]}
+		self.assertEqual(affected(['tools/project/Cargo.toml'],[old,new]),set(old))
+		self.assertTrue({'root-tests','inventory','project-suite','cross'} <= set(required(['tools/project/Cargo.toml'],[old,new])))
+
+	def test_runtime_and_adapter(self):
+		self.assertIn('fixed-route',required(['rune/crates/rune/src/lib.rs']))
+		self.assertNotIn('fixed-route',required(['rune/crates/rune/README.md']))
+		self.assertIn('suite-adapter-postgres',required(['adapters/postgres/src/lib.rs']))
+
+	def test_empty_discovery_execution_inventory(self):
+		with self.assertRaises(ValueError):discovered('0 tests')
+		with self.assertRaises(ValueError):executed('test result: ok. 0 passed;')
+		self.assertEqual(discovered('name: test\n'),['name'])
+		self.assertEqual(executed('test result: ok. 1 passed;'),1)
+		with self.assertRaises(ValueError):manifest('rune',{'schema':1,'tests':[]})
+
+
+if __name__=='__main__':unittest.main()

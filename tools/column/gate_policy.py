@@ -6,6 +6,7 @@ import re
 import subprocess
 
 import child_result as child
+import required_stages
 
 ROOT = Path(__file__).resolve().parents[2]
 EXACT = {'Cargo.toml', 'Cargo.lock', 'rune/Cargo.toml', 'rune/Cargo.lock', 'tools/verify.py'}
@@ -32,15 +33,15 @@ def record(root, candidate='HEAD'):
 	# No rename folding: both removed and added names participate in the rule.
 	paths = [p.decode('utf-8', 'surrogateescape') for p in git(root, 'diff', '--no-renames', '--name-only', '-z', baseline, candidate).split(b'\0') if p]
 	return {'candidate': candidate, 'baseline': baseline, 'plan': plan, 'record': match[2],
-		'phase': match[1], 'paths': paths, 'required': required(paths)}
+		'phase': match[1], 'paths': paths, 'required': required(paths, [required_stages.graph(root, r) for r in (baseline, candidate)] if required_stages.graph_change(paths) else None)}
 
 
-def required(paths):
-	return ['cross'] if any(p in EXACT or p.startswith(PREFIXES) for p in paths) else []
+def required(paths, graphs=None):
+	return required_stages.required(paths, graphs)
 
 
 def policy_digest():
-	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'child_result.py', 'accept.py')})
+	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'required_stages.py', 'suite_stage.py', 'child_result.py', 'accept.py')})
 
 
 def select(root, out, names=None, candidate='HEAD'):
@@ -77,6 +78,8 @@ def finalize(manifest, evidence, root=ROOT):
 			raise ValueError('stage candidate differs: ' + name)
 		if row['command'] != command or row['context']['command'] != command:
 			raise ValueError('stage command differs: ' + name)
+		if name in {'cross', 'fixed-route', 'rune-suite', 'rune-clippy', 'project-suite', 'project-clippy'} or name.startswith(('suite-adapter-', 'clippy-adapter-')):
+			if row['context']['kind'] != 'producer': raise ValueError('stage requires producer receipt: ' + name)
 		if name == 'cross' and row['context']['kind'] != 'producer':
 			raise ValueError('cross requires its own producer receipt')
 	return {'schema': 1, 'status': 'PASS', 'candidate': manifest['record']['candidate'],

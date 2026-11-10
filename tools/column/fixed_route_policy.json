@@ -1,0 +1,267 @@
+{
+  "schema": 1,
+  "anchor": "3fe44bf9245c780cf784554293e0a1b1e7c00c26",
+  "anchor_transition": null,
+  "per_record_per_mille": 5,
+  "cumulative_per_mille": 10,
+  "kernels": [
+    "fib",
+    "loops",
+    "numeric_calls",
+    "shared_rows",
+    "awfy_sieve",
+    "awfy_permute",
+    "vec_iter_i64",
+    "vec_iter_bool"
+  ],
+  "modes": [
+    "off",
+    "on"
+  ],
+  "sizes": [
+    1,
+    5
+  ],
+  "inventory": [
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "struct",
+      "receiver": "",
+      "name": "Frame"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "struct",
+      "receiver": "",
+      "name": "Executor"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "PreparedInvocation",
+      "name": "invoke"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "prepare"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "run"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_code"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_checked"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_ready"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "return_failure"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "validate_format_entry"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "print_instruction"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "template_instruction"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "record_instruction"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "match_variant_call"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "intrinsic"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "fixed_intrinsic"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "capture_take_call"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_args"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_native"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_recursion"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "invoke_methods"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "call_closure"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "push_call"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "push_closure_call"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "rollback_call"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "enter"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "commit_pc"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "put"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "leave"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "copy_panic_message"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "copy_missing_key"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "moved_set_is_vector"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "enrich_error"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "index_value"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "fast_i64"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "binary"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "any_value_call"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute.rs",
+      "kind": "fn",
+      "receiver": "",
+      "name": "invocation_numeric_context"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/execute/host_bridge.rs",
+      "kind": "method",
+      "receiver": "Executor",
+      "name": "host_call"
+    }
+  ]
+}

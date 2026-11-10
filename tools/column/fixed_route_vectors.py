@@ -13,6 +13,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--out',type=Path,required=True)
 parser.add_argument('--build-receipt',type=Path,required=True)
 parser.add_argument('--valgrind-root',type=Path,required=True)
+parser.add_argument('--capture-only', action='store_true', help='Validate complete captures without applying the historical exact-vector verdict')
 args=parser.parse_args()
 out=args.out.resolve();out.mkdir(exist_ok=False)
 result={'status':'FAIL','purpose':'exact unchanged program and unknown-object function vectors; system deltas reported separately'}
@@ -46,7 +47,7 @@ try:
    profiles=list(d.glob('map.callgrind.*'));assert len(profiles)==1
    profile=callgrind.parse(profiles[0]);assert profile['total_Ir']>0
    assert sum(v['self_Ir'] for k,v in profile['functions'].items() if 'Executor' in k and 'invoke_args' in k)>0
-   r.update(status='PASS',accounting=ir_accounting.account(profiles[0],b['binary']),profile=str(profiles[0]),profile_sha256=sha(profiles[0]),stdout_sha256=sha(d/'program.stdout'))
+   r.update(status='PASS',accounting=ir_accounting.account(profiles[0],b['binary']),profile=str(profiles[0]),profile_sha256=sha(profiles[0]),stdout_sha256=sha(d/'program.stdout'),fixture_sha256=sha(src))
   except Exception:r['error']=traceback.format_exc()
   atomic_json(d/'RESULT.json',r);return r
  specs=[(k,p,n,r) for k in KERNELS for p in ('off','on') for n in (1,5) for r in binaries]
@@ -67,7 +68,7 @@ try:
     deltas.append({key:b['accounting'][key]-a['accounting'][key] for key in ('total_Ir','rnx_Ir','dynamic_Ir','other_Ir')})
    for role in binaries:assert index[k,p,5,role]['accounting']['total_Ir']>index[k,p,1,role]['accounting']['total_Ir']
    comparisons.append({'kind':k,'policy':p,'delta_n1':deltas[0],'delta_n5':deltas[1],'extra_growth':{key:deltas[1][key]-deltas[0][key] for key in deltas[0]}})
- result.update(status='FAIL' if vector_differences else 'PASS',comparisons=comparisons,vector_differences=vector_differences)
+ result.update(status='FAIL' if vector_differences and not args.capture_only else 'PASS',comparisons=comparisons,vector_differences=vector_differences)
 except Exception:result['error']=traceback.format_exc()
 finally:
  atomic_json(out/'RESULT.json',result)

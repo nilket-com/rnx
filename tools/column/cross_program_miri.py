@@ -43,30 +43,12 @@ SLICED = (
 
 
 def run(out):
+	# Compatibility entry for retained 0238 controllers. Execution/cache logic is
+	# shared with the explicit-inventory runner used by new records.
+	from miri_exact import run as exact_run
 	m = json.loads((ROOT / 'rune/tools/xtask/manifests/miri.json').read_text())
-	manifest = dict(stable='1.98.1', nightly=m['toolchain'], features={'core': m['features']}, subsets=[])
-	for name, prefix, names in (
-		('domain', 'experimental_core::domain::tests::', DOMAIN),
-		('sliced', 'experimental_core::execute::sliced::sliced_tests::', SLICED),
-	):
-		inventory = [prefix + name for name in names]
-		manifest['subsets'].append(dict(name=name, feature='core', selector=prefix,
-			exact=False, inventory=inventory, shards=[[name] for name in inventory],
-			ignored=[], timeout_seconds=10800))
-	env = runner.environment()
-	env['MIRIFLAGS'] = '-Zmiri-strict-provenance'
-	identity = runner.source_identity(ROOT, manifest, env)
-	# Existing 0210 admission: 4 GiB measured peak rounded +25% = 5 GiB/job.
-	limits = runner.admit(*runner.resources(), 4 * 1024**3, requested=6)
-	with runner.Run(out / 'shards', identity, False) as run:
-		prepared = runner.stage(run, 'prepare', lambda path: runner.preparation(path, ROOT, manifest, env, 'core'))
-		jobs = runner.selection(manifest, {'core': prepared})
-		def job(spec):
-			return runner.stage(run, spec['name'], lambda path: runner.semantic(path, ROOT, manifest, env, spec, prepared))
-		with ThreadPoolExecutor(max_workers=limits['workers']) as pool:
-			rows = list(pool.map(job, jobs))
-		run.begin('prepare')  # Revalidate the prepared harness after all consumers exit.
-		if runner.source_identity(ROOT, manifest, env) != identity:
-			raise ValueError('source/toolchain changed')
-	return dict(resources=limits, jobs=rows, covered_names=sorted(n for row in rows for n in row['names']),
-		peak_interpreter_overlap=runner.overlap(rows))
+	names = ['experimental_core::domain::tests::' + n for n in DOMAIN]
+	names += ['experimental_core::execute::sliced::sliced_tests::' + n for n in SLICED]
+	inventory = dict(schema=1, toolchain=m['toolchain'], features=m['features'],
+		miriflags='-Zmiri-strict-provenance', tests=[dict(name=n, ignored=False, timeout_seconds=10800) for n in names])
+	return exact_run(ROOT, 'rune', inventory, ROOT/'target/miri-exact-cache')

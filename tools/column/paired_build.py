@@ -13,6 +13,32 @@ from child_result import atomic_json, digest, environment
 ROOT = Path(__file__).resolve().parents[2]
 
 
+BUILD_KEYS = frozenset({'HOME', 'PATH', 'TMPDIR', 'CARGO_HOME', 'RUSTUP_HOME',
+	'RUSTFLAGS', 'RUSTDOCFLAGS', 'RUSTUP_TOOLCHAIN', 'RUSTC', 'RUSTDOC',
+	'RUSTC_WRAPPER', 'RUSTC_WORKSPACE_WRAPPER', 'CC', 'CXX', 'CFLAGS', 'CXXFLAGS',
+	'LDFLAGS', 'AR', 'LANG', 'LC_ALL', 'TZ', 'PKG_CONFIG_PATH', 'PKG_CONFIG_LIBDIR',
+	'PKG_CONFIG_SYSROOT_DIR', 'SOURCE_DATE_EPOCH'})
+BUILD_PREFIXES = ('CARGO_', 'LC_')
+
+
+def build_environment(environ):
+	# Unknown compiler overrides fail rather than entering an unkeyed build.
+	for key in environ:
+		if key.startswith(('RUST', 'CC_', 'CXX_', 'CFLAGS_', 'LDFLAGS_', 'PKG_CONFIG_')) and key not in BUILD_KEYS:
+			raise ValueError('undeclared build variable: ' + key)
+	env = {k:v for k,v in environ.items() if k in BUILD_KEYS or k.startswith(BUILD_PREFIXES)}
+	rustup = shutil.which('rustup')
+	if rustup is None: raise ValueError('rustup unavailable')
+	compiler = subprocess.check_output([rustup, 'which', '--toolchain', '1.98.1', 'rustc'], text=True).strip()
+	paths = [str(Path(rustup).absolute().parent), str(Path(compiler).parent), '/usr/local/bin', '/usr/bin', '/bin']
+	env = {k:v for k,v in env.items() if not k.startswith('LC_')}
+	env.update(PATH=os.pathsep.join(dict.fromkeys(paths)), LANG='C', LC_ALL='C', TZ='UTC',
+		CARGO_BUILD_JOBS='4', CARGO_INCREMENTAL='0', CARGO_TERM_COLOR='never')
+	# Target is owned by the caller, never inherited from another job.
+	env.pop('CARGO_TARGET_DIR', None)
+	return env
+
+
 def fresh_target(out, index):
 	# Equal-length role paths; never seed or share Cargo fingerprints/artifacts.
 	path = out / f'cache-{index:02d}'
@@ -81,8 +107,7 @@ def run(out, baseline, candidate, cargo):
 			source.mkdir()
 			subprocess.run(['tar', '-xf', str(archive), '-C', str(source)], check=True)
 			target = fresh_target(out, index)
-			env = dict(os.environ, CARGO_BUILD_JOBS='4', CARGO_TARGET_DIR=str(target),
-				CARGO_INCREMENTAL='0', CARGO_TERM_COLOR='never')
+			env = dict(build_environment(os.environ), CARGO_TARGET_DIR=str(target))
 			log = out / (role + '.log')
 			with log.open('x') as stream:
 				p = subprocess.run(command, cwd=source, env=env, stdout=stream,

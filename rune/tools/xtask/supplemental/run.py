@@ -54,7 +54,7 @@ def environment():
 
 def cargo(manifest, feature):
 	return ['cargo', '+' + manifest['nightly'], 'miri', 'test', '--profile', 'engine-dev', '--offline', '--frozen',
-		'-p', 'rune', '--lib', '--features', manifest['features'][feature]]
+		'-p', manifest.get('package', 'rune'), '--lib', '--features', manifest['features'][feature]]
 
 
 def stage(run, name, action):

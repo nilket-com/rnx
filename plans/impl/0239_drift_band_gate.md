@@ -2,7 +2,7 @@
 
 Status: Accepted
 
-Paired ADR: ../adr/0239_drift_band_gate.md. Implementation has not started.
+Paired ADR: ../adr/0239_drift_band_gate.md. Implementation complete; publication awaits review.
 
 1. Pin 3fe44bf9. Read gate_policy.py, accept.py, child_result.py,
    executor_identity.py, fixed_route_vectors.py, fixed_route_exception.py, the
@@ -52,4 +52,42 @@ Paired ADR: ../adr/0239_drift_band_gate.md. Implementation has not started.
 Commit the tools and their tests. Scratch receipts under target/0239. Message
 Claude only for design questions, gate failures and the packet, as requests.
 
-Results: pending. Publication: not authorized at draft stage.
+Results: source inventory, tooling controls, retained W/T replay, real Miri
+prepare/restart and fresh anchor capture PASS. Final acceptance receipt is
+recorded in the publication packet. Publication requires review.
+
+## Reviewed boundary (seq 30251)
+
+Apply the two exact integer inequalities to BOTH program W = rnx_Ir +
+other_Ir and raw total T = W + dynamic_Ir, at 5/1000 per record and 10/1000
+against the anchor. This supersedes the ADR draft reference to the column
+per-row libc allowance: CLI n=1/5 are workload scales, not row counts. Dynamic
+totals and deltas remain visible. Neither metric may fail. Retained 0237 and
+0238 replay passes both metrics; it is per-record evidence, not cumulative
+anchor evidence. The source inventory runs before identity.
+
+The reviewed boundary permits generalized cache regeneration only after
+explicit invalidation of corrupt artifacts; never silently trust a corrupt
+PASS. Published 0238 stays unchanged.
+
+Review correction (seq 30258/30261): anchor transitions bind their old anchor
+to the baseline policy, supporting successive links. Measurement cache keys
+exclude scoring code and bind the measurement matrix/limits/anchor instead.
+The builder itself applies the declared environment allowlist. An anchor
+capture collects vectors without a redundant self-identity comparison; real
+record comparisons still use the existing identity gate.
+
+Development evidence: tooling controls and source inventory PASS; real short
+Miri preparation/test and independent restart PASS, with preparation and test
+reused on restart. Initial anchor attempt stopped before capture on the old
+identity resolver's unsupported label. Corrected anchor capture PASS after source review; anchor self-score passes
+both W and T inequalities. Final acceptance uses the mandatory tooling stages
+on the clean signed implementation. No product-runtime sources changed.
+
+Review correction (seq 30281): builds use the resolved pinned toolchain PATH
+and fixed C locale/UTC. Anchor capture keys bind rebuilt binary bytes and
+execution inputs, not the build environment. Each gate rebuilds the anchor;
+identical bytes permit reuse only after checking capture inputs and artifacts.
+Legacy capture import verifies its preserved manifest and full run environment,
+retains the original receipt, and records the current build and import proof.
+Different bytes or measurement inputs require a new capture.

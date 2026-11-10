@@ -28,17 +28,18 @@ class Gates(unittest.TestCase):
 		self.git('add','-A');self.git('-c','commit.gpgSign=false','commit','-qm',subject)
 
 	def test_conservative_paths_and_both_rename_sides(self):
-		for name in ['src/new.rs','tools/project/src/lib.rs','tools/project/Cargo.toml','tools/project/Cargo.lock','rune/crates/new.rs','Cargo.toml','Cargo.lock','rune/Cargo.toml','rune/Cargo.lock','tools/verify.py','tools/verify/fixture.json']:
-			self.assertEqual(g.required([name]),['cross'])
-		self.assertEqual(g.required(['tools/column/foo.py']),[])
+		for name in ['src/new.rs','tests/a.rs']:
+			self.assertTrue({'root-tests','inventory','cross'} <= set(g.required([name])))
+		self.assertEqual(set(g.required(['tools/column/foo.py'])),{'commit-discipline','controller-controls'})
+		with self.assertRaises(ValueError):g.required(['Cargo.toml'])
 		(self.root/'src/a.rs').rename(self.root/'renamed.rs');self.commit('impl: adr 9999 controls')
 		r=g.record(self.root);self.assertEqual(r['baseline'],self.baseline)
-		self.assertIn('src/a.rs',r['paths']);self.assertIn('renamed.rs',r['paths']);self.assertEqual(r['required'],['cross'])
+		self.assertIn('src/a.rs',r['paths']);self.assertIn('renamed.rs',r['paths']);self.assertIn('root-tests',r['required'])
 
 	def test_auto_add_cross_and_reject_omission_or_spoof(self):
 		self.write('src/a.rs','changed');self.commit('impl: adr 9999 controls')
 		m=g.select(self.root,self.root/'runs',['format'])
-		self.assertEqual({n for n,_ in m['stages']},{'format','cross'})
+		self.assertEqual({n for n,_ in m['stages']},{'format','cross','root-tests','inventory','commit-discipline','controller-controls'})
 		cross=dict(m['stages'])['cross']
 		self.assertTrue(Path(cross[cross.index('--out')+1]).is_relative_to(self.root/'target/rnx-verify'))
 		g.check_selection(m,self.root,final=True)
@@ -62,14 +63,14 @@ class Gates(unittest.TestCase):
 		self.write('src/a.rs','changed');self.commit('impl: adr 9999 controls')
 		m=g.select(self.root,self.root/'runs',['cross'])
 		with self.assertRaises(ValueError):g.finalize(m,{},self.root)
-		command=m['stages'][0][1]
-		good={'command':command,'context':{'command':command,'kind':'producer','candidate':m['record']['candidate']}}
-		with patch.object(g.child,'evidence',return_value=good):
-			self.assertEqual(g.finalize(m,{'cross':{}},self.root)['status'],'PASS')
-		for row in [{'command':['true'],'context':{'command':['true'],'kind':'producer'}},
-			{'command':command,'context':{'command':command,'kind':'leaf'}}]:
-			row['context']['candidate']=m['record']['candidate']
-			with patch.object(g.child,'evidence',return_value=row),self.assertRaises(ValueError):g.finalize(m,{'cross':{}},self.root)
+		evidence={n:{} for n,_ in m['stages']}
+		def good(_, source):
+			return rows.pop(0)
+		rows=[{'command':c,'context':{'command':c,'kind':'producer','candidate':m['record']['candidate']}} for n,c in m['stages']]
+		with patch.object(g.child,'evidence',side_effect=good):
+			self.assertEqual(g.finalize(m,evidence,self.root)['status'],'PASS')
+		rows=[{'command':c,'context':{'command':c,'kind':'leaf','candidate':m['record']['candidate']}} for n,c in m['stages']]
+		with patch.object(g.child,'evidence',side_effect=good),self.assertRaises(ValueError):g.finalize(m,evidence,self.root)
 
 
 if __name__ == '__main__':unittest.main()

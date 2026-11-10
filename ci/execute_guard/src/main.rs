@@ -29,7 +29,11 @@ fn parsed(s: &str) -> String {
 	canonical(s.parse().unwrap())
 }
 fn require(ok: bool, why: &str) -> Result<(), String> {
-	if ok { Ok(()) } else { Err(why.into()) }
+	if ok {
+		Ok(())
+	} else {
+		Err(why.into())
+	}
 }
 // Diagnostic token positions are zero-based within the named region. Literal
 // tokens stay whole, including embedded spaces; punctuation is not discarded.
@@ -552,7 +556,59 @@ impl VisitMut for ArmMutation {
 		visit_mut::visit_expr_match_mut(self, m)
 	}
 }
+// A qualified selector is deliberately finite: never fall back to a name-only
+// match or recursively pick an unrelated nested item.
+fn inventory_item(source: &str, kind: &str, receiver: &str, name: &str) -> Result<String, String> {
+	let file = syn::parse_file(source).map_err(|e| e.to_string())?;
+	let mut found = Vec::new();
+	for item in &file.items {
+		match item {
+			syn::Item::Struct(v) if kind == "struct" && v.ident == name => found.push(tokens(v)),
+			syn::Item::Fn(v) if kind == "fn" && v.sig.ident == name => found.push(tokens(v)),
+			syn::Item::Impl(v) if kind == "method" => {
+				let syn::Type::Path(ty) = &*v.self_ty else {
+					continue;
+				};
+				if ty.path.segments.last().is_none_or(|s| s.ident != receiver) {
+					continue;
+				}
+				for member in &v.items {
+					if let syn::ImplItem::Fn(f) = member {
+						if f.sig.ident == name {
+							// Include the impl's generics/constraints and attributes too.
+							let mut selected = v.clone();
+							selected.items = vec![syn::ImplItem::Fn(f.clone())];
+							found.push(tokens(&selected));
+						}
+					}
+				}
+			}
+			_ => (),
+		}
+	}
+	require(
+		found.len() == 1,
+		&format!(
+			"{kind} {receiver}::{name}: expected one item, found {}",
+			found.len()
+		),
+	)?;
+	Ok(found.remove(0))
+}
 fn main() {
+	let args: Vec<_> = std::env::args().collect();
+	if args.get(1).is_some_and(|s| s == "--item") {
+		assert_eq!(args.len(), 6, "--item FILE KIND RECEIVER NAME");
+		let source = std::fs::read_to_string(&args[2]).unwrap();
+		match inventory_item(&source, &args[3], &args[4], &args[5]) {
+			Ok(value) => println!("{value}"),
+			Err(e) => {
+				eprintln!("FAIL: {e}");
+				std::process::exit(1);
+			}
+		}
+		return;
+	}
 	let root = std::env::args().nth(1).expect("repository root required");
 	let base = std::path::Path::new(&root).join("rune/crates/rune/src/experimental_core");
 	let a = std::fs::read_to_string(base.join("execute.rs")).unwrap();
@@ -563,5 +619,41 @@ fn main() {
 			eprintln!("FAIL: {e}");
 			std::process::exit(1)
 		}
+	}
+}
+
+#[cfg(test)]
+mod inventory_controls {
+	use super::*;
+	#[test]
+	fn qualified_nonvacuous_and_sensitive() {
+		let a = "struct Frame { pc: usize } impl Executor { fn run(&self) { one(); } }";
+		let baseline = inventory_item(a, "method", "Executor", "run").unwrap();
+		let changed = a.replace("one", "two");
+		assert_ne!(
+			baseline,
+			inventory_item(&changed, "method", "Executor", "run").unwrap()
+		);
+		// Matching changes to a second copy cannot change the baseline fingerprint.
+		assert_eq!(
+			inventory_item(&changed, "method", "Executor", "run").unwrap(),
+			inventory_item(&changed, "method", "Executor", "run").unwrap()
+		);
+		assert!(inventory_item(a, "method", "Other", "run").is_err());
+		assert!(inventory_item(&(a.to_owned() + a), "struct", "", "Frame").is_err());
+		assert_ne!(
+			inventory_item(a, "struct", "", "Frame").unwrap(),
+			inventory_item(&a.replace("usize", "u32"), "struct", "", "Frame").unwrap()
+		);
+		assert_eq!(
+			baseline,
+			inventory_item(
+				&a.replace("one();", "/* comment */ one ( ) ;"),
+				"method",
+				"Executor",
+				"run"
+			)
+			.unwrap()
+		);
 	}
 }
