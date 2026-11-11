@@ -259,13 +259,31 @@ fn context() -> Result<(
 	crate::lifecycle::Lifecycle,
 	Vec<crate::host::HostFunction>,
 )> {
+	context_with_parity_fault(false)
+}
+fn context_with_parity_fault(
+	remove: bool,
+) -> Result<(
+	Context,
+	crate::lifecycle::Lifecycle,
+	Vec<crate::host::HostFunction>,
+)> {
 	let life = crate::lifecycle::Lifecycle::new(true)?;
 	let mut c = Context::with_default_modules()?;
 	let mut names = crate::install_core(&mut c)?;
 	names.extend(crate::fs::install(&mut c)?);
 	names.extend(crate::path::install(&mut c)?);
 	names.extend(crate::time::install(&mut c)?);
-	names.extend(crate::text::install(&mut c)?);
+	if remove {
+		let mut module = rune::Module::with_crate("text")?;
+		// Same witness result, ordinary registration without the typed certificate.
+		module
+			.function("group_digits", |v: i64| v.to_string())
+			.build()?;
+		c.install(module)?;
+	} else {
+		names.extend(crate::text::install(&mut c)?);
+	}
 	names.extend(crate::env::install(&mut c, std::sync::Arc::from([]))?);
 	let http = crate::http::State::default();
 	names.extend(crate::http::install(&mut c, &http, life.scope("http"))?);
@@ -811,4 +829,66 @@ fn complete_inventory_of_bound_sources() {
 	if let Some(out) = std::env::var_os("RNX_R1B_OUT") {
 		std::fs::write(out, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
 	}
+}
+
+/// ADR0246 consumes the tested registration list, not a second inventory.
+pub(crate) fn session_parity_hosts(remove: bool) -> Result<Json> {
+	let mut rows = Vec::new();
+	for p in host_policy() {
+		if p.class == Class::Opaque {
+			rows.push(
+				json!({"function":p.path,"class":"Not classified","reason":"receiver","input":null}),
+			);
+			continue;
+		}
+		let input = format!("{}({})", p.path, p.args);
+		let source = format!("pub fn main(){{{input}}}");
+		let (c, life, _) = context_with_parity_fault(remove && p.path == "text::group_digits")?;
+		let mut legacy_sources = sources(&source);
+		let legacy = rune::prepare(&mut legacy_sources).with_context(&c).build();
+		if let Err(e) = legacy {
+			rows.push(json!({"function":p.path,"input":input,"class":"Not classified","reason":"legacy-witness","detail":e.to_string()}));
+			life.close()?;
+			continue;
+		}
+		match compile(&c, &source) {
+			Err(e) if e.refusal.is_some() => {
+				rows.push(json!({"function":p.path,"input":input,"class":"Refused for a host function","reason":format!("{:?}",e.refusal.unwrap()),"construct":p.path,"input_shape":p.input,"work_group":if p.path.starts_with("http::")||p.path=="time::sleep" {"async"} else {"host enrollment"}}));
+			}
+			Err(e) => {
+				rows.push(json!({"function":p.path,"input":input,"class":"Domain-only failure","reason":format!("{e:?}")}));
+			}
+			Ok(_) => {
+				let safe = p.path.starts_with("path::")
+					|| p.path.starts_with("text::")
+					|| matches!(
+						p.path,
+						"json::parse"
+							| "web::decode_component"
+							| "time::parse" | "time::format"
+							| "time::rfc3339" | "io::eprint"
+					);
+				if safe {
+					rows.push(crate::session::parity::observe_host(p.path, &input, c)?);
+				} else {
+					rows.push(json!({"function":p.path,"input":input,"class":"Admitted, not executed","reason":if p.path=="io::stdin" {"stdin"} else if p.path.starts_with("time::") {"clock"} else {"filesystem"}}));
+				}
+			}
+		}
+		life.close()?;
+		if rows.last().is_some_and(|r| {
+			matches!(
+				r["class"].as_str(),
+				Some("Different result" | "Domain-only failure" | "Unreviewed wording")
+			)
+		}) {
+			break;
+		}
+	}
+	Ok(json!(rows))
+}
+/// Same installed core modules for the independent session side.
+pub(crate) fn session_parity_context() -> Result<Context> {
+	let (context, _, _) = context()?;
+	Ok(context)
 }

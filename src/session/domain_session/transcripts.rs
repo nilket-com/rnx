@@ -271,3 +271,34 @@ fn mapped_frames_cut_long_chain() {
 	assert!(d.message.ends_with("\n  [diagnostic truncated]"));
 	assert!(!d.message.contains("<memory>"));
 }
+
+// Shared observations for ADR0246; the original transcript remains pinned above.
+fn encode(r: std::result::Result<Option<String>, Diagnostic>) -> serde_json::Value {
+	match r {
+		Ok(value) => serde_json::json!({"outcome":"ok","value":value}),
+		Err(d) => {
+			serde_json::json!({"outcome":d.category,"message":d.message,"origin":d.origin.map(|o|serde_json::json!({"input":o.input,"line":o.line,"column":o.column}))})
+		}
+	}
+}
+pub(in crate::session) fn parity_old(old: &mut Session, input: &str) -> serde_json::Value {
+	encode(legacy(old, input))
+}
+pub(in crate::session) fn parity_new(new: &mut DomainSession, input: &str) -> serde_json::Value {
+	encode(
+		new.eval_rendered(input, &crate::format::Limits::default())
+			.map_err(diagnostic),
+	)
+}
+pub(in crate::session) fn parity_observe(
+	old: &mut Session,
+	new: &mut DomainSession,
+	input: &str,
+) -> (serde_json::Value, serde_json::Value) {
+	(parity_old(old, input), parity_new(new, input))
+}
+
+pub(in crate::session) fn parity_ledger() -> serde_json::Value {
+	let rows:Vec<_>=ROWS.iter().map(|r|serde_json::json!({"input":r.input,"existing_class":match r.class {Class::Equal=>"Equal",Class::Wording{..}=>"Wording",Class::Policy{..}=>"Policy (historical fixture label, not a classification decision)"}})).collect();
+	serde_json::json!({"source":"src/session/domain_session/transcripts.rs::ROWS","rows":rows})
+}

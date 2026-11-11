@@ -38,6 +38,11 @@
       "max_bytes": 1048576,
       "reason": "Reviewed data consumer and retention policy, not captured data."
     },
+    "ci/history_map.json": {
+      "class": "source-configuration",
+      "max_bytes": 1048576,
+      "reason": "ADR 0241 reviewed rewritten commit identities and provenance; no measurement data."
+    },
     "demos/notebooks/04_polars_sales.ipynb": {
       "class": "reviewed-retention",
       "max_bytes": 16668,
@@ -994,6 +999,15 @@
       "max_bytes": 323847,
       "reason": "ADR 0240 conservative retention: No confirmed consumer classification; absence of literal references is not absence of an indirect reader."
     },
+    "tests/fixtures/session_parity.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"../../tests/fixtures/session_parity.json\")",
+        "path": "src/session/parity.rs"
+      },
+      "max_bytes": 163840,
+      "reason": "ADR 0246 deterministic session parity pin reproduced by the ordinary classifier test; negative controls also consume the exact pin."
+    },
     "tools/0231_metadata_redactions.json": {
       "class": "reviewed-retention",
       "max_bytes": 28796,
@@ -1061,11 +1075,6 @@
       },
       "max_bytes": 101280,
       "reason": "Test/build fixture family; generated alternatives require equivalence and offline proof."
-    },
-    "ci/history_map.json": {
-      "class": "source-configuration",
-      "max_bytes": 1048576,
-      "reason": "ADR 0241 reviewed rewritten commit identities and provenance; no measurement data."
     }
   },
   "schema": 1

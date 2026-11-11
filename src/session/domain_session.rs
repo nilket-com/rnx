@@ -844,6 +844,6 @@ mod tests {
 }
 
 #[cfg(test)]
-mod transcripts;
+pub(super) mod transcripts;
 
 mod frames;

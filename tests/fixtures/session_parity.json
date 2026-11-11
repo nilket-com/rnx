@@ -1,0 +1,4629 @@
+{
+  "constant_probes": [
+    {
+      "class": "Equal",
+      "domain": {
+        "outcome": "ok",
+        "value": "\"x\""
+      },
+      "domain_worse": false,
+      "input": "const S = \"x\"; S",
+      "legacy": {
+        "outcome": "ok",
+        "value": "\"x\""
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "vector constant",
+      "diagnostic_issue": "vector constant misreported as async input",
+      "domain": {
+        "message": "refused: async input is not available in an execution session; start `rnx repl` without --engine=execution (input 1, line 1, column 11)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const T = [1, 2]; T",
+      "legacy": {
+        "outcome": "ok",
+        "value": "[1, 2]"
+      },
+      "wording_rule": null
+    }
+  ],
+  "hosts": {
+    "rows": [
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Ok({})"
+        },
+        "domain_worse": false,
+        "function": "json::parse",
+        "input": "json::parse(\"{}\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Ok({})"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "io::stdin",
+        "input": "io::stdin()",
+        "reason": "stdin"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Ok(())"
+        },
+        "domain_worse": false,
+        "function": "io::eprint",
+        "input": "io::eprint(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Ok(())"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Ok(\"\")"
+        },
+        "domain_worse": false,
+        "function": "web::decode_component",
+        "input": "web::decode_component(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Ok(\"\")"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::read",
+        "input": "fs::read(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::exists",
+        "input": "fs::exists(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::absolute",
+        "input": "fs::absolute(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::mkdir",
+        "input": "fs::mkdir(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::mkdir_all",
+        "input": "fs::mkdir_all(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::remove_file",
+        "input": "fs::remove_file(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::remove_dir",
+        "input": "fs::remove_dir(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::remove_dir_all",
+        "input": "fs::remove_dir_all(\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "domain_worse": false,
+        "function": "path::parent",
+        "input": "path::parent(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "domain_worse": false,
+        "function": "path::file_name",
+        "input": "path::file_name(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "domain_worse": false,
+        "function": "path::file_stem",
+        "input": "path::file_stem(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "domain_worse": false,
+        "function": "path::extension",
+        "input": "path::extension(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "None"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "false"
+        },
+        "domain_worse": false,
+        "function": "path::is_absolute",
+        "input": "path::is_absolute(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "false"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Err(\"cannot parse time \\\"\\\": expected a date-time with an offset or Z\")"
+        },
+        "domain_worse": false,
+        "function": "time::parse",
+        "input": "time::parse(\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Err(\"cannot parse time \\\"\\\": expected a date-time with an offset or Z\")"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::cwd",
+        "input": "fs::cwd()",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::temp_dir",
+        "input": "fs::temp_dir()",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "\"/\""
+        },
+        "domain_worse": false,
+        "function": "path::separator",
+        "input": "path::separator()",
+        "legacy": {
+          "outcome": "ok",
+          "value": "\"/\""
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "time::now_ms",
+        "input": "time::now_ms()",
+        "reason": "clock"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "time::monotonic_ms",
+        "input": "time::monotonic_ms()",
+        "reason": "clock"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "time::monotonic_ns",
+        "input": "time::monotonic_ns()",
+        "reason": "clock"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::copy",
+        "input": "fs::copy(\"\",\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Admitted, not executed",
+        "function": "fs::rename",
+        "input": "fs::rename(\"\",\"\")",
+        "reason": "filesystem"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "\"\""
+        },
+        "domain_worse": false,
+        "function": "path::join",
+        "input": "path::join(\"\",\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "\"\""
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Ok(\"\")"
+        },
+        "domain_worse": false,
+        "function": "path::with_extension",
+        "input": "path::with_extension(\"\",\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Ok(\"\")"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Some(0)"
+        },
+        "domain_worse": false,
+        "function": "text::find",
+        "input": "text::find(\"\",\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Some(0)"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Err(\"cannot resolve zone \\\"\\\": failed to find time zone `` in time zone database\")"
+        },
+        "domain_worse": false,
+        "function": "time::format",
+        "input": "time::format(0,\"\",\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Err(\"cannot resolve zone \\\"\\\": failed to find time zone `` in time zone database\")"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Err(\"cannot resolve zone \\\"\\\": failed to find time zone `` in time zone database\")"
+        },
+        "domain_worse": false,
+        "function": "time::rfc3339",
+        "input": "time::rfc3339(0,\"\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "Err(\"cannot resolve zone \\\"\\\": failed to find time zone `` in time zone database\")"
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "\"1\""
+        },
+        "domain_worse": false,
+        "function": "text::group_digits",
+        "input": "text::group_digits(1)",
+        "legacy": {
+          "outcome": "ok",
+          "value": "\"1\""
+        },
+        "wording_rule": null
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "json::stringify",
+        "function": "json::stringify",
+        "input": "json::stringify(())",
+        "input_shape": "Value: outside typed input set",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "process::run",
+        "function": "process::run",
+        "input": "process::run(\"\",[],#{})",
+        "input_shape": "Value args/options",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "process::run_bytes",
+        "function": "process::run_bytes",
+        "input": "process::run_bytes(\"\",[],#{})",
+        "input_shape": "Value args/options",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "process::exit",
+        "function": "process::exit",
+        "input": "process::exit(0)",
+        "input_shape": "i64: importable, unenrolled",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "web::escape_html",
+        "function": "web::escape_html",
+        "input": "web::escape_html(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "web::parse_form",
+        "function": "web::parse_form",
+        "input": "web::parse_form(())",
+        "input_shape": "Value: outside typed input set",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "web::response",
+        "function": "web::response",
+        "input": "web::response(200,#{},\"\",())",
+        "input_shape": "Value options/body",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "web::html",
+        "function": "web::html",
+        "input": "web::html(200,())",
+        "input_shape": "Value body",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "web::text",
+        "function": "web::text",
+        "input": "web::text(200,())",
+        "input_shape": "Value body",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "fs::read_bytes",
+        "function": "fs::read_bytes",
+        "input": "fs::read_bytes(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "fs::write_new",
+        "function": "fs::write_new",
+        "input": "fs::write_new(\"\",\"\")",
+        "input_shape": "Value: outside typed input set",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "fs::write",
+        "function": "fs::write",
+        "input": "fs::write(\"\",\"\")",
+        "input_shape": "Value: outside typed input set",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "fs::append",
+        "function": "fs::append",
+        "input": "fs::append(\"\",\"\")",
+        "input_shape": "Value: outside typed input set",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "fs::metadata",
+        "function": "fs::metadata",
+        "input": "fs::metadata(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "fs::read_dir",
+        "function": "fs::read_dir",
+        "input": "fs::read_dir(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "time::parts",
+        "function": "time::parts",
+        "input": "time::parts(0,\"\")",
+        "input_shape": "(i64,&str)",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "time::from_parts",
+        "function": "time::from_parts",
+        "input": "time::from_parts(#{},\"\")",
+        "input_shape": "Object: outside typed input set",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "time::sleep",
+        "function": "time::sleep",
+        "input": "time::sleep(0)",
+        "input_shape": "i64",
+        "reason": "Native",
+        "work_group": "async"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "text::split_max",
+        "function": "text::split_max",
+        "input": "text::split_max(\"\",1)",
+        "input_shape": "(&str,i64)",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "env::args",
+        "function": "env::args",
+        "input": "env::args()",
+        "input_shape": "none",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "env::var",
+        "function": "env::var",
+        "input": "env::var(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "env::home_dir",
+        "function": "env::home_dir",
+        "input": "env::home_dir()",
+        "input_shape": "none",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "env::vars",
+        "function": "env::vars",
+        "input": "env::vars()",
+        "input_shape": "none",
+        "reason": "Native",
+        "work_group": "host enrollment"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "http::get",
+        "function": "http::get",
+        "input": "http::get(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "async"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "http::get_bytes",
+        "function": "http::get_bytes",
+        "input": "http::get_bytes(\"\")",
+        "input_shape": "&str",
+        "reason": "Native",
+        "work_group": "async"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "http::request",
+        "function": "http::request",
+        "input": "http::request(\"GET\",\"\",#{})",
+        "input_shape": "Value options",
+        "reason": "Native",
+        "work_group": "async"
+      },
+      {
+        "class": "Refused for a host function",
+        "construct": "http::request_bytes",
+        "function": "http::request_bytes",
+        "input": "http::request_bytes(\"GET\",\"\",#{})",
+        "input_shape": "Value options",
+        "reason": "Native",
+        "work_group": "async"
+      },
+      {
+        "class": "Not classified",
+        "function": "interchange::Dense::shape",
+        "input": null,
+        "reason": "receiver"
+      },
+      {
+        "class": "Not classified",
+        "function": "interchange::Dense::names",
+        "input": null,
+        "reason": "receiver"
+      },
+      {
+        "class": "Not classified",
+        "function": "interchange::Dense::dtype",
+        "input": null,
+        "reason": "receiver"
+      },
+      {
+        "class": "Not classified",
+        "function": "interchange::Dense::<DISPLAY_FMT>",
+        "input": null,
+        "reason": "receiver"
+      }
+    ],
+    "status": "PASS"
+  },
+  "ledger": {
+    "legacy_sources": {
+      "classified_sites": 100,
+      "functions": [
+        {
+          "classified_sites": 11,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let (x, y) = (2, 3); let shared = [1]; let effects = []; fn f() { 10 } struct Boxed { value } let old = f; let c = || f() + shared[0]; let b = Boxed { value: 7 }; x + y",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "effects.push(1); fn f() { 20 } (old(), f(), c(), b.value, b is Boxed)",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let x = x + 5; let [left, right] = [8,9]; let #{a: renamed} = #{a: 4}; (x,y,left,right,renamed,effects.len())",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "fn f() { 99 } let broken = ;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "new_name",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "(x, shared, f(), effects.len())",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "struct Boxed { other }",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "while true {} ",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "x",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "computed",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "x",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "x",
+              "session": "reset"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "x",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "computed",
+            "loop"
+          ],
+          "name": "checks",
+          "sites": 13
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "tests::incomplete_inputs_are_the_closed_list",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "tests::complete_inputs_include_invalid_ones",
+          "sites": 0
+        },
+        {
+          "classified_sites": 1,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let a = 1;\nlet b = +* 2;\nlet c = 3;",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "tests::compile_error_maps_to_the_typed_line_and_column",
+          "sites": 1
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "fn boom(x) {\n  panic!(\"bad {}\", x)\n}",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let y = 2;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "boom(y)",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "tests::runtime_error_in_an_older_definition_reports_that_input",
+          "sites": 3
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let c = |v| v.missing_method();",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let z = 1;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "c(z)",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "tests::runtime_error_through_a_retained_closure_reports_the_closure_input",
+          "sites": 3
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let keep = 1;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let x = ;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "use std::fmt;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "impl Foo { fn f() {} }",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "macro_rules! m { () => {} }",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "fn main() { 1 }",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let __rnx_x = 1;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let q = 1 / 0;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "nonexistent_fn()",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let v = [1]; v[9]",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "panic!(\"p\")",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "keep",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+          "sites": 3
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let saved = [];",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let f = saved[0]; f()",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "tests::a_closure_retained_by_a_failed_input_still_maps_to_that_input",
+          "sites": 3
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "ceiling",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "ceiling",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "ceiling",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "ceiling",
+            "ceiling",
+            "ceiling"
+          ],
+          "name": "tests::over_the_ceiling_refuses_evaluation_but_not_inspection",
+          "sites": 3
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "retention_tests::a_unit_nothing_can_call_is_released_and_its_entry_pruned",
+          "sites": 1
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop",
+            "loop"
+          ],
+          "name": "retention_tests::a_unit_something_can_still_call_is_kept",
+          "sites": 2
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let saved = [];",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "saved.push(|| panic!(\"from the failed input\")); panic!(\"outer\");",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let f = saved[0]; f()",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "retention_tests::a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position",
+          "sites": 3
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "fn thrower() {\n  panic!(\"deep\")\n}",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let held = || thrower();",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "panic!(\"here\")",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "thrower()",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "held()",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let v = []; v[3]",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+          "sites": 3
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "private",
+            "private",
+            "private"
+          ],
+          "name": "retention_tests::a_missing_entry_reports_the_position_as_unavailable",
+          "sites": 3
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let c = || 1;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let d = || 2;",
+              "session": "session"
+            },
+            {
+              "action": "reset",
+              "input": "",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "1 + 1",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "retention_tests::a_reset_keeps_the_context_and_empties_the_session",
+          "sites": 3
+        },
+        {
+          "classified_sites": 4,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "wide"
+            },
+            {
+              "action": "eval",
+              "input": "n000 + n099",
+              "session": "wide"
+            },
+            {
+              "action": "eval",
+              "input": "let n000 = 0;",
+              "session": "narrow"
+            },
+            {
+              "action": "eval",
+              "input": "let n099 = 99;",
+              "session": "narrow"
+            },
+            {
+              "action": "eval",
+              "input": "n000 + n099",
+              "session": "narrow"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+          "sites": 5
+        },
+        {
+          "classified_sites": 8,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let a = 1; let b = 2; let c = 3;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "a = 10;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "a",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let b = b + 40;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "b",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let [d, e] = [4, 5];",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "(c, d, e)",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "(a, b, c, d, e)",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+          "sites": 9
+        },
+        {
+          "classified_sites": 6,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let original = [1];",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let alias = original;",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "alias.push(2);",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "original",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "original.push(3);",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "alias",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+          "sites": 7
+        },
+        {
+          "classified_sites": 4,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let counter = [0];",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "let bump = || counter.push(1);",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "bump(); bump();",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "counter",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+          "sites": 5
+        },
+        {
+          "classified_sites": 5,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let shared = [1]; let scalar = 1;",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "shared.push(2); scalar = 99; let fresh = 5; panic!(\"stop\");",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "shared",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "scalar",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "fresh",
+              "session": "session"
+            }
+          ],
+          "excluded": [],
+          "name": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+          "sites": 5
+        },
+        {
+          "classified_sites": 4,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let captured = 7;",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "format!(\"{captured}\")",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "format!(\"{captured:?} and {captured}\")",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "println!(\"{captured}\");",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+          "sites": 5
+        },
+        {
+          "classified_sites": 2,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let inside = 3;",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "session"
+            },
+            {
+              "action": "eval",
+              "input": "`v ${inside}`",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
+          "sites": 3
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "prelude_tests::the_scan_over_approximates_rather_than_missing_a_name",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "escape_tests::a_capture_hidden_behind_an_escape_is_still_found",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "escape_tests::an_unrecognized_escape_restores_everything",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "escape_tests::ordinary_escapes_decode_without_widening",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "escape_tests::the_decoder_matches_the_escapes_the_lexer_accepts",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "unicode_capture_tests::a_capture_naming_a_unicode_binding_is_found",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "unicode_capture_tests::a_longer_name_is_not_shadowed_by_its_own_prefix",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "unicode_capture_tests::a_group_naming_nothing_published_restores_nothing",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "position_tests::a_column_counts_characters_not_bytes",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "position_tests::an_offset_past_the_end_lands_on_the_last_line",
+          "sites": 0
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "position_tests::the_first_character_is_line_one_column_one",
+          "sites": 0
+        },
+        {
+          "classified_sites": 3,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let x = 7;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "let v = [x];",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "fn kept(n) { n + 1 }",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "let c = |v| v.missing_method();",
+              "session": "s"
+            },
+            {
+              "action": "renumber",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "c(1)",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "let x = ;",
+              "session": "s"
+            }
+          ],
+          "excluded": [],
+          "name": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+          "sites": 3
+        },
+        {
+          "classified_sites": 7,
+          "events": [
+            {
+              "action": "eval",
+              "input": "let a = |v| v.missing_method();",
+              "session": "s"
+            },
+            {
+              "action": "renumber",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "let b = |v| v.missing_method();",
+              "session": "s"
+            },
+            {
+              "action": "renumber",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "let c = |v| v.missing_method();",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "a(1)",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "b(1)",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "c(1)",
+              "session": "s"
+            },
+            {
+              "action": "renumber",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "renumber",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "let broken = ;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "c(1)",
+              "session": "s"
+            },
+            {
+              "action": "reset",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "a(1)",
+              "session": "s"
+            }
+          ],
+          "excluded": [],
+          "name": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+          "sites": 7
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "s"
+            },
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "s"
+            },
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "s"
+            }
+          ],
+          "excluded": [
+            "private",
+            "private",
+            "private"
+          ],
+          "name": "numbering_tests::admission_not_success_spends_the_next_number",
+          "sites": 3
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "s"
+            },
+            {
+              "action": "unclassified",
+              "input": "private",
+              "session": "s"
+            }
+          ],
+          "excluded": [
+            "private",
+            "private"
+          ],
+          "name": "method_naming_tests::an_unmapped_retained_error_preserves_the_linked_diagnostic_despite_a_caller_decoy",
+          "sites": 2
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "loop",
+              "session": "s"
+            }
+          ],
+          "excluded": [
+            "loop"
+          ],
+          "name": "method_naming_tests::the_exhaustion_clause_follows_the_proved_name",
+          "sites": 1
+        },
+        {
+          "classified_sites": 0,
+          "events": [],
+          "excluded": [],
+          "name": "const_tests::the_exact_u7_prefix_is_incomplete",
+          "sites": 0
+        },
+        {
+          "classified_sites": 13,
+          "events": [
+            {
+              "action": "eval",
+              "input": "const GREETING = \"hello\";",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const N = 40;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "GREETING",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "fn more() { N + 2 }",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "more()",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const M = N * 2;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "M",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "pub const P = 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "pub struct Point { x }",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "enum E { A }",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const N = 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "more()",
+              "session": "s"
+            },
+            {
+              "action": "reset",
+              "input": "",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "N",
+              "session": "s"
+            }
+          ],
+          "excluded": [],
+          "name": "const_tests::a_const_is_retained_and_used_later",
+          "sites": 13
+        },
+        {
+          "classified_sites": 6,
+          "events": [
+            {
+              "action": "eval",
+              "input": "const A = 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const C = A + 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "C",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const A = \"x\";",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "A",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "C",
+              "session": "s"
+            }
+          ],
+          "excluded": [],
+          "name": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+          "sites": 6
+        },
+        {
+          "classified_sites": 5,
+          "events": [
+            {
+              "action": "eval",
+              "input": "const main = 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const __rnx_x = 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "struct S { a }",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "const S = 1;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "mod m {}",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "use std::string::String;",
+              "session": "s"
+            },
+            {
+              "action": "eval",
+              "input": "impl S { fn f(self) {} }",
+              "session": "s"
+            }
+          ],
+          "excluded": [],
+          "name": "const_tests::reserved_names_and_type_shapes_still_apply",
+          "sites": 5
+        },
+        {
+          "classified_sites": 0,
+          "events": [
+            {
+              "action": "unclassified",
+              "input": "context",
+              "session": "session"
+            },
+            {
+              "action": "unclassified",
+              "input": "context",
+              "session": "session"
+            }
+          ],
+          "excluded": [
+            "context",
+            "context"
+          ],
+          "name": "native_budget_tests::a_sliced_session_never_retries_a_failed_native_iterator",
+          "sites": 2
+        }
+      ],
+      "sites": 125,
+      "source": "src/session.rs"
+    },
+    "not_classified": [
+      {
+        "reason": "PTY",
+        "source": "tests/repl.rs",
+        "tests": 26
+      },
+      {
+        "reason": "terminal/options/signals",
+        "source": "tests/repl_execution.rs",
+        "tests": 3
+      },
+      {
+        "events": 2,
+        "reason": "adapter restart",
+        "source": "README.md :dep example"
+      }
+    ],
+    "notebooks": [
+      {
+        "coverage": "classified",
+        "inputs": 5,
+        "reason": "stock",
+        "source": "01_mortgage"
+      },
+      {
+        "coverage": "classified",
+        "inputs": 4,
+        "reason": "stock",
+        "source": "02_orders"
+      },
+      {
+        "coverage": "classified",
+        "inputs": 4,
+        "reason": "stock",
+        "source": "03_report"
+      },
+      {
+        "coverage": "not classified",
+        "inputs": 7,
+        "reason": "Polars kernel",
+        "source": "04_polars_sales"
+      },
+      {
+        "coverage": "not classified",
+        "inputs": 7,
+        "reason": "Candle kernel",
+        "source": "05_candle_model"
+      },
+      {
+        "coverage": "not classified",
+        "inputs": 11,
+        "reason": "Candle kernel and external model",
+        "source": "06_candle_search"
+      }
+    ],
+    "referenced_fixtures": {
+      "rows": [
+        {
+          "existing_class": "Equal",
+          "input": "let n=7;let c=||n;let shared=[1];0"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "shared.push(2);c()"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "shared.len()"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "fn twice(n){n*2} const C=3; struct P{x} enum E{V(n)} let v=[1]; let alias=v; 0"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "alias.push(2); (v,twice(C),P{x:7},E::V(8))"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "fn twice(n){n*3} twice(2)"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "let stash=[]; let keep=19;0"
+        },
+        {
+          "existing_class": "Wording",
+          "input": "stash.push(||42);panic!(\"failed\")"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "stash[0]()"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "let new_binding=1;keep"
+        },
+        {
+          "existing_class": "Wording",
+          "input": "let rejected=2;panic!(\"failed\")"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "keep"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "let bad=||1/0;0"
+        },
+        {
+          "existing_class": "Wording",
+          "input": "bad()"
+        },
+        {
+          "existing_class": "Equal",
+          "input": ":renumber"
+        },
+        {
+          "existing_class": "Wording",
+          "input": "bad()"
+        },
+        {
+          "existing_class": "Equal",
+          "input": ":budget"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "loop {}"
+        },
+        {
+          "existing_class": "Equal",
+          "input": ":reset"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "7"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "let a=[1];let f=|n|n+1;0"
+        },
+        {
+          "existing_class": "Policy (historical fixture label, not a classification decision)",
+          "input": "a.push(2); async {1}.await"
+        },
+        {
+          "existing_class": "Equal",
+          "input": ":reset"
+        },
+        {
+          "existing_class": "Equal",
+          "input": "let a=[1];let f=|n|n+1;0"
+        },
+        {
+          "existing_class": "Policy (historical fixture label, not a classification decision)",
+          "input": "a.push(2); [1].iter().map(f).collect::<Vec>()"
+        }
+      ],
+      "source": "src/session/domain_session/transcripts.rs::ROWS"
+    },
+    "worker_fixture": {
+      "coverage": "referenced existing differential fixture; historical Policy labels are not new policy decisions",
+      "existing_rows": [
+        [
+          "unit",
+          "Equal",
+          "let a=[1];let alias=a;let f=||7;"
+        ],
+        [
+          "alias",
+          "Equal",
+          "alias.push(2);a.len()+f()"
+        ],
+        [
+          "streams",
+          "Equal",
+          "print!(\"out\");io::eprint(\"err\")?;9"
+        ],
+        [
+          "compile",
+          "Wording",
+          "let broken = ;"
+        ],
+        [
+          "old-origin-definition",
+          "Equal",
+          "fn old() { panic!(\"old failure\"); }"
+        ],
+        [
+          "old-origin",
+          "Wording",
+          "old()"
+        ],
+        [
+          "async-refusal",
+          "Policy",
+          "a.push(3);async {1}.await"
+        ]
+      ],
+      "source": "tests/worker_execution.py::TABLE"
+    }
+  },
+  "literal_sessions": {
+    "defects": [],
+    "rows": [
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "5"
+        },
+        "domain_worse": false,
+        "input": "let (x, y) = (2, 3); let shared = [1]; let effects = []; fn f() { 10 } struct Boxed { value } let old = f; let c = || f() + shared[0]; let b = Boxed { value: 7 }; x + y",
+        "legacy": {
+          "outcome": "ok",
+          "value": "5"
+        },
+        "ordinal": 0,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(10, 20, 11, 7, true)"
+        },
+        "domain_worse": false,
+        "input": "effects.push(1); fn f() { 20 } (old(), f(), c(), b.value, b is Boxed)",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(10, 20, 11, 7, true)"
+        },
+        "ordinal": 1,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(7, 3, 8, 9, 4, 1)"
+        },
+        "domain_worse": false,
+        "input": "let x = x + 5; let [left, right] = [8,9]; let #{a: renamed} = #{a: 4}; (x,y,left,right,renamed,effects.len())",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(7, 3, 8, 9, 4, 1)"
+        },
+        "ordinal": 2,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 28,
+            "input": 4,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "fn f() { 99 } let broken = ;",
+        "legacy": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 28,
+            "input": 4,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 3,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: partial\n  at input 5, line 1, column 47",
+          "origin": {
+            "column": 47,
+            "input": 5,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");",
+        "legacy": {
+          "message": "Panicked: partial",
+          "origin": {
+            "column": 47,
+            "input": 5,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 4,
+        "sequence": "checks",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "No local variable `new_name`",
+          "origin": {
+            "column": 1,
+            "input": 6,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "new_name",
+        "legacy": {
+          "message": "No local variable `new_name`",
+          "origin": {
+            "column": 1,
+            "input": 6,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 5,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(7, [1, 2], 20, 1)"
+        },
+        "domain_worse": false,
+        "input": "(x, shared, f(), effects.len())",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(7, [1, 2], 20, 1)"
+        },
+        "ordinal": 6,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: `Boxed` is a type whose shape changed; :reset before redeclaring it (input 8, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "struct Boxed { other }",
+        "legacy": {
+          "message": "refused: `Boxed` is a type whose shape changed; :reset before redeclaring it (input 8, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 7,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "halted: 2000000000 instructions exceeded",
+          "origin": null,
+          "outcome": "budget"
+        },
+        "domain_worse": false,
+        "input": "while true {} ",
+        "legacy": {
+          "message": "halted: 2000000000 instructions exceeded",
+          "origin": null,
+          "outcome": "budget"
+        },
+        "ordinal": 8,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "7"
+        },
+        "domain_worse": false,
+        "input": "x",
+        "legacy": {
+          "outcome": "ok",
+          "value": "7"
+        },
+        "ordinal": 9,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 10",
+        "class": "Not classified",
+        "input": "x",
+        "ordinal": 11,
+        "sequence": "checks"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "No local variable `x`",
+          "origin": {
+            "column": 1,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "x",
+        "legacy": {
+          "message": "No local variable `x`",
+          "origin": {
+            "column": 1,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 12,
+        "sequence": "checks",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 13",
+        "class": "Not classified",
+        "input": "x",
+        "ordinal": 14,
+        "sequence": "checks"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Expected expression but got `+`",
+          "origin": {
+            "column": 9,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "let a = 1;\nlet b = +* 2;\nlet c = 3;",
+        "legacy": {
+          "message": "Expected expression but got `+`",
+          "origin": {
+            "column": 9,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 0,
+        "sequence": "tests::compile_error_maps_to_the_typed_line_and_column",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "fn boom(x) {\n  panic!(\"bad {}\", x)\n}",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "tests::runtime_error_in_an_older_definition_reports_that_input",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let y = 2;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "tests::runtime_error_in_an_older_definition_reports_that_input",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: bad 2\n  at input 1, line 2, column 3\n  at input 3, line 1, column 1",
+          "origin": {
+            "column": 3,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "boom(y)",
+        "legacy": {
+          "message": "Panicked: bad 2",
+          "origin": {
+            "column": 3,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 2,
+        "sequence": "tests::runtime_error_in_an_older_definition_reports_that_input",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let c = |v| v.missing_method();",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "tests::runtime_error_through_a_retained_closure_reports_the_closure_input",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let z = 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "tests::runtime_error_through_a_retained_closure_reports_the_closure_input",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Type `std::i64` has no method named `missing_method`\n  at input 1, line 1, column 13\n  at input 3, line 1, column 1",
+          "origin": {
+            "column": 13,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "c(z)",
+        "legacy": {
+          "message": "no method `missing_method` on `std::i64`",
+          "origin": {
+            "column": 13,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 2,
+        "sequence": "tests::runtime_error_through_a_retained_closure_reports_the_closure_input",
+        "wording_rule": "missing-method"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let keep = 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 9,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "let x = ;",
+        "legacy": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 9,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 1,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 3, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "use std::fmt;",
+        "legacy": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 3, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 2,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 4, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "impl Foo { fn f() {} }",
+        "legacy": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 4, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 3,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Expected `(`, `[`, or `{` but got an identifier",
+          "origin": {
+            "column": 14,
+            "input": 5,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "macro_rules! m { () => {} }",
+        "legacy": {
+          "message": "Expected `(`, `[`, or `{` but got an identifier",
+          "origin": {
+            "column": 14,
+            "input": 5,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 4,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: `main` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "fn main() { 1 }",
+        "legacy": {
+          "message": "refused: `main` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 5,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: `__rnx_x` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "let __rnx_x = 1;",
+        "legacy": {
+          "message": "refused: `__rnx_x` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 6,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Division by zero in `i64` division (`/`)\n  at input 8, line 1, column 9",
+          "origin": {
+            "column": 9,
+            "input": 8,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "let q = 1 / 0;",
+        "legacy": {
+          "message": "Division by zero in `i64` division (`/`)",
+          "origin": {
+            "column": 9,
+            "input": 8,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 7,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Missing item nonexistent_fn",
+          "origin": {
+            "column": 1,
+            "input": 9,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "nonexistent_fn()",
+        "legacy": {
+          "message": "Missing item nonexistent_fn",
+          "origin": {
+            "column": 1,
+            "input": 9,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 8,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Index out of bounds, the length is `1` but the index is `9`\n  at input 10, line 1, column 14",
+          "origin": {
+            "column": 14,
+            "input": 10,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "let v = [1]; v[9]",
+        "legacy": {
+          "message": "Index out of bounds, the length is `1` but the index is `9`",
+          "origin": {
+            "column": 14,
+            "input": 10,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 9,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: p\n  at input 11, line 1, column 1",
+          "origin": {
+            "column": 1,
+            "input": 11,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "panic!(\"p\")",
+        "legacy": {
+          "message": "Panicked: p",
+          "origin": {
+            "column": 1,
+            "input": 11,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 10,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "1"
+        },
+        "domain_worse": false,
+        "input": "keep",
+        "legacy": {
+          "outcome": "ok",
+          "value": "1"
+        },
+        "ordinal": 11,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let saved = [];",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "tests::a_closure_retained_by_a_failed_input_still_maps_to_that_input",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: outer\n  at input 2, line 1, column 44",
+          "origin": {
+            "column": 44,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");",
+        "legacy": {
+          "message": "Panicked: outer",
+          "origin": {
+            "column": 44,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 1,
+        "sequence": "tests::a_closure_retained_by_a_failed_input_still_maps_to_that_input",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: retained failure\n  at input 2, line 1, column 15\n  at input 3, line 1, column 19",
+          "origin": {
+            "column": 15,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "let f = saved[0]; f()",
+        "legacy": {
+          "message": "Panicked: retained failure",
+          "origin": {
+            "column": 15,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 2,
+        "sequence": "tests::a_closure_retained_by_a_failed_input_still_maps_to_that_input",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let saved = [];",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "retention_tests::a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: outer\n  at input 2, line 1, column 49",
+          "origin": {
+            "column": 49,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "saved.push(|| panic!(\"from the failed input\")); panic!(\"outer\");",
+        "legacy": {
+          "message": "Panicked: outer",
+          "origin": {
+            "column": 49,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 1,
+        "sequence": "retention_tests::a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: from the failed input\n  at input 2, line 1, column 15\n  at input 3, line 1, column 19",
+          "origin": {
+            "column": 15,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "let f = saved[0]; f()",
+        "legacy": {
+          "message": "Panicked: from the failed input",
+          "origin": {
+            "column": 15,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 2,
+        "sequence": "retention_tests::a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "fn thrower() {\n  panic!(\"deep\")\n}",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let held = || thrower();",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: here\n  at input 3, line 1, column 1",
+          "origin": {
+            "column": 1,
+            "input": 3,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "panic!(\"here\")",
+        "legacy": {
+          "message": "Panicked: here",
+          "origin": {
+            "column": 1,
+            "input": 3,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 2,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: deep\n  at input 1, line 2, column 3\n  at input 4, line 1, column 1",
+          "origin": {
+            "column": 3,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "thrower()",
+        "legacy": {
+          "message": "Panicked: deep",
+          "origin": {
+            "column": 3,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 3,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: deep\n  at input 1, line 2, column 3\n  at input 2, line 1, column 15\n  at input 5, line 1, column 1",
+          "origin": {
+            "column": 3,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "held()",
+        "legacy": {
+          "message": "Panicked: deep",
+          "origin": {
+            "column": 3,
+            "input": 1,
+            "line": 2
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 4,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Index out of bounds, the length is `0` but the index is `3`\n  at input 6, line 1, column 13",
+          "origin": {
+            "column": 13,
+            "input": 6,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "let v = []; v[3]",
+        "legacy": {
+          "message": "Index out of bounds, the length is `0` but the index is `3`",
+          "origin": {
+            "column": 13,
+            "input": 6,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 5,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let c = || 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "retention_tests::a_reset_keeps_the_context_and_empties_the_session",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let d = || 2;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "retention_tests::a_reset_keeps_the_context_and_empties_the_session",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "2"
+        },
+        "domain_worse": false,
+        "input": "1 + 1",
+        "legacy": {
+          "outcome": "ok",
+          "value": "2"
+        },
+        "ordinal": 3,
+        "sequence": "retention_tests::a_reset_keeps_the_context_and_empties_the_session",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 0",
+        "class": "Not classified",
+        "input": "n000 + n099",
+        "ordinal": 1,
+        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let n000 = 0;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 2,
+        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let n099 = 99;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 3,
+        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "99"
+        },
+        "domain_worse": false,
+        "input": "n000 + n099",
+        "legacy": {
+          "outcome": "ok",
+          "value": "99"
+        },
+        "ordinal": 4,
+        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let a = 1; let b = 2; let c = 3;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "a = 10;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "10"
+        },
+        "domain_worse": false,
+        "input": "a",
+        "legacy": {
+          "outcome": "ok",
+          "value": "10"
+        },
+        "ordinal": 2,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let b = b + 40;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 3,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "42"
+        },
+        "domain_worse": false,
+        "input": "b",
+        "legacy": {
+          "outcome": "ok",
+          "value": "42"
+        },
+        "ordinal": 4,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let [d, e] = [4, 5];",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 5,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(3, 4, 5)"
+        },
+        "domain_worse": false,
+        "input": "(c, d, e)",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(3, 4, 5)"
+        },
+        "ordinal": 6,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 7",
+        "class": "Not classified",
+        "input": "(a, b, c, d, e)",
+        "ordinal": 8,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let original = [1];",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let alias = original;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 2",
+        "class": "Not classified",
+        "input": "alias.push(2);",
+        "ordinal": 3,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+      },
+      {
+        "blocked_by": "unclassified site 2",
+        "class": "Not classified",
+        "input": "original",
+        "ordinal": 4,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+      },
+      {
+        "blocked_by": "unclassified site 2",
+        "class": "Not classified",
+        "input": "original.push(3);",
+        "ordinal": 5,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+      },
+      {
+        "blocked_by": "unclassified site 2",
+        "class": "Not classified",
+        "input": "alias",
+        "ordinal": 6,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let counter = [0];",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let bump = || counter.push(1);",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 2",
+        "class": "Not classified",
+        "input": "bump(); bump();",
+        "ordinal": 3,
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it"
+      },
+      {
+        "blocked_by": "unclassified site 2",
+        "class": "Not classified",
+        "input": "counter",
+        "ordinal": 4,
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let shared = [1]; let scalar = 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Panicked: stop\n  at input 2, line 1, column 45",
+          "origin": {
+            "column": 45,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "shared.push(2); scalar = 99; let fresh = 5; panic!(\"stop\");",
+        "legacy": {
+          "message": "Panicked: stop",
+          "origin": {
+            "column": 45,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 1,
+        "sequence": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+        "wording_rule": "appended-frames"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "[1, 2]"
+        },
+        "domain_worse": false,
+        "input": "shared",
+        "legacy": {
+          "outcome": "ok",
+          "value": "[1, 2]"
+        },
+        "ordinal": 2,
+        "sequence": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "1"
+        },
+        "domain_worse": false,
+        "input": "scalar",
+        "legacy": {
+          "outcome": "ok",
+          "value": "1"
+        },
+        "ordinal": 3,
+        "sequence": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "No local variable `fresh`",
+          "origin": {
+            "column": 1,
+            "input": 5,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "fresh",
+        "legacy": {
+          "message": "No local variable `fresh`",
+          "origin": {
+            "column": 1,
+            "input": 5,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 4,
+        "sequence": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let captured = 7;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 1",
+        "class": "Not classified",
+        "input": "format!(\"{captured}\")",
+        "ordinal": 2,
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names"
+      },
+      {
+        "blocked_by": "unclassified site 1",
+        "class": "Not classified",
+        "input": "format!(\"{captured:?} and {captured}\")",
+        "ordinal": 3,
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names"
+      },
+      {
+        "blocked_by": "unclassified site 1",
+        "class": "Not classified",
+        "input": "println!(\"{captured}\");",
+        "ordinal": 4,
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let inside = 3;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
+        "wording_rule": null
+      },
+      {
+        "blocked_by": "unclassified site 1",
+        "class": "Not classified",
+        "input": "`v ${inside}`",
+        "ordinal": 2,
+        "sequence": "prelude_tests::a_template_interpolation_restores_the_binding_it_names"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let x = 7;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let v = [x];",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "fn kept(n) { n + 1 }",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 2,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let c = |v| v.missing_method();",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 3,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Type `std::i64` has no method named `missing_method`\n  at input 4 of numbering 1, line 1, column 13\n  at input 1, line 1, column 1",
+          "origin": {
+            "column": 13,
+            "input": 4,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "c(1)",
+        "legacy": {
+          "message": "no method `missing_method` on `std::i64`",
+          "origin": {
+            "column": 13,
+            "input": 4,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 5,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "wording_rule": "missing-method"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 9,
+            "input": 6,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "let x = ;",
+        "legacy": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 9,
+            "input": 6,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 6,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let a = |v| v.missing_method();",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let b = |v| v.missing_method();",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 2,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "let c = |v| v.missing_method();",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 4,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Type `std::i64` has no method named `missing_method`\n  at input 1 of numbering 1, line 1, column 13\n  at input 2, line 1, column 1",
+          "origin": {
+            "column": 13,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "a(1)",
+        "legacy": {
+          "message": "no method `missing_method` on `std::i64`",
+          "origin": {
+            "column": 13,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 5,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": "missing-method"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Type `std::i64` has no method named `missing_method`\n  at input 1 of numbering 2, line 1, column 13\n  at input 3, line 1, column 1",
+          "origin": {
+            "column": 13,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "b(1)",
+        "legacy": {
+          "message": "no method `missing_method` on `std::i64`",
+          "origin": {
+            "column": 13,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 6,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": "missing-method"
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Type `std::i64` has no method named `missing_method`\n  at input 1, line 1, column 13\n  at input 4, line 1, column 1",
+          "origin": {
+            "column": 13,
+            "input": 3,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "c(1)",
+        "legacy": {
+          "message": "no method `missing_method` on `std::i64`",
+          "origin": {
+            "column": 13,
+            "input": 3,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 7,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": "missing-method"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 14,
+            "input": 7,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "let broken = ;",
+        "legacy": {
+          "message": "Expected expression but got `;`",
+          "origin": {
+            "column": 14,
+            "input": 7,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 10,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "Type `std::i64` has no method named `missing_method`\n  at input 1 of numbering 3, line 1, column 13\n  at input 2, line 1, column 1",
+          "origin": {
+            "column": 13,
+            "input": 3,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "domain_worse": false,
+        "input": "c(1)",
+        "legacy": {
+          "message": "no method `missing_method` on `std::i64`",
+          "origin": {
+            "column": 13,
+            "input": 3,
+            "line": 1
+          },
+          "outcome": "runtime"
+        },
+        "ordinal": 11,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": "missing-method"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Missing item a",
+          "origin": {
+            "column": 1,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "a(1)",
+        "legacy": {
+          "message": "Missing item a",
+          "origin": {
+            "column": 1,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 13,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "const GREETING = \"hello\";",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "const N = 40;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "\"hello\""
+        },
+        "domain_worse": false,
+        "input": "GREETING",
+        "legacy": {
+          "outcome": "ok",
+          "value": "\"hello\""
+        },
+        "ordinal": 2,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "fn more() { N + 2 }",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 3,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "42"
+        },
+        "domain_worse": false,
+        "input": "more()",
+        "legacy": {
+          "outcome": "ok",
+          "value": "42"
+        },
+        "ordinal": 4,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "const M = N * 2;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 5,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "80"
+        },
+        "domain_worse": false,
+        "input": "M",
+        "legacy": {
+          "outcome": "ok",
+          "value": "80"
+        },
+        "ordinal": 6,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "pub const P = 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 7,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "pub struct Point { x }",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 8,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "enum E { A }",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 9,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "const N = 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 10,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "3"
+        },
+        "domain_worse": false,
+        "input": "more()",
+        "legacy": {
+          "outcome": "ok",
+          "value": "3"
+        },
+        "ordinal": 11,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "Missing item N",
+          "origin": {
+            "column": 1,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": false,
+        "input": "N",
+        "legacy": {
+          "message": "Missing item N",
+          "origin": {
+            "column": 1,
+            "input": 1,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 13,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "const A = 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 0,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "const C = A + 1;",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 1,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "2"
+        },
+        "domain_worse": false,
+        "input": "C",
+        "legacy": {
+          "outcome": "ok",
+          "value": "2"
+        },
+        "ordinal": 2,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "wording_rule": null
+      },
+      {
+        "class": "Wording",
+        "domain": {
+          "message": "restricted scalar constant",
+          "origin": {
+            "column": 11,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "domain_worse": true,
+        "input": "const A = \"x\";",
+        "legacy": {
+          "message": "Expected type `std::string::String` but found `std::i64`",
+          "origin": {
+            "column": 11,
+            "input": 2,
+            "line": 1
+          },
+          "outcome": "compile"
+        },
+        "ordinal": 3,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "wording_rule": "constant-type-information-lost"
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "1"
+        },
+        "domain_worse": false,
+        "input": "A",
+        "legacy": {
+          "outcome": "ok",
+          "value": "1"
+        },
+        "ordinal": 4,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "2"
+        },
+        "domain_worse": false,
+        "input": "C",
+        "legacy": {
+          "outcome": "ok",
+          "value": "2"
+        },
+        "ordinal": 5,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: `main` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "const main = 1;",
+        "legacy": {
+          "message": "refused: `main` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 0,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: `__rnx_x` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "const __rnx_x = 1;",
+        "legacy": {
+          "message": "refused: `__rnx_x` is reserved by the session",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 1,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": null
+        },
+        "domain_worse": false,
+        "input": "struct S { a }",
+        "legacy": {
+          "outcome": "ok",
+          "value": null
+        },
+        "ordinal": 2,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: `S` is a type whose shape changed; :reset before redeclaring it (input 4, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "const S = 1;",
+        "legacy": {
+          "message": "refused: `S` is a type whose shape changed; :reset before redeclaring it (input 4, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 3,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 5, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "mod m {}",
+        "legacy": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 5, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 4,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 6, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "use std::string::String;",
+        "legacy": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 6, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 5,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      },
+      {
+        "class": "Equal",
+        "domain": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 7, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "domain_worse": false,
+        "input": "impl S { fn f(self) {} }",
+        "legacy": {
+          "message": "refused: a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files (input 7, line 1, column 1)",
+          "origin": null,
+          "outcome": "refused"
+        },
+        "ordinal": 6,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "wording_rule": null
+      }
+    ],
+    "sequences": [
+      {
+        "clean_end_to_end": false,
+        "sequence": "checks",
+        "successful_inputs_before_first_gap": 5
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "tests::compile_error_maps_to_the_typed_line_and_column",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "tests::runtime_error_in_an_older_definition_reports_that_input",
+        "successful_inputs_before_first_gap": 2
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "tests::runtime_error_through_a_retained_closure_reports_the_closure_input",
+        "successful_inputs_before_first_gap": 2
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
+        "successful_inputs_before_first_gap": 2
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "tests::a_closure_retained_by_a_failed_input_still_maps_to_that_input",
+        "successful_inputs_before_first_gap": 1
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "tests::over_the_ceiling_refuses_evaluation_but_not_inspection",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "retention_tests::a_unit_nothing_can_call_is_released_and_its_entry_pruned",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "retention_tests::a_unit_something_can_still_call_is_kept",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "retention_tests::a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position",
+        "successful_inputs_before_first_gap": 1
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "retention_tests::every_ordinary_runtime_error_finds_its_position",
+        "successful_inputs_before_first_gap": 2
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "retention_tests::a_missing_entry_reports_the_position_as_unavailable",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "retention_tests::a_reset_keeps_the_context_and_empties_the_session",
+        "successful_inputs_before_first_gap": 3
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "successful_inputs_before_first_gap": 7
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "successful_inputs_before_first_gap": 2
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "successful_inputs_before_first_gap": 2
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
+        "successful_inputs_before_first_gap": 3
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "successful_inputs_before_first_gap": 1
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
+        "successful_inputs_before_first_gap": 1
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
+        "successful_inputs_before_first_gap": 4
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
+        "successful_inputs_before_first_gap": 3
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "numbering_tests::admission_not_success_spends_the_next_number",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "method_naming_tests::an_unmapped_retained_error_preserves_the_linked_diagnostic_despite_a_caller_decoy",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "method_naming_tests::the_exhaustion_clause_follows_the_proved_name",
+        "successful_inputs_before_first_gap": 0
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "const_tests::a_const_is_retained_and_used_later",
+        "successful_inputs_before_first_gap": 12
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
+        "successful_inputs_before_first_gap": 5
+      },
+      {
+        "clean_end_to_end": true,
+        "sequence": "const_tests::reserved_names_and_type_shapes_still_apply",
+        "successful_inputs_before_first_gap": 1
+      },
+      {
+        "clean_end_to_end": false,
+        "sequence": "native_budget_tests::a_sliced_session_never_retries_a_failed_native_iterator",
+        "successful_inputs_before_first_gap": 0
+      }
+    ],
+    "status": "PASS",
+    "wording_count": 21
+  },
+  "notebooks": [
+    {
+      "observation": "values, diagnostics and per-cell stdout",
+      "report": {
+        "rows": [
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "fn payment(principal, yearly_rate, years) {\n    let r = yearly_rate / 12.0;\n    let n = years * 12;\n    principal * r / (1.0 - (1.0 + r).powf(-(n as f64)))\n}",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "ordinal": 2,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "fn money(x) {\n    let cents = (x * 100.0).round() as i64;\n    let whole = `${cents / 100}`;\n    let out = \"\";\n    for i in 0..whole.len() {\n        if i > 0 && (whole.len() - i) % 3 == 0 { out += \",\"; }\n        out += whole[i..i + 1];\n    }\n    format!(\"{}.{:02}\", out, cents % 100)\n}",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "ordinal": 4,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "1798.6515754582708"
+            },
+            "domain_worse": false,
+            "input": "let (principal, rate, years) = (300000.0, 0.06, 30);\nlet pay = payment(principal, rate, years);\npay",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "1798.6515754582708"
+            },
+            "ordinal": 6,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "Loan 300,000.00 at 6.0% a year for 30 years, paid monthly\n(a constant rate; totals exclude fees, taxes and insurance)\nMonthly payment       1,798.65\n(totals use the unrounded payment, shown here to four decimals: 1798.6516)\nTotal paid          647,514.57\nTotal interest      347,514.57\n\n",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "println!(\"Loan {} at {:.1}% a year for {} years, paid monthly\", money(principal), rate * 100.0, years);\nprintln!(\"(a constant rate; totals exclude fees, taxes and insurance)\");\nprintln!(\"Monthly payment   {:>12}\", money(pay));\nprintln!(\"(totals use the unrounded payment, shown here to four decimals: {:.4})\", pay);\nprintln!(\"Total paid        {:>12}\", money(pay * 360.0));\nprintln!(\"Total interest    {:>12}\", money(pay * 360.0 - principal));\nprintln!(\"\");",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "Loan 300,000.00 at 6.0% a year for 30 years, paid monthly\n(a constant rate; totals exclude fees, taxes and insurance)\nMonthly payment       1,798.65\n(totals use the unrounded payment, shown here to four decimals: 1798.6516)\nTotal paid          647,514.57\nTotal interest      347,514.57\n\n",
+              "value": null
+            },
+            "ordinal": 7,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "Balance after each year:\n  year  1    296,315.96\n  year  5    279,163.07\n  year 10    251,057.17\n  year 20    162,010.76\n  year 30          0.00\n",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "println!(\"Balance after each year:\");\nlet balance = principal;\nfor month in 1..=years * 12 {\n    balance -= pay - balance * rate / 12.0;\n    let year = month / 12;\n    if month % 12 == 0 && [1, 5, 10, 20, 30].iter().any(|y| y == year) {\n        let shown = if balance.abs() < 0.005 { 0.0 } else { balance };\n        println!(\"  year {:>2}  {:>12}\", year, money(shown));\n    }\n}",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "Balance after each year:\n  year  1    296,315.96\n  year  5    279,163.07\n  year 10    251,057.17\n  year 20    162,010.76\n  year 30          0.00\n",
+              "value": null
+            },
+            "ordinal": 9,
+            "wording_rule": null
+          }
+        ],
+        "status": "PASS"
+      },
+      "source": "demos/notebooks/01_mortgage.ipynb"
+    },
+    {
+      "observation": "values, diagnostics and per-cell stdout",
+      "report": {
+        "rows": [
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "fn dollars(cents) { format!(\"{}.{:02}\", cents / 100, cents % 100) }\n\n// add `cents` to the [name, total] row for `name`, making the row if new\nfn add(rows, name, cents) {\n    for row in rows { if row[0] == name { row[1] = row[1] + cents; return; } }\n    rows.push([name, cents]);\n}\n\n// largest total first; equal totals by name\nfn by_total(a, b) { if a[1] != b[1] { b[1].cmp(a[1]) } else { a[0].cmp(b[0]) } }",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "ordinal": 1,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "12"
+            },
+            "domain_worse": false,
+            "input": "let path = \"../data/orders.json\";\nlet orders = json::parse(fs::read(path)?)?;\norders.len()",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "12"
+            },
+            "ordinal": 3,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "4"
+            },
+            "domain_worse": false,
+            "input": "let regions = [];\nlet customers = [];\nlet open = 0;\nfor o in orders {\n    let cents = if o.status == \"shipped\" { o.qty * o.unit_cents } else { 0 };\n    if o.status == \"open\" { open += 1; }\n    add(regions, o.region, cents);\n    add(customers, o.customer, cents);\n}\nopen",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "4"
+            },
+            "ordinal": 5,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "12 orders read from ../data/orders.json\nShipped revenue by region:\n  north    245.00\n  east     144.97\n  south     99.95\n  west       0.00\nLargest customer: Acme (134.99), ahead of Birch (134.98)\nStill open: 4 of 12 orders (33.3%)\n",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "regions.sort_by(by_total);\ncustomers.sort_by(by_total);\nprintln!(\"{} orders read from {}\", orders.len(), path);\nprintln!(\"Shipped revenue by region:\");\nfor r in regions { println!(\"  {:<6} {:>8}\", r[0], dollars(r[1])); }\nprintln!(\"Largest customer: {} ({}), ahead of {} ({})\",\n    customers[0][0], dollars(customers[0][1]), customers[1][0], dollars(customers[1][1]));\nprintln!(\"Still open: {} of {} orders ({:.1}%)\", open, orders.len(), open as f64 * 100.0 / orders.len() as f64);",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "12 orders read from ../data/orders.json\nShipped revenue by region:\n  north    245.00\n  east     144.97\n  south     99.95\n  west       0.00\nLargest customer: Acme (134.99), ahead of Birch (134.98)\nStill open: 4 of 12 orders (33.3%)\n",
+              "value": null
+            },
+            "ordinal": 7,
+            "wording_rule": null
+          }
+        ],
+        "status": "PASS"
+      },
+      "source": "demos/notebooks/02_orders.ipynb"
+    },
+    {
+      "observation": "values, diagnostics and per-cell stdout",
+      "report": {
+        "rows": [
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "fn dollars(cents) { format!(\"{}.{:02}\", cents / 100, cents % 100) }\n\nfn bar(n) {\n    let s = \"\";\n    for i in 0..n { s += \"#\"; }\n    s\n}",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": null
+            },
+            "ordinal": 1,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "[[\"east\", 3, 11, 14497], [\"north\", 3, 13, 24500], [\"south\", 4, 5, 9995], [\"west\", 2, 0, 0]]"
+            },
+            "domain_worse": false,
+            "input": "let orders = json::parse(fs::read(\"../data/orders.json\")?)?;\nlet rows = [];\nfor o in orders {\n    let row = None;\n    for r in rows { if r[0] == o.region { row = Some(r); } }\n    let row = match row { Some(r) => r, None => { let r = [o.region, 0, 0, 0]; rows.push(r); r } };\n    row[1] = row[1] + 1;\n    if o.status == \"shipped\" { row[2] = row[2] + o.qty; row[3] = row[3] + o.qty * o.unit_cents; }\n}\nrows.sort_by(|a, b| a[0].cmp(b[0]));\nrows",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "[[\"east\", 3, 11, 14497], [\"north\", 3, 13, 24500], [\"south\", 4, 5, 9995], [\"west\", 2, 0, 0]]"
+            },
+            "ordinal": 3,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "[12, 29, 48992]"
+            },
+            "domain_worse": false,
+            "input": "let (orders_n, units, total, top) = (0, 0, 0, 0);\nfor r in rows { orders_n += r[1]; units += r[2]; total += r[3]; if r[3] > top { top = r[3]; } }\nlet share = |cents| if total == 0 { \"-\" } else { format!(\"{:.1}%\", cents as f64 * 100.0 / total as f64) };\n[orders_n, units, total]",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "",
+              "value": "[12, 29, 48992]"
+            },
+            "ordinal": 5,
+            "wording_rule": null
+          },
+          {
+            "class": "Equal",
+            "domain": {
+              "outcome": "ok",
+              "stdout": "region   orders  units   revenue   share\n--------------------------------------------------------------\neast          3     11    144.97   29.6%  ############\nnorth         3     13    245.00   50.0%  ####################\nsouth         4      5     99.95   20.4%  ########\nwest          2      0      0.00    0.0%\n--------------------------------------------------------------\ntotal        12     29    489.92  100.0%\n",
+              "value": null
+            },
+            "domain_worse": false,
+            "input": "println!(\"{:<8}{:>7}{:>7}{:>10}{:>8}\", \"region\", \"orders\", \"units\", \"revenue\", \"share\");\nprintln!(\"{}\", \"--------------------------------------------------------------\");\nfor r in rows {\n    let width = if top == 0 { 0 } else { (r[3] * 20 + top / 2) / top };\n    let line = format!(\"{:<8}{:>7}{:>7}{:>10}{:>8}\", r[0], r[1], r[2], dollars(r[3]), share(r[3]));\n    println!(\"{}\", if width > 0 { line + \"  \" + bar(width) } else { line });\n}\nprintln!(\"{}\", \"--------------------------------------------------------------\");\nprintln!(\"{:<8}{:>7}{:>7}{:>10}{:>8}\", \"total\", orders_n, units, dollars(total), share(total));",
+            "legacy": {
+              "outcome": "ok",
+              "stdout": "region   orders  units   revenue   share\n--------------------------------------------------------------\neast          3     11    144.97   29.6%  ############\nnorth         3     13    245.00   50.0%  ####################\nsouth         4      5     99.95   20.4%  ########\nwest          2      0      0.00    0.0%\n--------------------------------------------------------------\ntotal        12     29    489.92  100.0%\n",
+              "value": null
+            },
+            "ordinal": 6,
+            "wording_rule": null
+          }
+        ],
+        "status": "PASS"
+      },
+      "source": "demos/notebooks/03_report.ipynb"
+    }
+  ],
+  "summary": {
+    "classes": {
+      "Admitted, not executed": 16,
+      "Equal": 116,
+      "Not classified": 18,
+      "Refused at admission": 1,
+      "Refused for a host function": 27,
+      "Wording": 21
+    },
+    "work_groups": {
+      "async": {
+        "count": 5,
+        "top_constructs": [
+          [
+            "http::get",
+            1
+          ],
+          [
+            "http::get_bytes",
+            1
+          ],
+          [
+            "http::request",
+            1
+          ]
+        ]
+      },
+      "diagnostics to improve": {
+        "count": 2,
+        "top_constructs": [
+          [
+            "constant-type-information-lost",
+            1
+          ],
+          [
+            "vector constant misreported as async input",
+            1
+          ]
+        ]
+      },
+      "host enrollment": {
+        "count": 22,
+        "top_constructs": [
+          [
+            "env::args",
+            1
+          ],
+          [
+            "env::home_dir",
+            1
+          ],
+          [
+            "env::var",
+            1
+          ]
+        ]
+      },
+      "source forms": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "vector constant",
+            1
+          ]
+        ]
+      }
+    }
+  }
+}
