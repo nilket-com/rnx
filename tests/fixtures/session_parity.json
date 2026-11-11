@@ -526,13 +526,19 @@
         "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "json::stringify",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok(\"{\\\"a\\\":[1,2],\\\"b\\\":\\\"x\\\"}\"), Err(\"cannot serialize a result at the value itself\"))"
+        },
+        "domain_worse": false,
         "function": "json::stringify",
-        "input": "json::stringify(())",
-        "input_shape": "Value: outside typed input set",
-        "reason": "recursive dynamic input",
-        "work_group": "recursive dynamic input"
+        "input": "(json::stringify(#{a:[1,2],b:Some(\"x\")}),json::stringify(Ok(1)))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok(\"{\\\"a\\\":[1,2],\\\"b\\\":\\\"x\\\"}\"), Err(\"cannot serialize a result at the value itself\"))"
+        },
+        "wording_rule": null
       },
       {
         "class": "Refused for a host function",
@@ -4541,6 +4547,71 @@
     "status": "PASS",
     "wording_count": 20
   },
+  "moved_json": [
+    {
+      "class": "Intentional difference",
+      "domain": {
+        "message": "Cannot read the value: it has been moved\n  at input 1, line 1, column 27",
+        "origin": {
+          "column": 27,
+          "input": 1,
+          "line": 1
+        },
+        "outcome": "runtime"
+      },
+      "domain_worse": false,
+      "function": "json::stringify",
+      "input": "let moved=[1];drop(moved);json::stringify(moved)",
+      "legacy": {
+        "outcome": "ok",
+        "value": "Err(\"cannot serialize ::std::vec::Vec (an external reference) at the value itself\")"
+      },
+      "reason": "Use after move raises the truthful access error before the host body instead of an external-reference serialization refusal.",
+      "wording_rule": "use-after-move"
+    },
+    {
+      "class": "Intentional difference",
+      "domain": {
+        "message": "Cannot read the value: it has been moved\n  at input 1, line 1, column 45",
+        "origin": {
+          "column": 45,
+          "input": 1,
+          "line": 1
+        },
+        "outcome": "runtime"
+      },
+      "domain_worse": false,
+      "function": "json::stringify",
+      "input": "let moved=[1];let outer=[moved];drop(moved);json::stringify(outer)",
+      "legacy": {
+        "outcome": "ok",
+        "value": "Err(\"cannot serialize ::std::vec::Vec (an external reference) at [0]\")"
+      },
+      "reason": "Use after move raises the truthful access error before the host body instead of an external-reference serialization refusal.",
+      "wording_rule": "use-after-move"
+    },
+    {
+      "class": "Intentional difference",
+      "domain": {
+        "message": "Cannot read the value: it has been moved\n  at input 1, line 1, column 41",
+        "origin": {
+          "column": 41,
+          "input": 1,
+          "line": 1
+        },
+        "outcome": "runtime"
+      },
+      "domain_worse": false,
+      "function": "json::stringify",
+      "input": "let moved=String::from(\"x\");drop(moved);json::stringify(moved)",
+      "legacy": {
+        "outcome": "ok",
+        "value": "Err(\"cannot serialize ::std::string::String (an external reference) at the value itself\")"
+      },
+      "reason": "Use after move raises the truthful access error before the host body instead of an external-reference serialization refusal.",
+      "wording_rule": "use-after-move"
+    }
+  ],
   "notebooks": [
     {
       "observation": "values, diagnostics and per-cell stdout",
@@ -4794,10 +4865,11 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 135,
+      "Equal": 136,
+      "Intentional difference": 3,
       "Not classified": 18,
       "Refused at admission": 6,
-      "Refused for a host function": 14,
+      "Refused for a host function": 13,
       "Wording": 20
     },
     "work_groups": {
@@ -4881,15 +4953,6 @@
         "top_constructs": [
           [
             "web::response",
-            1
-          ]
-        ]
-      },
-      "recursive dynamic input": {
-        "count": 1,
-        "top_constructs": [
-          [
-            "json::stringify",
             1
           ]
         ]

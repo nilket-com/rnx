@@ -349,6 +349,69 @@ fn constant_report() -> serde_json::Value {
 	serde_json::json!(rows)
 }
 
+// ADR0250: exact reviewed diagnostic pairs, never a general error allowance.
+const MOVED_JSON_CASES: &[(&str, &str, usize)] = &[
+	(
+		"let moved=[1];drop(moved);json::stringify(moved)",
+		"Err(\"cannot serialize ::std::vec::Vec (an external reference) at the value itself\")",
+		27,
+	),
+	(
+		"let moved=[1];let outer=[moved];drop(moved);json::stringify(outer)",
+		"Err(\"cannot serialize ::std::vec::Vec (an external reference) at [0]\")",
+		45,
+	),
+	(
+		"let moved=String::from(\"x\");drop(moved);json::stringify(moved)",
+		"Err(\"cannot serialize ::std::string::String (an external reference) at the value itself\")",
+		41,
+	),
+];
+fn moved_json_pair(value: &str, column: usize) -> (serde_json::Value, serde_json::Value) {
+	(
+		serde_json::json!({"outcome":"ok", "value":value}),
+		serde_json::json!({"outcome":"runtime",
+		"message":format!("Cannot read the value: it has been moved\n  at input 1, line 1, column {column}"),
+		"origin":{"input":1,"line":1,"column":column}}),
+	)
+}
+fn moved_json_report() -> serde_json::Value {
+	let rows: Vec<_> = MOVED_JSON_CASES.iter().map(|(input, value, column)| {
+		let mut row = observe_host("json::stringify", input,
+			crate::routing_inventory::session_parity_context().unwrap()).unwrap();
+		let (a,b) = moved_json_pair(value, *column);
+		assert_eq!(row["legacy"], a);
+		assert_eq!(row["domain"], b);
+		assert_eq!(row["class"], "Intentional difference");
+		row["reason"] = "Use after move raises the truthful access error before the host body instead of an external-reference serialization refusal.".into();
+		row
+	}).collect();
+	serde_json::json!(rows)
+}
+#[test]
+fn moved_json_rule_is_exact() {
+	for (_, value, column) in MOVED_JSON_CASES {
+		let (a, b) = moved_json_pair(value, *column);
+		assert_eq!(
+			classify(&a, &b),
+			("Intentional difference", Some("use-after-move"), false)
+		);
+		for key in ["outcome", "message", "origin"] {
+			let mut bad = b.clone();
+			bad[key] = serde_json::Value::Null;
+			assert_eq!(classify(&a, &bad).0, "Domain-only failure");
+		}
+		let mut bad = a.clone();
+		bad["value"] = "Err(\"unreviewed refusal\")".into();
+		assert_eq!(classify(&bad, &b).0, "Domain-only failure");
+	}
+}
+#[test]
+fn moved_json_diagnostics() {
+	let rows = moved_json_report();
+	assert_eq!(rows.as_array().unwrap().len(), MOVED_JSON_CASES.len());
+}
+
 fn classify(
 	a: &serde_json::Value,
 	b: &serde_json::Value,
@@ -363,6 +426,12 @@ fn classify(
 		return ("Different result", None, false);
 	}
 	if a["outcome"] == "ok" {
+		if MOVED_JSON_CASES.iter().any(|(_, value, column)| {
+			let (old, new) = moved_json_pair(value, *column);
+			*a == old && *b == new
+		}) {
+			return ("Intentional difference", Some("use-after-move"), false);
+		}
 		return ("Domain-only failure", None, false);
 	}
 	if b["outcome"] == "ok" {
@@ -624,6 +693,7 @@ fn pinned_classification() {
 	let hosts = host_report();
 	let notebooks = notebook_reports();
 	let constants = constant_report();
+	let moved_json = moved_json_report();
 	let mut probes = Vec::new();
 	for row in constants.as_array().unwrap() {
 		let (class, rule, worse) = classify(&row["legacy"], &row["domain"]);
@@ -637,10 +707,11 @@ fn pinned_classification() {
 	let mut all = literals["rows"].as_array().unwrap().clone();
 	all.extend(hosts["rows"].as_array().unwrap().iter().cloned());
 	all.extend(probes.iter().cloned());
+	all.extend(moved_json.as_array().unwrap().iter().cloned());
 	for book in notebooks.as_array().unwrap() {
 		all.extend(book["report"]["rows"].as_array().unwrap().iter().cloned());
 	}
-	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"summary":summary(&all)});
+	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"moved_json":moved_json,"summary":summary(&all)});
 	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
 		std::fs::write(path, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
 	}

@@ -40,10 +40,15 @@ fn result(v: Value) -> Result<Value, String> {
 }
 
 fn observe(vm: &mut Vm, t: &Value, names: Value) -> (usize, Result<Value, String>) {
+	// Measure refusal/copy/export, not destruction of the consumed argument.
+	// Keep a separate owner until after the peak is captured.
+	let keep = names.clone();
 	reset_peak();
 	let base = peak();
 	let out = result(vm.call(["export"], (t.clone(), names)).unwrap());
-	(peak() - base, out)
+	let grew = peak() - base;
+	drop(keep);
+	(grew, out)
 }
 
 #[test]

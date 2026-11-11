@@ -25,5 +25,13 @@ class Coverage(unittest.TestCase):
 		self.assertEqual(executed('test result: ok. 1 passed;'),1)
 		with self.assertRaises(ValueError):manifest('rune',{'schema':1,'tests':[]})
 
+	def test_root_manifest_keeps_all_new_packages_and_unknown_fails_closed(self):
+		from suite_stage import PACKAGE_CHECKS
+		nodes = {p: [] for p in PACKAGE_CHECKS}
+		selected = required(['Cargo.toml'], [nodes, nodes])
+		self.assertTrue({name for name, _ in PACKAGE_CHECKS.values()} <= set(selected))
+		with self.assertRaisesRegex(ValueError, 'affected package needs a registered suite'):
+			required(['Cargo.toml'], [{'unregistered/Cargo.toml': []}])
+
 
 if __name__=='__main__':unittest.main()

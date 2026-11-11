@@ -44,6 +44,25 @@ def policy_digest():
 	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'required_stages.py', 'suite_stage.py', 'child_result.py', 'accept.py')})
 
 
+def close_prerequisites(commands, selected, prerequisites):
+	order = {name: i for i, (name, _) in enumerate(commands)}
+	if len(order) != len(commands): raise ValueError('duplicate stage definition')
+	selected = set(selected)
+	pending = list(selected)
+	while pending:
+		consumer = pending.pop()
+		if consumer not in order: raise ValueError('missing stage: ' + consumer)
+		for producer in prerequisites.get(consumer, ()):
+			if producer not in order:
+				raise ValueError(consumer + ': missing producer ' + producer)
+			if order[producer] >= order[consumer]:
+				raise ValueError(consumer + ': producer must precede consumer: ' + producer)
+			if producer not in selected:
+				selected.add(producer)
+				pending.append(producer)
+	return selected
+
+
 def select(root, out, names=None, candidate='HEAD'):
 	import accept
 	root = Path(root).resolve(); out = Path(out).resolve()
@@ -52,7 +71,7 @@ def select(root, out, names=None, candidate='HEAD'):
 	names = list(dict(commands)) if names is None else list(names)
 	if len(names) != len(set(names)): raise ValueError('duplicate stage selection')
 	if set(names) - dict(commands).keys(): raise ValueError('unknown selected stage')
-	selected = set(names) | set(info['required'])
+	selected = close_prerequisites(commands, set(names) | set(info['required']), accept.PREREQUISITES)
 	if 'fixed-route' in selected:
 		from fixed_route_gate import valgrind_root
 		valgrind_root()  # Refuse before any expensive selected stage.
@@ -81,7 +100,7 @@ def finalize(manifest, evidence, root=ROOT):
 			raise ValueError('stage candidate differs: ' + name)
 		if row['command'] != command or row['context']['command'] != command:
 			raise ValueError('stage command differs: ' + name)
-		if name in {'cross', 'fixed-route', 'rune-suite', 'rune-clippy', 'project-suite', 'project-clippy'} or name.startswith(('suite-adapter-', 'clippy-adapter-')):
+		if name in {'polars-inventories', 'cross', 'fixed-route', 'rune-suite', 'rune-clippy', 'project-suite', 'project-clippy'} or name.startswith(('suite-adapter-', 'clippy-adapter-', 'package-')):
 			if row['context']['kind'] != 'producer': raise ValueError('stage requires producer receipt: ' + name)
 		if name == 'cross' and row['context']['kind'] != 'producer':
 			raise ValueError('cross requires its own producer receipt')

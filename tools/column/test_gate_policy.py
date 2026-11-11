@@ -72,5 +72,37 @@ class Gates(unittest.TestCase):
 		rows=[{'command':c,'context':{'command':c,'kind':'leaf','candidate':m['record']['candidate']}} for n,c in m['stages']]
 		with patch.object(g.child,'evidence',side_effect=good),self.assertRaises(ValueError):g.finalize(m,evidence,self.root)
 
+	def test_consumer_selection_closes_over_producers(self):
+		self.write('tools/a.py', 'a'); self.commit('impl: adr 9999 controls')
+		m = g.select(self.root, self.root/'runs', ['suite-adapter-polars'])
+		names = [n for n, _ in m['stages']]
+		self.assertLess(names.index('polars-inventories'), names.index('suite-adapter-polars'))
+		self.assertEqual(g.close_prerequisites([('a', []), ('b', []), ('c', [])], {'c'}, {'c': ('b',), 'b': ('a',)}), {'a', 'b', 'c'})
+
+	def test_missing_or_late_producer_fails_closed(self):
+		for commands in [[('consumer', [])], [('consumer', []), ('producer', [])]]:
+			with self.subTest(commands=commands), self.assertRaisesRegex(ValueError, 'consumer.*producer'):
+				g.close_prerequisites(commands, {'consumer'}, {'consumer': ('producer',)})
+
+	def test_failed_producer_never_runs_consumer(self):
+		import accept
+		from types import SimpleNamespace
+		out = self.root/'runs/failure'
+		steps = [('polars-inventories', ['producer']), ('suite-adapter-polars', ['consumer'])]
+		calls = []
+		def fail(command, **kwargs):
+			calls.append(command)
+			return SimpleNamespace(returncode=1, validation={}, declared_output=None)
+		with patch.object(accept, 'ROOT', self.root), patch.object(accept, 'MANIFESTS', []), \
+			patch.object(accept, 'commands', return_value=steps), \
+			patch.object(accept.gate_policy, 'select', return_value={}), \
+			patch.object(accept.subprocess, 'run'), \
+			patch.object(accept.subprocess, 'check_output', side_effect=lambda c, **kw: 'candidate\n' if 'rev-parse' in c else ''), \
+			patch.object(accept.child_result, 'run', side_effect=fail), \
+			patch('sys.argv', ['accept', '--candidate', 'candidate', '--out', str(out)]):
+			self.assertEqual(accept.main(), 1)
+		self.assertEqual(calls, [['producer']])
+		self.assertEqual(json.loads((out/'RESULT.json').read_text())['status'], 'FAIL')
+
 
 if __name__ == '__main__':unittest.main()

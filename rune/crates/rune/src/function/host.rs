@@ -12,21 +12,25 @@ mod sealed {
 	pub trait Arguments {}
 	pub trait Callable<A> {}
 	pub trait StringCallable<A> {}
+	pub trait TreeCallable<A> {}
 }
 
-/// Scalar representation used by the unstable host bridge.
-#[doc(hidden)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[non_exhaustive]
-pub enum HostType {
-	Unit,
-	Bool,
-	I64,
-	U64,
-	F64,
-	Char,
-	String,
+// One declaration also generates the exhaustive negative-control inventory.
+macro_rules! host_types {
+	($($name:ident),* $(,)?) => {
+		#[doc(hidden)]
+		#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+		#[non_exhaustive]
+		pub enum HostType { $($name),* }
+		impl HostType {
+			#[cfg(test)]
+			pub(crate) const ALL: &'static [Self] = &[$(Self::$name),*];
+		}
+	};
 }
+host_types!(Unit, Bool, I64, U64, F64, Char, String, OwnedTreeInput);
+pub(crate) mod owned_tree;
+pub use owned_tree::{OwnedTreeInput, TreeKind, TreeNode};
 /// Closed scalar/optional/result shapes and two concrete dynamic output certificates.
 #[doc(hidden)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -73,6 +77,7 @@ impl OutputCertificate {
 		let valid = |i: usize| i < self.nodes.len();
 		valid(self.root)
 			&& self.nodes.iter().all(|node| match node {
+				OutputShape::Scalar(HostType::OwnedTreeInput) => false,
 				OutputShape::Scalar(_) | OutputShape::Ordering => true,
 				OutputShape::Vec(i) | OutputShape::Object(i) | OutputShape::Option(i) => valid(*i),
 				OutputShape::Tuple(items) => items.iter().all(|i| valid(*i)),
@@ -124,6 +129,16 @@ impl TryClone for HostEnrollment {
 }
 impl HostEnrollment {
 	pub(crate) fn admitted(self) -> bool {
+		if matches!(
+			self.signature.output,
+			HostOutputKind::Scalar(HostType::OwnedTreeInput)
+				| HostOutputKind::Option(HostType::OwnedTreeInput)
+				| HostOutputKind::Result(HostType::OwnedTreeInput, _)
+				| HostOutputKind::Result(_, HostType::OwnedTreeInput)
+		) {
+			return false;
+		}
+
 		match self.signature.output {
 			HostOutputKind::Dynamic | HostOutputKind::ResultDynamicString => self
 				.certificate
@@ -448,6 +463,36 @@ impl TryClone for InstalledAlternate {
 #[doc(hidden)]
 pub struct ExecutionRuntime {
 	pub(crate) inner: crate::sync::Arc<crate::runtime::RuntimeContext>,
+}
+
+/// Sealed one-argument owned input enrollment; not an ordinary HostArgument.
+#[doc(hidden)]
+pub trait TreeInputFunction<A>: Function<A, Plain> + sealed::TreeCallable<A> {
+	fn tree_signature() -> HostSignature;
+}
+impl<F, R> sealed::TreeCallable<(OwnedTreeInput,)> for F
+where
+	F: Fn(OwnedTreeInput) -> R + Function<(OwnedTreeInput,), Plain, Return = R>,
+	R: HostOutput,
+{
+}
+impl<F, R> TreeInputFunction<(OwnedTreeInput,)> for F
+where
+	F: Fn(OwnedTreeInput) -> R + Function<(OwnedTreeInput,), Plain, Return = R>,
+	R: HostOutput,
+{
+	fn tree_signature() -> HostSignature {
+		HostSignature {
+			arity: 1,
+			arguments: [
+				HostType::OwnedTreeInput,
+				HostType::Unit,
+				HostType::Unit,
+				HostType::Unit,
+			],
+			output: R::SHAPE,
+		}
+	}
 }
 
 #[cfg(test)]

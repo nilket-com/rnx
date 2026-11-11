@@ -145,134 +145,285 @@ fn walk(
 	path: &mut Vec<Step>,
 	active: &mut Vec<usize>,
 ) -> Result<(), String> {
-	// The bound is enforced on entry to every value, not only where a
-	// container is descended. An option is a step of recursion that adds no
-	// container of its own, and a chain of them reached serde unbounded until
-	// this check existed: 257 of them serialized, and 8,192 aborted the
-	// process. This is the check the renderer makes in `value`, at the same
-	// threshold, so the two agree about what is too deep.
-	if depth > MAX_DEPTH {
-		return Err(too_deep(path));
-	}
-	if let Ok(_s) = value.borrow_string_ref() {
-		return Ok(());
-	}
-	if let Ok(v) = value.borrow_ref::<RuneVec>() {
-		let address = &*v as *const RuneVec as usize;
-		let items: Vec<Value> = v.iter().cloned().collect();
-		drop(v);
-		return descend(&items, address, depth, path, active, None);
-	}
-	if let Ok(b) = value.borrow_ref::<rune::runtime::Bytes>() {
-		// serde writes these as an array of numbers.
-		let _ = &*b;
-		return Ok(());
-	}
-	if let Ok(o) = value.borrow_ref::<Option<Value>>() {
-		let inner: Option<Value> = (*o).clone();
-		drop(o);
-		// The serializer serializes the inside, so an option adds a level to
-		// the walk but no step to the path: there is nothing to name.
-		return match inner {
-			Some(inner) => walk(&inner, depth + 1, path, active),
-			None => Ok(()),
+	validate(&View::Legacy(value.clone()), depth, path, active)
+}
+
+// Both representations expose one node at a time. Children are never eagerly
+// cloned into a second tree and opaque leaves are never traversed.
+enum View<'a> {
+	Legacy(Value),
+	Owned(&'a rune::host::OwnedTreeInput, usize),
+}
+enum Kind {
+	Leaf,
+	Sequence {
+		object: bool,
+		len: usize,
+		identity: usize,
+		cycle: bool,
+		frontier: bool,
+	},
+	Option(bool),
+	Refused(String),
+}
+impl<'a> View<'a> {
+	fn kind(&self) -> Result<Kind, String> {
+		if let Self::Owned(tree, index) = self {
+			use rune::host::TreeKind as K;
+			let node = tree.node(*index).ok_or("broken owned JSON node")?;
+			return Ok(match node.kind() {
+				K::DepthCut => {
+					return Err("owned JSON depth frontier reached without depth check".into());
+				}
+				K::Scalar(value) => View::Legacy(value.clone()).kind()?,
+				K::String(_) => Kind::Leaf,
+				K::Vec | K::Tuple | K::Object => Kind::Sequence {
+					object: matches!(node.kind(), K::Object),
+					len: node.len(),
+					identity: *index,
+					cycle: node.cycle(),
+					frontier: node.frontier(),
+				},
+				K::Option(some) => Kind::Option(*some),
+				K::Unsupported(what) => Kind::Refused(what.as_str().to_owned()),
+			});
+		}
+		let Self::Legacy(value) = self else {
+			unreachable!()
 		};
+		if value.borrow_string_ref().is_ok() {
+			return Ok(Kind::Leaf);
+		}
+		if let Ok(v) = value.borrow_ref::<RuneVec>() {
+			return Ok(Kind::Sequence {
+				object: false,
+				len: v.len(),
+				identity: &*v as *const RuneVec as usize,
+				cycle: false,
+				frontier: false,
+			});
+		}
+		if value.borrow_ref::<rune::runtime::Bytes>().is_ok() {
+			return Ok(Kind::Leaf);
+		}
+		if let Ok(v) = value.borrow_ref::<Option<Value>>() {
+			return Ok(Kind::Option(v.is_some()));
+		}
+		if value.borrow_ref::<Result<Value, Value>>().is_ok() {
+			return Ok(Kind::Refused("a result".into()));
+		}
+		if value.borrow_ref::<Function>().is_ok() {
+			return Ok(Kind::Refused("a function".into()));
+		}
+		Ok(match value.as_type_value() {
+			Ok(TypeValue::Unit) => Kind::Leaf,
+			Ok(TypeValue::Tuple(v)) => Kind::Sequence {
+				object: false,
+				len: v.len(),
+				identity: &*v as *const OwnedTuple as usize,
+				cycle: false,
+				frontier: false,
+			},
+			Ok(TypeValue::Object(v)) => Kind::Sequence {
+				object: true,
+				len: v.len(),
+				identity: &*v as *const Object as usize,
+				cycle: false,
+				frontier: false,
+			},
+			Ok(TypeValue::EmptyStruct(s)) => {
+				Kind::Refused(format!("empty struct {}", s.rtti().item()))
+			}
+			Ok(TypeValue::TupleStruct(s)) => {
+				Kind::Refused(format!("tuple struct {}", s.rtti().item()))
+			}
+			Ok(TypeValue::Struct(s)) => Kind::Refused(format!("struct {}", s.rtti().item())),
+			Ok(TypeValue::NotTypedInline(_)) => {
+				if rune::from_value::<bool>(value.clone()).is_ok()
+					|| rune::from_value::<char>(value.clone()).is_ok()
+					|| value.as_integer::<i64>().is_ok()
+					|| value.as_integer::<u64>().is_ok()
+					|| rune::from_value::<f64>(value.clone()).is_ok()
+				{
+					Kind::Leaf
+				} else {
+					Kind::Refused(format!("{}", value.type_info()))
+				}
+			}
+			_ => Kind::Refused(format!("{} (an external reference)", value.type_info())),
+		})
 	}
-	if value.borrow_ref::<Result<Value, Value>>().is_ok() {
-		// Measured: `json::stringify(Ok(1))` refuses. A result is not in
-		// the serializer's list of known types, so it is an external
-		// reference like any other.
-		return Err(refuse("a result", path));
+	fn option_child(&self) -> Result<Self, String> {
+		match self {
+			Self::Owned(tree, at) => {
+				let (_, child) = tree
+					.node(*at)
+					.and_then(|n| n.child(0))
+					.ok_or("broken owned JSON option")?;
+				Ok(Self::Owned(tree, child))
+			}
+			Self::Legacy(value) => {
+				let v = value
+					.borrow_ref::<Option<Value>>()
+					.map_err(|e| e.to_string())?;
+				Ok(Self::Legacy(
+					v.as_ref().as_ref().ok_or("missing option value")?.clone(),
+				))
+			}
+		}
 	}
-	if value.borrow_ref::<Function>().is_ok() {
-		return Err(refuse("a function", path));
-	}
-	match value.as_type_value() {
-		Ok(TypeValue::Unit) => Ok(()),
-		Ok(TypeValue::Tuple(t)) => {
-			let address = &*t as *const OwnedTuple as usize;
-			let items: Vec<Value> = t.iter().cloned().collect();
-			drop(t);
-			descend(&items, address, depth, path, active, None)
+	// Borrow each legacy container once and consume its iterator once. Packet
+	// edges are also visited once, without copying a wide intermediate list.
+	fn visit_children(
+		&self,
+		mut visit: impl FnMut(Option<&str>, Self) -> Result<(), String>,
+	) -> Result<(), String> {
+		match self {
+			Self::Owned(tree, at) => {
+				let node = tree.node(*at).ok_or("broken owned JSON node")?;
+				for index in 0..node.len() {
+					let (key, child) = node.child(index).ok_or("broken owned JSON child")?;
+					visit(key, Self::Owned(tree, child))?;
+				}
+				Ok(())
+			}
+			Self::Legacy(value) => {
+				if let Ok(v) = value.borrow_ref::<RuneVec>() {
+					return visit_once(v.iter().map(|v| (None, Self::Legacy(v.clone()))), visit);
+				}
+				match value.as_type_value().map_err(|e| e.to_string())? {
+					TypeValue::Tuple(v) => {
+						visit_once(v.iter().map(|v| (None, Self::Legacy(v.clone()))), visit)
+					}
+					TypeValue::Object(v) => visit_once(
+						v.iter()
+							.map(|(k, v)| (Some(k.as_str()), Self::Legacy(v.clone()))),
+						visit,
+					),
+					_ => Err("invalid JSON children".into()),
+				}
+			}
 		}
-		Ok(TypeValue::Object(o)) => {
-			let address = &*o as *const Object as usize;
-			let entries: Vec<(String, Value)> = o
-				.iter()
-				.map(|(k, v)| (k.as_str().to_owned(), v.clone()))
-				.collect();
-			drop(o);
-			let items: Vec<Value> = entries.iter().map(|(_, v)| v.clone()).collect();
-			let keys: Vec<String> = entries.into_iter().map(|(k, _)| k).collect();
-			descend(&items, address, depth, path, active, Some(&keys))
-		}
-		// Every `RttiKind` refuses, and none of them descends: the serializer
-		// gives up on a struct before looking inside it, so the walk does too
-		// and the path names the struct rather than something within it.
-		Ok(TypeValue::EmptyStruct(s)) => {
-			Err(refuse(&format!("empty struct {}", s.rtti().item()), path))
-		}
-		Ok(TypeValue::TupleStruct(s)) => {
-			Err(refuse(&format!("tuple struct {}", s.rtti().item()), path))
-		}
-		Ok(TypeValue::Struct(s)) => Err(refuse(&format!("struct {}", s.rtti().item()), path)),
-		Ok(TypeValue::NotTypedInline(_)) => inline(value, path),
-		// An unrecognized type is what the serializer calls an external
-		// reference. It is refused rather than passed through, because the
-		// walk's promise is that serde sees nothing it has not accepted.
-		Ok(_) | Err(_) => Err(refuse(
-			&format!("{} (an external reference)", value.type_info()),
-			path,
-		)),
 	}
 }
-
-/// An inline value: those the serializer writes, and those it refuses.
-fn inline(value: &Value, path: &[Step]) -> Result<(), String> {
-	let serializable = rune::from_value::<bool>(value.clone()).is_ok()
-		|| rune::from_value::<char>(value.clone()).is_ok()
-		|| value.as_integer::<i64>().is_ok()
-		|| value.as_integer::<u64>().is_ok()
-		|| rune::from_value::<f64>(value.clone()).is_ok();
-	if serializable {
-		return Ok(());
+fn visit_once<'k, 'v>(
+	entries: impl Iterator<Item = (Option<&'k str>, View<'v>)>,
+	mut visit: impl FnMut(Option<&'k str>, View<'v>) -> Result<(), String>,
+) -> Result<(), String> {
+	#[cfg(test)]
+	WALK_COUNTS.with(|c| {
+		let (opens, steps) = c.get();
+		c.set((opens + 1, steps));
+	});
+	for (key, value) in entries {
+		#[cfg(test)]
+		WALK_COUNTS.with(|c| {
+			let (opens, steps) = c.get();
+			c.set((opens, steps + 1));
+		});
+		visit(key, value)?;
 	}
-	// What is left is an empty value, a type, an ordering, or a type hash,
-	// each of which the serializer refuses by name.
-	Err(refuse(&format!("{}", value.type_info()), path))
+	Ok(())
 }
+#[cfg(test)]
+std::thread_local! { static WALK_COUNTS: std::cell::Cell<(usize,usize)> = const { std::cell::Cell::new((0,0)) }; }
 
-/// Descend into a container: the depth bound, the cycle guard, and one step
-/// of path per child. `keys`, when present, names the children.
-fn descend(
-	items: &[Value],
-	address: usize,
+fn validate(
+	value: &View<'_>,
 	depth: usize,
 	path: &mut Vec<Step>,
 	active: &mut Vec<usize>,
-	keys: Option<&[String]>,
 ) -> Result<(), String> {
-	if active.contains(&address) {
-		return Err(refuse("a cycle", path));
-	}
-	if depth >= MAX_DEPTH && !items.is_empty() {
+	// Option-only chains also advance depth: omitting this check allowed an
+	// 8,192-Option chain to reach serde and abort the process.
+	if depth > MAX_DEPTH {
 		return Err(too_deep(path));
 	}
-	active.push(address);
-	for (index, item) in items.iter().enumerate() {
-		path.push(match keys {
-			Some(keys) => Step::Key(keys[index].clone()),
-			None => Step::Index(index),
-		});
-		let outcome = walk(item, depth + 1, path, active);
-		path.pop();
-		if let Err(reason) = outcome {
+	match value.kind()? {
+		Kind::Leaf => Ok(()),
+		Kind::Refused(what) => Err(refuse(&what, path)),
+		Kind::Option(false) => Ok(()),
+		Kind::Option(true) => validate(&value.option_child()?, depth + 1, path, active),
+		Kind::Sequence {
+			object,
+			len,
+			identity,
+			cycle,
+			frontier,
+		} => {
+			if cycle || active.contains(&identity) {
+				return Err(refuse("a cycle", path));
+			}
+			if depth >= MAX_DEPTH && (len > 0 || frontier) {
+				return Err(too_deep(path));
+			}
+			active.push(identity);
+			let mut index = 0;
+			let result = value.visit_children(|key, child| {
+				path.push(if object {
+					Step::Key(key.ok_or("missing JSON field name")?.to_owned())
+				} else {
+					Step::Index(index)
+				});
+				index += 1;
+				let result = validate(&child, depth + 1, path, active);
+				path.pop();
+				result
+			});
 			active.pop();
-			return Err(reason);
+			result
 		}
 	}
-	active.pop();
-	Ok(())
+}
+
+struct Serialized<'a>(&'a rune::host::OwnedTreeInput, usize);
+impl serde::Serialize for Serialized<'_> {
+	fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+		use rune::host::TreeKind as K;
+		use serde::ser::{Error, SerializeMap, SerializeSeq};
+		let n = self
+			.0
+			.node(self.1)
+			.ok_or_else(|| S::Error::custom("invalid owned JSON node"))?;
+		match n.kind() {
+			// Delegate every primitive to the SAME Rune Value Serialize implementation.
+			K::Scalar(v) => v.serialize(s),
+			K::String(v) => s.serialize_str(v.as_str()),
+			K::Option(false) => s.serialize_none(),
+			K::Option(true) => s.serialize_some(&Serialized(
+				self.0,
+				n.child(0)
+					.ok_or_else(|| S::Error::custom("invalid option"))?
+					.1,
+			)),
+			K::Vec | K::Tuple => {
+				let mut seq = s.serialize_seq(Some(n.len()))?;
+				for i in 0..n.len() {
+					seq.serialize_element(&Serialized(self.0, n.child(i).unwrap().1))?;
+				}
+				seq.end()
+			}
+			K::Object => {
+				let mut map = s.serialize_map(Some(n.len()))?;
+				for i in 0..n.len() {
+					let (k, c) = n.child(i).unwrap();
+					map.serialize_entry(k.unwrap(), &Serialized(self.0, c))?;
+				}
+				map.end()
+			}
+			K::DepthCut | K::Unsupported(_) => {
+				Err(S::Error::custom("unvalidated owned JSON value"))
+			}
+		}
+	}
+}
+fn stringify_owned(value: rune::host::OwnedTreeInput) -> Result<String, String> {
+	if let Some(leaf) = value.leaf() {
+		return stringify(leaf);
+	}
+	validate(&View::Owned(&value, 0), 1, &mut Vec::new(), &mut Vec::new())?;
+	serde_json::to_string(&Serialized(&value, 0))
+		.map_err(|e| format!("the JSON writer refused a walked value: {e}"))
 }
 
 /// The only script-visible JSON reader and guarded writer.
@@ -281,9 +432,11 @@ pub(crate) fn install(
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = rune::Module::with_crate("json")?;
 	module.host_function_with_output("parse", parse, rune::host::OutputCertificate::JSON_RESULT)?;
-	module
-		.function("stringify", |value: Value| stringify(&value))
-		.build()?;
+	module.host_function_tree_input(
+		"stringify",
+		|value: Value| stringify(&value),
+		stringify_owned,
+	)?;
 	context.install(module)?;
 	Ok(vec![
 		crate::host::HostFunction {
@@ -295,4 +448,40 @@ pub(crate) fn install(
 			doc: "stringify(value) -> Result<String>: render JSON with cycle and depth guards; refuse unrepresentable values",
 		},
 	])
+}
+
+#[cfg(test)]
+mod traversal_controls {
+	use super::*;
+	#[test]
+	fn wide_legacy_containers_visit_once() {
+		const N: usize = 100_000;
+		let mut object = Object::with_capacity(N).unwrap();
+		let mut vector = RuneVec::with_capacity(N).unwrap();
+		for n in 0..N {
+			object
+				.insert(
+					rune::alloc::String::try_from(n.to_string().as_str()).unwrap(),
+					Value::from(n as i64),
+				)
+				.unwrap();
+			vector.push(Value::from(n as i64)).unwrap();
+		}
+		let tuple = OwnedTuple::try_from(
+			(0..N)
+				.map(|n| Value::from(n as i64))
+				.collect::<Vec<_>>()
+				.into_boxed_slice(),
+		)
+		.unwrap();
+		for value in [
+			Value::try_from(object).unwrap(),
+			Value::try_from(vector).unwrap(),
+			Value::try_from(tuple).unwrap(),
+		] {
+			WALK_COUNTS.with(|c| c.set((0, 0)));
+			walk(&value, 1, &mut Vec::new(), &mut Vec::new()).unwrap();
+			assert_eq!(WALK_COUNTS.with(|c| c.get()), (1, N));
+		}
+	}
 }

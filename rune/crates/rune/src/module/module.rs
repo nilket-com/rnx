@@ -316,6 +316,63 @@ impl Module {
 		self.function_inner(data, Docs::EMPTY, None)
 	}
 
+	/// Keep the legacy handler and enroll a sealed, single owned-tree adapter.
+	/// The packet is input-only and cannot be combined with other arguments.
+	///
+	/// ```
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_tree_input("tree", |_: rune::Value| (),
+	///     |_: OwnedTreeInput| ()).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_tree_input("tree", |_: rune::Value| (),
+	///     |_: OwnedTreeInput, _: i64| ()).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_tree_input("tree", |_: rune::Value| (),
+	///     |value: OwnedTreeInput| value).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = rune::Module::new();
+	/// m.host_function("tree", |_: OwnedTreeInput| ()).unwrap();
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn host_function_tree_input<N, F, A, G>(
+		&mut self,
+		name: N,
+		legacy: F,
+		adapter: G,
+	) -> Result<ItemFnMut<'_>, ContextError>
+	where
+		N: IntoComponent,
+		F: Function<A, crate::function::Plain, Return: MaybeTypeOf>,
+		A: FunctionArgs,
+		G: crate::function::host::TreeInputFunction<
+			(crate::function::host::OwnedTreeInput,),
+			Return: MaybeTypeOf,
+		>,
+	{
+		let mut data = FunctionData::new::<N, F, A, crate::function::Plain>(name, legacy)?;
+		let signature = G::tree_signature();
+		let handler = crate::runtime::FunctionHandler::new(move |stack, addr, args, output| {
+			adapter.call(stack, addr, args, output)
+		})?;
+		data.alternate_host = Some(crate::function::host::AlternateHost {
+			handler,
+			enrollment: crate::function::host::HostEnrollment {
+				signature,
+				certificate: None,
+			},
+		});
+		self.function_inner(data, Docs::EMPTY, None)
+	}
+
 	/// Create an empty module for the root path.
 	pub fn new() -> Self {
 		Self::default()

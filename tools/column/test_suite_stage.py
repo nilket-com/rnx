@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 import suite_stage as suite
@@ -57,3 +58,13 @@ class DeclaredOutput(unittest.TestCase):
 	def test_cleanup_before_receipt(self):self.exercise()
 	def test_failure_remains_failure(self):self.exercise(test_failure=True)
 	def test_cleanup_rejection_fails(self):self.exercise(cleanup_failure=True)
+
+class PackageChecks(unittest.TestCase):
+	def test_every_registered_recipe_propagates_package_build_failure(self):
+		for manifest, (name, commands) in suite.PACKAGE_CHECKS.items():
+			with self.subTest(manifest=manifest), tempfile.TemporaryDirectory() as tmp:
+				self.assertTrue(all(manifest in c for c in suite.recipes(name)))
+				with patch.object(suite.subprocess, 'run', side_effect=subprocess.CalledProcessError(101, commands[0])) as run:
+					with self.assertRaises(subprocess.CalledProcessError): suite.run(name, Path(tmp))
+					self.assertEqual(run.call_count, 1)
+					self.assertTrue(run.call_args.kwargs['check'])

@@ -1062,7 +1062,6 @@ pub(crate) fn host_wait_reason(name: &str) -> &'static str {
 		"fs::read_bytes" => "bytes",
 		"time::from_parts" => "borrowed object input",
 		"web::escape_html" => "VM-error result",
-		"json::stringify" => "recursive dynamic input",
 		"process::run" => "argument-vector and options-object input",
 		"process::run_bytes" => "argument-vector/options input and bytes output",
 		"web::response" => "dynamic body/headers and response output",

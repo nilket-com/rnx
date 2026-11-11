@@ -204,7 +204,7 @@ fn cases() -> Result<Vec<Case>> {
 	});
 	for (name, body, budget) in [
 		("admitted", "let a=[];a.push(a);a", 2_000_000),
-		("refused", "json::stringify(#{a:1})", 2_000_000),
+		("refused", "time::from_parts(#{})", 2_000_000),
 		// E1's live edge oracle: legacy reaches Panic at remaining=0,
 		// execution reaches the same Panic with remaining work. The CLI
 		// differs only by legacy's exhausted-budget annotation.

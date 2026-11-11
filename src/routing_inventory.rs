@@ -18,6 +18,7 @@ enum Class {
 	Typed,
 	DynamicOutput,
 	StringInput,
+	TreeInput,
 	Undeclared,
 	Opaque,
 }
@@ -95,8 +96,8 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"json::stringify",
 		"()",
-		Class::Undeclared,
-		"Value: outside typed input set",
+		Class::TreeInput,
+		"OwnedTreeInput: bounded owned tree",
 		"Result<String,String>",
 	);
 	add(
@@ -358,6 +359,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 			Class::Typed => "typed",
 			Class::DynamicOutput => "dynamic-output",
 			Class::StringInput => "string-input",
+			Class::TreeInput => "tree-input",
 			Class::Undeclared | Class::Opaque => "undeclared",
 		};
 		assert_eq!(
@@ -390,7 +392,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 		let verdict = if let Some(s) = &source {
 			let observed = compile(&c, s);
 			match p.class {
-				Class::Typed | Class::DynamicOutput | Class::StringInput => {
+				Class::Typed | Class::DynamicOutput | Class::StringInput | Class::TreeInput => {
 					assert!(observed.is_ok(), "{}: {:?}", p.path, observed.err());
 					"conditional-admission"
 				}
@@ -827,11 +829,13 @@ fn host_refusal_reasons_match_registration_policy() {
 				"missing specific refusal reason: {}",
 				policy.path
 			),
-			Class::Typed | Class::DynamicOutput | Class::StringInput => assert_eq!(
-				reason, "host enrollment",
-				"enrolled function still has a refusal reason: {}",
-				policy.path
-			),
+			Class::Typed | Class::DynamicOutput | Class::StringInput | Class::TreeInput => {
+				assert_eq!(
+					reason, "host enrollment",
+					"enrolled function still has a refusal reason: {}",
+					policy.path
+				)
+			}
 			Class::Opaque => {} // Native receivers are outside the stock free-function table.
 		}
 	}

@@ -14,6 +14,7 @@ const NAMES: &[&str] = &[
 	"fs::append",
 	"fs::write_new",
 	"web::parse_form",
+	"json::stringify",
 ];
 pub(crate) fn is_new(name: &str) -> bool {
 	NAMES.contains(&name)
@@ -96,6 +97,7 @@ fn child_witness() {
 		"web::parse_form" => {
 			r#"(web::parse_form("a=one+two&a=ignored"),web::parse_form(42),web::parse_form("%FF=x"))"#
 		}
+		"json::stringify" => r#"(json::stringify(#{a:[1,2],b:Some("x")}),json::stringify(Ok(1)))"#,
 		_ => panic!("unknown witness"),
 	};
 	let row = super::parity::observe_host(
@@ -123,9 +125,9 @@ fn enrolled_executed_witnesses() {
 fn resolved_refusals_preserve_aliases_and_first_cause() {
 	use super::domain_session::{DomainSession, transcripts::parity_new};
 	for source in [
-		"json::stringify(42)",
-		"use json::stringify as save; save(42)",
-		"use json::stringify; stringify(42)",
+		"process::run(\"\",[],#{})",
+		"use process::run as save; save(\"\",[],#{})",
+		"use process::run; run(\"\",[],#{})",
 	] {
 		let mut session = DomainSession::new(
 			crate::routing_inventory::session_parity_context().unwrap(),
@@ -138,7 +140,7 @@ fn resolved_refusals_preserve_aliases_and_first_cause() {
 			assert!(text.contains("imports"), "first cause lost: {result}");
 		} else {
 			assert!(
-				text.contains("json::stringify needs recursive dynamic input"),
+				text.contains("process::run needs argument-vector and options-object input"),
 				"{result}"
 			);
 			assert!(text.contains("without --engine=execution"), "{result}");
@@ -162,9 +164,9 @@ impl Drop for Scratch {
 #[test]
 fn compiler_reports_resolved_host_for_imported_and_aliased_calls() {
 	for source in [
-		"pub fn main(){json::stringify(42)}",
-		"use json::stringify as save; pub fn main(){save(42)}",
-		"use json::stringify;pub fn main(){stringify(42)}",
+		"pub fn main(){process::run(\"\",[],#{})}",
+		"use process::run as save; pub fn main(){save(\"\",[],#{})}",
+		"use process::run;pub fn main(){run(\"\",[],#{})}",
 	] {
 		let context = crate::routing_inventory::session_parity_context().unwrap();
 		let mut sources = rune::Sources::new();
@@ -190,7 +192,7 @@ fn compiler_reports_resolved_host_for_imported_and_aliased_calls() {
 				_ => None,
 			})
 			.expect("resolved host diagnostic");
-		assert_eq!(host.to_string().trim_start_matches("::"), "json::stringify");
+		assert_eq!(host.to_string().trim_start_matches("::"), "process::run");
 	}
 }
 
@@ -264,4 +266,48 @@ fn bytes_are_not_representable_in_execution_sessions() {
 		assert_ne!(row["outcome"], "ok", "{input}: {row}");
 		new.close().unwrap();
 	}
+}
+
+#[test]
+fn owned_json_differential() {
+	let mut old =
+		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
+	let mut new = super::domain_session::DomainSession::new(
+		crate::routing_inventory::session_parity_context().unwrap(),
+		super::DEFAULT_CEILING,
+	)
+	.unwrap();
+	use super::domain_session::transcripts::{parity_new, parity_old};
+	let cases = [
+		r#"json::stringify([1,2,3])"#,
+		r#"json::stringify(i64)"#,
+		r#"json::stringify(1..4)"#,
+		r#"json::stringify(#{z:1,a:2,m:3})"#,
+		r#"json::stringify(#{a:[1,(2,3)], b:Some("hello"), c:None})"#,
+		r#"let a=[1,2];json::stringify([a,a])"#,
+		r#"let a=[];a.push(a);json::stringify(a)"#,
+		r#"let a=#{x:()};a.x=a;json::stringify(a)"#,
+		r#"let a=((),);a.0=a;json::stringify(a)"#,
+		r#"json::stringify(#{a:Ok(1)})"#,
+		r#"json::stringify(#{"a.b":[||1]})"#,
+		r#"struct A{x} json::stringify(#{a:A{x:1}})"#,
+		r#"struct B(i64); json::stringify([B(1)])"#,
+		r#"struct C; json::stringify(C)"#,
+		r#"json::stringify([-9223372036854775807-1,9223372036854775807,18446744073709551615u64])"#,
+		r#"json::stringify([-0.0,0.0/0.0,1.0/0.0,-1.0/0.0])"#,
+		r#"json::stringify(['𝄞',"\n\t\"\\\u{0}"])"#,
+		r#"let s="local";json::stringify(if true {s}else{"no"})"#,
+		r#"let prior=||#{s:"captured"};prior()"#,
+		r#"json::stringify(prior())"#,
+		r#"let v=[];for n in 0..100000 {v.push(n);}json::stringify(v).unwrap().len()"#,
+		r#"let v=0;for n in 0..64 {v=Some(v);}json::stringify(v)"#,
+		r#"let v=0;for n in 0..64 {v=[v];}json::stringify(v)"#,
+	];
+	for case in cases {
+		let a = parity_old(&mut old, case);
+		let b = parity_new(&mut new, case);
+		assert_eq!(a["outcome"], "ok", "legacy did not execute {case}: {a}");
+		assert_eq!(a, b, "{case}");
+	}
+	new.close().unwrap();
 }

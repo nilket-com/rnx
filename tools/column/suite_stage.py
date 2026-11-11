@@ -12,8 +12,21 @@ import child_result as child
 ROOT = Path(__file__).resolve().parents[2]
 
 
+# Existing package recipes: no-std and Hegel follow upstream ci.yml; the
+# examples/benchmark targets are compilation checks, not executed benchmarks.
+PACKAGE_CHECKS = {
+	'rune/no-std/Cargo.toml': ('package-no-std', [['cargo', '+nightly-2026-09-01', 'run', '--locked', '--manifest-path', 'rune/no-std/Cargo.toml', '--example', 'minimal']]),
+	'rune/examples/Cargo.toml': ('package-examples', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'rune/examples/Cargo.toml', '--all-targets']]),
+	'rune/benches/Cargo.toml': ('package-benches', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'rune/benches/Cargo.toml', '--benches']]),
+	'rune/hegel_tests/Cargo.toml': ('package-hegel', [['cargo', '+1.98.1', 'test', '--manifest-path', 'rune/hegel_tests/Cargo.toml']]),
+	'tools/polars-gen/Cargo.toml': ('package-polars-gen', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'tools/polars-gen/Cargo.toml', '--all-targets']]),
+}
+
+
 def recipes(stage, root=ROOT):
 	cargo = ['cargo', '+1.98.1']
+	for name, commands in PACKAGE_CHECKS.values():
+		if stage == name: return [list(c) for c in commands]
 	if stage in {'rune-suite', 'rune-clippy'}:
 		m = json.loads((root/'rune/tools/xtask/manifests/native.json').read_text())
 		if stage == 'rune-clippy':
@@ -63,6 +76,8 @@ def run(stage, out, root=ROOT):
 			row['passed'] = executed(invoke(command + ['--', '--test-threads=4'], root, out/f'{i}-test.log'))
 			if '--doc' in command and (len(row['discovered']) != 2 or row['passed'] != 2):
 				raise ValueError('API boundary requires both compiling and compile-fail twins')
+		elif stage in {name for name, _ in PACKAGE_CHECKS.values()}:
+			invoke(command, root, out/f'{i}-package.log')
 		elif stage == 'rune-clippy':
 			invoke(command, root, out/f'{i}-clippy.log')
 		else:

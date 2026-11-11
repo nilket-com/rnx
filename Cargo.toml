@@ -51,14 +51,14 @@ server-runtime = []
 # The stock HTTP/1 host, separate from the dependency-free embedding boundary.
 http-server = ["server-runtime", "dep:axum", "dep:hyper", "dep:hyper-util", "tokio/sync", "tokio/macros", "tokio/signal", "tokio/io-util"]
 # Record 0057: explicit versioned source maps for the file runner.
-project-sources = ["dep:serde"]
+project-sources = []
 
 [dependencies]
 axum = { version = "=0.8.9", default-features = false, features = ["http1", "tokio"], optional = true }
 hyper = { version = "=1.11.1", default-features = false, features = ["server", "http1"], optional = true }
 hyper-util = { version = "=0.1.20", default-features = false, features = ["server", "http1", "service", "tokio"], optional = true }
 rnx-project = { path = "tools/project", optional = true }
-serde = { version = "1", features = ["derive"], optional = true }
+serde = { version = "1", features = ["derive"] }
 rune = { path = "rune/crates/rune", default-features = false, features = ["std", "fmt", "execution", "native-code"] }
 serde_json = "1.0.149"
 jiff = { version = "=0.2.24", default-features = false, features = ["std", "tz-system", "tzdb-zoneinfo"] }

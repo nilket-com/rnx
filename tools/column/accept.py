@@ -19,6 +19,15 @@ MANIFESTS = ["Cargo.toml", "tools/project/Cargo.toml", "adapters/candle/Cargo.to
 	"demos/polars/Cargo.toml", "servers/http-postgres/Cargo.toml"]
 
 
+# Inputs produced by another canonical stage, not supplied by the checkout.
+# Selection closes transitively over this relation and preserves command order.
+PREREQUISITES = {
+	'polars-suite': ('polars-inventories',),
+	'suite-adapter-polars': ('polars-inventories',),
+	'production-cli-controls': ('production-cli-build',),
+}
+
+
 def commands(out, root=ROOT):
 	# The verifier only permits ignored in-tree output below this directory.
 	cross_out = root / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16])
@@ -62,6 +71,9 @@ def commands(out, root=ROOT):
 	for name in ('rune-suite', 'rune-clippy', 'project-suite', 'project-clippy',
 		'suite-adapter-candle', 'suite-adapter-polars', 'suite-adapter-postgres',
 		'clippy-adapter-candle', 'clippy-adapter-polars', 'clippy-adapter-postgres'):
+		steps.append((name, ['python3', '-B', 'tools/column/suite_stage.py', '--stage', name, '--out', str(out/name)]))
+	from suite_stage import PACKAGE_CHECKS
+	for name, _ in PACKAGE_CHECKS.values():
 		steps.append((name, ['python3', '-B', 'tools/column/suite_stage.py', '--stage', name, '--out', str(out/name)]))
 	steps.append(('fixed-route', ['python3', '-B', 'tools/column/fixed_route_gate.py', '--out', str(out/'fixed-route')]))
 	assert len({name for name, _ in steps}) == len(steps)

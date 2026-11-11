@@ -461,3 +461,128 @@ fn string_input_failure_cleanup_before_and_after_host_entry() {
 		assert_eq!(store.live_entries(), 0);
 	}
 }
+
+#[test]
+fn owned_tree_routes_are_exclusive_and_output_marker_is_rejected() {
+	use crate::function::host::HostEnrollment;
+	use crate::host::{OutputCertificate, OutputShape, OwnedTreeInput};
+	let mut store = Store::new(Limits::default()).unwrap();
+	let vec = store.root_list(Type::Vec, &[]).unwrap();
+	let tuple = store.root_list(Type::Tuple, &[]).unwrap();
+	for &kind in HostType::ALL {
+		for value in [
+			vec.value,
+			tuple.value,
+			Value::Function { code: 1, id: 0 },
+			Value::Type(Type::I64),
+		] {
+			let route = input(&store, value, kind);
+			if kind == HostType::OwnedTreeInput {
+				assert!(matches!(route, Input::Plain));
+			} else {
+				assert!(matches!(
+					route,
+					Input::Wrong(_) | Input::Function | Input::TypeValue
+				));
+			}
+		}
+	}
+	for value in [
+		witness(Type::Vec).unwrap(),
+		witness(Type::Object).unwrap(),
+		witness(Type::Option).unwrap(),
+		witness(Type::Result).unwrap(),
+	] {
+		assert!(OwnedTreeInput::from_value(value).is_err());
+	}
+	for output in [
+		HostOutputKind::Scalar(HostType::OwnedTreeInput),
+		HostOutputKind::Option(HostType::OwnedTreeInput),
+		HostOutputKind::Result(HostType::OwnedTreeInput, HostType::String),
+		HostOutputKind::Result(HostType::String, HostType::OwnedTreeInput),
+	] {
+		assert!(!HostEnrollment {
+			signature: HostSignature {
+				arity: 0,
+				arguments: [HostType::Unit; 4],
+				output
+			},
+			certificate: None
+		}
+		.admitted());
+	}
+	for output in [HostOutputKind::Dynamic, HostOutputKind::ResultDynamicString] {
+		assert!(!HostEnrollment {
+			signature: HostSignature {
+				arity: 0,
+				arguments: [HostType::Unit; 4],
+				output
+			},
+			certificate: Some(OutputCertificate {
+				nodes: &[
+					OutputShape::Result(1, 2),
+					OutputShape::Scalar(HostType::OwnedTreeInput),
+					OutputShape::Scalar(HostType::String)
+				],
+				root: 0
+			})
+		}
+		.admitted());
+	}
+	store.root_release(vec).unwrap();
+	store.root_release(tuple).unwrap();
+}
+
+#[test]
+fn owned_tree_budget_and_panic_cleanup() {
+	use crate::host::OwnedTreeInput;
+	use std::sync::{
+		atomic::{AtomicUsize, Ordering},
+		Arc,
+	};
+	let effects = Arc::new(AtomicUsize::new(0));
+	let seen = effects.clone();
+	let mut m = Module::with_item(["tiny"]).unwrap();
+	m.host_function_tree_input(
+		"tree",
+		|_: crate::Value| 0i64,
+		move |tree: OwnedTreeInput| -> i64 {
+			seen.fetch_add(1, Ordering::SeqCst);
+			assert!(tree.node(0).is_some());
+			panic!("owned packet cleanup");
+		},
+	)
+	.unwrap();
+	let context = installed(m);
+	let code = code(&context, "tree", 1);
+	let mut exec = executor(&context);
+	let mut store = Store::new(Limits {
+		entries: 100,
+		bytes: 1024,
+	})
+	.unwrap();
+	let a = store.root_list(Type::Vec, &[]).unwrap();
+	let b = store.root_list(Type::Vec, &[&a, &a]).unwrap();
+	let failure = exec
+		.invoke_code(&code, &mut store, 0, &[&b], 100)
+		.unwrap_err();
+	assert_eq!(failure.error.kind, ErrorKind::StoreCapacity);
+	assert_eq!(failure.error.operation, "owned host input bytes");
+	assert_eq!(effects.load(Ordering::SeqCst), 0);
+	assert!(exec.is_idle());
+	store.root_release(b).unwrap();
+	store.root_release(a).unwrap();
+	assert_eq!(store.live_entries(), 0);
+	let mut store = Store::new(Limits::default()).unwrap();
+	let text = store.root_string("kept").unwrap();
+	let list = store.root_list(Type::Vec, &[&text, &text]).unwrap();
+	assert!(exec
+		.invoke_code(&code, &mut store, 0, &[&list], 100)
+		.is_err());
+	assert_eq!(effects.load(Ordering::SeqCst), 1);
+	assert!(exec.is_idle());
+	assert_eq!(store.root_text(&text).unwrap(), "kept");
+	store.root_release(list).unwrap();
+	store.root_release(text).unwrap();
+	assert_eq!(store.live_entries(), 0);
+}

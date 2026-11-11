@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import tarfile
 import tempfile
+from suite_stage import PACKAGE_CHECKS
 
 
 def graph_change(paths):
@@ -86,6 +87,10 @@ def required(paths, graphs=None):
 			stages.update(direct([str(Path(manifest).parent/'src/lib.rs')]))
 		elif manifest == 'jupyter/Cargo.toml': stages.update(('jupyter-format', 'jupyter-clippy', 'jupyter-tests', 'jupyter-kernel'))
 		elif manifest == 'tools/project/Cargo.toml': stages.update(('project-suite', 'project-clippy'))
+		elif manifest in PACKAGE_CHECKS:
+			stages.add(PACKAGE_CHECKS[manifest][0])
+		elif manifest in {'demos/candle/Cargo.toml', 'demos/polars/Cargo.toml', 'servers/http-postgres/Cargo.toml'}:
+			stages.add('check-' + manifest.replace('/', '-'))
 		elif manifest.startswith(('ci/', 'rune/tools/')):
 			stages.add('controller-controls')
 		else: raise ValueError('affected package needs a registered suite: ' + manifest)

@@ -38,10 +38,13 @@ fn result(v: Value) -> Result<Value, String> {
 }
 
 fn refused(vm: &mut Vm, ce: &Value, q: Value, p: Value, want: &str) {
+	// Measure refusal, excluding destruction of the consumed arguments.
+	let keep = (q.clone(), p.clone());
 	reset_peak();
 	let base = peak();
 	let out = result(vm.call(["score"], (ce.clone(), q, p)).unwrap());
 	let used = peak() - base;
+	drop(keep);
 	let e = out.unwrap_err();
 	assert!(e.contains(want), "{e} (wanted {want})");
 	assert!(used < SMALL, "the refusal ({want}) allocated {used} bytes");

@@ -2055,3 +2055,5 @@ mod object_method_tests;
 mod variant_method_tests;
 
 mod method_cmp;
+
+mod owned_input;

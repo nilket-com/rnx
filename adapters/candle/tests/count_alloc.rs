@@ -114,10 +114,13 @@ fn an_oversized_list_is_refused_before_any_table_is_built() {
 	assert_eq!(rune::from_value::<Vec<i64>>(counts).unwrap(), [3, 3, 3]);
 	// 131,072 shared strings, four times the limit
 	let xs = vm.call(["many"], (131_072i64,)).unwrap();
+	// Keep argument destruction outside the refusal allocation measurement.
+	let keep = xs.clone();
 	reset_peak();
 	let base = peak();
 	let out = result(vm.call(["count"], (enc.clone(), xs)).unwrap());
 	let used = peak() - base;
+	drop(keep);
 	let e = out.unwrap_err();
 	assert!(e.contains("131072 texts, want 1 to 32768"), "{e}");
 	assert!(used < SMALL, "the refusal allocated {used} bytes");

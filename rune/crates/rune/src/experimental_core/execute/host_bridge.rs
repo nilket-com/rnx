@@ -56,10 +56,20 @@ enum Input {
 }
 
 fn input(store: &Store, value: Value, expected: HostType) -> Input {
+	// Only this marker can make a non-string aggregate reach snapshot.
+	if expected == HostType::OwnedTreeInput
+		&& (!matches!(value, Value::Heap(_))
+			|| !matches!(store.host_tag(value), Ok((Type::String, _))))
+	{
+		return Input::Plain;
+	}
+
 	match value {
 		Value::Heap(_) => match store.host_tag(value) {
 			Ok((Type::String, true)) => Input::String,
-			Ok((Type::String, false)) if expected == HostType::String => {
+			Ok((Type::String, false))
+				if matches!(expected, HostType::String | HostType::OwnedTreeInput) =>
+			{
 				Input::Failed(error(ErrorKind::AccessConflict).with_detail(Detail::Moved {
 					access: super::super::error::MovedAccess::Read,
 				}))
@@ -82,10 +92,10 @@ fn snapshot(store: &Store, value: Value) -> Result<stock::Value> {
 		Value::F64(v) => stock::Value::from(v),
 		Value::Char(v) => stock::Value::from(v),
 		Value::Ordering(v) => stock::Value::from(v),
-		Value::Heap(_) => {
+		Value::Heap(_) if matches!(store.host_tag(value)?, (Type::String, _)) => {
 			stock::Value::try_from(crate::alloc::String::try_from(store.text(value)?)?)?
 		}
-		_ => return Err(error(ErrorKind::InvalidCode)),
+		_ => store.owned_host_input(value)?,
 	})
 }
 
@@ -99,6 +109,7 @@ fn prefix_conversion_succeeds(value: &stock::Value, kind: HostType) -> bool {
 		HostType::F64 => f64::from_value(value.clone()).is_ok(),
 		HostType::Char => char::from_value(value.clone()).is_ok(),
 		HostType::String => value.borrow_string_ref().is_ok(),
+		HostType::OwnedTreeInput => false,
 	}
 }
 
