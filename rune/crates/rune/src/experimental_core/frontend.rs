@@ -149,6 +149,7 @@ pub(crate) struct Collector {
 	native_helpers: crate::hash::Map<u32>,
 	pub(crate) failure: Option<Error>,
 	variable_moved: Option<(Span, Span)>,
+	unenrolled_host: Option<(Location, crate::ItemBuf)>,
 	source_uses: Vec<Hash>,
 	self_proofs: Vec<(u32, Hash, Hash, Location)>,
 	proofs: receiver_proofs::Proofs,
@@ -239,6 +240,14 @@ impl Collector {
 	}
 
 	pub(crate) fn compile_error(&mut self, error: Error, fallback: Span) -> crate::compile::Error {
+		if let Some((at, item)) = self.unenrolled_host.take() {
+			if error.refusal == Some(Refusal::Native) && error.location == Some(at) {
+				return crate::compile::Error::new(
+					fallback,
+					crate::compile::ErrorKind::HostNotEnrolled { item },
+				);
+			}
+		}
 		if let Some((at, moved_at)) = self.variable_moved.take() {
 			#[cfg(not(feature = "emit"))]
 			let _ = moved_at;
@@ -316,6 +325,7 @@ impl Collector {
 		let sort_helper = &mut self.sort_helper;
 		let any_helper = &mut self.any_helper;
 		let native_helpers = &mut self.native_helpers;
+		let unenrolled_host = &mut self.unenrolled_host;
 		let moved_error = core::cell::Cell::new(None);
 		let self_proof = core::cell::Cell::new(None);
 		let result = super::lower::function(
@@ -386,6 +396,13 @@ impl Collector {
 				}
 
 				if context.lookup_function(hash).is_some() {
+					if let Some(item) = context
+						.lookup_meta_by_hash(hash)
+						.find_map(|m| m.item.as_ref())
+					{
+						use crate::alloc::clone::TryClone;
+						*unenrolled_host = Some((at, item.try_clone()?));
+					}
 					return Err(Error::refused(Refusal::Native).at(at));
 				}
 
@@ -564,6 +581,7 @@ pub fn compile(
 		native_helpers: crate::hash::Map::default(),
 		failure: None,
 		variable_moved: None,
+		unenrolled_host: None,
 		source_uses: Vec::new(),
 		self_proofs: Vec::new(),
 		proofs: receiver_proofs::Proofs::default(),

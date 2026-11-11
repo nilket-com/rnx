@@ -422,6 +422,24 @@ impl DomainSession {
 						return Err(self.unsupported("async input", at));
 					}
 					if refusal != Refusal::FrontendDiagnostic {
+						if refusal == Refusal::Native {
+							let host = diagnostics.diagnostics().iter().find_map(|d| match d {
+								rune::diagnostics::Diagnostic::Fatal(f) => f
+									.as_compile_error()
+									.filter(|c| {
+										e.location.is_some_and(|l| {
+											c.span().range().start == l.start as usize
+										})
+									})
+									.and_then(|c| c.unenrolled_host()),
+								_ => None,
+							});
+							if let Some(host) = host {
+								let name = host.to_string();
+								let name = name.trim_start_matches("::");
+								return Err(self.refused_at(&format!("{name} needs {}, not yet available in an execution session; start `rnx repl` without --engine=execution", host_wait_reason(name)), at.0, at.1));
+							}
+						}
 						return Err(self.unsupported(refused_construct(refusal), at));
 					}
 				}
@@ -847,3 +865,21 @@ mod tests {
 pub(super) mod transcripts;
 
 mod frames;
+
+/// Small admission-work grouping shared by the pinned inventory.
+pub(crate) fn host_wait_reason(name: &str) -> &'static str {
+	match name {
+		"time::sleep"
+		| "http::get"
+		| "http::get_bytes"
+		| "http::request"
+		| "http::request_bytes" => "async",
+		"fs::read_bytes" => "bytes",
+		"time::from_parts" => "borrowed object input",
+		"web::escape_html" => "VM-error result",
+		"json::stringify" | "process::run" | "process::run_bytes" | "web::parse_form"
+		| "web::response" | "web::html" | "web::text" | "fs::write_new" | "fs::write"
+		| "fs::append" => "dynamic input",
+		_ => "host enrollment",
+	}
+}

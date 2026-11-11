@@ -240,6 +240,21 @@ impl HostOutput for Result<crate::runtime::Value, std::string::String> {
 	const SHAPE: HostOutputKind = HostOutputKind::ResultDynamicString;
 }
 
+// Concrete owned trees use the existing transactional importer, and still require
+// an explicit output certificate at registration. No blanket ToValue admission.
+impl sealed::Output for std::vec::Vec<std::string::String> {}
+impl HostOutput for std::vec::Vec<std::string::String> {
+	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
+}
+impl sealed::Output for Result<std::vec::Vec<std::string::String>, std::string::String> {}
+impl HostOutput for Result<std::vec::Vec<std::string::String>, std::string::String> {
+	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
+}
+impl sealed::Output for Result<Option<std::string::String>, std::string::String> {}
+impl HostOutput for Result<Option<std::string::String>, std::string::String> {
+	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
+}
+
 macro_rules! arguments {
 	($n:expr; $($a:ident : $index:expr),*) => {
 		impl<$($a: HostArgument),*> sealed::Arguments for ($($a,)*) {}

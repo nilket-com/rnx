@@ -73,12 +73,18 @@ pub fn install(
 	arguments: Arc<[String]>,
 ) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("env")?;
-	module
-		.function("args", move || arguments.to_vec())
-		.build()?;
-	module.function("var", var).build()?;
-	module.function("vars", vars).build()?;
-	module.function("home_dir", home_dir).build()?;
+	module.host_function_with_output(
+		"args",
+		move || arguments.to_vec(),
+		crate::host::outputs::STRINGS,
+	)?;
+	module.host_function_with_output("var", var, crate::host::outputs::OPTIONAL_STRING)?;
+	module.host_function_with_output("vars", vars, crate::host::outputs::ENV)?;
+	module.host_function_with_output(
+		"home_dir",
+		home_dir,
+		crate::host::outputs::OPTIONAL_STRING,
+	)?;
 	context.install(module)?;
 	Ok(vec![
 		HostFunction {

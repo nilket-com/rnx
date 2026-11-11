@@ -84,6 +84,10 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("text")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
+		(certified $name:literal, $function:expr, $certificate:expr, $doc:literal) => {
+			module.host_function_with_output($name, $function, $certificate)?;
+			register!(@record $name, $doc);
+		};
 		(execution $name:literal, $function:expr, $doc:literal) => {
 			module.host_function($name, $function)?;
 			register!(@record $name, $doc);
@@ -105,8 +109,8 @@ pub fn install(context: &mut Context) -> super::Result<Vec<HostFunction>> {
 		"find(haystack, needle) -> Option<int>: the byte index of the first occurrence, or None"
 	);
 	register!(
-		"split_max",
-		split_max,
+		certified "split_max",
+		split_max, crate::host::outputs::STRINGS_RESULT,
 		"split_max(text, count) -> Result<Vec<String>>: split on whitespace into at most count fields, the last keeping the rest verbatim; Err on a negative count"
 	);
 	register!(

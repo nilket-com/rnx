@@ -36,6 +36,15 @@ pub struct Error {
 }
 
 impl Error {
+	/// Resolved host identity for an execution-frontend admission refusal.
+	pub fn unenrolled_host(&self) -> Option<&crate::Item> {
+		match &*self.kind {
+			#[cfg(feature = "execution")]
+			ErrorKind::HostNotEnrolled { item } => Some(item.as_ref()),
+			_ => None,
+		}
+	}
+
 	/// Construct a new compile error.
 	pub(crate) fn new<S, K>(span: S, kind: K) -> Self
 	where
@@ -246,6 +255,10 @@ impl Error {
 #[derive(Debug)]
 #[non_exhaustive]
 pub(crate) enum ErrorKind {
+	#[cfg(feature = "execution")]
+	HostNotEnrolled {
+		item: crate::ItemBuf,
+	},
 	Custom {
 		error: String,
 	},
@@ -680,6 +693,8 @@ impl core::error::Error for ErrorKind {
 impl fmt::Display for ErrorKind {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			#[cfg(feature = "execution")]
+			ErrorKind::HostNotEnrolled { item } => write!(f, "uncertified host call {item}")?,
 			ErrorKind::Custom { error } => {
 				error.fmt(f)?;
 			}

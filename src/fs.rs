@@ -336,6 +336,10 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("fs")?;
 	let mut names = Vec::new();
 	macro_rules! reg {
+		(certified $name:ident, $certificate:expr, $doc:literal) => {{
+			module.host_function_with_output(stringify!($name), $name, $certificate)?;
+			reg!(@record $name, $doc);
+		}};
 		(execution $name:ident, $doc:literal) => {{
 			module.host_function(stringify!($name), $name)?;
 			reg!(@record $name, $doc);
@@ -376,11 +380,11 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"exists(path) -> Result<bool>: false for missing or dangling; errors remain errors"
 	);
 	reg!(
-		metadata,
+		certified metadata, crate::host::outputs::METADATA,
 		"metadata(path) -> Result<object>: kind, size, modified_ms since epoch, readonly, symlink; follows the target"
 	);
 	reg!(
-		read_dir,
+		certified read_dir, crate::host::outputs::STRINGS_RESULT,
 		"read_dir(path) -> Result<Vec<String>>: Unicode entry names, byte-sorted, up to 100000"
 	);
 	reg!(

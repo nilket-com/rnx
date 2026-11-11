@@ -376,8 +376,8 @@
         "function": "json::stringify",
         "input": "json::stringify(())",
         "input_shape": "Value: outside typed input set",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -385,8 +385,8 @@
         "function": "process::run",
         "input": "process::run(\"\",[],#{})",
         "input_shape": "Value args/options",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -394,17 +394,23 @@
         "function": "process::run_bytes",
         "input": "process::run_bytes(\"\",[],#{})",
         "input_shape": "Value args/options",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
-        "class": "Refused for a host function",
-        "construct": "process::exit",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Err(\"cannot exit: this is a session, not a script; use :quit\")"
+        },
+        "domain_worse": false,
         "function": "process::exit",
         "input": "process::exit(0)",
-        "input_shape": "i64: importable, unenrolled",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "legacy": {
+          "outcome": "ok",
+          "value": "Err(\"cannot exit: this is a session, not a script; use :quit\")"
+        },
+        "wording_rule": null
       },
       {
         "class": "Refused for a host function",
@@ -412,8 +418,8 @@
         "function": "web::escape_html",
         "input": "web::escape_html(\"\")",
         "input_shape": "&str",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "VM-error result",
+        "work_group": "VM-error result"
       },
       {
         "class": "Refused for a host function",
@@ -421,8 +427,8 @@
         "function": "web::parse_form",
         "input": "web::parse_form(())",
         "input_shape": "Value: outside typed input set",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -430,8 +436,8 @@
         "function": "web::response",
         "input": "web::response(200,#{},\"\",())",
         "input_shape": "Value options/body",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -439,8 +445,8 @@
         "function": "web::html",
         "input": "web::html(200,())",
         "input_shape": "Value body",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -448,8 +454,8 @@
         "function": "web::text",
         "input": "web::text(200,())",
         "input_shape": "Value body",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -457,8 +463,8 @@
         "function": "fs::read_bytes",
         "input": "fs::read_bytes(\"\")",
         "input_shape": "&str",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "bytes",
+        "work_group": "bytes"
       },
       {
         "class": "Refused for a host function",
@@ -466,8 +472,8 @@
         "function": "fs::write_new",
         "input": "fs::write_new(\"\",\"\")",
         "input_shape": "Value: outside typed input set",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -475,8 +481,8 @@
         "function": "fs::write",
         "input": "fs::write(\"\",\"\")",
         "input_shape": "Value: outside typed input set",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -484,35 +490,53 @@
         "function": "fs::append",
         "input": "fs::append(\"\",\"\")",
         "input_shape": "Value: outside typed input set",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "dynamic input",
+        "work_group": "dynamic input"
       },
       {
-        "class": "Refused for a host function",
-        "construct": "fs::metadata",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(\"file\", 3, false, false, true, true)"
+        },
+        "domain_worse": false,
         "function": "fs::metadata",
-        "input": "fs::metadata(\"\")",
-        "input_shape": "&str",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "input": "let m=fs::metadata(\"a.txt\").unwrap(); (m.kind,m.size,m.readonly,m.symlink,m.modified_ms>0,fs::metadata(\"missing\").is_err())",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(\"file\", 3, false, false, true, true)"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "fs::read_dir",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok([\"a.txt\", \"empty\"]), Ok([]), true)"
+        },
+        "domain_worse": false,
         "function": "fs::read_dir",
-        "input": "fs::read_dir(\"\")",
-        "input_shape": "&str",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "input": "(fs::read_dir(\".\"),fs::read_dir(\"empty\"),fs::read_dir(\"missing\").is_err())",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok([\"a.txt\", \"empty\"]), Ok([]), true)"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "time::parts",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok({\"day\": 1, \"hour\": 0, \"millisecond\": 0, \"minute\": 0, \"month\": 1, \"offset_seconds\": 0, \"second\": 0, \"weekday\": 4, \"year\": 1970, \"zone\": \"UTC\"}), true)"
+        },
+        "domain_worse": false,
         "function": "time::parts",
-        "input": "time::parts(0,\"\")",
-        "input_shape": "(i64,&str)",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "input": "(time::parts(0,\"UTC\"),time::parts(0,\"not-a-zone\").is_err())",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok({\"day\": 1, \"hour\": 0, \"millisecond\": 0, \"minute\": 0, \"month\": 1, \"offset_seconds\": 0, \"second\": 0, \"weekday\": 4, \"year\": 1970, \"zone\": \"UTC\"}), true)"
+        },
+        "wording_rule": null
       },
       {
         "class": "Refused for a host function",
@@ -520,8 +544,8 @@
         "function": "time::from_parts",
         "input": "time::from_parts(#{},\"\")",
         "input_shape": "Object: outside typed input set",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "reason": "borrowed object input",
+        "work_group": "borrowed object input"
       },
       {
         "class": "Refused for a host function",
@@ -529,53 +553,83 @@
         "function": "time::sleep",
         "input": "time::sleep(0)",
         "input_shape": "i64",
-        "reason": "Native",
+        "reason": "async",
         "work_group": "async"
       },
       {
-        "class": "Refused for a host function",
-        "construct": "text::split_max",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok([\"a\", \"b c\"]), Ok([]), Err(\"split_max needs a count of zero or more, not -1\"))"
+        },
+        "domain_worse": false,
         "function": "text::split_max",
-        "input": "text::split_max(\"\",1)",
-        "input_shape": "(&str,i64)",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "input": "(text::split_max(\"a b c\",2),text::split_max(\"\",0),text::split_max(\"a\",-1))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok([\"a\", \"b c\"]), Ok([]), Err(\"split_max needs a count of zero or more, not -1\"))"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "env::args",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "[]"
+        },
+        "domain_worse": false,
         "function": "env::args",
         "input": "env::args()",
-        "input_shape": "none",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "legacy": {
+          "outcome": "ok",
+          "value": "[]"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "env::var",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok(Some(\"fixture\")), Ok(Some(\"\")), Ok(None), Err(\"cannot read environment variable \\\"=bad\\\": name must be nonempty and contain neither '=' nor NUL\"))"
+        },
+        "domain_worse": false,
         "function": "env::var",
-        "input": "env::var(\"\")",
-        "input_shape": "&str",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "input": "(env::var(\"RNX_0247_VALUE\"),env::var(\"RNX_0247_EMPTY\"),env::var(\"RNX_0247_MISSING\"),env::var(\"=bad\"))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok(Some(\"fixture\")), Ok(Some(\"\")), Ok(None), Err(\"cannot read environment variable \\\"=bad\\\": name must be nonempty and contain neither '=' nor NUL\"))"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "env::home_dir",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "Ok(Some(\"/0247-fixture-home\"))"
+        },
+        "domain_worse": false,
         "function": "env::home_dir",
         "input": "env::home_dir()",
-        "input_shape": "none",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "legacy": {
+          "outcome": "ok",
+          "value": "Ok(Some(\"/0247-fixture-home\"))"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "env::vars",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(\"fixture\", \"\")"
+        },
+        "domain_worse": false,
         "function": "env::vars",
-        "input": "env::vars()",
-        "input_shape": "none",
-        "reason": "Native",
-        "work_group": "host enrollment"
+        "input": "let e=env::vars().unwrap();(e[\"RNX_0247_VALUE\"],e[\"RNX_0247_EMPTY\"])",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(\"fixture\", \"\")"
+        },
+        "wording_rule": null
       },
       {
         "class": "Refused for a host function",
@@ -583,7 +637,7 @@
         "function": "http::get",
         "input": "http::get(\"\")",
         "input_shape": "&str",
-        "reason": "Native",
+        "reason": "async",
         "work_group": "async"
       },
       {
@@ -592,7 +646,7 @@
         "function": "http::get_bytes",
         "input": "http::get_bytes(\"\")",
         "input_shape": "&str",
-        "reason": "Native",
+        "reason": "async",
         "work_group": "async"
       },
       {
@@ -601,7 +655,7 @@
         "function": "http::request",
         "input": "http::request(\"GET\",\"\",#{})",
         "input_shape": "Value options",
-        "reason": "Native",
+        "reason": "async",
         "work_group": "async"
       },
       {
@@ -610,7 +664,7 @@
         "function": "http::request_bytes",
         "input": "http::request_bytes(\"GET\",\"\",#{})",
         "input_shape": "Value options",
-        "reason": "Native",
+        "reason": "async",
         "work_group": "async"
       },
       {
@@ -4561,13 +4615,22 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 116,
+      "Equal": 125,
       "Not classified": 18,
       "Refused at admission": 1,
-      "Refused for a host function": 27,
+      "Refused for a host function": 18,
       "Wording": 21
     },
     "work_groups": {
+      "VM-error result": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "web::escape_html",
+            1
+          ]
+        ]
+      },
       "async": {
         "count": 5,
         "top_constructs": [
@@ -4585,6 +4648,24 @@
           ]
         ]
       },
+      "borrowed object input": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "time::from_parts",
+            1
+          ]
+        ]
+      },
+      "bytes": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "fs::read_bytes",
+            1
+          ]
+        ]
+      },
       "diagnostics to improve": {
         "count": 2,
         "top_constructs": [
@@ -4598,19 +4679,19 @@
           ]
         ]
       },
-      "host enrollment": {
-        "count": 22,
+      "dynamic input": {
+        "count": 10,
         "top_constructs": [
           [
-            "env::args",
+            "fs::append",
             1
           ],
           [
-            "env::home_dir",
+            "fs::write",
             1
           ],
           [
-            "env::var",
+            "fs::write_new",
             1
           ]
         ]

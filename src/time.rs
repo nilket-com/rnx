@@ -309,7 +309,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	module.host_function("format", format)?;
 	module.host_function("rfc3339", rfc3339)?;
 	module.host_function("parse", parse)?;
-	module.function("parts", parts).build()?;
+	module.host_function_with_output("parts", parts, crate::host::outputs::PARTS)?;
 	module.function("from_parts", from_parts).build()?;
 	module.function("sleep", sleep).build()?;
 	context.install(module)?;

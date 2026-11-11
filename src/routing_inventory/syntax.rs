@@ -385,6 +385,10 @@ impl<'ast> Visit<'ast> for Scan {
 				class = "typed";
 				at += 1;
 			}
+			if tokens.first().is_some_and(|t| t.to_string() == "certified") {
+				class = "dynamic-output";
+				at += 1;
+			}
 			if name == "assoc" {
 				for t in &tokens {
 					if let proc_macro2::TokenTree::Ident(i) = t {

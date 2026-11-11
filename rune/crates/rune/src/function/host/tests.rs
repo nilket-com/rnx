@@ -173,3 +173,164 @@ fn recursive_shape_graph_checks_every_union_alternative() {
 	assert!(OutputCertificate::JSON_RESULT.certifies(HostOutputKind::ResultDynamicString));
 	assert!(!OutputCertificate::JSON_RESULT.certifies(HostOutputKind::Scalar(HostType::I64)));
 }
+
+#[test]
+fn concrete_owned_outputs_require_certificates_and_release_imports() {
+	use std::sync::{
+		atomic::{AtomicUsize, Ordering},
+		Arc,
+	};
+	const LIST: OutputCertificate = OutputCertificate {
+		nodes: &[OutputShape::Scalar(HostType::String), OutputShape::Vec(0)],
+		root: 1,
+	};
+	const RESULT_LIST: OutputCertificate = OutputCertificate {
+		nodes: &[
+			OutputShape::Scalar(HostType::String),
+			OutputShape::Vec(0),
+			OutputShape::Result(1, 0),
+		],
+		root: 2,
+	};
+	const OPTIONAL: OutputCertificate = OutputCertificate {
+		nodes: &[
+			OutputShape::Scalar(HostType::String),
+			OutputShape::Option(0),
+			OutputShape::Result(1, 0),
+		],
+		root: 2,
+	};
+	let calls = Arc::new(AtomicUsize::new(0));
+	let mut module = Module::new();
+	let count = calls.clone();
+	module
+		.host_function("uncertified", move || {
+			count.fetch_add(1, Ordering::SeqCst);
+			std::vec![std::string::String::from("x")]
+		})
+		.unwrap();
+	module
+		.host_function_with_output("list", || std::vec![std::string::String::from("x")], LIST)
+		.unwrap();
+	module
+		.host_function_with_output(
+			"result_list",
+			|| -> Result<std::vec::Vec<std::string::String>, std::string::String> {
+				Ok(std::vec![std::string::String::from("x")])
+			},
+			RESULT_LIST,
+		)
+		.unwrap();
+	module
+		.host_function_with_output(
+			"optional",
+			|some: bool| -> Result<Option<std::string::String>, std::string::String> {
+				Ok(some.then(|| std::string::String::from("x")))
+			},
+			OPTIONAL,
+		)
+		.unwrap();
+	module
+		.host_function_with_output(
+			"failed",
+			|| -> Result<Option<std::string::String>, std::string::String> {
+				Err(std::string::String::from("expected"))
+			},
+			OPTIONAL,
+		)
+		.unwrap();
+	let mut context = Context::with_default_modules().unwrap();
+	context.install(module).unwrap();
+	assert_eq!(
+		compile(&context, "pub fn main(){uncertified()}")
+			.err()
+			.unwrap()
+			.refusal,
+		Some(Refusal::Native)
+	);
+	assert_eq!(calls.load(Ordering::SeqCst), 0);
+	for source in [
+		"pub fn main(){list()[0]==\"x\"}",
+		"pub fn main(){result_list().unwrap()[0]==\"x\"}",
+		"pub fn main(){optional(true).unwrap().unwrap()==\"x\"}",
+		"pub fn main(){optional(false).unwrap().is_none()}",
+		"pub fn main(){failed().is_err()}",
+	] {
+		let program = compile(&context, source).unwrap();
+		let mut executor = Executor::new().unwrap();
+		executor
+			.set_host_runtime(Some(
+				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			))
+			.unwrap();
+		let mut store = Store::new(Limits::default()).unwrap();
+		let root = executor
+			.invoke(
+				&program,
+				&mut store,
+				program.function(Hash::type_hash(["main"])).unwrap(),
+				&[],
+				1000,
+			)
+			.unwrap();
+		assert_eq!(
+			root.value,
+			crate::experimental_core::value::Value::Bool(true)
+		);
+		store.root_release(root).unwrap();
+		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+	}
+}
+
+#[test]
+fn owned_output_effect_once_and_failed_conversion_releases_nothing_twice() {
+	use std::sync::{
+		atomic::{AtomicUsize, Ordering},
+		Arc,
+	};
+	let calls = Arc::new(AtomicUsize::new(0));
+	let count = calls.clone();
+	let mut module = Module::new();
+	module
+		.host_function_with_output(
+			"effect",
+			move |_: i64| {
+				count.fetch_add(1, Ordering::SeqCst);
+				std::vec![std::string::String::from("owned")]
+			},
+			OutputCertificate {
+				nodes: &[OutputShape::Scalar(HostType::String), OutputShape::Vec(0)],
+				root: 1,
+			},
+		)
+		.unwrap();
+	let mut context = Context::with_default_modules().unwrap();
+	context.install(module).unwrap();
+	let mut executor = Executor::new().unwrap();
+	executor
+		.set_host_runtime(Some(
+			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+		))
+		.unwrap();
+	for (source, bytes, expected_calls, success) in [
+		("pub fn main(){effect(false)}", 1024, 0, false),
+		("pub fn main(){effect(0)}", 0, 1, false),
+		("pub fn main(){effect(0)}", 1024, 2, true),
+	] {
+		let program = compile(&context, source).unwrap();
+		let mut store = Store::new(Limits { entries: 64, bytes }).unwrap();
+		let result = executor.invoke(
+			&program,
+			&mut store,
+			program.function(Hash::type_hash(["main"])).unwrap(),
+			&[],
+			1000,
+		);
+		assert_eq!(result.is_ok(), success);
+		assert_eq!(calls.load(Ordering::SeqCst), expected_calls);
+		if let Ok(root) = result {
+			store.root_release(root).unwrap();
+		}
+		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+	}
+}

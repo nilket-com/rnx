@@ -43,6 +43,7 @@ fn indexed(text: &str, loader: &mut dyn compile::SourceLoader) -> (Result<Progra
 		native_helpers: crate::hash::Map::default(),
 		failure: None,
 		variable_moved: None,
+		unenrolled_host: None,
 		source_uses: Vec::new(),
 		self_proofs: Vec::new(),
 		proofs: receiver_proofs::Proofs::default(),

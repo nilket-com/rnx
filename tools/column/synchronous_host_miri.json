@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "function::host::tests::undeclared_and_unimportable_outputs_refuse_before_host_effects",
+      "ignored": false,
+      "timeout_seconds": 3600
+    },
+    {
+      "name": "function::host::tests::certified_dynamic_and_typed_outputs_remain_exact",
+      "ignored": false,
+      "timeout_seconds": 3600
+    },
+    {
+      "name": "function::host::tests::concrete_owned_outputs_require_certificates_and_release_imports",
+      "ignored": false,
+      "timeout_seconds": 3600
+    },
+    {
+      "name": "function::host::tests::owned_output_effect_once_and_failed_conversion_releases_nothing_twice",
+      "ignored": false,
+      "timeout_seconds": 3600
+    }
+  ]
+}

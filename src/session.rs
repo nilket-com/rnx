@@ -2441,3 +2441,6 @@ mod native_budget_tests {
 
 #[cfg(test)]
 pub(crate) mod parity;
+
+#[cfg(test)]
+pub(crate) mod host_enrollment;

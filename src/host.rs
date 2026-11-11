@@ -1574,3 +1574,47 @@ mod tests {
 		let _ = std::fs::remove_file(&path);
 	}
 }
+
+// Owned synchronous outputs admitted by ADR0247. Nodes describe the complete
+// return tree, including the String error branch; none admits a native value.
+pub(crate) mod outputs {
+	use rune::host::{HostType as T, OutputCertificate as C, OutputShape as S};
+	pub const STRINGS: C = C {
+		nodes: &[S::Scalar(T::String), S::Vec(0)],
+		root: 1,
+	};
+	pub const STRINGS_RESULT: C = C {
+		nodes: &[S::Scalar(T::String), S::Vec(0), S::Result(1, 0)],
+		root: 2,
+	};
+	pub const OPTIONAL_STRING: C = C {
+		nodes: &[S::Scalar(T::String), S::Option(0), S::Result(1, 0)],
+		root: 2,
+	};
+	pub const ENV: C = C {
+		nodes: &[S::Scalar(T::String), S::Object(0), S::Result(1, 0)],
+		root: 2,
+	};
+	pub const PARTS: C = C {
+		nodes: &[
+			S::Scalar(T::String),
+			S::Scalar(T::I64),
+			S::Union(&[0, 1]),
+			S::Object(2),
+			S::Result(3, 0),
+		],
+		root: 4,
+	};
+	pub const METADATA: C = C {
+		nodes: &[
+			S::Scalar(T::String),
+			S::Scalar(T::I64),
+			S::Scalar(T::U64),
+			S::Scalar(T::Bool),
+			S::Union(&[0, 1, 2, 3]),
+			S::Object(4),
+			S::Result(5, 0),
+		],
+		root: 6,
+	};
+}

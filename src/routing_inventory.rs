@@ -108,9 +108,9 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"process::exit",
 		"0",
-		Class::Undeclared,
-		"i64: importable, unenrolled",
-		"Result<(),String>: importable, unenrolled",
+		Class::Typed,
+		"i64",
+		"Result<(),String>",
 	);
 	add(
 		"web::escape_html",
@@ -157,23 +157,23 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"fs::metadata",
 		"\"\"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"&str",
-		"Result<Value,String>: no output certificate",
+		"certified owned object result",
 	);
 	add(
 		"fs::read_dir",
 		"\"\"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"&str",
-		"Vec output: outside typed output set",
+		"certified owned string-list result",
 	);
 	add(
 		"time::parts",
 		"0,\"\"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"(i64,&str)",
-		"Result<Value,String>: no output certificate",
+		"certified owned object result",
 	);
 	add(
 		"time::from_parts",
@@ -192,37 +192,37 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"text::split_max",
 		"\"\",1",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"(&str,i64)",
-		"Result<Vec<String>,String>: unsupported typed output",
+		"certified owned string-list result",
 	);
 	add(
 		"env::args",
 		"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"none",
-		"Vec<String>: unsupported typed output",
+		"certified owned string-list",
 	);
 	add(
 		"env::var",
 		"\"\"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"&str",
-		"Result<Option<String>,String>: unsupported nested typed output",
+		"certified owned optional-string result",
 	);
 	add(
 		"env::home_dir",
 		"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"none",
-		"Result<Option<String>,String>: unsupported nested typed output",
+		"certified owned optional-string result",
 	);
 	add(
 		"env::vars",
 		"",
-		Class::Undeclared,
+		Class::DynamicOutput,
 		"none",
-		"Result<Value,String>: no output certificate",
+		"certified owned object result",
 	);
 	add(
 		"http::get http::get_bytes",
@@ -853,12 +853,17 @@ pub(crate) fn session_parity_hosts(remove: bool) -> Result<Json> {
 		}
 		match compile(&c, &source) {
 			Err(e) if e.refusal.is_some() => {
-				rows.push(json!({"function":p.path,"input":input,"class":"Refused for a host function","reason":format!("{:?}",e.refusal.unwrap()),"construct":p.path,"input_shape":p.input,"work_group":if p.path.starts_with("http::")||p.path=="time::sleep" {"async"} else {"host enrollment"}}));
+				rows.push(json!({"function":p.path,"input":input,"class":"Refused for a host function","reason":crate::session::domain_session::host_wait_reason(p.path),"construct":p.path,"input_shape":p.input,"work_group":crate::session::domain_session::host_wait_reason(p.path)}));
 			}
 			Err(e) => {
 				rows.push(json!({"function":p.path,"input":input,"class":"Domain-only failure","reason":format!("{e:?}")}));
 			}
 			Ok(_) => {
+				if crate::session::host_enrollment::is_new(p.path) {
+					rows.push(crate::session::host_enrollment::isolated_witness(p.path)?);
+					life.close()?;
+					continue;
+				}
 				let safe = p.path.starts_with("path::")
 					|| p.path.starts_with("text::")
 					|| matches!(

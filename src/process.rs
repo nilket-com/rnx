@@ -250,7 +250,7 @@ pub(crate) fn install_with_exit(
 			run(program, args, options, true)
 		})
 		.build()?;
-	module.function("exit", exit).build()?;
+	module.host_function("exit", exit)?;
 	context.install(module)?;
 	Ok(vec![
 		crate::host::HostFunction {
