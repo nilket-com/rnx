@@ -117,9 +117,9 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"web::escape_html",
 		"\"\"",
-		Class::Undeclared,
+		Class::Typed,
 		"&str",
-		"Result<String,VmError>: unsupported HostOutput",
+		"String or runtime stop (Result<String,VmError>)",
 	);
 	add(
 		"web::parse_form",

@@ -586,3 +586,53 @@ fn owned_tree_budget_and_panic_cleanup() {
 	store.root_release(text).unwrap();
 	assert_eq!(store.live_entries(), 0);
 }
+
+#[test]
+fn aborting_scalar_return_cleanup_and_recovery() {
+	use crate::host::{HostOutput, HostOutputKind, HostType};
+	assert_eq!(
+		<core::result::Result<std::string::String, stock::VmError> as HostOutput>::SHAPE,
+		HostOutputKind::Scalar(HostType::String)
+	);
+	assert_eq!(
+		<core::result::Result<std::string::String, std::string::String> as HostOutput>::SHAPE,
+		HostOutputKind::Result(HostType::String, HostType::String)
+	);
+	let mut module = Module::with_item(["tiny"]).unwrap();
+	module
+		.host_function(
+			"aborting",
+			|text: &str| -> core::result::Result<std::string::String, stock::VmError> {
+				if text == "stop" {
+					Err(stock::VmError::panic("bounded stop"))
+				} else {
+					Ok(std::string::String::from(text))
+				}
+			},
+		)
+		.unwrap();
+	let context = installed(module);
+	let code = code(&context, "aborting", 1);
+	let mut executor = executor(&context);
+	let mut store = Store::new(Limits::default()).unwrap();
+	let stop = store.root_string("stop").unwrap();
+	let good = store.root_string("retained").unwrap();
+	let entries = store.live_entries();
+	let failure = executor
+		.invoke_code(&code, &mut store, 0, &[&stop], 100)
+		.unwrap_err();
+	assert_eq!(failure.error.kind, ErrorKind::Panic);
+	assert_eq!(failure.error.detail, Detail::PanicMessage);
+	assert_eq!(failure.panic_message.as_deref(), Some("bounded stop"));
+	assert_eq!(store.live_entries(), entries);
+	assert_eq!(store.root_text(&stop).unwrap(), "stop");
+	let output = executor
+		.invoke_code(&code, &mut store, 0, &[&good], 100)
+		.unwrap();
+	assert_eq!(store.root_text(&output).unwrap(), "retained");
+	store.root_release(output).unwrap();
+	assert_eq!(store.root_text(&good).unwrap(), "retained");
+	store.root_release(stop).unwrap();
+	store.root_release(good).unwrap();
+	assert_eq!(store.live_entries(), 0);
+}

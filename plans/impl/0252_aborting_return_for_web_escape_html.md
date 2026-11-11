@@ -1,6 +1,6 @@
 # Implementation plan 0252: aborting string return for web::escape_html
 
-Status: Proposed
+Status: Implemented
 
 Paired ADR: ../adr/0252_aborting_return_for_web_escape_html.md.
 
@@ -22,3 +22,31 @@ Paired ADR: ../adr/0252_aborting_return_for_web_escape_html.md.
    is sent.
 
 Results are added here by the implementer.
+
+Results
+
+The sealed Result<T, VmError> declaration derives Scalar(T::KIND), with T
+restricted to HostScalar. Only web::escape_html is newly enrolled. Its
+original handler and checked helper remain unchanged. No inventoried source,
+manifest, lock, output-kind enum or policy is edited; native error handling
+and successful String import use the existing bridge.
+
+The executed witness raises Equal from 138 to 139 and lowers host refusals
+from 11 to 10; other classes and host rows are unchanged. Differential
+controls cover empty/escaped/re-escaped/Unicode/NUL text, locals, branches,
+prior inputs, templates, exact input cap and both cap failures. The runtime
+messages match exactly apart from the fresh engine's appended source frame,
+with matching origins. Earlier bindings survive, failed bindings are absent,
+and later statements in the failed input do not execute.
+
+Four API doctests distinguish runtime-error returns from script Results in
+both directions, with compiling twins. The ordinary suite pins their count
+at four and preserves the existing selectors' counts. The focused core
+control checks distinct output shapes, the retained "bounded stop" panic,
+input preservation, cleanup and successful invocation after failure. Its
+exact name is pinned in tools/column/aborting_return_miri.json for Miri.
+
+Only the live src/web.rs census fingerprint is refreshed, using the checked
+helper. Final Miri and ordinary-gate receipts, candidate identity, selected
+stages, source condition, instruction bands and elapsed time are supplied in
+the publication packet. No fresh cap parity is inferred from fallback eval.

@@ -182,6 +182,23 @@ pub trait HostScalar: sealed::Scalar {
 	const KIND: HostType;
 }
 /// Sealed return signature; dynamic payloads require an explicit output certificate.
+/// Runtime-error returns and script Result returns cannot be interchanged.
+/// ```
+/// fn aborting<F: rune::host::HostFunction<(), Return = Result<String, rune::runtime::VmError>>>(_: F) {}
+/// aborting(|| -> Result<String, rune::runtime::VmError> { Ok(String::new()) });
+/// ```
+/// ```compile_fail,E0271
+/// fn aborting<F: rune::host::HostFunction<(), Return = Result<String, rune::runtime::VmError>>>(_: F) {}
+/// aborting(|| -> Result<String, String> { Ok(String::new()) });
+/// ```
+/// ```
+/// fn script<F: rune::host::HostFunction<(), Return = Result<String, String>>>(_: F) {}
+/// script(|| -> Result<String, String> { Ok(String::new()) });
+/// ```
+/// ```compile_fail,E0271
+/// fn script<F: rune::host::HostFunction<(), Return = Result<String, String>>>(_: F) {}
+/// script(|| -> Result<String, rune::runtime::VmError> { Ok(String::new()) });
+/// ```
 #[doc(hidden)]
 pub trait HostOutput: sealed::Output {
 	const SHAPE: HostOutputKind;
@@ -244,6 +261,12 @@ impl<T: HostScalar> HostOutput for Option<T> {
 impl<T: HostScalar, E: HostScalar> sealed::Output for Result<T, E> {}
 impl<T: HostScalar, E: HostScalar> HostOutput for Result<T, E> {
 	const SHAPE: HostOutputKind = HostOutputKind::Result(T::KIND, E::KIND);
+}
+
+// IntoReturn stops the call on VmError; only the successful scalar is imported.
+impl<T: HostScalar> sealed::Output for Result<T, crate::runtime::VmError> {}
+impl<T: HostScalar> HostOutput for Result<T, crate::runtime::VmError> {
+	const SHAPE: HostOutputKind = HostOutputKind::Scalar(T::KIND);
 }
 
 // These concrete certificates deliberately do not implement HostScalar.

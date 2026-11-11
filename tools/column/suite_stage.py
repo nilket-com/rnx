@@ -34,7 +34,7 @@ def recipes(stage, root=ROOT):
 		libraries = [cargo + ['test', '--locked', '-p', 'rune', '--profile', 'engine-dev', '--lib', '--features', row['features']] + ([row['selector']] if row.get('selector') else []) for row in m['libraries']]
 		# Each API boundary has a compiling twin and a compile-fail control.
 		docs = [cargo + ['test', '--locked', '-p', 'rune', '--profile', 'engine-dev', '--doc', '--features', 'fmt,workspace,execution', selector]
-			for selector in ('host_function_string_input', 'ExecutionRuntime')]
+			for selector in ('host_function_string_input', 'ExecutionRuntime', 'function::host::HostOutput')]
 		return libraries + docs
 	if stage.startswith(('suite-adapter-', 'clippy-adapter-')):
 		name = stage.split('-')[-1]
@@ -74,7 +74,7 @@ def run(stage, out, root=ROOT):
 		if 'test' in command:
 			row['discovered'] = discovered(invoke(command + ['--', '--list'], root, out/f'{i}-discovery.log'))
 			row['passed'] = executed(invoke(command + ['--', '--test-threads=4'], root, out/f'{i}-test.log'))
-			if '--doc' in command and (len(row['discovered']) != {'host_function_string_input': 8, 'ExecutionRuntime': 2}[command[-1]] or row['passed'] != len(row['discovered'])):
+			if '--doc' in command and (len(row['discovered']) != {'host_function_string_input': 8, 'ExecutionRuntime': 2, 'function::host::HostOutput': 4}[command[-1]] or row['passed'] != len(row['discovered'])):
 				raise ValueError('API boundary requires both compiling and compile-fail twins')
 		elif stage in {name for name, _ in PACKAGE_CHECKS.values()}:
 			invoke(command, root, out/f'{i}-package.log')

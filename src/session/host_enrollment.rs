@@ -17,6 +17,7 @@ const NAMES: &[&str] = &[
 	"json::stringify",
 	"web::html",
 	"web::text",
+	"web::escape_html",
 ];
 pub(crate) fn is_new(name: &str) -> bool {
 	NAMES.contains(&name)
@@ -69,6 +70,7 @@ fn child_witness() {
 		return;
 	};
 	let input = match name.as_str() {
+		"web::escape_html" => r#"web::escape_html("<&é\u{0}>")"#,
 		"process::exit" => "process::exit(0)",
 		"fs::metadata" => {
 			"let m=fs::metadata(\"a.txt\").unwrap(); (m.kind,m.size,m.readonly,m.symlink,m.modified_ms>0,fs::metadata(\"missing\").is_err())"
@@ -392,4 +394,64 @@ fn string_responses_moved_and_bytes_contracts() {
 		old.close().unwrap();
 		new.close().unwrap();
 	}
+}
+
+#[test]
+fn escape_html_differential_and_recovery() {
+	use super::domain_session::transcripts::{parity_new, parity_old};
+	let mut old =
+		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
+	let mut new = super::domain_session::DomainSession::new(
+		crate::routing_inventory::session_parity_context().unwrap(),
+		super::DEFAULT_CEILING,
+	)
+	.unwrap();
+	for source in [
+		r#"web::escape_html("")"#,
+		r#"web::escape_html("&<>\"'é\u{0}")"#,
+		r#"web::escape_html("&amp;")"#,
+		r#"let s="<local>";web::escape_html(s)"#,
+		r#"web::escape_html(if true {s} else {"no"})"#,
+		r#"let earlier=||web::escape_html(s);earlier()"#,
+		"earlier()",
+		r#"`markup {web::escape_html(s)}`"#,
+		r#"let big="a";for _ in 0..20{big=big+big;}web::escape_html(big).len()"#,
+		"let keep=7;keep",
+	] {
+		let a = parity_old(&mut old, source);
+		let b = parity_new(&mut new, source);
+		assert_eq!(a["outcome"], "ok", "{source}: {a}");
+		assert_eq!(a, b, "{source}");
+	}
+	for source in [
+		r#"let failed=1;web::escape_html(big+"a");keep=99"#,
+		r#"let failed=1;let expanded="&";for _ in 0..18{expanded=expanded+expanded;}web::escape_html(expanded);keep=99"#,
+	] {
+		let a = parity_old(&mut old, source);
+		let b = parity_new(&mut new, source);
+		println!("CAP legacy={a} execution={b}");
+		assert_ne!(a["outcome"], "ok");
+		assert_ne!(b["outcome"], "ok");
+		assert!(a["message"].as_str().unwrap().contains("escape_html"));
+		assert_eq!(a["origin"], b["origin"]);
+		let origin = &a["origin"];
+		assert_eq!(
+			b["message"],
+			format!(
+				"{}\n  at input {}, line {}, column {}",
+				a["message"].as_str().unwrap(),
+				origin["input"],
+				origin["line"],
+				origin["column"]
+			)
+		);
+		let a = parity_old(&mut old, "keep");
+		let b = parity_new(&mut new, "keep");
+		assert_eq!(a, b);
+		assert_eq!(b["value"], "7");
+		assert_ne!(parity_old(&mut old, "failed")["outcome"], "ok");
+		assert_ne!(parity_new(&mut new, "failed")["outcome"], "ok");
+	}
+	old.close().unwrap();
+	new.close().unwrap();
 }

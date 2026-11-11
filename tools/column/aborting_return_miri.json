@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::execute::host_bridge::minimal_tests::aborting_scalar_return_cleanup_and_recovery",
+      "ignored": false,
+      "timeout_seconds": 600
+    }
+  ]
+}

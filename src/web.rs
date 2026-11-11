@@ -451,7 +451,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		};
 	}
 	register!(
-		"escape_html",
+		execution "escape_html",
 		escape_html,
 		"escape_html(text) -> String: HTML text/quoted-attribute escaping; &, <, >, quotes escaped again; not JS/CSS/URL validation; input/output <=1 MiB; overflow raises a VM error; borrowed"
 	);

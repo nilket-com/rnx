@@ -574,13 +574,19 @@
         "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "web::escape_html",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "\"&lt;&amp;é\\0&gt;\""
+        },
+        "domain_worse": false,
         "function": "web::escape_html",
-        "input": "web::escape_html(\"\")",
-        "input_shape": "&str",
-        "reason": "VM-error result",
-        "work_group": "VM-error result"
+        "input": "web::escape_html(\"<&é\\u{0}>\")",
+        "legacy": {
+          "outcome": "ok",
+          "value": "\"&lt;&amp;é\\0&gt;\""
+        },
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -4877,23 +4883,14 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 138,
+      "Equal": 139,
       "Intentional difference": 3,
       "Not classified": 18,
       "Refused at admission": 6,
-      "Refused for a host function": 11,
+      "Refused for a host function": 10,
       "Wording": 20
     },
     "work_groups": {
-      "VM-error result": {
-        "count": 1,
-        "top_constructs": [
-          [
-            "web::escape_html",
-            1
-          ]
-        ]
-      },
       "argument-vector and options-object input": {
         "count": 1,
         "top_constructs": [
