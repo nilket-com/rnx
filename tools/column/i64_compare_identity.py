@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import struct
 from elf_targets import Elf
 from masked_float_identity import selected as initialized_float
 
@@ -35,54 +36,79 @@ def extract(binary, elf):
 	return result
 
 
+class UnreviewedForm(ValueError):
+	"""Known parser coverage limit, not malformed data or a failed tool."""
+	def __init__(self, reason, instruction):
+		self.instruction = instruction
+		super().__init__(reason + ': ' + instruction)
+
+
+def address_comment(asm):
+	"""Only objdump's trailing address comment, never a hash in a symbol."""
+	depth = 0
+	for i, char in enumerate(asm):
+		if char == '<': depth += 1
+		elif char == '>': depth = max(0, depth - 1)
+		elif char == '#' and depth == 0 and i and asm[i-1].isspace():
+			match = re.match(r'#\s*([0-9a-f]+)(?=\s|$)', asm[i:])
+			if match: return i, int(match[1], 16)
+	return None
+
+
 def resolve(symbol, elf):
 	rows = []
-	for line in symbol['disassembly'].splitlines():
-		m = re.match(r'^\s*([0-9a-f]+):\s*((?:[0-9a-f]{2} )+)\s*\t(.+)$', line)
-		if not m:
-			continue
+	parsed = [m for line in symbol['disassembly'].splitlines()
+		if (m := re.match(r'^\s*([0-9a-f]+):\s*((?:[0-9a-f]{2} )+)\s*\t(.+)$', line))]
+	# Coverage is a tool invariant even when the first instruction is unreviewed.
+	assert sum(len(bytes.fromhex(m[2])) for m in parsed) == symbol['size'], 'incomplete disassembly'
+	for m in parsed:
 		address, raw, asm = int(m[1], 16), bytes.fromhex(m[2]), m[3]
-		instruction = asm.split('#', 1)[0].strip()
-		op = instruction.split()[0]
-		target = dict(bytes=raw.hex())
-		if '%rip' in instruction:
-			match = re.search(r'#\s*([0-9a-f]+)', asm)
-			assert match, 'unresolved RIP target'
-			addr = int(match[1], 16)
-			if op in {'vmovdqa', 'vmovdqu', 'vmovaps', 'vmovups', 'movdqa', 'movdqu', 'movaps', 'movups', 'movapd', 'movupd', 'vmovapd', 'vmovupd', 'andpd'}:
-				assert re.search(r',%[xy]mm\d+$', instruction), 'expected vector load'
-				size = 32 if '%ymm' in instruction else 16
-				target = dict(data=elf.read(addr, size).hex())
-			elif op in {'vbroadcastsd', 'vbroadcastss'}:
-				target = dict(data=elf.read(addr, 8 if op.endswith('sd') else 4).hex())
-			elif op == 'call':
-				target = dict(code=elf.code(elf.pointer(addr)))
-			elif op == 'lea':
-				try:
-					target = dict(location=elf.location(addr))
-				except AssertionError as error:
-					literals = (b'assertion failed: self.len() >= len',
-						b'assertion failed: out.len() >= len.div_ceil(64)')
-					matches = [v for v in literals if elf.read(addr, len(v)) == v]
-					if len(matches) != 1:
-						raise ValueError('unreviewed address literal: ' + asm) from error
-					target = dict(assertion=matches[0].hex())
-			else:
-				raise ValueError('unreviewed RIP instruction: ' + asm)
-			target['encoding_prefix'] = raw[:-4].hex()
-			instruction = re.sub(r'-?0x[0-9a-f]+\(%rip\)', 'TARGET(%rip)', instruction)
-		elif op.startswith('j') or op == 'call':
-			match = re.fullmatch(r'([0-9a-f]+) <.+>', instruction[len(op):].strip())
-			assert match, 'unreviewed indirect branch: ' + instruction
-			addr = int(match[1], 16)
-			if symbol['address'] <= addr < symbol['address'] + symbol['size']:
-				target = dict(local=addr-symbol['address'])
-			else:
-				target = dict(code=elf.code(addr))
-			width = 1 if raw[0] == 0xeb or 0x70 <= raw[0] <= 0x7f else 4
-			target['encoding_prefix'] = raw[:-width].hex()
-			instruction = op + ' TARGET'
-		rows.append(dict(offset=address-symbol['address'], size=len(raw), instruction=instruction, target=target))
+		try:
+			comment = address_comment(asm)
+			instruction = (asm[:comment[0]] if comment else asm).strip()
+			op = instruction.split()[0]
+			target = dict(bytes=raw.hex())
+			if '%rip' in instruction:
+				assert comment, 'unresolved RIP target'
+				addr = comment[1]
+				if op in {'vmovdqa', 'vmovdqu', 'vmovaps', 'vmovups', 'movdqa', 'movdqu', 'movaps', 'movups', 'movapd', 'movupd', 'vmovapd', 'vmovupd', 'andpd'}:
+					assert re.search(r',%[xy]mm\d+$', instruction), 'expected vector load'
+					size = 32 if '%ymm' in instruction else 16
+					target = dict(data=elf.read(addr, size).hex())
+				elif op in {'vbroadcastsd', 'vbroadcastss'}:
+					target = dict(data=elf.read(addr, 8 if op.endswith('sd') else 4).hex())
+				elif op == 'call':
+					target = dict(code=elf.code(elf.pointer(addr)))
+				elif op == 'lea':
+					try:
+						target = dict(location=elf.location(addr))
+					except AssertionError as error:
+						literals = (b'assertion failed: self.len() >= len',
+							b'assertion failed: out.len() >= len.div_ceil(64)')
+						matches = [v for v in literals if elf.read(addr, len(v)) == v]
+						if len(matches) != 1:
+							raise UnreviewedForm('unreviewed address literal', asm) from error
+						target = dict(assertion=matches[0].hex())
+				else:
+					raise UnreviewedForm('unreviewed RIP instruction', asm)
+				target['encoding_prefix'] = raw[:-4].hex()
+				instruction = re.sub(r'-?0x[0-9a-f]+\(%rip\)', 'TARGET(%rip)', instruction)
+			elif op.startswith('j') or op == 'call':
+				match = re.fullmatch(r'([0-9a-f]+) <.+>', instruction[len(op):].strip())
+				if not match: raise UnreviewedForm('unreviewed indirect branch', instruction)
+				addr = int(match[1], 16)
+				if symbol['address'] <= addr < symbol['address'] + symbol['size']:
+					target = dict(local=addr-symbol['address'])
+				else:
+					target = dict(code=elf.code(addr))
+				width = 1 if raw[0] == 0xeb or 0x70 <= raw[0] <= 0x7f else 4
+				target['encoding_prefix'] = raw[:-width].hex()
+				instruction = op + ' TARGET'
+			rows.append(dict(offset=address-symbol['address'], size=len(raw), instruction=instruction, target=target))
+		except UnreviewedForm:
+			raise
+		except (AssertionError, ValueError, struct.error) as error:
+			raise UnreviewedForm(str(error), asm) from error
 	assert sum(r['size'] for r in rows) == symbol['size'], 'incomplete disassembly'
 	return rows
 

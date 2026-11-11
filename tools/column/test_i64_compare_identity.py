@@ -1,5 +1,5 @@
 import unittest
-from i64_compare_identity import PREFIX, selected, resolve, compare
+from i64_compare_identity import PREFIX, selected, resolve, compare, address_comment, UnreviewedForm
 
 
 class Targets:
@@ -44,6 +44,34 @@ class Identity(unittest.TestCase):
 		self.assertEqual(compare({}, {})['status'], 'FAIL')
 		self.assertEqual(compare({'x': before}, {})['status'], 'FAIL')
 		self.assertEqual(compare({'x': before}, {'x': before})['status'], 'PASS')
+
+	def test_closure_names_and_address_comments(self):
+		class Recording(Targets):
+			def code(self, address): return ['callee', address]
+		elf = Recording()
+		branch = dict(address=0x100, size=5, disassembly=' 100:\te9 00 00 00 00 \tjmp 200 <outer::<inner::{closure#0}>>\n')
+		row = resolve(branch, elf)[0]
+		self.assertEqual(row['target']['code'], ['callee', 0x200])
+		self.assertIsNone(address_comment('jmp 200 <symbol #123>'))
+		self.assertEqual(address_comment('call *0x0(%rip) # 106 <name::{closure#9}>')[1], 0x106)
+		rip = symbol()
+		rip['disassembly'] = rip['disassembly'].rstrip() + ' <name::{closure#9}>\n'
+		self.assertEqual(resolve(rip, elf), resolve(symbol(), elf))
+		branch['size'] = 2
+		branch['disassembly'] = ' 100:\tff e0 \tjmp *%rax\n'
+		with self.assertRaisesRegex(UnreviewedForm, 'unreviewed indirect branch'):
+			resolve(branch, elf)
+
+	def test_unresolved_plt_is_unreviewed_but_incomplete_is_fatal(self):
+		class External(Targets):
+			def code(self, address): raise AssertionError('unresolved code target')
+		s = dict(address=0x100, size=5, disassembly=' 100:\te8 00 00 00 00 \tcall 200 <_Unwind_Resume@plt>\n')
+		with self.assertRaises(UnreviewedForm) as error: resolve(s, External())
+		self.assertIn('_Unwind_Resume@plt', error.exception.instruction)
+		s['size'] = 6
+		with self.assertRaisesRegex(AssertionError, 'incomplete disassembly'): resolve(s, External())
+		s['disassembly'] = 'unparseable row'
+		with self.assertRaisesRegex(AssertionError, 'incomplete disassembly'): resolve(s, Targets())
 
 
 if __name__ == '__main__':

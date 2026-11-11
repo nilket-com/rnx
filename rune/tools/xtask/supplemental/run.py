@@ -81,11 +81,14 @@ def prerequisite(attempt, root, manifest, env):
 	return row, [attempt / 'controls.stdout', attempt / 'controls.stderr', attempt / 'process.stdout', attempt / 'process.stderr', attempt / 'canonical' / 'RESULT.json']
 
 
-def verify_harness_isolation(target):
+def verify_harness_isolation(target, package="rune"):
+	if not isinstance(package, str) or not package or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-" for c in package):
+		raise ValueError("invalid harness package")
+	crate = package.replace("-", "_")
 	import re
 	harnesses = []
-	for path in target.glob('miri/*/*/build/rune/*/out/rune-*'):
-		if not re.fullmatch(r'rune-[0-9a-f]+', path.name):
+	for path in target.glob(f'miri/*/*/build/{package}/*/out/{crate}-*'):
+		if not re.fullmatch(re.escape(crate) + r'-[0-9a-f]+', path.name):
 			continue
 		record = json.loads(path.read_text())
 		if '--test' not in record.get('args', []):
@@ -107,7 +110,7 @@ def preparation(attempt, root, manifest, env, feature):
 	names = [line[:-6] for line in (attempt / 'process.stdout').read_text().splitlines() if line.endswith(': test')]
 	if not names or len(names) != len(set(names)):
 		raise ValueError('empty or duplicate harness inventory')
-	row.update(target=str(target), inventory=names, isolated_harnesses=verify_harness_isolation(target))
+	row.update(target=str(target), inventory=names, isolated_harnesses=verify_harness_isolation(target, manifest.get('package', 'rune')))
 	# Bind reuse to every prepared file, not merely a successful build log.
 	return row, [attempt / 'process.stdout', attempt / 'process.stderr'] + sorted(p for p in target.rglob('*') if p.is_file())
 

@@ -461,6 +461,25 @@ impl CrossFailure<'_> {
 	pub fn frames(&self) -> &[CrossFrame<'_>] {
 		&self.frames
 	}
+	/// Primary diagnostic only, without source frames. The domain borrow keeps
+	/// the defining program alive while callers map structured frames themselves.
+	#[inline]
+	pub fn primary_message(&self) -> impl core::fmt::Display + '_ {
+		struct Primary<'a, 'b>(&'a CrossFailure<'b>);
+		impl core::fmt::Display for Primary<'_, '_> {
+			#[inline]
+			fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+				if self.0.failure.error.detail == super::detail::Detail::ForeignFunction {
+					f.write_str("function unavailable")
+				} else if let Some(program) = self.0.program {
+					write!(f, "{}", self.0.failure.message(program))
+				} else {
+					f.write_str("function unavailable")
+				}
+			}
+		}
+		Primary(self)
+	}
 	/// Render while this borrow keeps the programs alive.
 	pub fn message(&self) -> impl core::fmt::Display + '_ {
 		struct Message<'a, 'b>(&'a CrossFailure<'b>);
@@ -664,6 +683,7 @@ mod drain_injection {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use std::string::ToString;
 	fn context() -> Context {
 		Context::with_default_modules().unwrap()
 	}
@@ -784,6 +804,14 @@ mod tests {
 				CrossOutcome::Failed(failure) => {
 					assert_eq!(failure.failure.error.kind, ErrorKind::DivisionByZero);
 					assert_eq!(failure.frames().len(), 2);
+					assert_eq!(
+						failure.primary_message().to_string(),
+						"Division by zero in `i64` division (`/`)"
+					);
+					assert!(failure
+						.message()
+						.to_string()
+						.starts_with(&failure.primary_message().to_string()));
 					assert!(failure.failure.call_chain.is_empty());
 					assert_ne!(
 						failure.frames()[0].program.code.id(),

@@ -79,6 +79,18 @@ with Run(Path(sys.argv[1]), {'source': 'fixed'}) as r:
 			path.write_text(json.dumps({'args': ['--test']}))
 			self.assertEqual(runner.verify_harness_isolation(root), [str(path)])
 
+	def test_root_package_harness_discovery(self):
+		with tempfile.TemporaryDirectory() as tmp:
+			root = Path(tmp)
+			path = root / 'miri/host/engine-dev/build/rnx/abc/out/rnx-abc'
+			path.parent.mkdir(parents=True)
+			path.write_text(json.dumps({'args': ['--test']}))
+			self.assertEqual(runner.verify_harness_isolation(root, 'rnx'), [str(path)])
+			with self.assertRaises(ValueError): runner.verify_harness_isolation(root)
+			path.write_text(json.dumps({'args': ['--test', '-Cincremental=/shared']}))
+			with self.assertRaises(ValueError): runner.verify_harness_isolation(root, 'rnx')
+			with self.assertRaises(ValueError): runner.verify_harness_isolation(root, '../rnx')
+
 	def test_scope_default_and_explicit_short(self):
 		jobs = [{'subset': name} for name in ['n5', 'budget', 'payload_bit_scan', 'column']]
 		self.assertEqual(runner.scoped_jobs(jobs, 'full'), jobs)

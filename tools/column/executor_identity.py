@@ -7,7 +7,7 @@ import subprocess
 import traceback
 from child_result import atomic_json, digest
 from elf_targets import Elf
-from i64_compare_identity import resolve
+from i64_compare_identity import resolve, UnreviewedForm
 
 PREFIX = 'rune::experimental_core::execute::'
 NEW = ('SlicedInvocation', 'SliceOutcome', 'start_sliced', 'resume_sliced',
@@ -43,19 +43,31 @@ def run(baseline, candidate, out):
   else:
    # Resolve relocations only with already reviewed instruction forms. Any
    # unfamiliar target or instruction fails closed for review, never normalizes away.
-   streams=[]
+   streams=[]; unsupported={'unreviewed form':set(), 'duplicate symbol':set()}; first=None
    for binary, inventory in zip((baseline,candidate),sides):
     elf=Elf(binary); current={}
     for name, instances in inventory.items():
-     assert len(instances)==1, 'ambiguous duplicate protected instance: '+name
+     if len(instances)!=1:
+      unsupported['duplicate symbol'].add(name)
+      if first is None: first=dict(kind='duplicate symbol', symbol=name, multiplicity=len(instances), binary=str(binary))
+      continue
      symbol=instances[0]
      symbol['disassembly']=subprocess.check_output(['objdump','-d','-C','--insn-width=16',
       f"--start-address={symbol['address']}",f"--stop-address={symbol['address']+symbol['size']}",str(binary)],text=True)
-     current[name]=resolve(symbol,elf)
+     try:
+      current[name]=resolve(symbol,elf)
+     except UnreviewedForm as error:
+      unsupported['unreviewed form'].add(name)
+      if first is None: first=dict(kind='unreviewed form', symbol=name, instruction=error.instruction, binary=str(binary))
     streams.append(current)
    result['resolved']=streams
-   result['differences']=[n for n in streams[0] if streams[0][n]!=streams[1][n]]
-   result['status']='FAIL' if result['differences'] else 'PASS'
+   if any(unsupported.values()):
+    result.update(reason='instruction identity not established: unsupported binary content',
+                  first_unreviewed=first, affected_symbols=len(set().union(*unsupported.values())),
+                  unsupported_classes={k:len(v) for k,v in unsupported.items() if v})
+   else:
+    result['differences']=[n for n in streams[0] if streams[0][n]!=streams[1][n]]
+    result['status']='FAIL' if result['differences'] else 'PASS'
  except Exception:
   result['error']=traceback.format_exc()
  finally:

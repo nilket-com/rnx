@@ -73,7 +73,7 @@ const ROWS: &[Row] = &[
 		input: "stash.push(||42);panic!(\"failed\")",
 		class: Class::Wording {
 			legacy: "Panicked: failed",
-			execution: "Panicked: failed\n  at <memory>:152..168",
+			execution: "Panicked: failed\n  at input 8, line 1, column 18",
 		},
 	},
 	Row {
@@ -88,7 +88,7 @@ const ROWS: &[Row] = &[
 		input: "let rejected=2;panic!(\"failed\")",
 		class: Class::Wording {
 			legacy: "Panicked: failed",
-			execution: "Panicked: failed\n  at <memory>:116..132",
+			execution: "Panicked: failed\n  at input 11, line 1, column 16",
 		},
 	},
 	Row {
@@ -103,7 +103,7 @@ const ROWS: &[Row] = &[
 		input: "bad()",
 		class: Class::Wording {
 			legacy: "Division by zero in `i64` division (`/`)",
-			execution: "Division by zero in `i64` division (`/`)\n  at <memory>:90..93\n  at <memory>:130..135",
+			execution: "Division by zero in `i64` division (`/`)\n  at input 13, line 1, column 11\n  at input 14, line 1, column 1",
 		},
 	},
 	Row {
@@ -114,7 +114,7 @@ const ROWS: &[Row] = &[
 		input: "bad()",
 		class: Class::Wording {
 			legacy: "Division by zero in `i64` division (`/`)",
-			execution: "Division by zero in `i64` division (`/`)\n  at <memory>:90..93\n  at <memory>:130..135",
+			execution: "Division by zero in `i64` division (`/`)\n  at input 13 of numbering 1, line 1, column 11\n  at input 1, line 1, column 1",
 		},
 	},
 	Row {
@@ -199,6 +199,11 @@ fn differential_transcript() {
 		let b = fresh
 			.eval_rendered(row.input, &crate::format::Limits::default())
 			.map_err(diagnostic);
+		for result in [&a, &b] {
+			if let Err(d) = result {
+				assert!(!d.message.contains("<memory>"), "{d:?}");
+			}
+		}
 		match row.class {
 			Class::Equal => assert_eq!(a, b, "{}", row.input),
 			Class::Wording { legacy, execution } => {
@@ -228,4 +233,41 @@ fn differential_transcript() {
 			}
 		}
 	}
+}
+
+#[test]
+fn mapped_frames_cross_inputs_redefinition_renumber_and_reset() {
+	let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	s.eval("fn fail(){1/0} let a=||fail();0").unwrap();
+	s.eval("let b=||a();0").unwrap();
+	let d = diagnostic(s.eval("b()").unwrap_err());
+	assert_eq!(
+		d.message,
+		"Division by zero in `i64` division (`/`)\n  at input 1, line 1, column 11\n  at input 1, line 1, column 24\n  at input 2, line 1, column 9\n  at input 3, line 1, column 1"
+	);
+	s.eval("fn fail(){7} 0").unwrap();
+	s.renumber();
+	let d = diagnostic(s.eval("b()").unwrap_err());
+	assert_eq!(
+		d.message,
+		"Division by zero in `i64` division (`/`)\n  at input 1 of numbering 1, line 1, column 11\n  at input 1 of numbering 1, line 1, column 24\n  at input 2 of numbering 1, line 1, column 9\n  at input 1, line 1, column 1"
+	);
+	s.reset();
+	let d = diagnostic(s.eval("1/0").unwrap_err());
+	assert_eq!(
+		d.message,
+		"Division by zero in `i64` division (`/`)\n  at input 1, line 1, column 1"
+	);
+}
+
+#[test]
+fn mapped_frames_cut_long_chain() {
+	let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let d = diagnostic(
+		s.eval("fn f(n){if n==0 {1/0} else {f(n-1)}} f(40)")
+			.unwrap_err(),
+	);
+	assert_eq!(d.message.matches("\n  at input ").count(), 32);
+	assert!(d.message.ends_with("\n  [diagnostic truncated]"));
+	assert!(!d.message.contains("<memory>"));
 }

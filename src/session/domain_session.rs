@@ -497,7 +497,8 @@ impl DomainSession {
 										.and_then(|m| m.locate(loc.start as usize))
 								})
 								.and_then(|(i, o)| origin_in(&self.inputs, &self.numberings, i, o));
-							let message = f.message().to_string();
+							let message =
+								frames::render(&f, &self.maps, &self.inputs, &self.numberings);
 							break Err(Failure::Runtime { message, origin });
 						}
 					}
@@ -844,3 +845,5 @@ mod tests {
 
 #[cfg(test)]
 mod transcripts;
+
+mod frames;

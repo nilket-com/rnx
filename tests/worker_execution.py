@@ -35,6 +35,9 @@ def run():
             old,new=[snapshot(*w.execute(source)) for w in workers]
             assert old['trace']==new['trace']==['armed','settled'], (name,old,new)
             assert old['input']==new['input'] and old['epoch']==new['epoch'] and not old['lost'] and not new['lost']
+            for result in (old,new):
+                if result['failure']:
+                    assert '<memory>' not in result['failure']['diagnostic'],(name,result)
             if policy=='Equal':
                 assert old==new,(name,old,new)
             elif policy=='Wording':
@@ -42,6 +45,10 @@ def run():
                 assert old['failure']['category']==new['failure']['category'],(name,old,new)
                 assert old['failure']['origin']==new['failure']['origin'],(name,old,new)
                 assert old['streams']==new['streams'],(name,old,new)
+                if name=='old-origin':
+                    frames='\n  at input 5, line 1, column 12\n  at input 6, line 1, column 1'
+                    assert frames in new['failure']['diagnostic'],new
+                    assert new['failure']['diagnostic'].replace(frames,'',1)==old['failure']['diagnostic'],(old,new)
             else:
                 assert old['failure'] is None and old['plain']=='1',old
                 assert 'async input is not available' in new['failure']['diagnostic'],new
