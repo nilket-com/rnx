@@ -23,13 +23,13 @@ class HistoryError(ValueError):
 
 @dataclass(frozen=True)
 class Policy:
-	sequence_base: str = "956ed4d5e89611ccb7140c54d4861390c94db49b"
-	host_base: str = "bc0fada750c6fa50f2b0e765a2985155bd933e00"
+	sequence_base: str = "bce96e3b3d7ec3ee4c444de9bb4e7976e7e59ddc"
+	host_base: str = "2b6b76b3692fff98afb247c76047f99cb1c8d51f"
 	engine_base: str = "1b4b66bd3657868ecb1d49f8b3f355585b3ec98d"
 	engine_tip: str = "6d7aa59dee00dd9c5c598b3a1e0d54fca6ae6bdf"
-	import_commit: str = "8bbb90ed64c30e994db9ac2b1ab2bbb83d1b5d52"
-	follower_plan: str = "441b25f076909168687c23a3f578f7e7f89b3220"
-	follower_impl: str = "002584a48d1f714e3856f5a3d6a99ac86c2204eb"
+	import_commit: str = "3930b1cb454198235edb1124b37fe46aa2cbcfed"
+	follower_plan: str = "b82497a1897b62f2c9277b25c2bd1d629194e959"
+	follower_impl: str = "2c47218d0de2f8cf93f2c6961bf677ea71cdc5be"
 	follower_reference: str = "https://github.com/nilket-com/rune/blob/fed878b5aea151a878462d71626c9a4d589a4273/plans/adr/0206_validity_aware_column_kernels.md"
 
 

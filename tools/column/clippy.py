@@ -11,7 +11,7 @@ import tarfile
 import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
-BASE = "c32a6ba77e8318a8c763b0c2eaac336cdebfde48"
+BASE = "0873610926649d8c79094c1aa346fa6728c5251a"
 POLARS_LINT_ARGS = ('--', '-Wclippy::erasing_op')
 
 

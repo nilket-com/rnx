@@ -32,3 +32,7 @@ retired together. A script left under `probes/` is not a claim that its old
 measurement inputs remain in the active checkout: use the archived snapshot
 for historical replays. Active inventory generation and required fixtures
 are preserved.
+
+ADR 0241 history citations can be resolved with `python3 ci/history_ids.py rnx OLD_OR_NEW_COMMIT`
+(or `rnx-bench --repo PATH`). Add `--path FILE` for a same-blob check;
+unavailable historical objects remain in the archives accessed by `tools/archive_data.py`.

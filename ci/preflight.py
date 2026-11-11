@@ -19,6 +19,8 @@ def main():
 	subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(root / "ci"),
 		"-p", "test_commit_subjects.py"], cwd=root, check=True)
 	subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(root / "ci"), "-p", "test_archive_data.py"], cwd=root, check=True)
+	subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", str(root / "ci"), "-p", "test_history_ids.py"], cwd=root, check=True)
+
 	subprocess.run([sys.executable, "-B", str(root / "ci/commit_subjects.py"), "--repo", str(root)], cwd=root, check=True)
 
 

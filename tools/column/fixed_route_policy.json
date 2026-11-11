@@ -1,7 +1,12 @@
 {
   "schema": 1,
-  "anchor": "3fe44bf9245c780cf784554293e0a1b1e7c00c26",
-  "anchor_transition": null,
+  "anchor": "48fe3b15f48c92be91f04aa97f1f2f3fc31cf860",
+  "anchor_transition": {
+    "old": "3fe44bf9245c780cf784554293e0a1b1e7c00c26",
+    "new": "48fe3b15f48c92be91f04aa97f1f2f3fc31cf860",
+    "plan": "c909088d0c6933595d42a36f07dd469b5c9d78a5",
+    "path": "plans/adr/0241_history_identity_migration.md"
+  },
   "per_record_per_mille": 5,
   "cumulative_per_mille": 10,
   "kernels": [

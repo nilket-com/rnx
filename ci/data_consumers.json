@@ -1061,6 +1061,11 @@
       },
       "max_bytes": 101280,
       "reason": "Test/build fixture family; generated alternatives require equivalence and offline proof."
+    },
+    "ci/history_map.json": {
+      "class": "source-configuration",
+      "max_bytes": 1048576,
+      "reason": "ADR 0241 reviewed rewritten commit identities and provenance; no measurement data."
     }
   },
   "schema": 1
