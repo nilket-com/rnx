@@ -17,6 +17,7 @@ pub(crate) type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 enum Class {
 	Typed,
 	DynamicOutput,
+	StringInput,
 	Undeclared,
 	Opaque,
 }
@@ -122,9 +123,9 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"web::parse_form",
 		"()",
-		Class::Undeclared,
-		"Value: outside typed input set",
-		"undeclared dynamic output",
+		Class::StringInput,
+		"String or payload-free rejection",
+		"Result<Object<String>,String>",
 	);
 	add(
 		"web::response",
@@ -150,8 +151,8 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"fs::write_new fs::write fs::append",
 		"\"\",\"\"",
-		Class::Undeclared,
-		"Value: outside typed input set",
+		Class::StringInput,
+		"(&str, String or payload-free rejection)",
 		"Result<(),String>",
 	);
 	add(
@@ -356,6 +357,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 		let class = match p.class {
 			Class::Typed => "typed",
 			Class::DynamicOutput => "dynamic-output",
+			Class::StringInput => "string-input",
 			Class::Undeclared | Class::Opaque => "undeclared",
 		};
 		assert_eq!(
@@ -388,7 +390,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 		let verdict = if let Some(s) = &source {
 			let observed = compile(&c, s);
 			match p.class {
-				Class::Typed | Class::DynamicOutput => {
+				Class::Typed | Class::DynamicOutput | Class::StringInput => {
 					assert!(observed.is_ok(), "{}: {:?}", p.path, observed.err());
 					"conditional-admission"
 				}
@@ -825,7 +827,7 @@ fn host_refusal_reasons_match_registration_policy() {
 				"missing specific refusal reason: {}",
 				policy.path
 			),
-			Class::Typed | Class::DynamicOutput => assert_eq!(
+			Class::Typed | Class::DynamicOutput | Class::StringInput => assert_eq!(
 				reason, "host enrollment",
 				"enrolled function still has a refusal reason: {}",
 				policy.path

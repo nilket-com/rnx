@@ -132,8 +132,7 @@ pub(crate) fn startup(
 		executor.set_format_limits(FormatLimits::permissive());
 		executor
 			.set_host_runtime(Some(
-				rune::sync::Arc::try_new(context.runtime().map_err(|e| e.to_string())?)
-					.map_err(|e| e.to_string())?,
+				context.execution_runtime().map_err(|e| e.to_string())?,
 			))
 			.map_err(|e| format!("{}: {:?}", e.operation, e.kind))?;
 		let entry = program

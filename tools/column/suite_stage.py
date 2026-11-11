@@ -18,7 +18,11 @@ def recipes(stage, root=ROOT):
 		m = json.loads((root/'rune/tools/xtask/manifests/native.json').read_text())
 		if stage == 'rune-clippy':
 			return [cargo + ['clippy', '--locked', '-p', 'rune', '--profile', 'engine-dev', '--lib', '--tests', '--features', f, '--', '-D', 'warnings'] for f in m['clippy_features']]
-		return [cargo + ['test', '--locked', '-p', 'rune', '--profile', 'engine-dev', '--lib', '--features', row['features']] + ([row['selector']] if row.get('selector') else []) for row in m['libraries']]
+		libraries = [cargo + ['test', '--locked', '-p', 'rune', '--profile', 'engine-dev', '--lib', '--features', row['features']] + ([row['selector']] if row.get('selector') else []) for row in m['libraries']]
+		# Each API boundary has a compiling twin and a compile-fail control.
+		docs = [cargo + ['test', '--locked', '-p', 'rune', '--profile', 'engine-dev', '--doc', '--features', 'fmt,workspace,execution', selector]
+			for selector in ('host_function_string_input', 'ExecutionRuntime')]
+		return libraries + docs
 	if stage.startswith(('suite-adapter-', 'clippy-adapter-')):
 		name = stage.split('-')[-1]
 		if name not in {'polars', 'postgres', 'candle'}: raise ValueError('unknown adapter')
@@ -57,6 +61,8 @@ def run(stage, out, root=ROOT):
 		if 'test' in command:
 			row['discovered'] = discovered(invoke(command + ['--', '--list'], root, out/f'{i}-discovery.log'))
 			row['passed'] = executed(invoke(command + ['--', '--test-threads=4'], root, out/f'{i}-test.log'))
+			if '--doc' in command and (len(row['discovered']) != 2 or row['passed'] != 2):
+				raise ValueError('API boundary requires both compiling and compile-fail twins')
 		elif stage == 'rune-clippy':
 			invoke(command, root, out/f'{i}-clippy.log')
 		else:

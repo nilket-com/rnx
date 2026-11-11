@@ -305,7 +305,7 @@ fn observe(source: &str, mode: &str) -> Json {
 	let mut executor = Executor::new().unwrap();
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			context.execution_runtime().unwrap(),
 		))
 		.unwrap();
 	let mut invoked = false;

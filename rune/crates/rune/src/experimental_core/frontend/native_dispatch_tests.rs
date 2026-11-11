@@ -113,9 +113,7 @@ fn mixed_provider_case(row: usize) {
 	let mut store = Store::new(Limits::default()).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let root = executor
 		.invoke(
@@ -258,9 +256,7 @@ fn native_provider_is_revalidated_before_execution() {
 	let mut store = Store::new(Limits::default()).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(Context::new().runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(Context::new().execution_runtime().unwrap()))
 		.unwrap();
 	let failure = executor
 		.invoke(&program, &mut store, main, &[], 100000)
@@ -270,9 +266,7 @@ fn native_provider_is_revalidated_before_execution() {
 	assert!(executor.is_idle());
 	assert_eq!(store.live_entries(), 0);
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let failure = executor
 		.invoke(&program, &mut store, main, &[], 100000)
@@ -331,9 +325,7 @@ fn exact_parameter_skips_an_unrelated_unsupported_native_provider() {
 	let mut store = Store::new(Limits::default()).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let result = executor
 		.invoke(&program, &mut store, main, &[], 1000)

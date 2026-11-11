@@ -135,9 +135,7 @@ fn certified_dynamic_and_typed_outputs_remain_exact() {
 	let program = compile(&context, "pub fn main(){dynamic()+typed()}").unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let mut store = Store::new(Limits::default()).unwrap();
 	let root = executor
@@ -259,9 +257,7 @@ fn concrete_owned_outputs_require_certificates_and_release_imports() {
 		let program = compile(&context, source).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let root = executor
@@ -308,9 +304,7 @@ fn owned_output_effect_once_and_failed_conversion_releases_nothing_twice() {
 	context.install(module).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	for (source, bytes, expected_calls, success) in [
 		("pub fn main(){effect(false)}", 1024, 0, false),

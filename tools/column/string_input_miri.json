@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::execute::host_bridge::minimal_tests::string_input_owned_rejection_identity_and_effect_once",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "function::host::string_input_controls::string_input_rejection_does_not_borrow_payload_and_string_errors_propagate",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "function::host::string_input_controls::string_input_installation_failure_and_invalid_output_do_not_admit",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::execute::host_bridge::minimal_tests::string_input_failure_cleanup_before_and_after_host_entry",
+      "ignored": false,
+      "timeout_seconds": 600
+    }
+  ]
+}

@@ -171,7 +171,7 @@ fn observe_dynamic(source: &str) -> (Json, Json) {
 	let mut executor = Executor::new().unwrap();
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			context.execution_runtime().unwrap(),
 		))
 		.unwrap();
 	let trace = Executor::host_trace_begin();

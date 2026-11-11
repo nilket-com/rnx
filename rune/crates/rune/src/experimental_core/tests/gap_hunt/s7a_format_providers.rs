@@ -629,7 +629,7 @@ mod s7b2_entry_controls {
 				p.formatting.as_ref().unwrap(),
 				b.format_snapshot().as_ref().unwrap()
 			));
-			let runtime = crate::sync::Arc::try_new(b.runtime().unwrap()).unwrap();
+			let runtime = b.execution_runtime().unwrap();
 			let mut e = Executor::new().unwrap();
 			e.set_host_runtime(Some(runtime)).unwrap();
 			let mut s = Store::new(Limits::default()).unwrap();
@@ -733,10 +733,8 @@ mod s7b2_entry_controls {
 		let mut e = Executor::new().unwrap();
 		e.test_output = Some(std::vec::Vec::new());
 		let mut s = Store::new(Limits::default()).unwrap();
-		e.set_host_runtime(Some(
-			crate::sync::Arc::try_new(b.runtime().unwrap()).unwrap(),
-		))
-		.unwrap();
+		e.set_host_runtime(Some(b.execution_runtime().unwrap()))
+			.unwrap();
 		assert_eq!(
 			run(&mut e, &p, &mut s, &[], 0).unwrap_err().error.refusal,
 			Some(Refusal::Entry)
@@ -746,10 +744,8 @@ mod s7b2_entry_controls {
 		assert_eq!(invalid_binding.error.operation, "validate code");
 		assert!(e.test_output.as_ref().unwrap().is_empty());
 		assert_eq!(calls.load(Ordering::SeqCst), 0);
-		e.set_host_runtime(Some(
-			crate::sync::Arc::try_new(a.runtime().unwrap()).unwrap(),
-		))
-		.unwrap();
+		e.set_host_runtime(Some(a.execution_runtime().unwrap()))
+			.unwrap();
 		let out = run(&mut e, &p, &mut s, &[], 1000).unwrap();
 		assert_eq!(s.root_text(&out).unwrap(), "7");
 		s.root_release(out).unwrap();
@@ -913,12 +909,12 @@ mod s7b2_entry_controls {
 		module.host_function("a", || 1i64).unwrap();
 		cx.install(module).unwrap();
 		let first = compile(&cx, "pub fn main(){7}");
-		let before = crate::sync::Arc::try_new(cx.runtime().unwrap()).unwrap();
+		let before = cx.execution_runtime().unwrap();
 		let mut module = crate::Module::with_crate("epoch_b").unwrap();
 		module.host_function("b", || 2i64).unwrap();
 		cx.install(module).unwrap();
 		let second = compile(&cx, "pub fn main(){7}");
-		let after = crate::sync::Arc::try_new(cx.runtime().unwrap()).unwrap();
+		let after = cx.execution_runtime().unwrap();
 		let mut e = Executor::new().unwrap();
 		let mut s = Store::new(Limits::default()).unwrap();
 		e.set_host_runtime(Some(before)).unwrap();
@@ -943,10 +939,10 @@ mod s7b2_entry_controls {
 		let cx = alias_context("raw-late-nominal", &calls);
 		let renderer = compile(&cx, "pub fn main(x){7}");
 		let ordinary = compile(&default(), "pub fn main(x){7}");
-		let runtime = crate::sync::Arc::try_new(cx.runtime().unwrap()).unwrap();
+		let runtime = cx.execution_runtime().unwrap();
 		assert!(crate::sync::Arc::ptr_eq(
 			renderer.formatting.as_ref().unwrap(),
-			runtime.formatting.as_ref().unwrap()
+			runtime.inner.formatting.as_ref().unwrap()
 		));
 		let mut e = Executor::new().unwrap();
 		e.set_host_runtime(Some(runtime)).unwrap();

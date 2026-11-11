@@ -7,6 +7,19 @@ import suite_stage as suite
 
 
 class DeclaredOutput(unittest.TestCase):
+	def test_api_twins_are_required_and_cannot_be_vacuous(self):
+		docs = [c for c in suite.recipes('rune-suite') if '--doc' in c]
+		self.assertEqual({c[-1] for c in docs}, {'host_function_string_input', 'ExecutionRuntime'})
+		self.assertTrue(all('execution' in c[c.index('--features') + 1].split(',') for c in docs))
+		for count in (0, 1, 2, 3):
+			with self.subTest(count=count), tempfile.TemporaryDirectory() as tmp:
+				listing = ''.join(f'twin{i}: test\n' for i in range(count))
+				with patch.object(suite, 'recipes', return_value=[docs[0]]), patch.object(suite, 'invoke', side_effect=[listing, f'test result: ok. {count} passed;']):
+					if count == 2:
+						self.assertEqual(suite.run('rune-suite', Path(tmp))[0]['passed'], 2)
+					else:
+						with self.assertRaises(ValueError): suite.run('rune-suite', Path(tmp))
+
 	def test_polars_clippy_keeps_existing_diagnostic_as_warning(self):
 		from clippy import POLARS_LINT_ARGS, diagnostics
 		command = ['cargo', 'clippy']

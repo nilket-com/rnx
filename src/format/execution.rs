@@ -139,9 +139,7 @@ mod tests {
 				executor.set_native_enabled(native);
 				executor.set_format_limits(FormatLimits::permissive());
 				executor
-					.set_host_runtime(Some(
-						rune::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-					))
+					.set_host_runtime(Some(context.execution_runtime().unwrap()))
 					.unwrap();
 				let root = executor
 					.prepare(

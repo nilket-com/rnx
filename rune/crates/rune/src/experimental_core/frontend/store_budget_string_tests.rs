@@ -80,9 +80,7 @@ fn host_string_matches_stock_under_the_default_store_budget() {
 	let program = super::compile(&mut sources, &context, &mut diagnostics, 22).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let main = program.function(Hash::type_hash(["main"])).unwrap();
 	let mut store = Store::new(Limits::default()).unwrap();

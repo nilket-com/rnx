@@ -106,7 +106,8 @@ impl Session {
 			executor.set_format_limits(FormatLimits::permissive());
 			executor
 				.set_host_runtime(Some(
-					Arc::try_new(self.context.runtime().map_err(|e| e.to_string())?)
+					self.context
+						.execution_runtime()
 						.map_err(|e| e.to_string())?,
 				))
 				.map_err(|e| format!("{e:?}"))?;

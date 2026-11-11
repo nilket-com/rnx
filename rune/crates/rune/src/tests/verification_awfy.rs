@@ -212,7 +212,7 @@ fn observe(
 	let mut executor = Executor::with_limits(limits).expect("executor");
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().expect("runtime")).expect("runtime arc"),
+			context.execution_runtime().expect("execution runtime"),
 		))
 		.expect("host runtime");
 	let a = store.root_i64(c.num);

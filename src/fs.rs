@@ -88,32 +88,49 @@ enum WriteMode {
 }
 fn write_data(path: &str, data: Value, mode: WriteMode) -> Result<()> {
 	// Validate and borrow before opening: a type error must not truncate a file.
-	let write = |bytes: &[u8]| {
-		let mut options = disk::OpenOptions::new();
-		options.write(true);
-		match mode {
-			WriteMode::New => {
-				options.create_new(true);
-			}
-			WriteMode::Replace => {
-				options.create(true).truncate(true);
-			}
-			WriteMode::Append => {
-				options.create(true).append(true);
-			}
-		}
-		options
-			.open(path)
-			.and_then(|mut f| f.write_all(bytes))
-			.map_err(|e| about("write", path, e))
-	};
+	let write = |bytes: &[u8]| write_bytes(path, bytes, mode);
 	if let Ok(text) = data.borrow_ref::<rune::alloc::String>() {
 		write(text.as_bytes())
 	} else if let Ok(bytes) = data.borrow_ref::<Bytes>() {
 		write(bytes.as_slice())
 	} else {
-		Err(about("write", path, "data must be String or Bytes"))
+		Err(write_input_error(path))
 	}
+}
+fn write_input_error(path: &str) -> String {
+	about("write", path, "data must be String or Bytes")
+}
+fn write_bytes(path: &str, bytes: &[u8], mode: WriteMode) -> Result<()> {
+	let mut options = disk::OpenOptions::new();
+	options.write(true);
+	match mode {
+		WriteMode::New => {
+			options.create_new(true);
+		}
+		WriteMode::Replace => {
+			options.create(true).truncate(true);
+		}
+		WriteMode::Append => {
+			options.create(true).append(true);
+		}
+	}
+	options
+		.open(path)
+		.and_then(|mut f| f.write_all(bytes))
+		.map_err(|e| about("write", path, e))
+}
+fn write_string(path: &str, data: rune::host::StringOrRejected, mode: WriteMode) -> Result<()> {
+	let text = data.as_str().ok_or_else(|| write_input_error(path))?;
+	write_bytes(path, text.as_bytes(), mode)
+}
+fn write_new_execution(path: &str, data: rune::host::StringOrRejected) -> Result<()> {
+	write_string(path, data, WriteMode::New)
+}
+fn write_execution(path: &str, data: rune::host::StringOrRejected) -> Result<()> {
+	write_string(path, data, WriteMode::Replace)
+}
+fn append_execution(path: &str, data: rune::host::StringOrRejected) -> Result<()> {
+	write_string(path, data, WriteMode::Append)
 }
 pub(crate) fn write_new(path: &str, data: Value) -> Result<()> {
 	write_data(path, data, WriteMode::New)
@@ -336,6 +353,10 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("fs")?;
 	let mut names = Vec::new();
 	macro_rules! reg {
+		(string_input $name:ident, $adapter:ident, $doc:literal) => {{
+			module.host_function_string_input(stringify!($name), $name, $adapter, None)?;
+			reg!(@record $name, $doc);
+		}};
 		(certified $name:ident, $certificate:expr, $doc:literal) => {{
 			module.host_function_with_output(stringify!($name), $name, $certificate)?;
 			reg!(@record $name, $doc);
@@ -364,15 +385,15 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"read_bytes(path) -> Result<Bytes>: a regular file's bytes, up to 8 MiB"
 	);
 	reg!(
-		write_new,
+		string_input write_new, write_new_execution,
 		"write_new(path, data) -> Result<()>: write String or Bytes, refusing to overwrite an existing file atomically"
 	);
 	reg!(
-		write,
+		string_input write, write_execution,
 		"write(path, data) -> Result<()>: create or truncate in place and write String or Bytes"
 	);
 	reg!(
-		append,
+		string_input append, append_execution,
 		"append(path, data) -> Result<()>: create or append String or Bytes"
 	);
 	reg!(

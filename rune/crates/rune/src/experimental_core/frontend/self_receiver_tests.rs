@@ -165,9 +165,7 @@ fn self_receiver_host_entry_is_refused_without_effects_or_cancellation_consumpti
 	assert!(!program.entry_eligible(u32::MAX));
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let mut store = Store::new(Limits::default()).unwrap();
 	let right = executor
@@ -286,9 +284,7 @@ fn self_receiver_generated_method_values_cannot_escape() {
 	let mut store = Store::new(Limits::default()).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let root = executor
 		.invoke(
@@ -538,9 +534,7 @@ fn self_receiver_native_families_preserve_m3_lowering_or_match_stock() {
 		let mut store = Store::new(Limits::default()).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let root = executor
 			.invoke(

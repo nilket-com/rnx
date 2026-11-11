@@ -9,7 +9,7 @@ use super::{
 };
 use crate::{
 	alloc::{String, Vec},
-	runtime::RuntimeContext,
+	host::ExecutionRuntime,
 	sync::{Arc, Weak},
 	Context, Diagnostics, Sources,
 };
@@ -125,9 +125,9 @@ impl ProgramDomain {
 	pub fn new(
 		limits: Limits,
 		execution: ExecutorLimits,
-		runtime: Arc<RuntimeContext>,
+		runtime: ExecutionRuntime,
 	) -> Result<Self> {
-		let epoch = runtime.execution_epoch.ok_or_else(invalid)?;
+		let epoch = runtime.inner.execution_epoch.ok_or_else(invalid)?;
 		let store = Store::new(limits)?;
 		let id = store.domain_identity();
 		let mut executor = Executor::with_limits(execution)?;
@@ -691,7 +691,7 @@ mod tests {
 		ProgramDomain::new(
 			Limits::default(),
 			ExecutorLimits::default(),
-			Arc::try_new(c.runtime().unwrap()).unwrap(),
+			c.execution_runtime().unwrap(),
 		)
 		.unwrap()
 	}
@@ -765,7 +765,9 @@ mod tests {
 		assert!(ProgramDomain::new(
 			Limits::default(),
 			ExecutorLimits::default(),
-			Arc::try_new(RuntimeContext::default()).unwrap()
+			ExecutionRuntime {
+				inner: Arc::try_new(crate::runtime::RuntimeContext::default()).unwrap()
+			}
 		)
 		.is_err());
 	}

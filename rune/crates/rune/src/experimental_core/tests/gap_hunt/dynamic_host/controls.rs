@@ -51,7 +51,7 @@ fn certified_json_repeated_equal_strings_keep_distinct_allocations() {
 	let mut executor = Executor::new().unwrap();
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			context.execution_runtime().unwrap(),
 		))
 		.unwrap();
 	let mut store = Store::new(Limits::default()).unwrap();

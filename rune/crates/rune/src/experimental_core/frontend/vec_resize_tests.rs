@@ -232,9 +232,7 @@ fn vec_resize_matches_the_frozen_contract() {
 		let mut store = Store::new(Limits::default()).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let result = executor.invoke(
 			&program,
@@ -325,9 +323,7 @@ fn vec_resize_native_adapter_cannot_be_guessed_as_a_host_entry() {
 	let fill = store.root_i64(9);
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	executor.request_cancel();
 	for fuel in [0, 1000] {

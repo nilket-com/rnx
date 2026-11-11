@@ -270,6 +270,52 @@ impl Module {
 		self.function_inner(data, Docs::EMPTY, None)
 	}
 
+	/// Keep the legacy handler and enroll a separate string-only execution adapter.
+	/// The adapter accepts only a final StringOrRejected argument, optionally
+	/// preceded by a borrowed path. The output promise is independent.
+	/// The compiling twin differs only in the adapter argument order.
+	/// ```
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: &str, _: rune::Value| (),
+	///     |_: &str, _: StringOrRejected| (), None).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: &str, _: rune::Value| (),
+	///     |_: StringOrRejected, _: &str| (), None).unwrap();
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn host_function_string_input<N, F, A, G, B>(
+		&mut self,
+		name: N,
+		legacy: F,
+		adapter: G,
+		certificate: Option<crate::function::host::OutputCertificate>,
+	) -> Result<ItemFnMut<'_>, ContextError>
+	where
+		N: IntoComponent,
+		F: Function<A, crate::function::Plain, Return: MaybeTypeOf>,
+		A: FunctionArgs,
+		G: crate::function::host::StringInputFunction<B, Return: MaybeTypeOf>,
+		B: FunctionArgs,
+	{
+		let mut data = FunctionData::new::<N, F, A, crate::function::Plain>(name, legacy)?;
+		let signature = G::string_signature();
+		let handler = crate::runtime::FunctionHandler::new(move |stack, addr, args, output| {
+			adapter.call(stack, addr, args, output)
+		})?;
+		data.alternate_host = Some(crate::function::host::AlternateHost {
+			handler,
+			enrollment: crate::function::host::HostEnrollment {
+				signature,
+				certificate,
+			},
+		});
+		self.function_inner(data, Docs::EMPTY, None)
+	}
+
 	/// Create an empty module for the root path.
 	pub fn new() -> Self {
 		Self::default()
@@ -1371,6 +1417,8 @@ impl Module {
 				handler: data.handler,
 				#[cfg(feature = "execution")]
 				host: data.host,
+				#[cfg(feature = "execution")]
+				alternate_host: data.alternate_host,
 				trait_hash: None,
 				doc: DocFunction {
 					#[cfg(feature = "doc")]
@@ -1427,6 +1475,8 @@ impl Module {
 				format_default: None,
 				#[cfg(feature = "execution")]
 				host: None,
+				#[cfg(feature = "execution")]
+				alternate_host: None,
 				handler: data.handler,
 				trait_hash: None,
 				doc: DocFunction {

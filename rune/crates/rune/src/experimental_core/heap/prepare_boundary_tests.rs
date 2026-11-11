@@ -55,9 +55,7 @@ fn refused_and_invalid_prepare_preserve_every_store_and_argument_field() {
 	let internal = program.function(Hash::type_hash(["S", "run"])).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let mut store = Store::new(Limits::default()).unwrap();
 	let retired = store.root_string("retired").unwrap();
@@ -100,9 +98,7 @@ fn refused_and_invalid_prepare_preserve_every_store_and_argument_field() {
 	assert_eq!(snapshot(&store, &args), before);
 	assert_eq!(effects.load(std::sync::atomic::Ordering::SeqCst), 0);
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	// A fully valid prepare token may also be dropped without retaining args.
 	let args = [&list, &text];

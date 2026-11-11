@@ -397,9 +397,7 @@ fn proven_receiver_private_and_closure_entries_refuse_before_work() {
 		assert!(program.entry_eligible(main));
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let wrong = executor
@@ -581,9 +579,7 @@ fn proven_receiver_frozen_frontier_and_execution() {
 			assert!(program.entry_eligible(main), "{}", row["name"]);
 			let mut executor = Executor::new().unwrap();
 			executor
-				.set_host_runtime(Some(
-					crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-				))
+				.set_host_runtime(Some(context.execution_runtime().unwrap()))
 				.unwrap();
 			let mut store = Store::new(Limits::default()).unwrap();
 			let argument = row["args"]
@@ -698,7 +694,7 @@ fn proven_receiver_both_context_absences_are_checked_before_execution() {
 		let row = json!({"source":"struct R; impl R { fn capacity(self) { 7 } } fn make() { R } pub fn main() { mark(); make().capacity() }"});
 		let (program, mut context) = execution(&row);
 		let main = program.function(Hash::type_hash(["main"])).unwrap();
-		let original = crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap();
+		let original = context.execution_runtime().unwrap();
 		let handler = context
 			.lookup_function(Hash::type_hash(["mark"]))
 			.unwrap()
@@ -706,9 +702,7 @@ fn proven_receiver_both_context_absences_are_checked_before_execution() {
 		context.c13_insert_raw_fixture(key, handler).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		EFFECTS.with(|count| count.set(0));

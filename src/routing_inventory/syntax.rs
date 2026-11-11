@@ -263,6 +263,7 @@ impl<'ast> Visit<'ast> for Scan {
 			"associated_function",
 			"host_function",
 			"host_function_with_output",
+			"host_function_string_input",
 			"field_function",
 			"index_function",
 		]
@@ -295,6 +296,7 @@ impl<'ast> Visit<'ast> for Scan {
 			let class = match method.as_str() {
 				"host_function" => "typed",
 				"host_function_with_output" => "dynamic-output",
+				"host_function_string_input" => "string-input",
 				_ => "undeclared",
 			};
 			self.registration(name, class, n.to_token_stream().to_string());
@@ -354,6 +356,7 @@ impl<'ast> Visit<'ast> for Scan {
 					"associated_function",
 					"host_function",
 					"host_function_with_output",
+					"host_function_string_input",
 					"field_function",
 					"index_function",
 				]
@@ -362,6 +365,7 @@ impl<'ast> Visit<'ast> for Scan {
 					let class = match method.as_str() {
 						"host_function" => "typed",
 						"host_function_with_output" => "dynamic-output",
+						"host_function_string_input" => "string-input",
 						_ => "undeclared",
 					};
 					self.templates.push(Registration {
@@ -387,6 +391,13 @@ impl<'ast> Visit<'ast> for Scan {
 			}
 			if tokens.first().is_some_and(|t| t.to_string() == "certified") {
 				class = "dynamic-output";
+				at += 1;
+			}
+			if tokens
+				.first()
+				.is_some_and(|t| t.to_string() == "string_input")
+			{
+				class = "string-input";
 				at += 1;
 			}
 			if name == "assoc" {

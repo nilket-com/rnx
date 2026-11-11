@@ -260,7 +260,12 @@ fn ordinary_and_cold_host_validation_agree_before_formatter_mismatches() {
 			}
 			let ordinary = code.validate_hosts(runtime.as_deref());
 			let mut e = executor();
-			e.set_host_runtime(runtime.clone()).unwrap();
+			e.set_host_runtime(
+				runtime
+					.clone()
+					.map(|inner| crate::host::ExecutionRuntime { inner }),
+			)
+			.unwrap();
 			e.canceled = true;
 			let s = store();
 			// Some compile authority forces the actual cold host-copy path even

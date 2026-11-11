@@ -45,9 +45,7 @@ fn compile(context: &Context, text: &str) -> Program {
 fn executor(context: &Context) -> Executor {
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	executor
 }
@@ -363,9 +361,7 @@ fn prepare_distinguishes_refused_entries_from_invalid_arguments_and_bindings() {
 	);
 	let (different, different_effects) = context_with_effects();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(different.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(different.execution_runtime().unwrap()))
 		.unwrap();
 	let local = store.root_unit();
 	assert!(
@@ -374,9 +370,7 @@ fn prepare_distinguishes_refused_entries_from_invalid_arguments_and_bindings() {
 	assert_eq!(effects.load(Ordering::SeqCst), 0);
 	assert_eq!(different_effects.load(Ordering::SeqCst), 0);
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let internal = compile(
 		&context,

@@ -287,6 +287,8 @@ impl TraitContext<'_> {
 			format_default: None,
 			#[cfg(feature = "execution")]
 			host: None,
+			#[cfg(feature = "execution")]
+			alternate_host: None,
 			handler: handler.clone(),
 			trait_hash: Some(self.trait_hash),
 			doc: DocFunction {
@@ -392,6 +394,8 @@ pub struct Context {
 	functions: hash::Map<FunctionHandler>,
 	#[cfg(feature = "execution")]
 	hosts: hash::Map<crate::function::host::HostBinding>,
+	#[cfg(feature = "execution")]
+	alternate_hosts: hash::Map<crate::function::host::InstalledAlternate>,
 	#[cfg(feature = "execution")]
 	format: crate::function::formatting::State,
 	/// Registered deprecation mesages for native functions.
@@ -626,6 +630,24 @@ impl Context {
 		))
 	}
 
+	/// Produce the typed runtime snapshot required by the execution engine.
+	#[cfg(feature = "execution")]
+	pub fn execution_runtime(&self) -> alloc::Result<crate::host::ExecutionRuntime> {
+		let mut runtime = self.runtime()?;
+		for (hash, alternate) in &self.alternate_hosts {
+			if self
+				.functions
+				.get(hash)
+				.is_some_and(|f| f.same_allocation(&alternate.original))
+			{
+				runtime.replace_execution_handler(*hash, alternate.binding.handler.clone())?;
+			}
+		}
+		Ok(crate::host::ExecutionRuntime {
+			inner: crate::sync::Arc::try_new(runtime)?,
+		})
+	}
+
 	/// Install the specified module.
 	///
 	/// This installs everything that has been declared in the given [Module]
@@ -727,10 +749,29 @@ impl Context {
 		}
 
 		#[cfg(feature = "execution")]
-		let prepared_hosts = {
+		let (prepared_hosts, prepared_alternates) = {
 			let mut hosts = self.hosts.try_clone()?;
+			let mut alternates = self.alternate_hosts.try_clone()?;
 			for item in &module.items {
 				if let rune::module::ModuleItemKind::Function(function) = &item.kind {
+					if let Some(alternate) = function
+						.alternate_host
+						.as_ref()
+						.filter(|a| a.enrollment.admitted())
+					{
+						alternates.try_insert(
+							item.hash,
+							crate::function::host::InstalledAlternate {
+								original: function.handler.clone(),
+								binding: crate::function::host::HostBinding {
+									hash: item.hash,
+									handler: alternate.handler.clone(),
+									signature: alternate.enrollment.signature,
+									certificate: alternate.enrollment.certificate,
+								},
+							},
+						)?;
+					}
 					if let Some(enrollment) = function.host.filter(|e| e.admitted()) {
 						hosts.try_insert(
 							item.hash,
@@ -744,7 +785,7 @@ impl Context {
 					}
 				}
 			}
-			hosts
+			(hosts, alternates)
 		};
 		tracing::trace!("module");
 		self.install_module(module)?;
@@ -884,6 +925,7 @@ impl Context {
 		#[cfg(feature = "execution")]
 		{
 			self.hosts = prepared_hosts;
+			self.alternate_hosts = prepared_alternates;
 			self.numeric.finish_module(numeric_pending);
 			self.iter.finish_module(iter_pending);
 			self.text.finish_module(text_pending);
@@ -984,6 +1026,13 @@ impl Context {
 
 	#[cfg(feature = "execution")]
 	pub(crate) fn host(&self, hash: Hash) -> Option<&crate::function::host::HostBinding> {
+		if let Some(alternate) = self.alternate_hosts.get(&hash) {
+			let installed = self.functions.get(&hash)?;
+			return alternate
+				.original
+				.same_allocation(installed)
+				.then_some(&alternate.binding);
+		}
 		let binding = self.hosts.get(&hash)?;
 		let handler = self.functions.get(&hash)?;
 		binding.handler.same_allocation(handler).then_some(binding)

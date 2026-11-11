@@ -37,7 +37,7 @@ fn fault(e: impl std::fmt::Display) -> Failure {
 }
 impl DomainSession {
 	pub(crate) fn new(context: Context, ceiling: usize) -> Result<Self> {
-		let runtime = Arc::try_new(context.runtime()?)?;
+		let runtime = context.execution_runtime()?;
 		let domain = ProgramDomain::new(Default::default(), Default::default(), runtime)
 			.map_err(|e| format!("{e:?}"))?;
 		Ok(Self {
@@ -93,7 +93,9 @@ impl DomainSession {
 	}
 	pub(crate) fn reset_fallible(&mut self) -> std::result::Result<(), String> {
 		// Allocate the replacement before retiring the old epoch. Refusal keeps it usable.
-		let runtime = Arc::try_new(self.context.runtime().map_err(|e| e.to_string())?)
+		let runtime = self
+			.context
+			.execution_runtime()
 			.map_err(|e| e.to_string())?;
 		let replacement = ProgramDomain::new(Default::default(), Default::default(), runtime)
 			.map_err(|e| format!("{e:?}"))?;
@@ -1060,9 +1062,11 @@ pub(crate) fn host_wait_reason(name: &str) -> &'static str {
 		"fs::read_bytes" => "bytes",
 		"time::from_parts" => "borrowed object input",
 		"web::escape_html" => "VM-error result",
-		"json::stringify" | "process::run" | "process::run_bytes" | "web::parse_form"
-		| "web::response" | "web::html" | "web::text" | "fs::write_new" | "fs::write"
-		| "fs::append" => "dynamic input",
+		"json::stringify" => "recursive dynamic input",
+		"process::run" => "argument-vector and options-object input",
+		"process::run_bytes" => "argument-vector/options input and bytes output",
+		"web::response" => "dynamic body/headers and response output",
+		"web::html" | "web::text" => "dynamic body and response output",
 		_ => "host enrollment",
 	}
 }

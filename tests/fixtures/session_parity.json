@@ -531,8 +531,8 @@
         "function": "json::stringify",
         "input": "json::stringify(())",
         "input_shape": "Value: outside typed input set",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "reason": "recursive dynamic input",
+        "work_group": "recursive dynamic input"
       },
       {
         "class": "Refused for a host function",
@@ -540,8 +540,8 @@
         "function": "process::run",
         "input": "process::run(\"\",[],#{})",
         "input_shape": "Value args/options",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "reason": "argument-vector and options-object input",
+        "work_group": "argument-vector and options-object input"
       },
       {
         "class": "Refused for a host function",
@@ -549,8 +549,8 @@
         "function": "process::run_bytes",
         "input": "process::run_bytes(\"\",[],#{})",
         "input_shape": "Value args/options",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "reason": "argument-vector/options input and bytes output",
+        "work_group": "argument-vector/options input and bytes output"
       },
       {
         "class": "Equal",
@@ -577,13 +577,19 @@
         "work_group": "VM-error result"
       },
       {
-        "class": "Refused for a host function",
-        "construct": "web::parse_form",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok({\"a\": \"one two\"}), Err(\"web: expected String or Bytes\"), Err(\"web: decoded component is not UTF-8\"))"
+        },
+        "domain_worse": false,
         "function": "web::parse_form",
-        "input": "web::parse_form(())",
-        "input_shape": "Value: outside typed input set",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "input": "(web::parse_form(\"a=one+two&a=ignored\"),web::parse_form(42),web::parse_form(\"%FF=x\"))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok({\"a\": \"one two\"}), Err(\"web: expected String or Bytes\"), Err(\"web: decoded component is not UTF-8\"))"
+        },
+        "wording_rule": null
       },
       {
         "class": "Refused for a host function",
@@ -591,8 +597,8 @@
         "function": "web::response",
         "input": "web::response(200,#{},\"\",())",
         "input_shape": "Value options/body",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "reason": "dynamic body/headers and response output",
+        "work_group": "dynamic body/headers and response output"
       },
       {
         "class": "Refused for a host function",
@@ -600,8 +606,8 @@
         "function": "web::html",
         "input": "web::html(200,())",
         "input_shape": "Value body",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "reason": "dynamic body and response output",
+        "work_group": "dynamic body and response output"
       },
       {
         "class": "Refused for a host function",
@@ -609,8 +615,8 @@
         "function": "web::text",
         "input": "web::text(200,())",
         "input_shape": "Value body",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "reason": "dynamic body and response output",
+        "work_group": "dynamic body and response output"
       },
       {
         "class": "Refused for a host function",
@@ -622,31 +628,49 @@
         "work_group": "bytes"
       },
       {
-        "class": "Refused for a host function",
-        "construct": "fs::write_new",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok(()), true, Ok(\"abc\"), Err(\"cannot write never: data must be String or Bytes\"), Ok(false))"
+        },
+        "domain_worse": false,
         "function": "fs::write_new",
-        "input": "fs::write_new(\"\",\"\")",
-        "input_shape": "Value: outside typed input set",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "input": "let r=fs::write_new(\"out\",\"abc\");let second=fs::write_new(\"out\",\"bad\").is_err();let t=fs::read(\"out\");fs::remove_file(\"out\").unwrap();(r,second,t,fs::write_new(\"never\",#{}),fs::exists(\"never\"))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok(()), true, Ok(\"abc\"), Err(\"cannot write never: data must be String or Bytes\"), Ok(false))"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "fs::write",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok(()), Ok(\"abc\"), Err(\"cannot write never: data must be String or Bytes\"), Ok(false))"
+        },
+        "domain_worse": false,
         "function": "fs::write",
-        "input": "fs::write(\"\",\"\")",
-        "input_shape": "Value: outside typed input set",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "input": "let r=fs::write(\"out\",\"abc\");let t=fs::read(\"out\");fs::remove_file(\"out\").unwrap();(r,t,fs::write(\"never\",42),fs::exists(\"never\"))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok(()), Ok(\"abc\"), Err(\"cannot write never: data must be String or Bytes\"), Ok(false))"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "fs::append",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok(()), Ok(\"abc\"), Err(\"cannot write never: data must be String or Bytes\"), Ok(false))"
+        },
+        "domain_worse": false,
         "function": "fs::append",
-        "input": "fs::append(\"\",\"\")",
-        "input_shape": "Value: outside typed input set",
-        "reason": "dynamic input",
-        "work_group": "dynamic input"
+        "input": "fs::write(\"out\",\"a\").unwrap();let r=fs::append(\"out\",\"bc\");let t=fs::read(\"out\");fs::remove_file(\"out\").unwrap();(r,t,fs::append(\"never\",[]),fs::exists(\"never\"))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok(()), Ok(\"abc\"), Err(\"cannot write never: data must be String or Bytes\"), Ok(false))"
+        },
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -4770,10 +4794,10 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 131,
+      "Equal": 135,
       "Not classified": 18,
       "Refused at admission": 6,
-      "Refused for a host function": 18,
+      "Refused for a host function": 14,
       "Wording": 20
     },
     "work_groups": {
@@ -4782,6 +4806,24 @@
         "top_constructs": [
           [
             "web::escape_html",
+            1
+          ]
+        ]
+      },
+      "argument-vector and options-object input": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "process::run",
+            1
+          ]
+        ]
+      },
+      "argument-vector/options input and bytes output": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "process::run_bytes",
             1
           ]
         ]
@@ -4821,19 +4863,33 @@
           ]
         ]
       },
-      "dynamic input": {
-        "count": 10,
+      "dynamic body and response output": {
+        "count": 2,
         "top_constructs": [
           [
-            "fs::append",
+            "web::html",
             1
           ],
           [
-            "fs::write",
+            "web::text",
             1
-          ],
+          ]
+        ]
+      },
+      "dynamic body/headers and response output": {
+        "count": 1,
+        "top_constructs": [
           [
-            "fs::write_new",
+            "web::response",
+            1
+          ]
+        ]
+      },
+      "recursive dynamic input": {
+        "count": 1,
+        "top_constructs": [
+          [
+            "json::stringify",
             1
           ]
         ]

@@ -76,9 +76,7 @@ pub(super) fn observe(path: &Path, mode: &str) -> Observation {
 			let mut executor = Executor::new().unwrap();
 			if mode != "missing-runtime" {
 				executor
-					.set_host_runtime(Some(
-						crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-					))
+					.set_host_runtime(Some(context.execution_runtime().unwrap()))
 					.unwrap();
 			}
 			let fuel = mode

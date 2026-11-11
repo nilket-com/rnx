@@ -11,6 +11,7 @@ mod sealed {
 	pub trait Output {}
 	pub trait Arguments {}
 	pub trait Callable<A> {}
+	pub trait StringCallable<A> {}
 }
 
 /// Scalar representation used by the unstable host bridge.
@@ -329,3 +330,172 @@ impl HostBinding {
 
 #[cfg(test)]
 mod tests;
+
+/// Owned text or a payload-free rejection, for a final dynamic input only.
+/// This deliberately does not implement HostArgument: it cannot appear in an
+/// ordinary signature or before another argument.
+#[doc(hidden)]
+pub struct StringOrRejected(Option<crate::alloc::String>);
+impl StringOrRejected {
+	pub fn as_str(&self) -> Option<&str> {
+		self.0.as_deref()
+	}
+}
+impl crate::runtime::FromValue for StringOrRejected {
+	fn from_value(value: crate::runtime::Value) -> Result<Self, crate::runtime::RuntimeError> {
+		if value.type_hash() != <crate::alloc::String as crate::runtime::TypeHash>::HASH {
+			return Ok(Self(None));
+		}
+		// A real string must be readable and copied successfully. Neither access
+		// nor allocation failure is a wrong-type rejection.
+		let text = value.borrow_string_ref()?;
+		Ok(Self(Some(crate::alloc::String::try_from(&*text)?)))
+	}
+}
+impl crate::runtime::MaybeTypeOf for StringOrRejected {
+	fn maybe_type_of() -> crate::alloc::Result<crate::compile::meta::DocType> {
+		<crate::runtime::Value as crate::runtime::MaybeTypeOf>::maybe_type_of()
+	}
+}
+/// Sealed supported arrangements: one final rejection-bearing argument.
+#[doc(hidden)]
+pub trait StringInputFunction<A>: Function<A, Plain> + sealed::StringCallable<A> {
+	fn string_signature() -> HostSignature;
+}
+impl<F, R> sealed::StringCallable<(StringOrRejected,)> for F
+where
+	F: Fn(StringOrRejected) -> R + Function<(StringOrRejected,), Plain, Return = R>,
+	R: HostOutput,
+{
+}
+impl<F, R> StringInputFunction<(StringOrRejected,)> for F
+where
+	F: Fn(StringOrRejected) -> R + Function<(StringOrRejected,), Plain, Return = R>,
+	R: HostOutput,
+{
+	fn string_signature() -> HostSignature {
+		HostSignature {
+			arity: 1,
+			arguments: [
+				HostType::String,
+				HostType::Unit,
+				HostType::Unit,
+				HostType::Unit,
+			],
+			output: R::SHAPE,
+		}
+	}
+}
+impl<F, R> sealed::StringCallable<(Ref<str>, StringOrRejected)> for F
+where
+	F: Fn(&str, StringOrRejected) -> R + Function<(Ref<str>, StringOrRejected), Plain, Return = R>,
+	R: HostOutput,
+{
+}
+impl<F, R> StringInputFunction<(Ref<str>, StringOrRejected)> for F
+where
+	F: Fn(&str, StringOrRejected) -> R + Function<(Ref<str>, StringOrRejected), Plain, Return = R>,
+	R: HostOutput,
+{
+	fn string_signature() -> HostSignature {
+		HostSignature {
+			arity: 2,
+			arguments: [
+				HostType::String,
+				HostType::String,
+				HostType::Unit,
+				HostType::Unit,
+			],
+			output: R::SHAPE,
+		}
+	}
+}
+
+#[derive(Clone)]
+pub(crate) struct AlternateHost {
+	pub handler: FunctionHandler,
+	pub enrollment: HostEnrollment,
+}
+impl TryClone for AlternateHost {
+	fn try_clone(&self) -> crate::alloc::Result<Self> {
+		Ok(self.clone())
+	}
+}
+#[derive(Clone)]
+pub(crate) struct InstalledAlternate {
+	pub original: FunctionHandler,
+	pub binding: HostBinding,
+}
+impl TryClone for InstalledAlternate {
+	fn try_clone(&self) -> crate::alloc::Result<Self> {
+		Ok(self.clone())
+	}
+}
+
+/// An execution-only snapshot. Legacy RuntimeContext cannot be passed in its place.
+/// The compiling twin differs only in the runtime supplied to the setter.
+/// ```
+/// let c = rune::Context::new();
+/// let mut e = rune::experimental_core::execute::Executor::new().unwrap();
+/// e.set_host_runtime(Some(c.execution_runtime().unwrap())).unwrap();
+/// ```
+/// ```compile_fail,E0308
+/// let c = rune::Context::new();
+/// let mut e = rune::experimental_core::execute::Executor::new().unwrap();
+/// e.set_host_runtime(Some(rune::sync::Arc::try_new(c.runtime().unwrap()).unwrap())).unwrap();
+/// ```
+#[derive(Clone)]
+#[doc(hidden)]
+pub struct ExecutionRuntime {
+	pub(crate) inner: crate::sync::Arc<crate::runtime::RuntimeContext>,
+}
+
+#[cfg(test)]
+mod string_input_controls {
+	use super::*;
+	use crate::{FromValue, Value};
+	#[test]
+	fn string_input_rejection_does_not_borrow_payload_and_string_errors_propagate() {
+		let value = crate::to_value(crate::runtime::Vec::new()).unwrap();
+		let guard = value.borrow_mut::<crate::runtime::Vec>().unwrap();
+		assert!(StringOrRejected::from_value(value.clone())
+			.unwrap()
+			.as_str()
+			.is_none());
+		drop(guard);
+		let value = crate::to_value("text").unwrap();
+		let guard = value.borrow_mut::<crate::alloc::String>().unwrap();
+		assert!(StringOrRejected::from_value(value.clone()).is_err());
+		drop(guard);
+		let owned = StringOrRejected::from_value(value.clone()).unwrap();
+		assert_eq!(owned.as_str(), Some("text"));
+		value.borrow_mut::<crate::alloc::String>().unwrap().clear();
+		assert_eq!(owned.as_str(), Some("text"));
+		assert!(StringOrRejected::from_value(Value::from(42i64))
+			.unwrap()
+			.as_str()
+			.is_none());
+	}
+	#[test]
+	fn string_input_installation_failure_and_invalid_output_do_not_admit() {
+		let mut c = crate::Context::new();
+		let mut m = crate::Module::with_item(["x"]).unwrap();
+		m.function("f", |_: Value| 0i64).build().unwrap();
+		c.install(m).unwrap();
+		let mut m = crate::Module::with_item(["x"]).unwrap();
+		m.host_function_string_input("f", |_: Value| 0i64, |_: StringOrRejected| 1i64, None)
+			.unwrap();
+		assert!(c.install(m).is_err());
+		assert!(c.host(Hash::type_hash(["x", "f"])).is_none());
+		let mut m = crate::Module::with_item(["y"]).unwrap();
+		m.host_function_string_input(
+			"f",
+			|_: Value| Value::from(()),
+			|_: StringOrRejected| Value::from(()),
+			None,
+		)
+		.unwrap();
+		c.install(m).unwrap();
+		assert!(c.host(Hash::type_hash(["y", "f"])).is_none());
+	}
+}

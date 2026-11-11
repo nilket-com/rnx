@@ -74,7 +74,7 @@ fn supplement_with_limits(
 	let mut executor = Executor::with_limits(limits.unwrap_or_default()).unwrap();
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			context.execution_runtime().unwrap(),
 		))
 		.unwrap();
 	let main = built.function(Hash::type_hash(["main"])).unwrap();

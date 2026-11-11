@@ -187,6 +187,8 @@ impl Store {
 
 	/// No payload pointer leaves this safe module. One initialized sentinel keeps even
 	/// an empty snapshot's clamped address inside a live allocation.
+	// Measured fixed-route boundary: folding into enter_collection adds about 1.2% collection work.
+	#[inline(never)]
 	pub(crate) fn snapshot_for_native<'b>(
 		&self,
 		value: Value,

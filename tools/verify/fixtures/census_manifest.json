@@ -1485,13 +1485,13 @@
   },
   "registration_policy": {
     "whole_files_sha256": {
-      "src/fs.rs": "14abcf8c36d10240c3b24d65895d88a6d015c6a9402777443e0fbdcb02cc9e66",
+      "src/fs.rs": "b41eefdb5446cc04596b23567345312609bb4524444ad3242a6bbdfdece4e5aa",
       "src/io.rs": "3171fff7c5077c5862a27152978164bbb383b1dcb20d832a9bb4310852cf5c3d",
       "src/json.rs": "644371197bcd97096be1a08674a1998b3941e479afbff19cc276d245e7ef6b6e",
       "src/path.rs": "c43463be50ac5f9292f72588d9db2508571c0cc8e3c4c3f2b93ba2661fe37051",
       "src/text.rs": "07d3fa43908ab4c1ee8c1022f469334aeb8f08db038b3a4a795c5c6d5105367c",
       "src/time.rs": "de3dd41e28066939808025ce1f5a062d93417cca0e1926328aee092b4eb8e092",
-      "src/web.rs": "a49430f3f7ff4f9e1d214cf0c8d06fd3dcb9cbb7e97a507959d0441f3b59b629"
+      "src/web.rs": "8b38a7a021453d801259f2ae911b4c6accced44e64717670cd14b83d992662e2"
     },
     "install_core": {
       "path": "src/lib.rs",

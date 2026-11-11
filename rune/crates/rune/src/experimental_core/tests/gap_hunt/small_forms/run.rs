@@ -88,7 +88,7 @@ fn c12_observe(row: &Json) -> Json {
 	let mut executor = Executor::new().unwrap();
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			context.execution_runtime().unwrap(),
 		))
 		.unwrap();
 	let (v, state) = c12_fixture(&mut store, fixture);

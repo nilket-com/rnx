@@ -1,6 +1,6 @@
 # Implementation plan 0249: string input for host functions with a dynamic parameter
 
-Status: Proposed
+Status: Implemented
 
 Paired ADR: ../adr/0249_string_input_for_dynamic_host_calls.md.
 
@@ -23,3 +23,43 @@ Paired ADR: ../adr/0249_string_input_for_dynamic_host_calls.md.
    once the packet is sent.
 
 Results are added here by the implementer.
+
+Boundary review: the rejection-bearing argument is final by its sealed API
+signature. Rejection reads only the value's type tag, never its payload.
+Access or allocation failure of a real string remains an error. A distinct
+ExecutionRuntime, constructed only by Context::execution_runtime, is required
+by Executor::set_host_runtime and ProgramDomain::new. Legacy runtimes retain
+their original handlers. No inventoried item or gate policy is edited.
+Bytes-not-representable, legacy Bytes preservation, and wrong-type Result
+parity are explicit controls. Startup snapshot work is included in the bands.
+
+Implementation: the four adapters preserve legacy handlers and Result errors;
+only the typed execution snapshot substitutes the certified adapter. String
+input is currently copied through the existing bridge snapshot and then into
+the owned marker. This record makes no zero-copy input claim.
+
+Development validation: focused ownership/installation controls, the root
+library suite, Rune execution Clippy, and the unchanged inventoried tokens
+and sliced-copy guard passed. The regenerated parity fixture changes only
+four host rows to Equal (135 Equal, 14 host refusals); live census updates are
+limited to fs.rs and web.rs.
+
+The ordinary final rune-suite stage runs the two API doctest pairs with
+fmt,workspace,execution. Each pair must discover and execute exactly two
+tests. The marker pair differs only in adapter argument order (borrowed path
+then marker versus marker then borrowed path); the runtime pair differs only
+in the runtime supplied. Both compiling twins and both compile-fail controls
+passed, as did the controls rejecting missing or extra tests.
+
+The signed candidate is subject to the four exact Miri ownership tests and
+the ordinary final gates, including fixed-route bands and cross. Their
+terminal receipts and the final commit identity are included in the packet.
+
+The first ordinary final passed every stage except the per-record native
+sieve growth band (+1.23%). Profiles showed snapshot_for_native folded into
+enter_collection at some call sites. The reviewed repair pins
+Store::snapshot_for_native out of line, preserving the baseline boundary;
+this closes the follow-up to stabilize that collection/snapshot boundary.
+The source inventory and band limits remain unchanged. The amended candidate
+requires a standalone fixed-route PASS before a complete ordinary final,
+without stage reuse; a remaining band failure stops this attempt.

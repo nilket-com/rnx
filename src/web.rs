@@ -27,7 +27,7 @@ fn with_bytes<T>(v: &Value, f: impl FnOnce(&[u8]) -> Result<T, String>) -> Resul
 	}
 	let b = v
 		.borrow_ref::<Bytes>()
-		.map_err(|_| "web: expected String or Bytes".to_owned())?;
+		.map_err(|_| STRING_OR_BYTES_ERROR.to_owned())?;
 	f(&b)
 }
 fn escaped(c: char) -> Option<&'static str> {
@@ -134,44 +134,50 @@ fn put(o: &mut Object, key: &str, value: Value) -> Result<(), String> {
 		.map_err(fail)?;
 	Ok(())
 }
+const STRING_OR_BYTES_ERROR: &str = "web: expected String or Bytes";
 fn form(body: Value) -> Result<Value, String> {
-	with_bytes(&body, |bytes| {
-		bounded(bytes.len(), BODY, "parse_form input")?;
-		let s = std::str::from_utf8(bytes).map_err(|_| "web: parse_form body is not UTF-8")?;
-		let count = if s.is_empty() {
-			0
-		} else {
-			s.bytes().filter(|b| *b == b'&').count() + 1
-		};
-		bounded(count, PAIRS, "parse_form pairs")?;
-		let mut total = 0usize;
-		if count > 0 {
-			for pair in s.split('&') {
-				let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
-				for part in [k, v] {
-					total = total
-						.checked_add(decoded_len(part, true)?)
-						.ok_or("web: parse_form length overflow")?;
-					bounded(total, BODY, "parse_form decoded bytes")?;
-				}
+	with_bytes(&body, form_bytes)
+}
+fn form_execution(body: rune::host::StringOrRejected) -> Result<Value, String> {
+	let text = body.as_str().ok_or(STRING_OR_BYTES_ERROR)?;
+	form_bytes(text.as_bytes())
+}
+fn form_bytes(bytes: &[u8]) -> Result<Value, String> {
+	bounded(bytes.len(), BODY, "parse_form input")?;
+	let s = std::str::from_utf8(bytes).map_err(|_| "web: parse_form body is not UTF-8")?;
+	let count = if s.is_empty() {
+		0
+	} else {
+		s.bytes().filter(|b| *b == b'&').count() + 1
+	};
+	bounded(count, PAIRS, "parse_form pairs")?;
+	let mut total = 0usize;
+	if count > 0 {
+		for pair in s.split('&') {
+			let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
+			for part in [k, v] {
+				total = total
+					.checked_add(decoded_len(part, true)?)
+					.ok_or("web: parse_form length overflow")?;
+				bounded(total, BODY, "parse_form decoded bytes")?;
 			}
 		}
-		let mut out = Object::new();
-		if count > 0 {
-			for pair in s.split('&') {
-				let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
-				let k = decode(k, true)?;
-				if out.get(k.as_str()).is_none() {
-					put(
-						&mut out,
-						&k,
-						rune::to_value(decode(v, true)?).map_err(fail)?,
-					)?;
-				}
+	}
+	let mut out = Object::new();
+	if count > 0 {
+		for pair in s.split('&') {
+			let (k, v) = pair.split_once('=').unwrap_or((pair, ""));
+			let k = decode(k, true)?;
+			if out.get(k.as_str()).is_none() {
+				put(
+					&mut out,
+					&k,
+					rune::to_value(decode(v, true)?).map_err(fail)?,
+				)?;
 			}
 		}
-		rune::to_value(out).map_err(fail)
-	})
+	}
+	rune::to_value(out).map_err(fail)
 }
 
 /// Shared host/constructor response rules. Grammar checks scan borrowed bytes.
@@ -213,9 +219,7 @@ fn copy_payload(v: &Value) -> Result<Value, String> {
 	if let Ok(s) = v.borrow_string_ref() {
 		return rune::to_value(s.to_owned()).map_err(fail);
 	}
-	let b = v
-		.borrow_ref::<Bytes>()
-		.map_err(|_| "web: expected String or Bytes")?;
+	let b = v.borrow_ref::<Bytes>().map_err(|_| STRING_OR_BYTES_ERROR)?;
 	rune::to_value(Bytes::from_slice(&*b).map_err(fail)?).map_err(fail)
 }
 fn header_error(key: &str, index: Option<usize>, error: &str) -> String {
@@ -345,6 +349,15 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("web")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
+		(string_input $name:literal, $function:expr, $adapter:expr, $doc:literal) => {
+			module.host_function_string_input($name, $function, $adapter,
+				Some(rune::host::OutputCertificate { nodes: &[
+					rune::host::OutputShape::Result(1,2),
+					rune::host::OutputShape::Object(2),
+					rune::host::OutputShape::Scalar(rune::host::HostType::String),
+				], root:0 }))?;
+			register!(@record $name, $doc);
+		};
 		(execution $name:literal, $function:expr, $doc:literal) => {
 			module.host_function($name, $function)?;
 			register!(@record $name, $doc);
@@ -371,8 +384,8 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"decode_component(text) -> Result<String>: one percent decode, + literal, malformed % literal, invalid UTF-8 refused; input <=1 MiB; do not decode route params twice; borrowed"
 	);
 	register!(
-		"parse_form",
-		form,
+		string_input "parse_form",
+		form, form_execution,
 		"parse_form(String|Bytes) -> Result<Object>: URL-encoded form, + is space, first duplicate wins; empty pairs/names retained; invalid UTF-8 refused including duplicates; <=1 MiB, <=1024 raw pairs; borrowed"
 	);
 	register!(
@@ -540,7 +553,7 @@ mod tests {
 		);
 		check(
 			r#"match web::response(200,"hi","text/plain",#{"x-a":["v","PRIVATE\r\n"]}) {
-    Err(e) => e.contains("web::response") && e.contains("x-a") && e.contains("value 1") && !e.contains("PRIVATE"), _ => false
+	Err(e) => e.contains("web::response") && e.contains("x-a") && e.contains("value 1") && !e.contains("PRIVATE"), _ => false
   }"#,
 		);
 		let error = header_error(

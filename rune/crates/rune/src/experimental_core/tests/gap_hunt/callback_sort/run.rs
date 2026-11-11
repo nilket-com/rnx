@@ -173,7 +173,7 @@ fn observe_with_limits(
 	let mut executor = Executor::with_limits(limits).unwrap();
 	executor
 		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+			context.execution_runtime().unwrap(),
 		))
 		.unwrap();
 	let (held, v, state) = fixture(&mut store, fixture_name);

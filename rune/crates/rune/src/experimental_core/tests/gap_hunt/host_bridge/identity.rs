@@ -55,9 +55,11 @@ fn ten_frozen_identity_modes_check_admission_ownership_and_recovery() {
 		};
 		let use_b = case.mode == "two-programs-same-hash";
 		let mut compiled_context = Some(if use_b { context_b } else { context_a });
-		let correct =
-			crate::sync::Arc::try_new(compiled_context.as_ref().unwrap().runtime().unwrap())
-				.unwrap();
+		let correct = compiled_context
+			.as_ref()
+			.unwrap()
+			.execution_runtime()
+			.unwrap();
 		let compiled = program(compiled_context.as_ref().unwrap(), &source);
 		let entry = if case.mode == "unused-host-descriptor" {
 			"idle"
@@ -86,11 +88,12 @@ fn ten_frozen_identity_modes_check_admission_ownership_and_recovery() {
 				} else {
 					fixture::context(&other_tape)
 				};
-				Some(crate::sync::Arc::try_new(wrong.runtime().unwrap()).unwrap())
+				Some(wrong.execution_runtime().unwrap())
 			}
-			"missing-handler" | "unused-host-descriptor" => {
-				Some(crate::sync::Arc::try_new(crate::runtime::RuntimeContext::default()).unwrap())
-			}
+			"missing-handler" | "unused-host-descriptor" => Some(crate::host::ExecutionRuntime {
+				inner: crate::sync::Arc::try_new(crate::runtime::RuntimeContext::default())
+					.unwrap(),
+			}),
 			"clear-runtime" | "missing-runtime" => None,
 			_ => panic!("unreviewed identity mode"),
 		};
@@ -206,9 +209,7 @@ fn fuel_frontiers_keep_complete_host_call_effect_prefixes_and_clean_state() {
 		let main = compiled.function(Hash::type_hash(["main"])).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let outcome = executor.invoke(&compiled, &mut store, main, &[], budget);

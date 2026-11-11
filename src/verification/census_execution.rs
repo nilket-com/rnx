@@ -105,7 +105,7 @@ pub(super) fn child(
 			let mut store = Store::new(Limits::default()).map_err(opaque_error)?;
 			let mut executor = Executor::new().map_err(opaque_error)?;
 			executor
-				.set_host_runtime(Some(rune::sync::Arc::try_new(context.runtime()?)?))
+				.set_host_runtime(Some(context.execution_runtime()?))
 				.map_err(opaque_error)?;
 			match executor.invoke(&program, &mut store, main, &[], 2_000_000) {
 				Ok(root) => {

@@ -35,9 +35,7 @@ fn legacy_i64(source: &str, context: &Context) -> i64 {
 fn executor(context: &Context) -> Executor {
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	executor
 }

@@ -615,9 +615,7 @@ mod tests {
 		);
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let root = executor
@@ -652,9 +650,7 @@ mod tests {
 			.is_err());
 		let other = self::context();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(other.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(other.execution_runtime().unwrap()))
 			.unwrap();
 		assert!(executor
 			.invoke(&program, &mut store, main, &[], 1000)
@@ -677,9 +673,7 @@ mod tests {
 		let mut store = Store::new(Limits::default()).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let failure = executor
 			.invoke(
@@ -704,9 +698,7 @@ mod tests {
 		let context = context();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		for (text, tag, expected) in [
@@ -769,7 +761,7 @@ mod tests {
 	fn fuel_and_cancel_refusals_preserve_configuration_and_reusability() {
 		let context = context();
 		let mut executor = Executor::new().unwrap();
-		let runtime = crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap();
+		let runtime = context.execution_runtime().unwrap();
 		executor.set_host_runtime(Some(runtime)).unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let source = "pub fn main(){h1focused::add(2,3)}";
@@ -781,9 +773,7 @@ mod tests {
 		assert!(invoke_source(&context, &mut executor, &mut store, source, 1000).is_err());
 		assert!(executor.canceled);
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let failure = invoke_source(&context, &mut executor, &mut store, source, 1000).unwrap_err();
 		assert_eq!(failure.error.kind, ErrorKind::Cancelled);
@@ -839,9 +829,7 @@ mod tests {
 		context.install(module).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let failure = invoke_source(
@@ -885,9 +873,7 @@ mod tests {
 		context.install(module).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits {
 			entries: 1,
@@ -917,9 +903,7 @@ mod tests {
 		let context = context();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		for (text, cause, arg) in [
@@ -994,7 +978,7 @@ mod tests {
 	fn runtime_keeps_handler_alive_after_context_drop_and_executor_reuse() {
 		let context = context();
 		let program = compile(&context, "pub fn main(){h1focused::add(2,3)}");
-		let runtime = crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap();
+		let runtime = context.execution_runtime().unwrap();
 		drop(context);
 		let mut executor = Executor::new().unwrap();
 		executor.set_host_runtime(Some(runtime.clone())).unwrap();
@@ -1055,9 +1039,7 @@ mod tests {
 		let pb = compile(&b, "pub fn main(){samefn::id(5)}");
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(a.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(a.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let root = executor
@@ -1124,22 +1106,24 @@ mod tests {
 		let code = builder.finish().unwrap();
 		fn runtime(
 			bindings: &[crate::function::host::HostBinding],
-		) -> crate::sync::Arc<stock::RuntimeContext> {
+		) -> crate::host::ExecutionRuntime {
 			let mut functions = crate::hash::Map::default();
 			for binding in bindings {
 				functions
 					.try_insert(binding.hash, binding.handler.clone())
 					.unwrap();
 			}
-			crate::sync::Arc::try_new(stock::RuntimeContext::new(
-				functions,
-				Default::default(),
-				Default::default(),
-				Default::default(),
-				None,
-				None, // Test runtime has no compiling Context provenance.
-			))
-			.unwrap()
+			crate::host::ExecutionRuntime {
+				inner: crate::sync::Arc::try_new(stock::RuntimeContext::new(
+					functions,
+					Default::default(),
+					Default::default(),
+					Default::default(),
+					None,
+					None, // Test runtime has no compiling Context provenance.
+				))
+				.unwrap(),
+			}
 		}
 		let mut executor = Executor::new().unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
@@ -1187,9 +1171,7 @@ mod tests {
 		context.install(module).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut store = Store::new(Limits {
 			entries: 4,
@@ -1234,9 +1216,7 @@ mod tests {
 		context.install(module).unwrap();
 		let mut executor = Executor::new().unwrap();
 		executor
-			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(context.execution_runtime().unwrap()))
 			.unwrap();
 		let mut limits = *executor.format_limits();
 		limits.bytes = 0;

@@ -26,7 +26,7 @@ fn missing_arguments_and_runtime_context_preflight() {
 		.unwrap();
 	context.install(module).unwrap();
 	let program = compile("pub fn main(){c13_test::tap(42).unrecognized(c13_test::tap(7),c13_test::tap(8))} pub fn again(){7}", &context).unwrap();
-	let runtime = crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap();
+	let runtime = context.execution_runtime().unwrap();
 	let mut store = Store::new(Limits {
 		entries: 128,
 		bytes: 65536,
@@ -57,9 +57,7 @@ fn missing_arguments_and_runtime_context_preflight() {
 		.c13_insert_raw_fixture(missing.hash, handler)
 		.unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let mismatch = executor
 		.invoke(&program, &mut store, main, &[], 10000)
@@ -106,7 +104,7 @@ fn registered_and_script_names_refuse_before_execution() {
 		let mut executor = Executor::new().unwrap();
 		executor
 			.set_host_runtime(Some(
-				crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+				context.execution_runtime().unwrap(),
 			))
 			.unwrap();
 		let main = program.function(Hash::type_hash(["main"])).unwrap();
@@ -144,9 +142,7 @@ fn dispatch_proof_is_checked_against_the_runtime_context() {
 	let mut store = Store::new(Limits::default()).unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let main = program.function(Hash::type_hash(["main"])).unwrap();
 	let root = executor
@@ -168,9 +164,7 @@ fn dispatch_proof_is_checked_against_the_runtime_context() {
 		)
 		.unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let refused = executor
 		.invoke(&program, &mut store, main, &[], 10000)

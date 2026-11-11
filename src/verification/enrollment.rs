@@ -448,15 +448,13 @@ fn fresh(
 	})
 	.unwrap();
 	let mut executor = Executor::new().unwrap();
-	let runtime = rune::sync::Arc::try_new(ctx.runtime().unwrap()).unwrap();
+	let runtime = ctx.execution_runtime().unwrap();
 	let control = row["control"].as_str();
 	let mut wrong_keepalive = None;
 	if control == Some("wrong") {
 		let (other, http) = context(lifecycle);
 		executor
-			.set_host_runtime(Some(
-				rune::sync::Arc::try_new(other.runtime().unwrap()).unwrap(),
-			))
+			.set_host_runtime(Some(other.execution_runtime().unwrap()))
 			.unwrap();
 		wrong_keepalive = Some((other, http));
 	} else if control != Some("absent") && control != Some("unused-table") {

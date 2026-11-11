@@ -109,8 +109,7 @@ fn attempt(
 	};
 	let setup = || -> Result<Executor, String> {
 		let mut executor = Executor::new().map_err(|e| format!("{}: {:?}", e.operation, e.kind))?;
-		let runtime = Arc::try_new(context.runtime().map_err(|e| e.to_string())?)
-			.map_err(|e| e.to_string())?;
+		let runtime = context.execution_runtime().map_err(|e| e.to_string())?;
 		executor
 			.set_host_runtime(Some(runtime))
 			.map_err(|e| format!("{}: {:?}", e.operation, e.kind))?;

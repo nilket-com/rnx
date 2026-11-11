@@ -553,8 +553,9 @@ impl Executor {
 	/// Clearing it does not consume a pending cancellation.
 	pub fn set_host_runtime(
 		&mut self,
-		runtime: Option<crate::sync::Arc<crate::runtime::RuntimeContext>>,
+		runtime: Option<crate::host::ExecutionRuntime>,
 	) -> Result<()> {
+		let runtime = runtime.map(|r| r.inner);
 		if !self.is_idle() || self.active_host_runtime.is_some() {
 			return Err(error(ErrorKind::InvalidCode));
 		}

@@ -10,6 +10,10 @@ const NAMES: &[&str] = &[
 	"env::var",
 	"env::home_dir",
 	"env::vars",
+	"fs::write",
+	"fs::append",
+	"fs::write_new",
+	"web::parse_form",
 ];
 pub(crate) fn is_new(name: &str) -> bool {
 	NAMES.contains(&name)
@@ -79,6 +83,19 @@ fn child_witness() {
 		}
 		"env::home_dir" => "env::home_dir()",
 		"env::vars" => "let e=env::vars().unwrap();(e[\"RNX_0247_VALUE\"],e[\"RNX_0247_EMPTY\"])",
+
+		"fs::write" => {
+			r#"let r=fs::write("out","abc");let t=fs::read("out");fs::remove_file("out").unwrap();(r,t,fs::write("never",42),fs::exists("never"))"#
+		}
+		"fs::append" => {
+			r#"fs::write("out","a").unwrap();let r=fs::append("out","bc");let t=fs::read("out");fs::remove_file("out").unwrap();(r,t,fs::append("never",[]),fs::exists("never"))"#
+		}
+		"fs::write_new" => {
+			r#"let r=fs::write_new("out","abc");let second=fs::write_new("out","bad").is_err();let t=fs::read("out");fs::remove_file("out").unwrap();(r,second,t,fs::write_new("never",#{}),fs::exists("never"))"#
+		}
+		"web::parse_form" => {
+			r#"(web::parse_form("a=one+two&a=ignored"),web::parse_form(42),web::parse_form("%FF=x"))"#
+		}
 		_ => panic!("unknown witness"),
 	};
 	let row = super::parity::observe_host(
@@ -96,7 +113,7 @@ fn child_witness() {
 }
 
 #[test]
-fn nine_executed_witnesses() {
+fn enrolled_executed_witnesses() {
 	for name in NAMES {
 		isolated_witness(name).unwrap();
 	}
@@ -106,9 +123,9 @@ fn nine_executed_witnesses() {
 fn resolved_refusals_preserve_aliases_and_first_cause() {
 	use super::domain_session::{DomainSession, transcripts::parity_new};
 	for source in [
-		"fs::write(\"missing\",\"data\")",
-		"use fs::write as save; save(\"missing\",\"data\")",
-		"use fs::write; write(\"missing\",\"data\")",
+		"json::stringify(42)",
+		"use json::stringify as save; save(42)",
+		"use json::stringify; stringify(42)",
 	] {
 		let mut session = DomainSession::new(
 			crate::routing_inventory::session_parity_context().unwrap(),
@@ -120,7 +137,10 @@ fn resolved_refusals_preserve_aliases_and_first_cause() {
 		if source.starts_with("use ") {
 			assert!(text.contains("imports"), "first cause lost: {result}");
 		} else {
-			assert!(text.contains("fs::write needs dynamic input"), "{result}");
+			assert!(
+				text.contains("json::stringify needs recursive dynamic input"),
+				"{result}"
+			);
 			assert!(text.contains("without --engine=execution"), "{result}");
 		}
 		session.close().unwrap();
@@ -142,9 +162,9 @@ impl Drop for Scratch {
 #[test]
 fn compiler_reports_resolved_host_for_imported_and_aliased_calls() {
 	for source in [
-		"pub fn main(){fs::write(\"missing\",\"data\")}",
-		"use fs::write as save; pub fn main(){save(\"missing\",\"data\")}",
-		"use fs::write;pub fn main(){write(\"missing\",\"data\")}",
+		"pub fn main(){json::stringify(42)}",
+		"use json::stringify as save; pub fn main(){save(42)}",
+		"use json::stringify;pub fn main(){stringify(42)}",
 	] {
 		let context = crate::routing_inventory::session_parity_context().unwrap();
 		let mut sources = rune::Sources::new();
@@ -170,6 +190,78 @@ fn compiler_reports_resolved_host_for_imported_and_aliased_calls() {
 				_ => None,
 			})
 			.expect("resolved host diagnostic");
-		assert_eq!(host.to_string().trim_start_matches("::"), "fs::write");
+		assert_eq!(host.to_string().trim_start_matches("::"), "json::stringify");
+	}
+}
+
+#[test]
+fn string_input_sessions_preserve_values_and_reject_before_effects() {
+	use super::domain_session::{DomainSession, transcripts::parity_observe};
+	let dir = Scratch(std::env::temp_dir().join(format!("rnx-0249-{}", std::process::id())));
+	std::fs::create_dir(&dir.0).unwrap();
+	let path = dir.0.join("keep");
+	std::fs::write(&path, "sentinel").unwrap();
+	let quoted = serde_json::to_string(path.to_str().unwrap()).unwrap();
+	let mut old =
+		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
+	let mut new = DomainSession::new(
+		crate::routing_inventory::session_parity_context().unwrap(),
+		super::DEFAULT_CEILING,
+	)
+	.unwrap();
+	for input in [
+		"let s=\"a=hello+world\";let parse=||web::parse_form(s);0".to_owned(),
+		"parse()".to_owned(),
+		"web::parse_form(if true {s} else {\"\"})".to_owned(),
+		"s".to_owned(),
+		format!("let write_later=|v|fs::write({quoted},v);0"),
+	] {
+		let (a, b) = parity_observe(&mut old, &mut new, &input);
+		assert_eq!(a, b, "{input}");
+	}
+	for value in [
+		"()", "false", "42", "1.5", "'x'", "[]", "#{}", "(1,2)", "None", "Some(1)", "Ok(1)",
+		"Err(1)", "||42",
+	] {
+		for func in ["fs::write", "fs::append", "fs::write_new"] {
+			let input = format!("{func}({quoted},{value})");
+			let (a, b) = parity_observe(&mut old, &mut new, &input);
+			assert_eq!(a, b, "{input}");
+			assert_eq!(b["outcome"], "ok");
+			assert_eq!(std::fs::read_to_string(&path).unwrap(), "sentinel");
+		}
+		let input = format!("web::parse_form({value})");
+		let (a, b) = parity_observe(&mut old, &mut new, &input);
+		assert_eq!(a, b, "{input}");
+		assert_eq!(b["outcome"], "ok");
+	}
+	let (a, b) = parity_observe(&mut old, &mut new, "write_later(42)");
+	assert_eq!(a, b);
+	assert_eq!(std::fs::read_to_string(&path).unwrap(), "sentinel");
+	// Earlier completed effects survive a later runtime error; declarations do not.
+	let input = format!("fs::write({quoted},\"once\").unwrap();let uncommitted=1;1/0");
+	assert!(new.eval(&input).is_err());
+	assert_eq!(std::fs::read_to_string(&path).unwrap(), "once");
+	assert!(!new.binding_names().contains(&"uncommitted".to_owned()));
+	old.close().unwrap();
+	new.close().unwrap();
+}
+
+#[test]
+fn bytes_are_not_representable_in_execution_sessions() {
+	use super::domain_session::{DomainSession, transcripts::parity_new};
+	for input in [
+		"b\"bytes\"",
+		"\"bytes\".as_bytes()",
+		"fs::read_bytes(\"unused\")",
+	] {
+		let mut new = DomainSession::new(
+			crate::routing_inventory::session_parity_context().unwrap(),
+			super::DEFAULT_CEILING,
+		)
+		.unwrap();
+		let row = parity_new(&mut new, input);
+		assert_ne!(row["outcome"], "ok", "{input}: {row}");
+		new.close().unwrap();
 	}
 }

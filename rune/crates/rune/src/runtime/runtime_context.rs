@@ -58,6 +58,15 @@ impl RuntimeContext {
 		}
 	}
 
+	#[cfg(feature = "execution")]
+	pub(crate) fn replace_execution_handler(
+		&mut self,
+		hash: Hash,
+		handler: FunctionHandler,
+	) -> crate::alloc::Result<()> {
+		self.functions.try_insert(hash, handler)?;
+		Ok(())
+	}
 	/// Lookup the given native function handler in the context.
 	#[inline]
 	pub fn function(&self, hash: &Hash) -> Option<&FunctionHandler> {

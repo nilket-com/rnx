@@ -88,9 +88,7 @@ fn observe(row: &Json) -> Json {
 	.unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let outcome = match executor.invoke(
 		&program,

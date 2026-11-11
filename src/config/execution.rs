@@ -44,8 +44,7 @@ pub(super) fn evaluate(
 			Executor::new().map_err(|error| format!("{}: {:?}", error.operation, error.kind))?;
 		executor
 			.set_host_runtime(Some(
-				Arc::try_new(context.runtime().map_err(|e| e.to_string())?)
-					.map_err(|e| e.to_string())?,
+				context.execution_runtime().map_err(|e| e.to_string())?,
 			))
 			.map_err(|error| format!("{}: {:?}", error.operation, error.kind))?;
 		executor.set_format_limits(FormatLimits::permissive());

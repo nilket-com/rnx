@@ -1059,7 +1059,7 @@ mod sliced_tests {
 			executor.set_native_enabled(false);
 			executor
 				.set_host_runtime(Some(
-					crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
+					context.execution_runtime().unwrap(),
 				))
 				.unwrap();
 			let mut store = Store::new(Default::default()).unwrap();

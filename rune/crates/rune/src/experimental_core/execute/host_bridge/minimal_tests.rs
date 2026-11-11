@@ -41,9 +41,7 @@ pub(super) fn code(context: &Context, name: &str, parameters: u32) -> Code {
 pub(super) fn executor(context: &Context) -> Executor {
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	executor
 }
@@ -345,5 +343,121 @@ fn failure_display_keeps_native_type_and_number_conversion_messages() {
 		store.root_release(input).unwrap();
 		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
 		assert!(executor.is_idle());
+	}
+}
+
+#[test]
+fn string_input_owned_rejection_identity_and_effect_once() {
+	use crate::host::StringOrRejected;
+	use std::sync::{
+		atomic::{AtomicUsize, Ordering},
+		Arc,
+	};
+	let effects = Arc::new(AtomicUsize::new(0));
+	let seen = effects.clone();
+	let mut module = Module::with_item(["tiny"]).unwrap();
+	module.host_function_string_input("text", |_: crate::Value| -> core::result::Result<std::string::String, std::string::String> { panic!("legacy must not run") },
+        move |v: StringOrRejected| -> core::result::Result<std::string::String, std::string::String> {
+            match v.as_str() {
+                None => Err("expected text".into()),
+                Some(s) => {seen.fetch_add(1,Ordering::SeqCst);Ok(s.into())}
+            }
+        },None).unwrap();
+	let context = installed(module);
+	let code = code(&context, "text", 1);
+	let mut executor = executor(&context);
+	let mut store = Store::new(Limits::default()).unwrap();
+	let text = store.root_string("retained").unwrap();
+	let number = store.root_i64(7);
+	// A nonrepresentable Vec reaches the adapter only as a rejection, not its
+	// manufactured empty-Vec witness. Its original graph stays in the store.
+	let vector = store.root_list(Type::Vec, &[&text]).unwrap();
+	for (input, success, expected) in [
+		(&number, false, "expected text"),
+		(&vector, false, "expected text"),
+		(&text, true, "retained"),
+	] {
+		let result = executor
+			.invoke_code(&code, &mut store, 0, &[input], 100)
+			.unwrap();
+		let (tag, ok, child) = store.variant_parts(result.value).unwrap();
+		assert_eq!((tag, ok), (Type::Result, success));
+		assert_eq!(store.text(child.unwrap()).unwrap(), expected);
+		store.root_release(result).unwrap();
+		assert_eq!(store.root_text(&text).unwrap(), "retained");
+	}
+	assert_eq!(effects.load(Ordering::SeqCst), 1);
+	// Internal negative control bypasses the public typed boundary deliberately.
+	executor.configured_host_runtime =
+		Some(crate::sync::Arc::try_new(context.runtime().unwrap()).unwrap());
+	assert!(executor
+		.invoke_code(&code, &mut store, 0, &[&text], 100)
+		.is_err());
+	assert_eq!(effects.load(Ordering::SeqCst), 1);
+	executor
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
+		.unwrap();
+	store.root_release(vector).unwrap();
+	store.root_release(number).unwrap();
+	store.root_release(text).unwrap();
+	assert_eq!(store.live_entries(), 0);
+	// All input conversion succeeds, the host effect occurs, then Result import
+	// fails because the store has no free entry. No retry is allowed.
+	let mut tight = Store::new(Limits {
+		entries: 1,
+		bytes: 4096,
+	})
+	.unwrap();
+	let input = tight.root_string("x").unwrap();
+	assert!(executor
+		.invoke_code(&code, &mut tight, 0, &[&input], 100)
+		.is_err());
+	assert_eq!(effects.load(Ordering::SeqCst), 2);
+	assert!(executor.is_idle());
+	tight.root_release(input).unwrap();
+
+	assert_eq!(tight.live_entries(), 0);
+}
+
+#[test]
+fn string_input_failure_cleanup_before_and_after_host_entry() {
+	use crate::host::StringOrRejected;
+	let mut module = Module::with_item(["tiny"]).unwrap();
+	module
+		.host_function_string_input(
+			"panic",
+			|_: crate::Value| 0i64,
+			|text: StringOrRejected| -> i64 {
+				assert_eq!(text.as_str(), Some("x"));
+				panic!("string adapter panic")
+			},
+			None,
+		)
+		.unwrap();
+	let context = installed(module);
+	let code = code(&context, "panic", 1);
+	let mut executor = executor(&context);
+	for fuel in [0, 100] {
+		let mut store = Store::new(Limits {
+			entries: 2,
+			bytes: 4096,
+		})
+		.unwrap();
+		let input = store.root_string("x").unwrap();
+		let before = (store.live_entries(), store.payload_bytes());
+		let error = executor
+			.invoke_code(&code, &mut store, 0, &[&input], fuel)
+			.unwrap_err();
+		if fuel == 0 {
+			assert_eq!(error.error.kind, ErrorKind::FuelExhausted);
+		} else {
+			assert_eq!(error.error.detail, Detail::HostPanicked);
+			assert_eq!(error.host_message.as_deref(), Some("string adapter panic"));
+		}
+		assert_eq!(store.root_text(&input).unwrap(), "x");
+		assert_eq!((store.live_entries(), store.payload_bytes()), before);
+		assert!(executor.is_idle());
+		store.root_release(input).unwrap();
+		assert_eq!(store.live_entries(), 0);
 	}
 }
