@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::tests::frontend::source_constant_data_materializes_fresh_and_releases",
+      "ignored": true,
+      "timeout_seconds": 3600
+    }
+  ]
+}

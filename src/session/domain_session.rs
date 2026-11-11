@@ -412,6 +412,20 @@ impl DomainSession {
 				let at = at
 					.and_then(|at| generated.map.locate(at))
 					.unwrap_or((number, 0));
+				if let Some(construct) = diagnostics.diagnostics().iter().find_map(|d| match d {
+					rune::diagnostics::Diagnostic::Fatal(f) => {
+						f.as_compile_error().and_then(|e| e.execution_refusal())
+					}
+					_ => None,
+				}) {
+					return Err(self.refused_at(
+						&format!(
+							"execution session does not support {construct}; start `rnx repl` without --engine=execution"
+						),
+						at.0,
+						at.1,
+					));
+				}
 				if let Some(refusal) = e.refusal {
 					if matches!(
 						refusal,
@@ -443,18 +457,14 @@ impl DomainSession {
 						return Err(self.unsupported(refused_construct(refusal), at));
 					}
 				}
-				// Like legacy, ask the compiler about the async wrapper, never guess
-				// from tokens inside strings/comments. This probe cannot execute effects.
-				let asynchronous = p.generate(true);
-				let mut probe = Sources::new();
-				probe
-					.insert(Source::memory(&asynchronous.text).map_err(fault)?)
-					.map_err(fault)?;
-				if rune::prepare(&mut probe)
-					.with_context(&self.context)
-					.build()
-					.is_ok()
-				{
+				// Wrapper compilation only establishes legacy admission, not async use.
+				// Use the compiler's structured category, never diagnostic prose.
+				if diagnostics.diagnostics().iter().any(|d| match d {
+					rune::diagnostics::Diagnostic::Fatal(f) => f
+						.as_compile_error()
+						.is_some_and(|e| e.requires_async_context()),
+					_ => false,
+				}) {
 					return Err(self.unsupported("async input", at));
 				}
 				let origin = first
@@ -634,6 +644,179 @@ fn origin_in(
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn every_refusal_has_truthful_async_classification() {
+		use rune::experimental_core::error::Refusal::*;
+		for refusal in [
+			Arity,
+			Assignment,
+			AsyncBlock,
+			AsyncFunction,
+			Await,
+			ByteStr,
+			Call,
+			CallClosure,
+			CodeLimit,
+			Condition,
+			ConstCall,
+			ConstCollection,
+			ConstCycle,
+			ConstFn,
+			DepthLimit,
+			Field,
+			FieldIndex,
+			Format,
+			FormatParts,
+			FormatSpec,
+			FrontendDiagnostic,
+			GeneratorFunction,
+			Impl,
+			Import,
+			LabelledBlock,
+			LoopControl,
+			Macro,
+			Match,
+			Method,
+			Module,
+			Native,
+			ObjectConstructor,
+			Operator,
+			Pattern,
+			Range,
+			Select,
+			SourceLimit,
+			Static,
+			TypeExpr,
+			TypeTable,
+			UnresolvedConstant,
+			UnresolvedFunction,
+			Variable,
+			Yield,
+			Entry,
+		] {
+			assert_eq!(
+				refused_construct(refusal) == "async input",
+				matches!(refusal, AsyncBlock | AsyncFunction | Await | Select),
+				"{refusal:?}"
+			);
+		}
+	}
+
+	#[test]
+	fn constant_data_is_fresh_recursively() {
+		for (source, expected) in [
+			("const A=[];A", "[]"),
+			("const A=[1,\"x\",true];A", "[1, \"x\", true]"),
+			("const A=(1,\"x\");A", "(1, \"x\")"),
+			(
+				"const A=[1,2];let x=A;x.push(3);(x,A)",
+				"([1, 2, 3], [1, 2])",
+			),
+			(
+				"const A=[[1]];let x=A;let y=x[0];y.push(2);(x,A)",
+				"([[1, 2]], [[1]])",
+			),
+			(
+				"const A=#{a:[1]};let x=A;x.a.push(2);(x,A)",
+				"({\"a\": [1, 2]}, {\"a\": [1]})",
+			),
+			(
+				"const A=[1];const B=[A,A];let x=B;x[0].push(2);(x,B)",
+				"([[1, 2], [1]], [[1], [1]])",
+			),
+			("const A=\"x\";let x=A;x.push('y');(x,A)", "(\"xy\", \"x\")"),
+			("const A=2;const B=A*3+1;B", "7"),
+		] {
+			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			assert_eq!(
+				s.eval_rendered(source, &crate::format::Limits::default())
+					.unwrap(),
+				Some(expected.into()),
+				"{source}"
+			);
+		}
+	}
+
+	#[test]
+	fn constant_deferred_forms_are_not_async() {
+		for (source, construct) in [
+			("const A=[1,2];const B=A[0];B", "constant indexing"),
+			("const A={let x=2;x+1};A", "constant blocks"),
+			("const A=if true {1}else{2};A", "constant if"),
+			("const fn f(x){x+1} const A=f(2);A", "constant functions"),
+			("const A=Some(1);A", "option construction"),
+			("const A=b\"ab\";A", "byte-string constants"),
+		] {
+			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			let Err(Failure::Refused(message)) = s.eval(source) else {
+				panic!("expected refusal for {source}");
+			};
+			assert!(message.contains(construct), "{source}: {message}");
+			assert!(!message.contains("async"), "{source}: {message}");
+		}
+	}
+
+	#[test]
+	fn constant_type_diagnostic_preserves_old_bindings() {
+		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+		let limits = crate::format::Limits::default();
+		s.eval_rendered("const A=1;const C=A+1;C", &limits).unwrap();
+		let Err(Failure::Compile { message, origin }) = s.eval("const A=\"x\";A") else {
+			panic!("expected type error");
+		};
+		assert_eq!(
+			message,
+			"Expected type `std::string::String` but found `std::i64`"
+		);
+		assert_eq!(origin.unwrap().input, 1);
+		assert_eq!(
+			s.eval_rendered("(A,C)", &limits).unwrap(),
+			Some("(1, 2)".into())
+		);
+	}
+
+	#[test]
+	fn constant_diagnostic_async_categories_are_truthful() {
+		for source in ["async {1}.await", "async fn f(){1} f().await", "async {1}"] {
+			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			let Err(Failure::Refused(message)) = s.eval(source) else {
+				panic!("expected async refusal: {source}");
+			};
+			assert!(message.contains("async input"), "{source}: {message}");
+		}
+		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+		assert_eq!(
+			s.eval_rendered(
+				"const A=\"async await select\";/* async */ A",
+				&crate::format::Limits::default()
+			)
+			.unwrap(),
+			Some("\"async await select\"".into())
+		);
+	}
+
+	#[test]
+	fn constant_expansion_bound_is_named_and_transactional() {
+		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+		let mut source = String::from("const A0=[1];");
+		for n in 1..5 {
+			let children = vec![format!("A{}", n - 1); 16].join(",");
+			source.push_str(&format!("const A{n}=[{children}];"));
+		}
+		source.push_str("A4");
+		let message = match s.eval(&source) {
+			Err(Failure::Refused(message)) => message,
+			Err(e) => panic!("unexpected failure: {e:?}"),
+			Ok(_) => panic!("expected expansion bound"),
+		};
+		assert!(message.contains("65536"), "{message}");
+		assert_eq!(
+			s.eval_rendered("7", &crate::format::Limits::default())
+				.unwrap(),
+			Some("7".into())
+		);
+	}
+
 	fn context() -> Context {
 		let mut c = Context::with_default_modules().unwrap();
 		crate::install_core(&mut c).unwrap();

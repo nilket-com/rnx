@@ -320,11 +320,26 @@ fn constant_report() -> serde_json::Value {
 		domain_session::{DomainSession, transcripts::parity_observe},
 	};
 	let mut rows = Vec::new();
-	for input in ["const S = \"x\"; S", "const T = [1, 2]; T"] {
+	for (construct, input) in [
+		("string constant", "const S = \"x\"; S"),
+		("vector constant", "const T = [1, 2]; T"),
+		("tuple constant", "const A=(1, \"x\"); A"),
+		("object constant", "const A=#{a:1}; A"),
+		("nested constant", "const A=[#{a:(1,[2,3])}]; A"),
+		("constant reference", "const A=[1]; const B=[A,A]; B"),
+		("constant indexing", "const A=[1,2]; const B=A[0]; B"),
+		("constant blocks", "const A={let x=2;x+1}; A"),
+		("constant if", "const A=if true {1}else{2}; A"),
+		("constant functions", "const fn f(x){x+1} const A=f(2); A"),
+		("constant option construction", "const A=Some(1); A"),
+		("constant bytes", "const A=b\"ab\"; A"),
+	] {
 		let mut old = Session::new(context()).unwrap();
 		let mut new = DomainSession::new(context(), super::DEFAULT_CEILING).unwrap();
 		let (legacy, domain) = parity_observe(&mut old, &mut new, input);
-		rows.push(serde_json::json!({"input":input,"legacy":legacy,"domain":domain}));
+		rows.push(
+			serde_json::json!({"construct":construct,"input":input,"legacy":legacy,"domain":domain}),
+		);
 		old.close().unwrap();
 		new.close().unwrap();
 	}
@@ -365,11 +380,6 @@ fn classify(
 			&& new.starts_with("Type `std::i64` has no method named `missing_method`\n  at ")
 		{
 			return ("Wording", Some("missing-method"), false);
-		}
-		if old == "Expected type `std::string::String` but found `std::i64`"
-			&& new == "restricted scalar constant"
-		{
-			return ("Wording", Some("constant-type-information-lost"), true);
 		}
 	}
 	("Unreviewed wording", None, false)
@@ -621,10 +631,7 @@ fn pinned_classification() {
 		row["class"] = class.into();
 		row["wording_rule"] = serde_json::json!(rule);
 		row["domain_worse"] = worse.into();
-		if class == "Refused at admission" {
-			row["construct"] = "vector constant".into();
-			row["diagnostic_issue"] = "vector constant misreported as async input".into();
-		}
+
 		probes.push(row);
 	}
 	let mut all = literals["rows"].as_array().unwrap().clone();

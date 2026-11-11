@@ -241,9 +241,15 @@ fn constant_folding_type_and_overflow_diagnostics_remain_exact() {
 	};
 	use crate::{Context, Diagnostics, Source, Sources};
 	let context = Context::with_default_modules().unwrap();
-	for text in [
-		"const A = 1 + true; pub fn main() { A }",
-		"const A = 9223372036854775807 + 1; pub fn main() { A }",
+	for (text, message) in [
+		(
+			"const A = 1 + true; pub fn main() { A }",
+			"Expected type `std::i64` but found `std::bool`",
+		),
+		(
+			"const A = 9223372036854775807 + 1; pub fn main() { A }",
+			"primitive operation",
+		),
 	] {
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(text).unwrap()).unwrap();
@@ -270,6 +276,6 @@ fn constant_folding_type_and_overflow_diagnostics_remain_exact() {
 					.map(std::string::ToString::to_string)
 			})
 			.collect();
-		assert_eq!(messages, ["primitive operation"]);
+		assert_eq!(messages, [message]);
 	}
 }

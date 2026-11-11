@@ -816,6 +816,26 @@ fn registered_host_shapes_and_source_entry_paths_match_policy() {
 	policy_rows(root).unwrap();
 }
 #[test]
+fn host_refusal_reasons_match_registration_policy() {
+	for policy in host_policy() {
+		let reason = crate::session::domain_session::host_wait_reason(policy.path);
+		match policy.class {
+			Class::Undeclared => assert_ne!(
+				reason, "host enrollment",
+				"missing specific refusal reason: {}",
+				policy.path
+			),
+			Class::Typed | Class::DynamicOutput => assert_eq!(
+				reason, "host enrollment",
+				"enrolled function still has a refusal reason: {}",
+				policy.path
+			),
+			Class::Opaque => {} // Native receivers are outside the stock free-function table.
+		}
+	}
+}
+
+#[test]
 fn retained_function_crosses_programs_in_opt_in_session() {
 	session_blocker().unwrap();
 }

@@ -1134,8 +1134,7 @@ impl<'a, 'arena> Query<'a, 'arena> {
 					"execution core: constant blocks/calls refused",
 				));
 			};
-			return crate::experimental_core::constants::eval(self.inner, exprs, expr)
-				.map_err(|e| compile::Error::msg(expr.span, e.operation));
+			return crate::experimental_core::constants::eval(self.inner, exprs, expr);
 		}
 		let value = const_eval::eval(self, location, span, entry, Vec::new())?;
 		Ok(crate::from_value(value).with_span(span)?)
@@ -1957,9 +1956,11 @@ impl<'a, 'arena> Query<'a, 'arena> {
 			Indexed::Static(s) => {
 				#[cfg(feature = "execution")]
 				if self.inner.collecting {
-					return Err(compile::Error::msg(
+					return Err(compile::Error::new(
 						item_meta.location.span,
-						"execution core: statics, constant blocks and constant functions refused",
+						compile::ErrorKind::ExecutionRefusal {
+							construct: "static declarations",
+						},
 					));
 				}
 				if let Some(c) = s.init {
@@ -1992,9 +1993,11 @@ impl<'a, 'arena> Query<'a, 'arena> {
 			Indexed::ConstBlock(c) => {
 				#[cfg(feature = "execution")]
 				if self.inner.collecting {
-					return Err(compile::Error::msg(
+					return Err(compile::Error::new(
 						item_meta.location.span,
-						"execution core: statics, constant blocks and constant functions refused",
+						compile::ErrorKind::ExecutionRefusal {
+							construct: "constant blocks",
+						},
 					));
 				}
 				let (hir, exprs) = {
@@ -2029,9 +2032,11 @@ impl<'a, 'arena> Query<'a, 'arena> {
 			Indexed::ConstFn(c) => {
 				#[cfg(feature = "execution")]
 				if self.inner.collecting {
-					return Err(compile::Error::msg(
+					return Err(compile::Error::new(
 						item_meta.location.span,
-						"execution core: statics, constant blocks and constant functions refused",
+						compile::ErrorKind::ExecutionRefusal {
+							construct: "constant functions",
+						},
 					));
 				}
 				// The body may call the function it belongs to, directly or

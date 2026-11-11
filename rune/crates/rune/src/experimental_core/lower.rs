@@ -1378,6 +1378,71 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			self.emit(Op::Literal { out, value }, span)?;
 			return Ok(());
 		};
+		let constant = crate::alloc::borrow::TryToOwned::try_to_owned(constant)?;
+		self.constant_into(&constant, out, span)
+	}
+
+	fn constant_into(
+		&mut self,
+		constant: &crate::runtime::ConstValue,
+		out: u32,
+		span: Span,
+	) -> Result<()> {
+		use crate::runtime::ConstNodeKind;
+		use crate::runtime::TypeHash;
+		match constant.kind() {
+			ConstNodeKind::Instance {
+				hash, variant_hash, ..
+			} if *variant_hash == Hash::EMPTY
+				&& (*hash == crate::runtime::Vec::HASH
+					|| *hash == crate::runtime::OwnedTuple::HASH) =>
+			{
+				let tag = if *hash == crate::runtime::Vec::HASH {
+					Type::Vec
+				} else {
+					Type::Tuple
+				};
+				let mut slots = Vec::new();
+				for child in constant.fields() {
+					let slot = self.slot()?;
+					self.constant_into(child, slot, span)?;
+					slots.try_push(slot)?;
+				}
+				let (args_start, args_len) = self.function.arguments(&slots)?;
+				self.emit(
+					Op::List {
+						out,
+						tag,
+						args_start,
+						args_len,
+					},
+					span,
+				)?;
+				return Ok(());
+			}
+			ConstNodeKind::Object { keys } => {
+				let mut fields = Vec::new();
+				for (key, child) in keys.iter().zip(constant.fields()) {
+					let key = self.function.string(key)?;
+					let slot = self.slot()?;
+					self.constant_into(child, slot, span)?;
+					fields.try_push(key)?;
+					fields.try_push(slot)?;
+				}
+				let (args_start, args_len) = self.function.arguments(&fields)?;
+				self.emit(
+					Op::Record {
+						out,
+						tag: Type::Object,
+						args_start,
+						args_len,
+					},
+					span,
+				)?;
+				return Ok(());
+			}
+			_ => {}
+		}
 		match super::constants::read(constant)? {
 			super::constants::Scalar::Primitive(value) => {
 				self.emit(Op::Literal { out, value }, span)?;

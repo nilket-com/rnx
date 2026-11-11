@@ -165,10 +165,10 @@ fn source_vector_alias_and_short_circuit() {
 	miri,
 	ignore = "Miri: builds a std-module Context and compiles Rune source (minutes per build); native CI runs it; opt in with --ignored"
 )]
-fn construction_refuses_constants_and_format_but_admits_stock_closure() {
+fn construction_refuses_constant_indexing_and_format_but_admits_stock_closure() {
 	let context = Context::with_default_modules().unwrap();
 	for text in [
-		"const A = [42]; pub fn main() { A }",
+		"const A = [42]; const B=A[0]; pub fn main() { B }",
 		"pub fn main() { format!(\"{:x}\",42) }",
 	] {
 		let mut sources = Sources::new();
@@ -744,3 +744,31 @@ fn type_tests_on_function_and_type_values_are_boolean() {
 
 #[path = "c11c_stopgap.rs"]
 mod c11c_stopgap;
+
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "Miri: source frontend; run via the exact constant inventory"
+)]
+fn source_constant_data_materializes_fresh_and_releases() {
+	assert_eq!(
+		run(
+			r#"
+		const A=[#{a:(1,[2,3])}];
+		const B=[A,A];
+		const N=20+1;
+		const S="x"+"y";
+		pub fn main() {
+			let x=B;
+			x[0][0].a.1.push(4);
+			let text=S; text.push('z');
+			x[0][0].a.1.len()==3 && x[1][0].a.1.len()==2 &&
+			B[0][0].a.1.len()==2 && A[0].a.1.len()==2 &&
+			text=="xyz" && S=="xy" && N==21
+		}
+	"#,
+			&[]
+		),
+		Value::Bool(true)
+	);
+}

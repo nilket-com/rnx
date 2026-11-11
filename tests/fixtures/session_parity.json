@@ -2,6 +2,7 @@
   "constant_probes": [
     {
       "class": "Equal",
+      "construct": "string constant",
       "domain": {
         "outcome": "ok",
         "value": "\"x\""
@@ -15,19 +16,173 @@
       "wording_rule": null
     },
     {
-      "class": "Refused at admission",
+      "class": "Equal",
       "construct": "vector constant",
-      "diagnostic_issue": "vector constant misreported as async input",
       "domain": {
-        "message": "refused: async input is not available in an execution session; start `rnx repl` without --engine=execution (input 1, line 1, column 11)",
-        "origin": null,
-        "outcome": "refused"
+        "outcome": "ok",
+        "value": "[1, 2]"
       },
       "domain_worse": false,
       "input": "const T = [1, 2]; T",
       "legacy": {
         "outcome": "ok",
         "value": "[1, 2]"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Equal",
+      "construct": "tuple constant",
+      "domain": {
+        "outcome": "ok",
+        "value": "(1, \"x\")"
+      },
+      "domain_worse": false,
+      "input": "const A=(1, \"x\"); A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "(1, \"x\")"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Equal",
+      "construct": "object constant",
+      "domain": {
+        "outcome": "ok",
+        "value": "{\"a\": 1}"
+      },
+      "domain_worse": false,
+      "input": "const A=#{a:1}; A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "{\"a\": 1}"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Equal",
+      "construct": "nested constant",
+      "domain": {
+        "outcome": "ok",
+        "value": "[{\"a\": (1, [2, 3])}]"
+      },
+      "domain_worse": false,
+      "input": "const A=[#{a:(1,[2,3])}]; A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "[{\"a\": (1, [2, 3])}]"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Equal",
+      "construct": "constant reference",
+      "domain": {
+        "outcome": "ok",
+        "value": "[[1], [1]]"
+      },
+      "domain_worse": false,
+      "input": "const A=[1]; const B=[A,A]; B",
+      "legacy": {
+        "outcome": "ok",
+        "value": "[[1], [1]]"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "constant indexing",
+      "domain": {
+        "message": "refused: execution session does not support constant indexing; start `rnx repl` without --engine=execution (input 1, line 1, column 24)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const A=[1,2]; const B=A[0]; B",
+      "legacy": {
+        "outcome": "ok",
+        "value": "1"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "constant blocks",
+      "domain": {
+        "message": "refused: execution session does not support constant blocks; start `rnx repl` without --engine=execution (input 1, line 1, column 9)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const A={let x=2;x+1}; A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "3"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "constant if",
+      "domain": {
+        "message": "refused: execution session does not support constant if expressions; start `rnx repl` without --engine=execution (input 1, line 1, column 9)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const A=if true {1}else{2}; A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "1"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "constant functions",
+      "domain": {
+        "message": "refused: execution session does not support constant functions; start `rnx repl` without --engine=execution (input 1, line 1, column 1)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const fn f(x){x+1} const A=f(2); A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "3"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "constant option construction",
+      "domain": {
+        "message": "refused: execution session does not support constant calls and option construction; start `rnx repl` without --engine=execution (input 1, line 1, column 9)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const A=Some(1); A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "Some(1)"
+      },
+      "wording_rule": null
+    },
+    {
+      "class": "Refused at admission",
+      "construct": "constant bytes",
+      "domain": {
+        "message": "refused: execution session does not support byte-string constants; start `rnx repl` without --engine=execution (input 1, line 1, column 9)",
+        "origin": null,
+        "outcome": "refused"
+      },
+      "domain_worse": false,
+      "input": "const A=b\"ab\"; A",
+      "legacy": {
+        "outcome": "ok",
+        "value": "b\"ab\""
       },
       "wording_rule": null
     }
@@ -4030,9 +4185,9 @@
         "wording_rule": null
       },
       {
-        "class": "Wording",
+        "class": "Equal",
         "domain": {
-          "message": "restricted scalar constant",
+          "message": "Expected type `std::string::String` but found `std::i64`",
           "origin": {
             "column": 11,
             "input": 2,
@@ -4040,7 +4195,7 @@
           },
           "outcome": "compile"
         },
-        "domain_worse": true,
+        "domain_worse": false,
         "input": "const A = \"x\";",
         "legacy": {
           "message": "Expected type `std::string::String` but found `std::i64`",
@@ -4053,7 +4208,7 @@
         },
         "ordinal": 3,
         "sequence": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
-        "wording_rule": "constant-type-information-lost"
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -4360,7 +4515,7 @@
       }
     ],
     "status": "PASS",
-    "wording_count": 21
+    "wording_count": 20
   },
   "notebooks": [
     {
@@ -4615,11 +4770,11 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 125,
+      "Equal": 131,
       "Not classified": 18,
-      "Refused at admission": 1,
+      "Refused at admission": 6,
       "Refused for a host function": 18,
-      "Wording": 21
+      "Wording": 20
     },
     "work_groups": {
       "VM-error result": {
@@ -4666,19 +4821,6 @@
           ]
         ]
       },
-      "diagnostics to improve": {
-        "count": 2,
-        "top_constructs": [
-          [
-            "constant-type-information-lost",
-            1
-          ],
-          [
-            "vector constant misreported as async input",
-            1
-          ]
-        ]
-      },
       "dynamic input": {
         "count": 10,
         "top_constructs": [
@@ -4697,10 +4839,18 @@
         ]
       },
       "source forms": {
-        "count": 1,
+        "count": 6,
         "top_constructs": [
           [
-            "vector constant",
+            "constant blocks",
+            1
+          ],
+          [
+            "constant bytes",
+            1
+          ],
+          [
+            "constant functions",
             1
           ]
         ]

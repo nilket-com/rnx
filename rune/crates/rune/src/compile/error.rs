@@ -45,6 +45,23 @@ impl Error {
 		}
 	}
 
+	/// Whether this diagnostic identifies an async construct in a forbidden context.
+	pub fn requires_async_context(&self) -> bool {
+		matches!(
+			&*self.kind,
+			ErrorKind::AwaitOutsideAsync | ErrorKind::AwaitInConst | ErrorKind::AsyncBlockInConst
+		)
+	}
+
+	/// The specific execution-frontend construct refused at admission.
+	pub fn execution_refusal(&self) -> Option<&'static str> {
+		match &*self.kind {
+			#[cfg(feature = "execution")]
+			ErrorKind::ExecutionRefusal { construct } => Some(construct),
+			_ => None,
+		}
+	}
+
 	/// Construct a new compile error.
 	pub(crate) fn new<S, K>(span: S, kind: K) -> Self
 	where
@@ -255,6 +272,10 @@ impl Error {
 #[derive(Debug)]
 #[non_exhaustive]
 pub(crate) enum ErrorKind {
+	#[cfg(feature = "execution")]
+	ExecutionRefusal {
+		construct: &'static str,
+	},
 	#[cfg(feature = "execution")]
 	HostNotEnrolled {
 		item: crate::ItemBuf,
@@ -693,6 +714,8 @@ impl core::error::Error for ErrorKind {
 impl fmt::Display for ErrorKind {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			#[cfg(feature = "execution")]
+			ErrorKind::ExecutionRefusal { construct } => write!(f, "execution core refuses {construct}")?,
 			#[cfg(feature = "execution")]
 			ErrorKind::HostNotEnrolled { item } => write!(f, "uncertified host call {item}")?,
 			ErrorKind::Custom { error } => {
