@@ -1065,7 +1065,6 @@ pub(crate) fn host_wait_reason(name: &str) -> &'static str {
 		"process::run" => "argument-vector and options-object input",
 		"process::run_bytes" => "argument-vector/options input and bytes output",
 		"web::response" => "dynamic body/headers and response output",
-		"web::html" | "web::text" => "dynamic body and response output",
 		_ => "host enrollment",
 	}
 }

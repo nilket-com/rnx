@@ -10,6 +10,8 @@ pub(crate) const BODY: usize = 1 << 20;
 pub(crate) const HEAD: usize = 16 << 10;
 pub(crate) const HEADERS: usize = 64;
 const PAIRS: usize = 1024;
+const HTML_TYPE: &str = "text/html; charset=utf-8";
+const TEXT_TYPE: &str = "text/plain; charset=utf-8";
 
 fn fail(e: impl std::fmt::Display) -> String {
 	e.to_string()
@@ -243,13 +245,47 @@ fn values(v: &Value, mut visit: impl FnMut(&[u8]) -> Result<(), String>) -> Resu
 	}
 	Ok(())
 }
+// Only the execution adapter narrows the body to a string. Both entries use
+// the same validation and constructor, and copy their result payload.
+enum ResponseBody<'a> {
+	Legacy(&'a Value),
+	Text(&'a str),
+}
+impl ResponseBody<'_> {
+	fn validate(&self, code: i64) -> Result<(), String> {
+		match self {
+			Self::Legacy(value) => with_bytes(value, |b| status(code, b.len())),
+			Self::Text(text) => status(code, text.len()),
+		}
+	}
+	fn copy(&self) -> Result<Value, String> {
+		match self {
+			Self::Legacy(value) => copy_payload(value),
+			Self::Text(text) => rune::to_value((*text).to_owned()).map_err(fail),
+		}
+	}
+}
+
 fn response(
 	status_code: i64,
 	body: Value,
 	content_type: &str,
 	extra: Value,
 ) -> Result<Value, String> {
-	with_bytes(&body, |b| status(status_code, b.len()))?;
+	response_body(
+		status_code,
+		ResponseBody::Legacy(&body),
+		content_type,
+		extra,
+	)
+}
+fn response_body(
+	status_code: i64,
+	body: ResponseBody<'_>,
+	content_type: &str,
+	extra: Value,
+) -> Result<Value, String> {
+	body.validate(status_code)?;
 	bounded(content_type.len(), HEAD - 64, "response content type")?;
 	header_value(content_type.as_bytes())
 		.map_err(|e| format!("web::response content_type: {e}"))?;
@@ -325,14 +361,14 @@ fn response(
 		"headers",
 		rune::to_value(out_headers).map_err(fail)?,
 	)?;
-	put(&mut out, "body", copy_payload(&body)?)?;
+	put(&mut out, "body", body.copy()?)?;
 	rune::to_value(out).map_err(fail)
 }
 fn html(status: i64, body: Value) -> Result<Value, String> {
 	response(
 		status,
 		body,
-		"text/html; charset=utf-8",
+		HTML_TYPE,
 		rune::to_value(Object::new()).map_err(fail)?,
 	)
 }
@@ -340,15 +376,56 @@ fn text(status: i64, body: Value) -> Result<Value, String> {
 	response(
 		status,
 		body,
-		"text/plain; charset=utf-8",
+		TEXT_TYPE,
 		rune::to_value(Object::new()).map_err(fail)?,
 	)
 }
+
+fn simple_response_execution(
+	status: i64,
+	body: rune::host::StringOrRejected,
+	content_type: &str,
+) -> Result<Value, String> {
+	let text = body
+		.as_str()
+		.ok_or_else(|| STRING_OR_BYTES_ERROR.to_owned())?;
+	response_body(
+		status,
+		ResponseBody::Text(text),
+		content_type,
+		rune::to_value(Object::new()).map_err(fail)?,
+	)
+}
+fn html_execution(status: i64, body: rune::host::StringOrRejected) -> Result<Value, String> {
+	simple_response_execution(status, body, HTML_TYPE)
+}
+fn text_execution(status: i64, body: rune::host::StringOrRejected) -> Result<Value, String> {
+	simple_response_execution(status, body, TEXT_TYPE)
+}
+const STRING_RESPONSE: rune::host::OutputCertificate = {
+	use rune::host::{HostType as T, OutputShape as S};
+	rune::host::OutputCertificate {
+		nodes: &[
+			S::Scalar(T::String),
+			S::Scalar(T::I64),
+			S::Vec(0),
+			S::Object(2),
+			S::Union(&[0, 1, 3]),
+			S::Object(4),
+			S::Result(5, 0),
+		],
+		root: 6,
+	}
+};
 
 pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("web")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
+		(string_input $name:literal, $function:expr, $adapter:expr, $certificate:expr, $doc:literal) => {
+			module.host_function_string_input($name, $function, $adapter, Some($certificate))?;
+			register!(@record $name, $doc);
+		};
 		(string_input $name:literal, $function:expr, $adapter:expr, $doc:literal) => {
 			module.host_function_string_input($name, $function, $adapter,
 				Some(rune::host::OutputCertificate { nodes: &[
@@ -394,13 +471,13 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"response(status, String|Bytes body, content_type, headers) -> Result<Object>: canonical response; scalar/vector String|Bytes headers; empty vectors accepted; lowercase names, duplicates/reserved names refused; 200..599; 204/304 empty; body <=1 MiB; <=64 names/values and 16 KiB headers; all inputs borrowed, output independent"
 	);
 	register!(
-		"html",
-		html,
+		string_input "html",
+		html, html_execution, STRING_RESPONSE,
 		"html(status, String|Bytes body) -> Result<Object>: response with text/html; charset=utf-8, no extra headers; body not escaped; response limits; borrowed"
 	);
 	register!(
-		"text",
-		text,
+		string_input "text",
+		text, text_execution, STRING_RESPONSE,
 		"text(status, String|Bytes body) -> Result<Object>: response with text/plain; charset=utf-8, no extra headers; response limits; borrowed"
 	);
 	context.install(module)?;

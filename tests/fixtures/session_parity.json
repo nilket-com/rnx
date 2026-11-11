@@ -607,22 +607,34 @@
         "work_group": "dynamic body/headers and response output"
       },
       {
-        "class": "Refused for a host function",
-        "construct": "web::html",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok({\"body\": \"<b>hi</b>\", \"headers\": {\"content-type\": [\"text/html; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"
+        },
+        "domain_worse": false,
         "function": "web::html",
-        "input": "web::html(200,())",
-        "input_shape": "Value body",
-        "reason": "dynamic body and response output",
-        "work_group": "dynamic body and response output"
+        "input": "(web::html(200,\"<b>hi</b>\"),web::html(199,42))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok({\"body\": \"<b>hi</b>\", \"headers\": {\"content-type\": [\"text/html; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"
+        },
+        "wording_rule": null
       },
       {
-        "class": "Refused for a host function",
-        "construct": "web::text",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "value": "(Ok({\"body\": \"hello\", \"headers\": {\"content-type\": [\"text/plain; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"
+        },
+        "domain_worse": false,
         "function": "web::text",
-        "input": "web::text(200,())",
-        "input_shape": "Value body",
-        "reason": "dynamic body and response output",
-        "work_group": "dynamic body and response output"
+        "input": "(web::text(200,\"hello\"),web::text(199,42))",
+        "legacy": {
+          "outcome": "ok",
+          "value": "(Ok({\"body\": \"hello\", \"headers\": {\"content-type\": [\"text/plain; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"
+        },
+        "wording_rule": null
       },
       {
         "class": "Refused for a host function",
@@ -4865,11 +4877,11 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 136,
+      "Equal": 138,
       "Intentional difference": 3,
       "Not classified": 18,
       "Refused at admission": 6,
-      "Refused for a host function": 13,
+      "Refused for a host function": 11,
       "Wording": 20
     },
     "work_groups": {
@@ -4931,19 +4943,6 @@
         "top_constructs": [
           [
             "fs::read_bytes",
-            1
-          ]
-        ]
-      },
-      "dynamic body and response output": {
-        "count": 2,
-        "top_constructs": [
-          [
-            "web::html",
-            1
-          ],
-          [
-            "web::text",
             1
           ]
         ]

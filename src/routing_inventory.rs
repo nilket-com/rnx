@@ -138,9 +138,9 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"web::html web::text",
 		"200,()",
-		Class::Undeclared,
-		"Value body",
-		"undeclared dynamic output",
+		Class::StringInput,
+		"(i64, String or payload-free rejection)",
+		"certified owned string-body response result",
 	);
 	add(
 		"fs::read_bytes",

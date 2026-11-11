@@ -426,6 +426,31 @@ where
 	}
 }
 
+impl<F, R> sealed::StringCallable<(i64, StringOrRejected)> for F
+where
+	F: Fn(i64, StringOrRejected) -> R + Function<(i64, StringOrRejected), Plain, Return = R>,
+	R: HostOutput,
+{
+}
+impl<F, R> StringInputFunction<(i64, StringOrRejected)> for F
+where
+	F: Fn(i64, StringOrRejected) -> R + Function<(i64, StringOrRejected), Plain, Return = R>,
+	R: HostOutput,
+{
+	fn string_signature() -> HostSignature {
+		HostSignature {
+			arity: 2,
+			arguments: [
+				HostType::I64,
+				HostType::String,
+				HostType::Unit,
+				HostType::Unit,
+			],
+			output: R::SHAPE,
+		}
+	}
+}
+
 #[derive(Clone)]
 pub(crate) struct AlternateHost {
 	pub handler: FunctionHandler,

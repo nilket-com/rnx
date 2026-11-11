@@ -15,6 +15,8 @@ const NAMES: &[&str] = &[
 	"fs::write_new",
 	"web::parse_form",
 	"json::stringify",
+	"web::html",
+	"web::text",
 ];
 pub(crate) fn is_new(name: &str) -> bool {
 	NAMES.contains(&name)
@@ -98,6 +100,8 @@ fn child_witness() {
 			r#"(web::parse_form("a=one+two&a=ignored"),web::parse_form(42),web::parse_form("%FF=x"))"#
 		}
 		"json::stringify" => r#"(json::stringify(#{a:[1,2],b:Some("x")}),json::stringify(Ok(1)))"#,
+		"web::html" => r#"(web::html(200,"<b>hi</b>"),web::html(199,42))"#,
+		"web::text" => r#"(web::text(200,"hello"),web::text(199,42))"#,
 		_ => panic!("unknown witness"),
 	};
 	let row = super::parity::observe_host(
@@ -310,4 +314,82 @@ fn owned_json_differential() {
 		assert_eq!(a, b, "{case}");
 	}
 	new.close().unwrap();
+}
+
+#[test]
+fn string_responses_differential() {
+	use super::domain_session::transcripts::{parity_new, parity_old};
+	let mut old =
+		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
+	let mut new = super::domain_session::DomainSession::new(
+		crate::routing_inventory::session_parity_context().unwrap(),
+		super::DEFAULT_CEILING,
+	)
+	.unwrap();
+	for name in ["html", "text"] {
+		for args in [
+			r#"200,"<&é\u{0}>""#,
+			r#"199,"x""#,
+			r#"600,"x""#,
+			r#"204,"""#,
+			r#"304,"""#,
+			r#"204,"x""#,
+			r#"304,"x""#,
+			"199,42",
+			"600,[]",
+			"200,#{}",
+			"200,None",
+		] {
+			let case = format!("web::{name}({args})");
+			let a = parity_old(&mut old, &case);
+			let b = parity_new(&mut new, &case);
+			assert_eq!(a["outcome"], "ok", "{case}: {a}");
+			assert_eq!(a, b, "{case}");
+		}
+		for body in [
+			r#"let s="local";let r=web::NAME(200,s).unwrap();s=s+"!";(s,r.body,r.status,r.headers)"#,
+			r#"let s="branch";web::NAME(200,if true{s}else{"no"})"#,
+			r#"let prior=||web::NAME(200,"prior");prior()"#,
+			"prior()",
+			r#"let s="x";for _ in 0..20{s=s+s;}let r=web::NAME(200,s).unwrap();(r.body.len(),s.len())"#,
+			r#"let s="x";for _ in 0..20{s=s+s;}s=s+"x";web::NAME(200,s)"#,
+		] {
+			let case = body.replace("NAME", name);
+			let a = parity_old(&mut old, &case);
+			let b = parity_new(&mut new, &case);
+			assert_eq!(a["outcome"], "ok", "{case}: {a}");
+			assert_eq!(a, b, "{case}");
+		}
+	}
+	old.close().unwrap();
+	new.close().unwrap();
+}
+
+#[test]
+fn string_responses_moved_and_bytes_contracts() {
+	use super::domain_session::transcripts::{parity_new, parity_old};
+	for name in ["html", "text"] {
+		let mut old =
+			super::Session::new(crate::routing_inventory::session_parity_context().unwrap())
+				.unwrap();
+		let mut new = super::domain_session::DomainSession::new(
+			crate::routing_inventory::session_parity_context().unwrap(),
+			super::DEFAULT_CEILING,
+		)
+		.unwrap();
+		let moved = format!(r#"let s=String::from("x");drop(s);web::{name}(200,s)"#);
+		let a = parity_old(&mut old, &moved);
+		let b = parity_new(&mut new, &moved);
+		assert_eq!(a["value"], "Err(\"web: expected String or Bytes\")", "{a}");
+		assert_ne!(b["outcome"], "ok", "{b}");
+		assert!(b["message"].as_str().unwrap().contains("moved"), "{b}");
+		let bytes = format!(r#"web::{name}(200,b"x").unwrap().body == b"x""#);
+		let a = parity_old(&mut old, &bytes);
+		let b = parity_new(&mut new, &bytes);
+		assert_eq!(a["outcome"], "ok", "{a}");
+		assert_eq!(a["value"], "true", "{a}");
+		assert_ne!(b["outcome"], "ok", "{b}");
+		old.close().unwrap();
+		new.close().unwrap();
+	}
 }

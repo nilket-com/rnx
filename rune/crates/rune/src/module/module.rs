@@ -272,7 +272,7 @@ impl Module {
 
 	/// Keep the legacy handler and enroll a separate string-only execution adapter.
 	/// The adapter accepts only a final StringOrRejected argument, optionally
-	/// preceded by a borrowed path. The output promise is independent.
+	/// preceded by a borrowed path or an i64. The output promise is independent.
 	/// The compiling twin differs only in the adapter argument order.
 	/// ```
 	/// use rune::host::StringOrRejected;
@@ -285,6 +285,42 @@ impl Module {
 	/// let mut m = rune::Module::new();
 	/// m.host_function_string_input("input", |_: &str, _: rune::Value| (),
 	///     |_: StringOrRejected, _: &str| (), None).unwrap();
+	/// ```
+	/// ```
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: i64, _: rune::Value| (),
+	///     |_: i64, _: StringOrRejected| (), None).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: i64, _: rune::Value| (),
+	///     |_: StringOrRejected, _: i64| (), None).unwrap();
+	/// ```
+	/// ```
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: i64, _: rune::Value| (),
+	///     |_: i64, _: StringOrRejected| (), None).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: i64, _: rune::Value| (),
+	///     |_: i64, _: StringOrRejected, _: i64| (), None).unwrap();
+	/// ```
+	/// ```
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: i64, _: rune::Value| (),
+	///     |_: i64, _: StringOrRejected| (), None).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::host::StringOrRejected;
+	/// let mut m = rune::Module::new();
+	/// m.host_function_string_input("input", |_: i64, _: rune::Value| (),
+	///     |_: bool, _: StringOrRejected| (), None).unwrap();
 	/// ```
 	#[cfg(feature = "execution")]
 	pub fn host_function_string_input<N, F, A, G, B>(

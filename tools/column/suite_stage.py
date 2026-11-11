@@ -74,7 +74,7 @@ def run(stage, out, root=ROOT):
 		if 'test' in command:
 			row['discovered'] = discovered(invoke(command + ['--', '--list'], root, out/f'{i}-discovery.log'))
 			row['passed'] = executed(invoke(command + ['--', '--test-threads=4'], root, out/f'{i}-test.log'))
-			if '--doc' in command and (len(row['discovered']) != 2 or row['passed'] != 2):
+			if '--doc' in command and (len(row['discovered']) != {'host_function_string_input': 8, 'ExecutionRuntime': 2}[command[-1]] or row['passed'] != len(row['discovered'])):
 				raise ValueError('API boundary requires both compiling and compile-fail twins')
 		elif stage in {name for name, _ in PACKAGE_CHECKS.values()}:
 			invoke(command, root, out/f'{i}-package.log')
