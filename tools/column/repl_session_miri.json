@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::domain::tests::record_fields_retain_aliases_and_views_survive_handle_drop",
+      "ignored": false,
+      "timeout_seconds": 10800
+    },
+    {
+      "name": "experimental_core::domain::tests::record_fields_reject_foreign_and_stale_roots",
+      "ignored": false,
+      "timeout_seconds": 10800
+    },
+    {
+      "name": "experimental_core::domain::tests::record_fields_allocation_refusal_preserves_live_owners",
+      "ignored": false,
+      "timeout_seconds": 10800
+    },
+    {
+      "name": "experimental_core::domain::tests::collection_allocation_failure_releases_no_programs",
+      "ignored": false,
+      "timeout_seconds": 10800
+    },
+    {
+      "name": "experimental_core::domain::tests::cancel_and_budget_leave_domain_reusable",
+      "ignored": false,
+      "timeout_seconds": 10800
+    },
+    {
+      "name": "experimental_core::domain::tests::record_fields_failed_reservations_reuse_empty_slot",
+      "ignored": false,
+      "timeout_seconds": 10800
+    }
+  ]
+}

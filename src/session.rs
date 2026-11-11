@@ -355,6 +355,8 @@ pub(crate) enum EvalValue {
 	Fresh(one_shot::FreshValue),
 }
 
+pub(crate) mod domain_session;
+pub(crate) mod interactive;
 mod one_shot;
 
 pub struct Session {
@@ -700,181 +702,21 @@ impl Session {
 		number: usize,
 		options: Option<crate::engine::Options>,
 	) -> std::result::Result<EvalValue, Failure> {
-		// The wrapper is one byte of `{` before the input; wrapped offsets map
-		// to input offsets by subtracting it.
-		let wrapped = format!("{{{input}\n}}");
-		let block: ast::Block = rune::parse::parse_all(&wrapped, SourceId::empty(), false)
-			.map_err(|e| {
-				self.compile_failure(
-					e.to_string(),
-					Some((number, e.span().range().start.saturating_sub(1))),
-				)
-			})?;
-		let slice = |span: ast::Span| &wrapped[span.range()];
-		let mut declarations: BTreeMap<String, Declaration> = self
-			.declarations
-			.iter()
-			.map(|(k, d)| {
-				(
-					k.clone(),
-					Declaration {
-						is_type: d.is_type,
-						kind: d.kind,
-						source: d.source.clone(),
-						input: d.input,
-						offset: d.offset,
-						fields: d.fields.clone(),
-					},
-				)
-			})
-			.collect();
-		let mut names = self.names.clone();
-		// Statements: (text, offset in input).
-		let mut statements: Vec<(String, usize)> = Vec::new();
-		let mut result: (String, usize) = ("()".to_owned(), 0);
-		let mut result_is_user = false;
-		for (index, statement) in block.statements.iter().enumerate() {
-			// ItemStruct's derived span omits its closing delimiter in 0.14.1, and
-			// in 0.14.2, whose `ast/item_struct.rs` is byte-identical.
-			// Use parsed statement boundaries, never a textual brace scanner.
-			let start = statement.span().range().start;
-			let end = block
-				.statements
-				.get(index + 1)
-				.map(|s| s.span().range().start)
-				.unwrap_or(block.close.span().range().start);
-			let statement_source = &wrapped[start..end];
-			match statement {
-				ast::Stmt::Item(item, _) => {
-					let (name, is_type, kind, fields) = match item {
-						ast::Item::Fn(f) => (slice(f.name.span()), false, "function", Vec::new()),
-						// record 0150: a const is a retained, non-type
-						// declaration, like a function
-						ast::Item::Const(c) => (slice(c.name.span()), false, "const", Vec::new()),
-						ast::Item::Struct(s) => (
-							slice(s.ident.span()),
-							true,
-							"struct",
-							struct_fields(s, &wrapped),
-						),
-						ast::Item::Enum(e) => (slice(e.name.span()), true, "enum", Vec::new()),
-						_ => {
-							return Err(self.refused_at(
-								"a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files",
-								number,
-								start - 1,
-							));
-						}
-					};
-					valid_name(name).map_err(Failure::Refused)?;
-					let trimmed = statement_source.trim_end();
-					let leading = statement_source.len() - statement_source.trim_start().len();
-					let source = trimmed.trim_start().to_owned();
-					if let Some(old) = declarations.get(name) {
-						if (old.is_type || is_type) && old.source != source {
-							return Err(self.refused_at(
-								&format!(
-									"`{name}` is a type whose shape changed; :reset before redeclaring it"
-								),
-								number,
-								start - 1,
-							));
-						}
-					}
-					declarations.insert(
-						name.to_owned(),
-						Declaration {
-							is_type,
-							kind,
-							source,
-							input: number,
-							offset: start + leading - 1,
-							fields,
-						},
-					);
-				}
-				ast::Stmt::Local(local) => {
-					bindings(&local.pat, &wrapped, &mut names).map_err(Failure::Refused)?;
-					statements.push((statement_source.to_owned(), start - 1));
-				}
-				ast::Stmt::Expr(expr) if index + 1 == block.statements.len() => {
-					result = (slice(expr.span()).to_owned(), expr.span().range().start - 1);
-					result_is_user = true;
-				}
-				ast::Stmt::Semi(_) | ast::Stmt::Expr(_) => {
-					let mut text = statement_source.to_owned();
-					if matches!(statement, ast::Stmt::Expr(_)) {
-						text.push(';');
-					}
-					statements.push((text, start - 1));
-				}
-				_ => return Err(self.refused_at("unsupported statement", number, start - 1)),
-			}
-		}
-		// Restore only what this input may reference, so the prelude follows
-		// the input rather than the session.
-		let referenced = mentioned(input, &self.names);
+		let prepared = prepare_input(
+			input,
+			number,
+			&self.declarations,
+			&self.names,
+			|message, at| self.compile_failure(message, at),
+			|message, input, offset| self.refused_at(message, input, offset),
+		)?;
+		let referenced = prepared.referenced.iter().map(String::as_str).collect();
 		let restored = self.restored(&referenced)?;
-		// Publish a delta: the names this input restored, which it may have
-		// reassigned, and the names it declared. A name it never mentioned is
-		// absent, and the session leaves its entry, and its identity, alone.
-		let declared: Vec<&str> = names
-			.iter()
-			.filter(|name| !self.names.contains(*name))
-			.map(String::as_str)
-			.collect();
-		let delta = referenced
-			.iter()
-			.copied()
-			.chain(declared)
-			.collect::<BTreeSet<&str>>()
-			.into_iter()
-			.collect::<Vec<_>>()
-			.join(",");
-		// Record 0032: the wrapper is `async` only for an input that needs
-		// one, so every other input keeps the wrapper, the path and the
-		// slices it always had. Which one an input needs is asked of the
-		// compiler rather than guessed from the text — a string holding
-		// `.await` is not an await, and `select` awaits without writing the
-		// word — because Rune refuses both outside an async function. The
-		// synchronous wrapper is compiled first; a refusal sends the input to
-		// the async wrapper, and that attempt's outcome is the input's,
-		// success or failure, so an input that awaits and is also wrong is
-		// told what is wrong with it rather than that it awaited.
-		let build = |awaits: bool| {
-			let mut generated = Generated::new();
-			for declaration in declarations.values() {
-				generated.user(&declaration.source, declaration.input, declaration.offset);
-				generated.raw("\n");
-			}
-			generated.raw(if awaits {
-				"pub async fn main(__rnx_state) {\n"
-			} else {
-				"pub fn main(__rnx_state) {\n"
-			});
-			for name in &referenced {
-				generated.raw(&format!("let {name} = __rnx_state[\"{name}\"];\n"));
-			}
-			for (text, offset) in &statements {
-				generated.user(text, number, *offset);
-				generated.raw("\n");
-			}
-			generated.raw("let __rnx_result = (");
-			if result_is_user {
-				generated.user(&result.0, number, result.1);
-			} else {
-				generated.raw(&result.0);
-			}
-			generated.raw(");\n(#{");
-			generated.raw(&delta);
-			generated.raw("}, __rnx_result)\n}");
-			generated
-		};
-		let synchronous = build(false);
+		let synchronous = prepared.generate(false);
 		let (generated, awaits, compiled) = match self.compile(&synchronous) {
 			Ok(unit) => (synchronous, false, unit),
 			Err(refused) => {
-				let asynchronous = build(true);
+				let asynchronous = prepared.generate(true);
 				match self.compile(&asynchronous) {
 					Ok(unit) => (asynchronous, true, unit),
 					// Both wrappers were refused. Refused in the same words,
@@ -895,6 +737,11 @@ impl Session {
 				}
 			}
 		};
+		let PreparedInput {
+			declarations,
+			names,
+			..
+		} = prepared;
 		self.last_generated = generated.text.clone();
 		if let Some(options) = options {
 			if !awaits && options.choice != crate::engine::EngineChoice::Legacy {
@@ -1258,6 +1105,226 @@ pub fn checks() -> Result<()> {
 		start.elapsed()
 	);
 	Ok(())
+}
+
+struct PreparedInput {
+	declarations: BTreeMap<String, Declaration>,
+	names: BTreeSet<String>,
+	referenced: Vec<String>,
+	delta_names: Vec<String>,
+	number: usize,
+	statements: Vec<(String, usize)>,
+	result: (String, usize),
+	result_is_user: bool,
+	delta: String,
+}
+impl PreparedInput {
+	fn generate(&self, awaits: bool) -> Generated {
+		let Self {
+			declarations,
+			referenced,
+			statements,
+			number,
+			result,
+			result_is_user,
+			delta,
+			..
+		} = self;
+		let mut generated = Generated::new();
+		for declaration in declarations.values() {
+			generated.user(&declaration.source, declaration.input, declaration.offset);
+			generated.raw("\n");
+		}
+		generated.raw(if awaits {
+			"pub async fn main(__rnx_state) {\n"
+		} else {
+			"pub fn main(__rnx_state) {\n"
+		});
+		for name in referenced {
+			generated.raw(&format!("let {name} = __rnx_state[\"{name}\"];\n"));
+		}
+		for (text, offset) in statements {
+			generated.user(text, *number, *offset);
+			generated.raw("\n");
+		}
+		generated.raw("let __rnx_result = (");
+		if *result_is_user {
+			generated.user(&result.0, *number, result.1);
+		} else {
+			generated.raw(&result.0);
+		}
+		generated.raw(");\n(#{");
+		generated.raw(delta);
+		generated.raw("}, __rnx_result)\n}");
+		generated
+	}
+}
+
+fn prepare_input(
+	input: &str,
+	number: usize,
+	declarations: &BTreeMap<String, Declaration>,
+	existing_names: &BTreeSet<String>,
+	compile_failure: impl Fn(String, Option<(usize, usize)>) -> Failure,
+	refused_at: impl Fn(&str, usize, usize) -> Failure,
+) -> std::result::Result<PreparedInput, Failure> {
+	// The wrapper is one byte of `{` before the input; wrapped offsets map
+	// to input offsets by subtracting it.
+	let wrapped = format!("{{{input}\n}}");
+	let block: ast::Block =
+		rune::parse::parse_all(&wrapped, SourceId::empty(), false).map_err(|e| {
+			compile_failure(
+				e.to_string(),
+				Some((number, e.span().range().start.saturating_sub(1))),
+			)
+		})?;
+	let slice = |span: ast::Span| &wrapped[span.range()];
+	let mut declarations: BTreeMap<String, Declaration> = declarations
+		.iter()
+		.map(|(k, d)| {
+			(
+				k.clone(),
+				Declaration {
+					is_type: d.is_type,
+					kind: d.kind,
+					source: d.source.clone(),
+					input: d.input,
+					offset: d.offset,
+					fields: d.fields.clone(),
+				},
+			)
+		})
+		.collect();
+	let mut names = existing_names.clone();
+	// Statements: (text, offset in input).
+	let mut statements: Vec<(String, usize)> = Vec::new();
+	let mut result: (String, usize) = ("()".to_owned(), 0);
+	let mut result_is_user = false;
+	for (index, statement) in block.statements.iter().enumerate() {
+		// ItemStruct's derived span omits its closing delimiter in 0.14.1, and
+		// in 0.14.2, whose `ast/item_struct.rs` is byte-identical.
+		// Use parsed statement boundaries, never a textual brace scanner.
+		let start = statement.span().range().start;
+		let end = block
+			.statements
+			.get(index + 1)
+			.map(|s| s.span().range().start)
+			.unwrap_or(block.close.span().range().start);
+		let statement_source = &wrapped[start..end];
+		match statement {
+			ast::Stmt::Item(item, _) => {
+				let (name, is_type, kind, fields) = match item {
+					ast::Item::Fn(f) => (slice(f.name.span()), false, "function", Vec::new()),
+					// record 0150: a const is a retained, non-type
+					// declaration, like a function
+					ast::Item::Const(c) => (slice(c.name.span()), false, "const", Vec::new()),
+					ast::Item::Struct(s) => (
+						slice(s.ident.span()),
+						true,
+						"struct",
+						struct_fields(s, &wrapped),
+					),
+					ast::Item::Enum(e) => (slice(e.name.span()), true, "enum", Vec::new()),
+					_ => {
+						return Err(refused_at(
+							"a session accepts fn, const, struct, and enum declarations; modules, imports, macro declarations, and impl blocks work in files",
+							number,
+							start - 1,
+						));
+					}
+				};
+				valid_name(name).map_err(Failure::Refused)?;
+				let trimmed = statement_source.trim_end();
+				let leading = statement_source.len() - statement_source.trim_start().len();
+				let source = trimmed.trim_start().to_owned();
+				if let Some(old) = declarations.get(name) {
+					if (old.is_type || is_type) && old.source != source {
+						return Err(refused_at(
+							&format!(
+								"`{name}` is a type whose shape changed; :reset before redeclaring it"
+							),
+							number,
+							start - 1,
+						));
+					}
+				}
+				declarations.insert(
+					name.to_owned(),
+					Declaration {
+						is_type,
+						kind,
+						source,
+						input: number,
+						offset: start + leading - 1,
+						fields,
+					},
+				);
+			}
+			ast::Stmt::Local(local) => {
+				bindings(&local.pat, &wrapped, &mut names).map_err(Failure::Refused)?;
+				statements.push((statement_source.to_owned(), start - 1));
+			}
+			ast::Stmt::Expr(expr) if index + 1 == block.statements.len() => {
+				result = (slice(expr.span()).to_owned(), expr.span().range().start - 1);
+				result_is_user = true;
+			}
+			ast::Stmt::Semi(_) | ast::Stmt::Expr(_) => {
+				let mut text = statement_source.to_owned();
+				if matches!(statement, ast::Stmt::Expr(_)) {
+					text.push(';');
+				}
+				statements.push((text, start - 1));
+			}
+			_ => return Err(refused_at("unsupported statement", number, start - 1)),
+		}
+	}
+	// Restore only what this input may reference, so the prelude follows
+	// the input rather than the session.
+	let referenced = mentioned(input, existing_names);
+	// Publish a delta: the names this input restored, which it may have
+	// reassigned, and the names it declared. A name it never mentioned is
+	// absent, and the session leaves its entry, and its identity, alone.
+	let declared: Vec<&str> = names
+		.iter()
+		.filter(|name| !existing_names.contains(*name))
+		.map(String::as_str)
+		.collect();
+	let delta = referenced
+		.iter()
+		.copied()
+		.chain(declared)
+		.collect::<BTreeSet<&str>>()
+		.into_iter()
+		.collect::<Vec<_>>()
+		.join(",");
+	// Record 0032: the wrapper is `async` only for an input that needs
+	// one, so every other input keeps the wrapper, the path and the
+	// slices it always had. Which one an input needs is asked of the
+	// compiler rather than guessed from the text — a string holding
+	// `.await` is not an await, and `select` awaits without writing the
+	// word — because Rune refuses both outside an async function. The
+	// synchronous wrapper is compiled first; a refusal sends the input to
+	// the async wrapper, and that attempt's outcome is the input's,
+	// success or failure, so an input that awaits and is also wrong is
+	// told what is wrong with it rather than that it awaited.
+
+	let referenced = referenced.into_iter().map(str::to_owned).collect();
+	let delta_names = delta
+		.split(',')
+		.filter(|s| !s.is_empty())
+		.map(str::to_owned)
+		.collect();
+	Ok(PreparedInput {
+		declarations,
+		names,
+		referenced,
+		delta_names,
+		number,
+		statements,
+		result,
+		result_is_user,
+		delta,
+	})
 }
 
 #[cfg(test)]

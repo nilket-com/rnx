@@ -8,6 +8,16 @@ pub(crate) fn render(
 	limits: &Limits,
 	styled: bool,
 ) -> Result<String, String> {
+	let (text, spans) = document(node, fields, limits, styled)?;
+	Ok(presentation::paint(&text, &spans, styled).into_owned())
+}
+
+pub(crate) fn document(
+	node: ValueView<'_, '_>,
+	fields: Option<&Fields>,
+	limits: &Limits,
+	styled: bool,
+) -> Result<(String, Vec<presentation::Span>), String> {
 	let mut renderer = Renderer {
 		out: String::new(),
 		spans: Vec::new(),
@@ -29,7 +39,7 @@ pub(crate) fn render(
 			limits.total_bytes
 		));
 	}
-	Ok(presentation::paint(&renderer.out, &renderer.spans, styled).into_owned())
+	Ok((renderer.out, renderer.spans))
 }
 
 pub(crate) fn error_text(

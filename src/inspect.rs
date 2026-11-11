@@ -120,6 +120,32 @@ impl<'a> Budget<'a> {
 		}
 		accepted
 	}
+	fn domain_value_line(
+		&mut self,
+		prefix: &str,
+		value: &rune::experimental_core::domain::DomainRoot,
+		session: &crate::session::domain_session::DomainSession,
+	) -> bool {
+		let (text, spans) = session
+			.document(value, &self.limits.values)
+			.unwrap_or_else(|e| {
+				(
+					format!("<{}>", crate::format::terminal_safe(&e)),
+					Vec::new(),
+				)
+			});
+		let offset = self.out.len() + prefix.len();
+		let accepted = self.line(&format!("{prefix}{text}"));
+		if self.out.len() >= offset + text.len() {
+			self.spans.extend(spans.into_iter().map(|mut s| {
+				s.range.start += offset;
+				s.range.end += offset;
+				s
+			}));
+		}
+		accepted
+	}
+
 	fn into_output(self) -> (String, Work) {
 		let text = if crate::presentation::stdout() {
 			crate::presentation::paint(&self.out, &self.spans, true).into_owned()
@@ -284,6 +310,118 @@ fn command_listing(commands: &[(&str, &str)], limits: &InspectLimits) -> (String
 		commands.len() - shown,
 		commands.len()
 	))
+}
+pub(crate) fn domain_vars(
+	session: &crate::session::domain_session::DomainSession,
+	limits: &InspectLimits,
+) -> (String, Work) {
+	// The total is the count of published names, which costs nothing to ask.
+	let total = session.binding_count();
+	if total == 0 {
+		return (
+			"no bindings; :help lists the commands\n".to_owned(),
+			Work::default(),
+		);
+	}
+	let mut budget = Budget::new(limits);
+	let mut shown = 0;
+	// Bindings are visited lazily and the walk stops at whichever bound comes
+	// first, the binding count or the byte budget, so nothing past the last
+	// line printed is looked up.
+	let visited = session.visit_bindings(|name, value| {
+		if shown >= limits.bindings {
+			return false;
+		}
+		budget.work.values_rendered += 1;
+		if !budget.domain_value_line(
+			&format!(
+				"{name}: {} = ",
+				session.type_of(value).unwrap_or_else(|e| e)
+			),
+			value,
+			session,
+		) {
+			return false;
+		}
+		shown += 1;
+		true
+	});
+	budget.work.entries_visited = visited;
+	let cut = total.saturating_sub(shown);
+	if cut > 0 && !budget.full {
+		// Stopped by the binding count rather than the byte budget.
+		let marker = format!(
+			"…({cut} more binding{} not shown; {} listed per invocation)\n",
+			if cut == 1 { "" } else { "s" },
+			limits.bindings
+		);
+		budget.out.push_str(&marker);
+		return budget.into_output();
+	}
+	budget.finish(format!("{cut} of {total} bindings"))
+}
+
+pub(crate) fn domain_help(
+	session: &crate::session::domain_session::DomainSession,
+	host: &[HostFunction],
+	commands: &[(&str, &str)],
+	name: Option<&str>,
+	limits: &InspectLimits,
+) -> (String, Work) {
+	let Some(name) = name.map(str::trim).filter(|n| !n.is_empty()) else {
+		return command_listing(commands, limits);
+	};
+	let mut budget = Budget::new(limits);
+	// A binding wins over a declaration; the help says when both exist, so
+	// the precedence never silently hides one of them.
+	if let Some(value) = session.binding(name) {
+		budget.work.entries_visited = 1;
+		// Domain inspection borrows; no root is retained.
+		// The value is rendered only if its header fitted, so a budget already
+		// spent does not pay to render something that cannot be printed.
+		if budget.line(&format!("{name}: binding"))
+			&& budget.line(&format!(
+				"  type: {}",
+				session.type_of(value).unwrap_or_else(|e| e)
+			)) {
+			budget.work.values_rendered += 1;
+			budget.domain_value_line("  value: ", value, session);
+			if session.declaration(name).is_some() {
+				budget.line("  a declaration of this name also exists");
+			}
+		}
+		return budget.finish("the rest of this description".to_owned());
+	}
+	if let Some((kind, source)) = session.declaration(name) {
+		budget.line(&format!("{name}: {kind}"));
+		// Escaped a line at a time into the remaining budget: a source longer
+		// than the budget is never escaped whole.
+		for line in source.lines() {
+			if !budget.push("  ") || !budget.push_safe(line) || !budget.push("\n") {
+				break;
+			}
+		}
+		return budget.finish("the rest of this declaration".to_owned());
+	}
+	if let Some(function) = host.iter().find(|f| f.path == name) {
+		budget.line(&format!("{}: host function", function.path));
+		budget.push("  ");
+		budget.push_safe(function.doc);
+		budget.push("\n");
+		return budget.finish("the rest of this description".to_owned());
+	}
+	if let Some((command, doc)) = commands.iter().find(|(c, _)| *c == name) {
+		budget.line(&format!("{command}: session command"));
+		budget.push("  ");
+		budget.push_safe(doc);
+		budget.push("\n");
+		return budget.finish("the rest of this description".to_owned());
+	}
+	// The name is the person's own text and may be any length: it goes
+	// through the same bounded, escaping writer as everything else.
+	budget.push_safe(name);
+	budget.push(": no binding, declaration, host function, or command of that name\n");
+	budget.finish("the rest of this name".to_owned())
 }
 
 #[cfg(test)]

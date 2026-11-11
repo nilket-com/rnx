@@ -3,11 +3,7 @@
 mod syntax;
 mod weights;
 use rune::experimental_core::{
-	error::Refusal,
-	execute::Executor,
-	frontend,
-	heap::{Limits, Store},
-	value::Type,
+	error::Refusal, execute::Executor, frontend, heap::Store, value::Type,
 };
 use rune::{Context, Diagnostics, Hash, Source, Sources, TypeHash};
 use serde_json::{Value as Json, json};
@@ -501,11 +497,11 @@ fn entries() -> Vec<Entry> {
 		},
 		Entry {
 			name: "persistent-session",
-			route: Blocked,
-			file: "src/session.rs",
-			owner: "execute",
-			call: "CALL Vm::new",
-			needs: "engine cross-program calls ready; persistent state, reset, ceilings and routing require session wiring",
+			route: Fallback,
+			file: "src/session/interactive.rs",
+			owner: "eval_rendered",
+			call: "METHOD eval_rendered",
+			needs: "sticky --engine=execution opt-in; default is legacy; no runtime fallback; async, native presenters and dependency context changes remain deferred",
 		},
 		Entry {
 			name: "worker-jupyter",
@@ -723,60 +719,22 @@ fn session_blocker() -> Result<Json> {
 	legacy.close()?;
 	life.close()?;
 	let (context, life, _) = context()?;
-	use rune::experimental_core::domain::{CrossOutcome, ProgramDomain};
-	let runtime = rune::sync::Arc::try_new(context.runtime()?)?;
-	let mut domain = ProgramDomain::new(Limits::default(), Default::default(), runtime)
-		.map_err(|e| format!("{e:?}"))?;
-	let mut state = domain.record().map_err(|e| format!("{e:?}"))?;
+	let mut session = crate::session::domain_session::DomainSession::new(
+		context,
+		crate::session::DEFAULT_CEILING,
+	)?;
 	let mut fresh = Vec::new();
-	for (i, source) in generated.iter().enumerate() {
-		let key = domain
-			.compile_insert(
-				&context,
-				&mut sources(source),
-				&mut Diagnostics::new(),
-				i as u64,
-			)
-			.map_err(|e| format!("{e:?}"))?;
-		let entry = domain
-			.function(&key, Hash::type_hash(["main"]))
-			.map_err(|e| format!("{e:?}"))?;
-		let result = {
-			let mut invocation = domain
-				.start(&key, entry, &[&state], 10_000)
-				.map_err(|e| format!("{e:?}"))?;
-			loop {
-				match invocation.resume(core::num::NonZeroUsize::new(1).unwrap()) {
-					CrossOutcome::Limited => {}
-					CrossOutcome::Complete(result) => break result,
-					CrossOutcome::Failed(failure) => {
-						return Err(failure.message().to_string().into());
-					}
-				}
-			}
-		};
-		let delta = domain.get(&result, 0).map_err(|e| format!("{e:?}"))?;
-		let value = domain.get(&result, 1).map_err(|e| format!("{e:?}"))?;
-		let scalar = domain.scalar(&value).map_err(|e| format!("{e:?}"))?;
-		let returned = match scalar {
-			Some(rune::experimental_core::value::Scalar::I64(n)) => n,
-			Some(rune::experimental_core::value::Scalar::U64(n)) => i64::try_from(n)?,
-			_ => return Err("session witness did not return an integer".into()),
-		};
-		assert_eq!(returned, values[i]);
-		fresh.push(json!({"returned":returned}));
-		drop(value);
-		drop(result);
-		drop(state);
-		state = delta;
-		domain.collect_programs().map_err(|e| format!("{e:?}"))?;
+	for (i, input) in inputs.iter().enumerate() {
+		let returned = session
+			.eval_rendered(input, &crate::format::Limits::default())?
+			.ok_or("missing session result")?;
+		assert_eq!(returned, values[i].to_string());
+		fresh.push(json!({"returned":values[i]}));
 	}
-	drop(state);
-	domain.collect_programs().map_err(|e| format!("{e:?}"))?;
-	domain.close().map_err(|e| format!("{e:?}"))?;
+	session.close()?;
 	life.close()?;
 	Ok(
-		json!({"inputs":inputs,"generated_sources":generated,"legacy":values,"execution":fresh,"verdict":"engine-ready: persistent-session wiring pending"}),
+		json!({"inputs":inputs,"generated_sources":generated,"legacy":values,"execution":fresh,"verdict":"opt-in synchronous REPL session; default and notebook remain legacy"}),
 	)
 }
 
@@ -840,7 +798,7 @@ fn registered_host_shapes_and_source_entry_paths_match_policy() {
 	policy_rows(root).unwrap();
 }
 #[test]
-fn retained_function_crosses_programs_with_session_wiring_pending() {
+fn retained_function_crosses_programs_in_opt_in_session() {
 	session_blocker().unwrap();
 }
 

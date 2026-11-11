@@ -159,7 +159,7 @@ rnx — a Rune scripting environment
   rnx version               this build, and the Rune it is pinned to
   rnx help                  this
 
-Flags for `eval`, before SOURCE: --budget N, --engine=legacy, --native=on|off, --debug-engine (fresh eval uses interpreted slices).\nFlags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off (default: on), --debug-engine (requested policy).";
+Flags for `repl`: --engine=auto|legacy|execution (default: legacy; execution is synchronous and sticky).\nFlags for `eval`, before SOURCE: --budget N, --engine=legacy, --native=on|off, --debug-engine (fresh eval uses interpreted slices).\nFlags for `run`, before the file: --budget N (work units), --debug-source, --engine=legacy, --native=on|off (default: on), --debug-engine (requested policy).";
 
 /// Run rnx's normal CLI with the supplied trusted native extensions.
 ///
@@ -361,6 +361,9 @@ fn serve(
 		while let Some(arg) = args.get(at) {
 			match arg.as_str() {
 				"--debug-engine" => eval_options.debug = true,
+				"--engine=execution" => {
+					return Err("--engine=execution is available only with rnx repl".into());
+				}
 				"--engine=legacy" => eval_options.choice = engine::EngineChoice::Legacy,
 				"--native=on" => eval_options.native = true,
 				"--native=off" => eval_options.native = false,
@@ -442,6 +445,17 @@ fn serve(
 	// A session is what someone typing `rnx` almost always wants, and it works
 	// whether standard input is a terminal or a pipe.
 	if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
+		let engine = match args.get(1).map(String::as_str) {
+			None | Some("--engine=auto" | "--engine=legacy") => {
+				session::interactive::EngineChoice::Legacy
+			}
+			Some("--engine=execution") => session::interactive::EngineChoice::Execution,
+			Some(other) => return Err(format!("unsupported REPL option: {other}").into()),
+		};
+		if args.len() > 2 {
+			return Err("unexpected additional REPL arguments".into());
+		}
+
 		return repl::run(
 			context,
 			host_functions,
@@ -449,6 +463,7 @@ fn serve(
 			splash,
 			lifecycle.clone(),
 			presenters,
+			engine,
 		);
 	}
 	if args.first().is_some_and(|s| s == "run") {
@@ -464,6 +479,9 @@ fn serve(
 		loop {
 			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--engine=")) {
 				engine.choice = match option {
+					"execution" => {
+						return Err("--engine=execution is available only with rnx repl".into());
+					}
 					"legacy" => engine::EngineChoice::Legacy,
 					_ => return Err("--engine takes only `legacy`".into()),
 				};

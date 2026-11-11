@@ -1,10 +1,10 @@
 //! The interactive session: a line editor over the persistent session.
 use crate::complete::{Completion, Names, complete};
-use crate::format::{Limits, render_styled};
+use crate::format::Limits;
 use crate::host::HostFunction;
-use crate::inspect::{self, InspectLimits};
+use crate::inspect::InspectLimits;
 use crate::presentation;
-use crate::session::{Completeness, Session, completeness};
+use crate::session::{Completeness, completeness, interactive::InteractiveSession};
 use rune::Context;
 use rustyline::completion::{Completer, Pair};
 use rustyline::error::ReadlineError;
@@ -166,7 +166,7 @@ pub fn history_path() -> Option<PathBuf> {
 	Some(crate::platform::state_dir()?.join("rnx").join("history"))
 }
 
-fn snapshot(session: &Session, host: &[HostFunction]) -> Names {
+fn snapshot(session: &InteractiveSession, host: &[HostFunction]) -> Names {
 	Names {
 		bindings: session.binding_names(),
 		declarations: session.declaration_names(),
@@ -197,12 +197,20 @@ pub(crate) fn ceiling() -> usize {
 
 /// What `:memory` prints. A build with accounting compiled out says so rather
 /// than reporting a figure of zero or a ceiling it does not enforce.
-fn memory_report(session: &Session) -> String {
-	let source = format!(
-		"source and map storage: {} bytes (inputs, declarations, and the source maps of {} entries; the units themselves are held weakly and are not counted)",
-		session.retained_bytes(),
-		session.retained_units()
-	);
+fn memory_report(session: &InteractiveSession) -> String {
+	let source = if session.is_execution() {
+		format!(
+			"source and map storage: {} bytes (history and declarations may grow); {} live programs (capacity is not counted)",
+			session.retained_bytes(),
+			session.retained_units()
+		)
+	} else {
+		format!(
+			"source and map storage: {} bytes (inputs, declarations, and the source maps of {} entries; the units themselves are held weakly and are not counted)",
+			session.retained_bytes(),
+			session.retained_units()
+		)
+	};
 	let Some(live) = crate::memory::live() else {
 		return format!(
 			"allocation accounting is disabled in this build: no figure is tracked and no ceiling is enforced.\n{source}\n"
@@ -229,7 +237,7 @@ fn memory_report(session: &Session) -> String {
 /// Handle one input. Every disposable thing it makes is dropped when it
 /// returns, which is what lets the loop sample afterwards.
 fn handle(
-	session: &mut Session,
+	session: &mut InteractiveSession,
 	host: &[HostFunction],
 	input: &str,
 	limits: &Limits,
@@ -275,14 +283,13 @@ fn handle(
 		// Both read the session and run nothing, so both answer even when the
 		// ceiling has been reached and evaluation is refused.
 		":vars" => {
-			print!("{}", inspect::vars(session, inspect_limits));
+			print!("{}", session.vars(inspect_limits));
 			return Outcome::Continue;
 		}
 		":help" => {
 			print!(
 				"{}",
-				presentation::help(&inspect::help(
-					session,
+				presentation::help(&session.help(
 					host,
 					&COMMANDS,
 					argument.map(|name| if name == ":q" { ":quit" } else { name }),
@@ -294,42 +301,26 @@ fn handle(
 		_ => {}
 	}
 	let number = session.next_number();
-	match session.eval(input) {
-		Ok(value) => {
-			let text = match session.present(&value, limits.total_bytes) {
-				// Record 0068: a registered presenter wins for a top-level
-				// native result. Its output is escaped and bounded here, not
-				// trusted; a failure keeps the evaluation and says so.
-				Some(outcome) => crate::present::finish(
-					outcome,
-					&crate::format::render(&value, None, limits),
-					limits.total_bytes,
-				),
-				None => render_styled(
-					&value,
-					Some(&session.fields()),
-					limits,
-					presentation::stdout(),
-				),
-			};
-			if !crate::runner::is_unit(&value) {
-				if prompt.shown.get() {
-					let marker = format!("[{number}] ");
-					println!(
-						"{}{text}",
-						presentation::numbered(
-							&marker,
-							presentation::Style::ResultNumber,
-							prompt.styled.get()
-						)
-					);
-				} else {
-					println!("{text}");
-				}
+	match session.eval_rendered(input, limits) {
+		Ok(Some(text)) => {
+			if prompt.shown.get() {
+				let marker = format!("[{number}] ");
+				println!(
+					"{}{text}",
+					presentation::numbered(
+						&marker,
+						presentation::Style::ResultNumber,
+						prompt.styled.get()
+					)
+				);
+			} else {
+				println!("{text}");
 			}
 		}
+		Ok(None) => {}
 		Err(failure) => eprintln!("{}", failure.presented()),
 	}
+	session.report_cleanup();
 	if session.lifecycle_failed() {
 		crate::terminal::exit(1);
 	}
@@ -343,6 +334,7 @@ pub fn run(
 	splash: bool,
 	lifecycle: crate::lifecycle::Lifecycle,
 	presenters: crate::present::Presenters,
+	engine: crate::session::interactive::EngineChoice,
 ) -> crate::Result<()> {
 	let _title = crate::terminal::Title::new("rnx");
 	let config = Config::builder()
@@ -351,10 +343,8 @@ pub fn run(
 		.completion_type(CompletionType::List)
 		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	let mut session = Session::with_ceiling(context, ceiling())?
-		.with_http(http)
-		.with_lifecycle(lifecycle)
-		.with_presenters(presenters);
+	let mut session =
+		InteractiveSession::new(context, ceiling(), engine, http, lifecycle, presenters)?;
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),
@@ -405,7 +395,12 @@ pub fn run(
 			let _ = editor.append_history(path);
 		}
 		let spelling = input.split_whitespace().next();
-		let outcome = if matches!(spelling, Some(":dep" | ":depv")) {
+		let outcome = if session.is_execution() && matches!(spelling, Some(":dep" | ":depv")) {
+			eprintln!(
+				"refused: dependency context changes are unavailable in an execution session; restart with the legacy engine"
+			);
+			Outcome::Continue
+		} else if matches!(spelling, Some(":dep" | ":depv")) {
 			let answer = crate::dep_transition::prepare(&input, spelling == Some(":dep"), || {
 				editor
 					.readline("Continue? [y/N] ")

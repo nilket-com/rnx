@@ -230,6 +230,74 @@ impl ProgramDomain {
 		let root = self.store.root_record(None, &[])?;
 		Ok(self.publish(slot, root))
 	}
+	/// Build a record of retained aliases without exposing raw roots.
+	pub fn record_from_fields(&mut self, fields: &[(&str, &DomainRoot)]) -> Result<DomainRoot> {
+		self.drain()?;
+		let slot = self.reserve_root()?;
+		let root = {
+			let registry = self.registry.borrow();
+			let mut checked = Vec::new();
+			checked.try_reserve(fields.len())?;
+			for (name, root) in fields {
+				checked.try_push((*name, self.check(&registry, root)?))?;
+			}
+			self.store.root_record(None, &checked)?
+		};
+		Ok(self.publish(slot, root))
+	}
+	/// Read a named field, registering its retained owner before returning.
+	pub fn field(&mut self, root: &DomainRoot, name: &str) -> Result<DomainRoot> {
+		self.drain()?;
+		let slot = self.reserve_root()?;
+		let result = {
+			let registry = self.registry.borrow();
+			self.store.root_field(self.check(&registry, root)?, name)?
+		};
+		Ok(self.publish(slot, result))
+	}
+	/// Bounded graph inspection; mutation and collection require an exclusive borrow.
+	pub fn view(
+		&self,
+		root: &DomainRoot,
+		limits: super::heap::ViewLimits,
+	) -> Result<super::heap::RootView<'_>> {
+		let registry = self.registry.borrow();
+		self.store.root_view(self.check(&registry, root)?, limits)
+	}
+	/// Observations only: live programs, live registered roots, live Store objects.
+	/// Call after collection: dropped handles remain registered until the drain.
+	pub fn live_counts(&self) -> (usize, usize, usize) {
+		(
+			self.programs.len(),
+			self.registry
+				.borrow()
+				.slots
+				.iter()
+				.filter(|s| s.root.is_some())
+				.count(),
+			self.store.live_entries(),
+		)
+	}
+	/// Reusable program/root slots and Store bookkeeping bytes, separate from live owners.
+	pub fn capacity_counts(&self) -> Result<(usize, usize, usize)> {
+		Ok((
+			self.programs.capacity(),
+			self.registry.borrow().slots.capacity(),
+			self.store.bookkeeping_bytes()?,
+		))
+	}
+
+	/// Revisions still retained after collection, for host diagnostic-map pruning.
+	pub fn retained_revisions(&self) -> Result<Vec<u64>> {
+		let mut revisions = Vec::new();
+		revisions.try_reserve(self.programs.len())?;
+		for member in &self.programs {
+			for source in member.program.sources() {
+				revisions.try_push(source.revision)?;
+			}
+		}
+		Ok(revisions)
+	}
 	/// Read a scalar without exposing its raw root.
 	pub fn scalar(&self, root: &DomainRoot) -> Result<Option<Scalar>> {
 		let r = self.registry.borrow();
@@ -301,6 +369,10 @@ impl ProgramDomain {
 	}
 	/// Resolve a public entry hash without exposing Program ownership.
 	pub fn function(&self, key: &ProgramKey, hash: crate::Hash) -> Result<u32> {
+		self.entry(key, hash)
+	}
+	/// Look up an entry in a leased program. This never registers a host function.
+	pub fn entry(&self, key: &ProgramKey, hash: crate::Hash) -> Result<u32> {
 		if key.domain != self.id {
 			return Err(invalid());
 		}
@@ -968,5 +1040,109 @@ mod tests {
 		assert_eq!(d.collect_programs().unwrap().leases, 1);
 		d.release_program(k).unwrap();
 		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn record_fields_retain_aliases_and_views_survive_handle_drop() {
+		let c = context();
+		let mut d = domain(&c);
+		let k = compile(&mut d, &c, "pub fn main(){[7]}");
+		let root = call(&mut d, k, &[], 1);
+		let record = d.record_from_fields(&[("x", &root)]).unwrap();
+		let child = d.field(&record, "x").unwrap();
+		{
+			let a = d
+				.view(&root, super::super::heap::ViewLimits { nodes: 8, depth: 8 })
+				.unwrap();
+			let b = d
+				.view(
+					&child,
+					super::super::heap::ViewLimits { nodes: 8, depth: 8 },
+				)
+				.unwrap();
+			assert_eq!(a.root().unwrap().identity(), b.root().unwrap().identity());
+			drop(root);
+			drop(child);
+			drop(record);
+			assert!(matches!(
+				a.root().unwrap().child(0).unwrap().kind().unwrap(),
+				super::super::heap::ViewKind::Scalar(Scalar::I64(7))
+			));
+		}
+		d.collect_programs().unwrap();
+		assert_eq!(d.live_counts(), (0, 0, 0));
+	}
+	#[test]
+	fn record_fields_reject_foreign_and_stale_roots() {
+		let c = context();
+		let mut a = domain(&c);
+		let mut b = domain(&c);
+		let root = a.i64(7).unwrap();
+		assert!(b.record_from_fields(&[("x", &root)]).is_err());
+		assert!(b
+			.view(&root, super::super::heap::ViewLimits { nodes: 1, depth: 1 })
+			.is_err());
+		let stale = DomainRoot {
+			registry: root.registry.clone(),
+			index: root.index,
+			generation: root.generation,
+		};
+		drop(root);
+		a.collect_programs().unwrap();
+		let replacement = a.i64(9).unwrap();
+		assert!(a.record_from_fields(&[("x", &stale)]).is_err());
+		assert!(a.field(&stale, "x").is_err());
+		assert_eq!(a.scalar(&replacement).unwrap(), Some(Scalar::I64(9)));
+	}
+	#[test]
+	fn record_fields_failed_reservations_reuse_empty_slot() {
+		let c = context();
+		let mut d = domain(&c);
+		let mut foreign = domain(&c);
+		let root = d.i64(7).unwrap();
+		let other = foreign.i64(8).unwrap();
+		let record = d.record_from_fields(&[("x", &root)]).unwrap();
+		assert!(d.field(&record, "absent").is_err());
+		let capacity = d.capacity_counts().unwrap();
+		let live = d.live_counts();
+		let empty = d
+			.registry
+			.borrow()
+			.slots
+			.iter()
+			.position(|s| s.root.is_none() && !s.queued)
+			.unwrap();
+		for _ in 0..32 {
+			assert!(d.record_from_fields(&[("x", &other)]).is_err());
+			assert!(d.field(&record, "absent").is_err());
+			assert!(
+				rune_alloc::limit::with(0, || d.record_from_fields(&[("x", &root)]))
+					.call()
+					.is_err()
+			);
+			assert_eq!(d.capacity_counts().unwrap(), capacity);
+			assert_eq!(d.live_counts(), live);
+		}
+		let child = d.field(&record, "x").unwrap();
+		assert_eq!(child.index, empty);
+		assert_eq!(d.capacity_counts().unwrap(), capacity);
+		assert_eq!(d.scalar(&child).unwrap(), Some(Scalar::I64(7)));
+	}
+	#[test]
+	fn record_fields_allocation_refusal_preserves_live_owners() {
+		let c = context();
+		let mut d = domain(&c);
+		let root = d.i64(7).unwrap();
+		let before = d.live_counts();
+		assert!(
+			rune_alloc::limit::with(0, || d.record_from_fields(&[("x", &root)]))
+				.call()
+				.is_err()
+		);
+		assert_eq!(d.live_counts(), before);
+		assert_eq!(d.scalar(&root).unwrap(), Some(Scalar::I64(7)));
+		let record = d.record_from_fields(&[("x", &root)]).unwrap();
+		assert!(d.field(&record, "absent").is_err());
+		let child = d.field(&record, "x").unwrap();
+		assert_eq!(d.scalar(&child).unwrap(), Some(Scalar::I64(7)));
 	}
 }

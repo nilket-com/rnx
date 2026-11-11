@@ -76,6 +76,23 @@ cargo run --locked -- eval 'let x = 4; x + 3'
 cargo run --locked -- repl
 ```
 
+`rnx repl --engine=execution` opts into synchronous persistent sessions on the
+new engine. Bindings, aliases, closures and declarations survive between inputs;
+`:reset` clears them while keeping this engine choice. The default, `auto` and
+`legacy` sessions still use the legacy engine. The execution spelling is
+REPL-only; file and one-shot eval routing are unchanged. REPL arguments are now
+validated: unknown options or trailing arguments that were previously ignored
+are reported as errors.
+
+Execution sessions refuse async/await/select and unsupported frontend forms
+before effects, without replay or migration to legacy. `map(f)` with an
+unknown-arity retained closure is still unsupported. `:dep` and `:depv` require
+a legacy session; native values requiring presenters are refused by compile-time
+admission, before invoking their host functions. Inspection, history, numbering, memory ceilings and reset remain available.
+Interrupts are checked at most every 1,024 fresh-engine work units in pure loops;
+host calls have their own cancellation contract. Budget diagnostics match legacy,
+but exhaustion points need not: the engines count different work.
+
 `rnx` on its own opens a session. `rnx selfcheck` is what runs this build's
 own assertions and prints what it saw, which is what the bare command did
 before record 0024.
