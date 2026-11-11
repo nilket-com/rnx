@@ -1,4 +1,5 @@
 //! Preparation runs outside the session VM and never polls or drains its runtime.
+use crate::dep_wire::EngineChoice;
 use std::cell::RefCell;
 thread_local! {static INSTALLED:RefCell<Vec<String>>=const{RefCell::new(Vec::new())};}
 pub(crate) fn installed(mut names: Vec<String>) {
@@ -6,7 +7,12 @@ pub(crate) fn installed(mut names: Vec<String>) {
 	INSTALLED.with(|v| *v.borrow_mut() = names);
 }
 #[cfg(not(unix))]
-pub(crate) fn prepare(_: &str, _: bool, _: impl FnOnce() -> bool) -> Result<bool, String> {
+pub(crate) fn prepare(
+	_: &str,
+	_: bool,
+	_: EngineChoice,
+	_: impl FnOnce() -> bool,
+) -> Result<bool, String> {
 	Err("dependency transitions are not supported on this platform".into())
 }
 /// Record 0070: `quiet` is `:dep`'s mode — no prompt, phases and the
@@ -16,9 +22,10 @@ pub(crate) fn prepare(_: &str, _: bool, _: impl FnOnce() -> bool) -> Result<bool
 pub(crate) fn prepare(
 	input: &str,
 	quiet: bool,
+	engine: EngineChoice,
 	consent: impl FnOnce() -> bool,
 ) -> Result<bool, String> {
-	unix::prepare(input, quiet, consent)
+	unix::prepare(input, quiet, engine, consent)
 }
 #[cfg(unix)]
 mod unix {
@@ -246,6 +253,7 @@ mod unix {
 	pub(super) fn prepare(
 		input: &str,
 		quiet: bool,
+		engine: EngineChoice,
 		consent: impl FnOnce() -> bool,
 	) -> Result<bool, String> {
 		if !std::io::stdin().is_terminal() || !std::io::stdout().is_terminal() {
@@ -304,8 +312,8 @@ mod unix {
 			probe.finish()?;
 		}
 		let mut helper = Helper::spawn(&tool, &[])?;
-		// The mode field only for quiet: an older tool, which knows no such
-		// field, still serves :depv exactly as before.
+		// Every request names its engine; old managers must fail closed.
+		// The mode remains optional for verbose preparation.
 		let mut request = wire::Fields::from([
 			(1, names.join("\n")),
 			(2, association),
@@ -320,6 +328,7 @@ mod unix {
 			(4, installed),
 			(5, if offline { "offline" } else { "online" }.into()),
 			(6, flags().join("\n")),
+			(8, engine.name().into()),
 		]);
 		if quiet {
 			request.insert(7, "quiet".into());
@@ -333,7 +342,7 @@ mod unix {
 			// before writing anything; say what to do about it.
 			if description[&1].contains("unexpected message fields") {
 				return Err(format!(
-					"{} predates quiet preparation; update the installed rnx, or use :depv",
+					"{} does not support this engine-preserving transition request; update the installed rnx",
 					tool.display()
 				));
 			}
@@ -342,7 +351,8 @@ mod unix {
 		if kind != 2 {
 			return Err("incompatible tool transition protocol".into());
 		}
-		wire::exact(&description, &[1, 2, 3, 4, 5, 6, 7])?;
+		wire::exact(&description, &[1, 2, 3, 4, 5, 6, 7, 8])?;
+		engine.check(&description[&8])?;
 		helper.deadline = Instant::now() + Duration::from_secs(1800);
 		if description[&5].is_empty() {
 			helper.send(3, &wire::Fields::new())?;
@@ -370,7 +380,10 @@ mod unix {
 			helper.finish()?;
 			return Ok(false);
 		}
-		helper.send(4, &wire::Fields::from([(1, description[&1].clone())]))?;
+		helper.send(
+			4,
+			&wire::Fields::from([(1, description[&1].clone()), (2, engine.name().into())]),
+		)?;
 		helper
 			.socket
 			.shutdown(std::net::Shutdown::Write)
@@ -387,11 +400,12 @@ mod unix {
 		wire::exact(
 			&result,
 			if result.contains_key(&4) {
-				&[1, 2, 3, 4]
+				&[1, 2, 3, 4, 8]
 			} else {
-				&[1, 2, 3]
+				&[1, 2, 3, 8]
 			},
 		)?;
+		engine.check(&result[&8])?;
 		let capsule = wire::capsule(&result[&2])?;
 		if capsule[&6] != result[&1] || !PathBuf::from(&result[&1]).is_absolute() {
 			return Err("replacement association mismatch".into());
@@ -412,6 +426,7 @@ mod unix {
 			// The reopen command is the log's first line in quiet mode.
 			reopen: if quiet { None } else { result.get(&4).cloned() },
 			flags,
+			engine,
 		};
 		next.recheck()?;
 		#[cfg(feature = "test-support")]
@@ -425,6 +440,7 @@ mod unix {
 		stamp: String,
 		reopen: Option<String>,
 		flags: Vec<String>,
+		engine: EngineChoice,
 	}
 	impl Replacement {
 		fn recheck(&self) -> Result<(), String> {
@@ -483,6 +499,7 @@ mod unix {
 			let error = command
 				.args(&next.flags)
 				.arg("repl")
+				.arg(next.engine.argument())
 				.env_remove("RNX_INTERNAL_DEP_FD")
 				.env_remove("RNX_INTERNAL_STARTUP_FD")
 				.env("RNX_INTERNAL_SESSION_V1", next.association)
@@ -490,6 +507,29 @@ mod unix {
 			return Err(format!("dependency restart exec failed after cleanup: {error}").into());
 		}
 		Ok(())
+	}
+	#[cfg(test)]
+	mod tests {
+		use super::*;
+		#[test]
+		fn cleanup_failure_consumes_handover_without_exec_on_both_engines() {
+			for engine in [EngineChoice::Legacy, EngineChoice::Execution] {
+				NEXT.with(|next| {
+					*next.borrow_mut() = Some(Replacement {
+						path: "/must-not-be-executed".into(),
+						association: String::new(),
+						stamp: String::new(),
+						reopen: None,
+						flags: vec![],
+						engine,
+					})
+				});
+				let error = finish(Err("fixture cleanup failure".into())).unwrap_err();
+				assert_eq!(error.to_string(), "fixture cleanup failure");
+				assert!(NEXT.with(|next| next.borrow().is_none()));
+				assert!(finish(Ok(())).is_ok());
+			}
+		}
 	}
 }
 

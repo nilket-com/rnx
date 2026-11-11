@@ -217,8 +217,9 @@ impl Project {
 				command.env_remove(transition::CARRIER);
 				command
 			}
-			Launch::Session { flags } => {
+			Launch::Session { flags, engine } => {
 				let mut command = assembly::interactive_checked(&checked, &flags, None);
+				command.arg(engine.argument());
 				command.env(
 					transition::CARRIER,
 					transition::git_association(&self, &lock, &checked, &digest)?,

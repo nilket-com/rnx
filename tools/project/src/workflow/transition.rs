@@ -165,6 +165,7 @@ struct Description {
 	offline: bool,
 	/// Record 0070: the session asked for quiet preparation (field 7).
 	quiet: bool,
+	engine: Option<protocol::EngineChoice>,
 	runtime: Option<crate::runtime_install::Selection>,
 	git: Option<crate::entry::Coordinates>,
 }
@@ -206,7 +207,7 @@ impl Description {
 			notice.push_str("A first Polars build took about 100 seconds with registry sources cached; its retained shared entry is about 1.5 GB. A reusable entry avoids compilation.\n");
 		}
 		notice.push_str("This prepares a new executable and restarts the session on success.\nExisting bindings and declarations will be lost. Saved history remains available with up-arrow; nothing is replayed.");
-		Ok(protocol::Fields::from([
+		let mut fields = protocol::Fields::from([
 			(1, hash(&self.candidate.bytes)),
 			(2, notice),
 			(3, text(&self.manifest)?),
@@ -214,7 +215,11 @@ impl Description {
 			(5, self.candidate.added.join("\n")),
 			(6, self.candidate.existing.join("\n")),
 			(7, if self.offline { "offline" } else { "online" }.into()),
-		]))
+		]);
+		if let Some(engine) = self.engine {
+			fields.insert(8, engine.name().into());
+		}
+		Ok(fields)
 	}
 }
 fn state_root() -> Result<PathBuf, String> {
@@ -282,7 +287,14 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 	if request.contains_key(&7) {
 		expected.push(7);
 	}
+	if request.contains_key(&8) {
+		expected.push(8);
+	}
 	protocol::exact(request, &expected)?;
+	let engine = request
+		.get(&8)
+		.map(|s| protocol::EngineChoice::parse(s))
+		.transpose()?;
 	let quiet = mode(request)?;
 	super::startup::flags(request.get(&6).map(String::as_str).unwrap_or(""))?;
 	let entries = catalogue::select(&request[&1].lines().map(str::to_owned).collect::<Vec<_>>())?;
@@ -371,6 +383,7 @@ fn describe(request: &protocol::Fields, proposed: Option<&Path>) -> Result<Descr
 		scratch,
 		offline,
 		quiet,
+		engine,
 		runtime: selection,
 		git,
 	})
@@ -537,7 +550,15 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		if kind != 4 {
 			return Err("expected consent or decline".into());
 		}
-		protocol::exact(&answer, &[1])?;
+		protocol::exact(
+			&answer,
+			if let Some(engine) = description.engine {
+				engine.check(answer.get(&2).ok_or("missing consent engine")?)?;
+				&[1, 2]
+			} else {
+				&[1]
+			},
+		)?;
 		if answer[&1] != fields[&1] {
 			return Err("consent description mismatch".into());
 		}
@@ -585,10 +606,14 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		if let Some(c) = capture.as_mut() {
 			let header = if fresh.scratch {
 				format!(
-					"reopen this scratch session with: {} session --manifest {}",
+					"reopen this scratch session with: {} session --manifest {}{}",
 					crate::entry::project_prefix().unwrap_or_else(|_| "rnx project".into()),
 					super::add::shell_word(&p.manifest)
-						.unwrap_or_else(|_| p.manifest.display().to_string())
+						.unwrap_or_else(|_| p.manifest.display().to_string()),
+					fresh
+						.engine
+						.map(|e| format!(" {}", e.argument()))
+						.unwrap_or_default()
 				)
 			} else {
 				format!("project {}", p.manifest.display())
@@ -639,7 +664,11 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			announce("startup check", &mut capture);
 			#[cfg(feature = "test-support")]
 			protocol::trace("tool-probe");
-			super::startup::check(&checked, request.get(&6).map(String::as_str).unwrap_or(""))?;
+			super::startup::check(
+				&checked,
+				request.get(&6).map(String::as_str).unwrap_or(""),
+				fresh.engine,
+			)?;
 			commands::check()?;
 			let (again, again_digest, again_bytes, again_association) = p.prepared_session()?;
 			if bytes != again_bytes
@@ -655,13 +684,20 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 			checked.recheck()?;
 			let mut ready =
 				protocol::Fields::from([(1, text(checked.path())?), (2, replacement), (3, stamp)]);
+			if let Some(engine) = fresh.engine {
+				ready.insert(8, engine.name().into());
+			}
 			if fresh.scratch {
 				ready.insert(
 					4,
 					format!(
-						"{} session --manifest {}",
+						"{} session --manifest {}{}",
 						crate::entry::project_prefix()?,
-						super::add::shell_word(&p.manifest)?
+						super::add::shell_word(&p.manifest)?,
+						fresh
+							.engine
+							.map(|e| format!(" {}", e.argument()))
+							.unwrap_or_default()
 					),
 				);
 			}
@@ -673,7 +709,7 @@ pub(super) fn serve(args: Vec<OsString>) -> Result<(), String> {
 		let recovery = |e: &str| {
 			format!(
 				"project files may have been published; retry with:\n{}{}",
-				crate::entry::recovery(&p.manifest).unwrap_or_else(|e| e),
+				crate::entry::recovery_for_engine(&p.manifest, fresh.engine).unwrap_or_else(|e| e),
 				fresh.git.map(|c| c.acquisition_help(e)).unwrap_or_default()
 			)
 		};
@@ -759,6 +795,19 @@ mod scratch_directory_tests {
 #[cfg(test)]
 mod mode_tests {
 	use super::*;
+	#[test]
+	fn unknown_engine_is_rejected_before_manifest_or_dependency_work() {
+		let request = protocol::Fields::from([
+			(1, "not-a-dependency".into()),
+			(2, "not-an-association".into()),
+			(3, "/not-an-executable".into()),
+			(4, String::new()),
+			(5, "online".into()),
+			(8, "future-engine".into()),
+		]);
+		assert!(matches!(describe(&request, None), Err(e) if e == "invalid session engine"));
+	}
+
 	/// Record 0070: only the explicit value grants quiet preparation; an
 	/// absent field is the prompted, verbose behaviour; anything else refuses.
 	#[test]

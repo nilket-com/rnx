@@ -20,3 +20,24 @@ Paired ADR: ../adr/0243_dep_restart_keeps_engine.md.
    packet to review.
 
 Results are added here by the implementer.
+
+## Implementation
+
+The engine enum is shared with transition framing. Requests, descriptions,
+consent, startup readiness and replacement replies validate it; the selected
+engine follows `repl` in actual exec arguments. Project session launch and
+scratch/recovery commands preserve the same choice. Old manager requests without
+an engine retain their prior response shape; new requesters require the echo.
+The readiness probe evaluates on the requested engine before approving handover.
+
+PTY controls cover both engines, scratch and associated requesters, executed
+arguments, empty replacement state, sticky reset, already-installed no-op,
+preparation refusal, declined consent, cancellation, mismatched replies and
+post-cleanup artifact/exec failures. A cleanup-error control proves the pending
+handover is consumed without exec. Unknown request engines fail before filesystem
+or dependency work. Only the prior :dep refusal assertion changes in the 0242
+transcript test. Runtime operation loops and native admission are unchanged.
+
+Focused controls: target/0243/FOCUSED-v2/RESULT.json PASS. Scratch PTY controls
+also pass with stock-management disabled. Final acceptance uses path-selected
+repository gates and its existing baseline-aware Clippy policy.

@@ -2,6 +2,40 @@
 #![allow(dead_code)] // Shared framing operations are split between the two endpoints.
 use std::collections::BTreeMap;
 use std::io::{Read, Write};
+/// Sticky session engine, serialized only at process boundaries.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum EngineChoice {
+	Legacy,
+	Execution,
+}
+impl EngineChoice {
+	pub(crate) fn parse(value: &str) -> Result<Self, String> {
+		match value {
+			"legacy" => Ok(Self::Legacy),
+			"execution" => Ok(Self::Execution),
+			_ => Err("invalid session engine".into()),
+		}
+	}
+	pub(crate) fn name(self) -> &'static str {
+		match self {
+			Self::Legacy => "legacy",
+			Self::Execution => "execution",
+		}
+	}
+	pub(crate) fn argument(self) -> &'static str {
+		match self {
+			Self::Legacy => "--engine=legacy",
+			Self::Execution => "--engine=execution",
+		}
+	}
+	pub(crate) fn check(self, value: &str) -> Result<(), String> {
+		if Self::parse(value)? == self {
+			Ok(())
+		} else {
+			Err("session engine mismatch".into())
+		}
+	}
+}
 pub const LIMIT: usize = 65536;
 pub type Fields = BTreeMap<u8, String>;
 pub fn encode(kind: u8, fields: &Fields) -> Result<Vec<u8>, String> {
@@ -151,6 +185,23 @@ pub fn trace(name: &str) {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn engine_boundary_refuses_unknown_and_mismatched_choices() {
+		for engine in [EngineChoice::Legacy, EngineChoice::Execution] {
+			assert!(engine.check(engine.name()).is_ok());
+			for unknown in ["auto", "", "Execution", "legacy\n", "other"] {
+				assert_eq!(engine.check(unknown).unwrap_err(), "invalid session engine");
+			}
+		}
+		assert_eq!(
+			EngineChoice::Legacy.check("execution").unwrap_err(),
+			"session engine mismatch"
+		);
+		assert_eq!(
+			EngineChoice::Execution.check("legacy").unwrap_err(),
+			"session engine mismatch"
+		);
+	}
 	#[test]
 	fn framing() {
 		let f = Fields::from([(1, "🦀".into())]);

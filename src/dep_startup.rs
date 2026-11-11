@@ -1,6 +1,9 @@
 //! Private readiness endpoint, sealed before settings or trusted builders run.
 #[cfg(unix)]
-pub(crate) struct Probe(std::os::unix::net::UnixStream);
+pub(crate) struct Probe {
+	socket: std::os::unix::net::UnixStream,
+	engine: Option<crate::dep_wire::EngineChoice>,
+}
 #[cfg(not(unix))]
 pub(crate) struct Probe;
 impl Probe {
@@ -23,7 +26,13 @@ impl Probe {
 			}
 			let socket = unsafe { std::os::unix::net::UnixStream::from_raw_fd(fd) };
 			socket.set_write_timeout(Some(std::time::Duration::from_secs(1)))?;
-			Ok(Some(Self(socket)))
+			let engine = std::env::args()
+				.find_map(|a| a.strip_prefix("--engine=").map(str::to_owned))
+				.map(|s| {
+					crate::dep_wire::EngineChoice::parse(if s == "auto" { "legacy" } else { &s })
+				})
+				.transpose()?;
+			Ok(Some(Self { socket, engine }))
 		}
 		#[cfg(not(unix))]
 		{
@@ -35,12 +44,12 @@ impl Probe {
 		result?;
 		#[cfg(unix)]
 		{
-			let mut socket = self.0;
-			crate::dep_wire::write(
-				&mut socket,
-				6,
-				&crate::dep_wire::Fields::from([(1, "42".into())]),
-			)?;
+			let mut socket = self.socket;
+			let mut fields = crate::dep_wire::Fields::from([(1, "42".into())]);
+			if let Some(engine) = self.engine {
+				fields.insert(2, engine.name().into());
+			}
+			crate::dep_wire::write(&mut socket, 6, &fields)?;
 		}
 		Ok(())
 	}

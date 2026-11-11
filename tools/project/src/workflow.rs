@@ -560,8 +560,9 @@ impl Project {
 				command.env_remove(transition::CARRIER);
 				command
 			}
-			Launch::Session { flags } => {
+			Launch::Session { flags, engine } => {
 				let mut command = assembly::interactive_checked(&checked, &flags, None);
+				command.arg(engine.argument());
 				command.env(
 					transition::CARRIER,
 					transition::association(&self, &lock, &checked, &digest)?,
@@ -709,6 +710,7 @@ enum Launch {
 	},
 	Session {
 		flags: Vec<OsString>,
+		engine: crate::dep_wire::EngineChoice,
 	},
 	Eval {
 		flags: Vec<OsString>,
@@ -767,7 +769,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	}
 	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
 		let help = String::from(
-			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [--budget N] [--engine=legacy] [--native=on|off] [--debug-engine] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build.",
+			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [--budget N] [--engine=legacy] [--native=on|off] [--debug-engine] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash] [--engine=auto|legacy|execution]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build.",
 		);
 		println!(
 			"{}",
@@ -796,12 +798,26 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	let mut color = false;
 	let mut splash = false;
 	let mut flags = Vec::new();
+	let mut session_engine = None;
 	let mut script = Vec::new();
 	let mut source = None;
 	let mut budget = None;
 	let mut n = 1;
 	while n < args.len() {
 		match args[n].to_str() {
+			Some(value)
+				if command == "session"
+					&& value.starts_with("--engine=")
+					&& session_engine.is_none() =>
+			{
+				let value = value.strip_prefix("--engine=").unwrap();
+				session_engine = Some(crate::dep_wire::EngineChoice::parse(if value == "auto" {
+					"legacy"
+				} else {
+					value
+				})?);
+			}
+
 			Some("--engine=legacy" | "--native=on" | "--native=off" | "--debug-engine")
 				if command == "run" =>
 			{
@@ -861,7 +877,13 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 			},
 			verify,
 		),
-		"session" => project.launch(Launch::Session { flags }, verify),
+		"session" => project.launch(
+			Launch::Session {
+				flags,
+				engine: session_engine.unwrap_or(crate::dep_wire::EngineChoice::Legacy),
+			},
+			verify,
+		),
 		"eval" => project.launch(
 			Launch::Eval {
 				flags,

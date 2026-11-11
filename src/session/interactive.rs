@@ -1,10 +1,6 @@
 //! Sticky REPL engine choice. Notebook and one-shot APIs still use Session.
 use super::{Failure, Session, domain_session::DomainSession};
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub(crate) enum EngineChoice {
-	Legacy,
-	Execution,
-}
+pub(crate) use crate::dep_wire::EngineChoice;
 pub(crate) enum InteractiveSession {
 	Legacy(Box<Session>),
 	Execution(Box<DomainSession>),
@@ -41,7 +37,13 @@ impl InteractiveSession {
 	}
 
 	pub(crate) fn is_execution(&self) -> bool {
-		matches!(self, Self::Execution(_))
+		self.engine() == EngineChoice::Execution
+	}
+	pub(crate) fn engine(&self) -> EngineChoice {
+		match self {
+			Self::Legacy(_) => EngineChoice::Legacy,
+			Self::Execution(_) => EngineChoice::Execution,
+		}
 	}
 	pub(crate) fn eval_rendered(
 		&mut self,

@@ -395,17 +395,17 @@ pub fn run(
 			let _ = editor.append_history(path);
 		}
 		let spelling = input.split_whitespace().next();
-		let outcome = if session.is_execution() && matches!(spelling, Some(":dep" | ":depv")) {
-			eprintln!(
-				"refused: dependency context changes are unavailable in an execution session; restart with the legacy engine"
+		let outcome = if matches!(spelling, Some(":dep" | ":depv")) {
+			let answer = crate::dep_transition::prepare(
+				&input,
+				spelling == Some(":dep"),
+				session.engine(),
+				|| {
+					editor
+						.readline("Continue? [y/N] ")
+						.is_ok_and(|line| matches!(line.trim(), "y" | "Y" | "yes"))
+				},
 			);
-			Outcome::Continue
-		} else if matches!(spelling, Some(":dep" | ":depv")) {
-			let answer = crate::dep_transition::prepare(&input, spelling == Some(":dep"), || {
-				editor
-					.readline("Continue? [y/N] ")
-					.is_ok_and(|line| matches!(line.trim(), "y" | "Y" | "yes"))
-			});
 			let quiet = spelling == Some(":dep");
 			match answer {
 				Ok(true) => {

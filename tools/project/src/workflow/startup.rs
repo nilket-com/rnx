@@ -13,7 +13,11 @@ pub(super) fn flags(text: &str) -> Result<Vec<String>, String> {
 	Ok(values)
 }
 #[cfg(unix)]
-pub(super) fn check(artifact: &crate::artifact::Checked, presentation: &str) -> Result<(), String> {
+pub(super) fn check(
+	artifact: &crate::artifact::Checked,
+	presentation: &str,
+	engine: Option<crate::dep_wire::EngineChoice>,
+) -> Result<(), String> {
 	use crate::{commands, dep_wire as wire};
 	use std::{
 		io::Read,
@@ -59,6 +63,9 @@ pub(super) fn check(artifact: &crate::artifact::Checked, presentation: &str) -> 
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
 		.process_group(0);
+	if let Some(engine) = engine {
+		command.arg(engine.argument());
+	}
 	unsafe {
 		command.pre_exec(move || {
 			if libc::fcntl(fd, libc::F_SETFD, 0) < 0 {
@@ -154,7 +161,15 @@ pub(super) fn check(artifact: &crate::artifact::Checked, presentation: &str) -> 
 		let mut cursor = std::io::Cursor::new(&control);
 		let (kind, fields) = wire::read(&mut cursor)
 			.map_err(|e| format!("startup readiness missing or malformed: {e}"))?;
-		wire::exact(&fields, &[1])?;
+		wire::exact(
+			&fields,
+			if let Some(engine) = engine {
+				engine.check(fields.get(&2).ok_or("missing startup engine")?)?;
+				&[1, 2]
+			} else {
+				&[1]
+			},
+		)?;
 		if kind != 6 || fields[&1] != "42" || cursor.position() != control.len() as u64 {
 			return Err("startup readiness mismatch or trailing data".into());
 		}

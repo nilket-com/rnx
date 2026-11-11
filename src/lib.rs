@@ -213,7 +213,16 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 		args.remove(0);
 	}
 
-	if startup && !(args.is_empty() || args.as_slice() == ["repl"]) {
+	if startup
+		&& !(args.is_empty()
+			|| (args.first().is_some_and(|s| s == "repl")
+				&& args.len() <= 2
+				&& args.get(1).is_none_or(|s| {
+					matches!(
+						s.as_str(),
+						"--engine=auto" | "--engine=legacy" | "--engine=execution"
+					)
+				}))) {
 		return Err("startup probe requires session mode".into());
 	}
 	// Answered before a context exists, because neither needs one and the
@@ -336,7 +345,21 @@ fn serve(
 	}
 	if startup {
 		crate::memory::record_baseline();
-		engine::startup(&context, lifecycle)?;
+		if args.get(1).is_some_and(|a| a == "--engine=execution") {
+			let mut session =
+				session::domain_session::DomainSession::new(context, session::DEFAULT_CEILING)?
+					.with_http(http)
+					.with_lifecycle(lifecycle.clone())
+					.with_presenters(presenters);
+			let result = session.eval_rendered("40+2", &format::Limits::default());
+			let closed = session.close();
+			if result? != Some("42".into()) {
+				return Err("execution startup result mismatch".into());
+			}
+			closed?;
+		} else {
+			engine::startup(&context, lifecycle)?;
+		}
 		return Ok(());
 	}
 	if let Some(transport) = worker_transport {

@@ -51,11 +51,17 @@ pub(crate) fn project_prefix() -> Result<String, String> {
 		if stock() { " project" } else { "" }
 	))
 }
-pub(crate) fn recovery(manifest: &Path) -> Result<String, String> {
+pub(crate) fn recovery_for_engine(
+	manifest: &Path,
+	engine: Option<crate::dep_wire::EngineChoice>,
+) -> Result<String, String> {
+	let suffix = engine
+		.map(|e| format!(" {}", e.argument()))
+		.unwrap_or_default();
 	let prefix = project_prefix()?;
 	let manifest = quote(manifest)?;
 	Ok(format!(
-		"{prefix} lock --manifest {manifest}\n{prefix} build --manifest {manifest}\n{prefix} session --manifest {manifest}"
+		"{prefix} lock --manifest {manifest}\n{prefix} build --manifest {manifest}\n{prefix} session --manifest {manifest}{suffix}"
 	))
 }
 impl Coordinates {
@@ -115,6 +121,19 @@ impl Coordinates {
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn recovery_session_preserves_engine_without_changing_build_commands() {
+		let path = Path::new("/project with spaces/rnx.toml");
+		let old = recovery_for_engine(path, None).unwrap();
+		for engine in [
+			crate::dep_wire::EngineChoice::Legacy,
+			crate::dep_wire::EngineChoice::Execution,
+		] {
+			let new = recovery_for_engine(path, Some(engine)).unwrap();
+			assert_eq!(new, format!("{old} {}", engine.argument()));
+			assert_eq!(new.matches(engine.argument()).count(), 1);
+		}
+	}
 	#[test]
 	fn checkout_hint_is_only_for_acquisition_failure() {
 		let c = Coordinates {
