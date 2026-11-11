@@ -42,6 +42,12 @@ def commands(out, root=ROOT):
 		("async-test-support", cargo + ["test", "--locked", "--features", "project-sources,test-support", "--test", "async_execution", "--", "--test-threads=4"]),
 		("generated-projects", cargo + ["test", "--locked", "--features", "project-sources", "--test", "routing_projects", "--", "--ignored", "--test-threads=1"]),
 	]
+	steps += [
+		('jupyter-format', cargo + ['fmt', '--manifest-path', 'jupyter/Cargo.toml', '--check']),
+		('jupyter-clippy', cargo + ['clippy', '--locked', '--manifest-path', 'jupyter/Cargo.toml', '--all-targets', '--features', 'transport-probe', '--', '-D', 'warnings']),
+		('jupyter-tests', cargo + ['test', '--locked', '--manifest-path', 'jupyter/Cargo.toml', '--features', 'transport-probe']),
+		('jupyter-kernel', ['python3', '-B', 'tools/column/jupyter_controls.py', '--out', str(out/'jupyter-kernel')]),
+	]
 	for adapter in ("candle", "polars", "postgres"):
 		steps.append(("adapter-" + adapter, cargo + ["test", "--locked", "--manifest-path", f"adapters/{adapter}/Cargo.toml", "--test", "execution_routing", "--", "--test-threads=1"]))
 	steps.append(("polars-inventories", ["python3", "-B", "tools/column/inventories.py", "--out", str(out / "polars-inventories")]))

@@ -1,9 +1,13 @@
-//! Sticky REPL engine choice. Notebook and one-shot APIs still use Session.
+//! Sticky interactive engine choice shared by terminal and notebook sessions.
 use super::{Failure, Session, domain_session::DomainSession};
 pub(crate) use crate::dep_wire::EngineChoice;
 pub(crate) enum InteractiveSession {
 	Legacy(Box<Session>),
 	Execution(Box<DomainSession>),
+}
+pub(crate) struct WorkerText {
+	pub plain: String,
+	pub html: Option<String>,
 }
 impl InteractiveSession {
 	pub(crate) fn new(
@@ -28,6 +32,39 @@ impl InteractiveSession {
 					.with_lifecycle(lifecycle)
 					.with_presenters(presenters),
 			)))
+		}
+	}
+	pub(crate) fn eval_worker(
+		&mut self,
+		input: &str,
+		armed: &mut dyn FnMut(usize) -> std::io::Result<()>,
+	) -> std::io::Result<Result<Option<WorkerText>, Failure>> {
+		let limits = crate::format::Limits::default();
+		match self {
+			Self::Execution(s) => Ok(s
+				.eval_rendered_with_armed(input, &limits, armed)?
+				.map(|text| text.map(|plain| WorkerText { plain, html: None }))),
+			Self::Legacy(s) => Ok(s.eval_with_armed(input, armed)?.map(|value| {
+				if crate::runner::is_unit(&value) {
+					return None;
+				}
+				let plain = match s.present(&value, limits.total_bytes) {
+					Some(outcome) => crate::present::finish(
+						outcome,
+						&crate::format::render(&value, None, &limits),
+						limits.total_bytes,
+					),
+					None => crate::format::render(&value, Some(&s.fields()), &limits),
+				};
+				let html = s.present_html(&value);
+				Some(WorkerText { plain, html })
+			})),
+		}
+	}
+	pub(crate) fn take_cleanup_notes(&mut self) -> Vec<String> {
+		match self {
+			Self::Legacy(_) => Vec::new(),
+			Self::Execution(s) => s.take_cleanup_notes(),
 		}
 	}
 	pub(crate) fn report_cleanup(&mut self) {
@@ -135,6 +172,12 @@ impl InteractiveSession {
 		match self {
 			Self::Legacy(s) => s.declaration_names(),
 			Self::Execution(s) => s.declaration_names(),
+		}
+	}
+	pub(crate) fn reset_fallible(&mut self) -> Result<(), String> {
+		match self {
+			Self::Legacy(s) => s.reset_fallible(),
+			Self::Execution(s) => s.reset_fallible(),
 		}
 	}
 	pub(crate) fn lifecycle_failed(&self) -> bool {

@@ -12,10 +12,14 @@ fn entry() -> rnx_jupyter::transport::Res<()> {
 		args.next();
 	}
 	let mut replace = false;
+	let mut engine = None;
 	let mut connection = None;
 	let mut worker = None;
 	while let Some(arg) = args.next() {
 		match arg.to_str() {
+			Some(s) if s.starts_with("--engine=") && engine.is_none() => {
+				engine = Some(rnx_jupyter::engine::Engine::parse(&s[9..])?);
+			}
 			Some("--replace") if install && !replace => {
 				replace = true;
 			}
@@ -32,7 +36,7 @@ fn entry() -> rnx_jupyter::transport::Res<()> {
 			}
 			Some("--help") => {
 				println!(
-					"rnx-jupyter --connection-file FILE --rnx ABSOLUTE_EXECUTABLE\nrnx-jupyter install --rnx ABSOLUTE_EXECUTABLE [--replace]"
+					"rnx-jupyter --connection-file FILE --rnx ABSOLUTE_EXECUTABLE\nrnx-jupyter install --rnx ABSOLUTE_EXECUTABLE [--replace] [--engine=legacy|execution]"
 				);
 				return Ok(());
 			}
@@ -44,7 +48,11 @@ fn entry() -> rnx_jupyter::transport::Res<()> {
 		}
 	}
 	if install {
-		return rnx_jupyter::install::install(&worker.ok_or("--rnx is required")?, replace);
+		return rnx_jupyter::install::install_with_engine(
+			&worker.ok_or("--rnx is required")?,
+			replace,
+			engine.unwrap_or_default(),
+		);
 	}
 	let connection = rnx_jupyter::connection::Connection::read(
 		&connection.ok_or("--connection-file is required")?,
@@ -57,11 +65,15 @@ fn entry() -> rnx_jupyter::transport::Res<()> {
 			.worker_threads(2)
 			.enable_all()
 			.build()?;
-		runtime.block_on(rnx_jupyter::kernel::run(connection, &worker))
+		runtime.block_on(rnx_jupyter::kernel::run_with_engine(
+			connection,
+			&worker,
+			engine.unwrap_or_default(),
+		))
 	}
 	#[cfg(not(target_os = "linux"))]
 	{
-		let _ = (connection, worker);
+		let _ = (connection, worker, engine);
 		Err("worker supervision is implemented on Linux only in this interim build".into())
 	}
 }

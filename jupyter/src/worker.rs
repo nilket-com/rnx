@@ -185,6 +185,13 @@ fn failure(
 }
 impl Worker {
 	pub async fn spawn(binary: &Path, interrupt: Arc<Interrupt>) -> Res<Self> {
+		Self::spawn_with_engine(binary, interrupt, crate::engine::Engine::Legacy).await
+	}
+	pub async fn spawn_with_engine(
+		binary: &Path,
+		interrupt: Arc<Interrupt>,
+		engine: crate::engine::Engine,
+	) -> Res<Self> {
 		if !binary.is_absolute() {
 			return Err("--rnx needs an absolute executable path".into());
 		}
@@ -203,6 +210,9 @@ impl Worker {
 			"--control-write",
 			&w.to_string(),
 		]);
+		if engine == crate::engine::Engine::Execution {
+			cmd.arg("--engine=execution");
+		}
 		cmd.stdin(Stdio::null())
 			.stdout(Stdio::piped())
 			.stderr(Stdio::piped());
@@ -344,7 +354,7 @@ impl Worker {
 			.await?
 			.ok_or("worker died before ready")?
 			.value;
-		if !identity_matches(&ready) {
+		if !identity_matches(&ready) || !engine.accepts(&ready) {
 			return Err(format!("incompatible worker: expected protocol 1, rnx 0.0.0, Rune {RUNE_VERSION}; received protocol {}, rnx {}, Rune {}",ready["protocol"],ready["rnx"],ready["rune"]).into());
 		}
 		Ok(worker)

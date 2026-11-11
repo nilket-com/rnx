@@ -1,5 +1,8 @@
 //! Record 0046: control never shares a stream with script output.
-use crate::session::{Failure, Session};
+use crate::session::{
+	Failure,
+	interactive::{EngineChoice, InteractiveSession},
+};
 use serde_json::{Value, json};
 use std::{
 	fs::File,
@@ -9,12 +12,21 @@ use std::{
 pub const FRAME_CAP: usize = 256 * 1024;
 const MAX_ID: u64 = (1_u64 << 53) - 1;
 pub struct Transport {
+	engine: EngineChoice,
 	read: BufReader<File>,
 	write: File,
 }
 impl Transport {
 	pub fn from_args(args: &[String]) -> Result<Self, (i32, String)> {
-		if args.len() != 5 || args[1] != "--control-read" || args[3] != "--control-write" {
+		let engine = match args.get(5) {
+			None => EngineChoice::Legacy,
+			Some(arg) => EngineChoice::parse(arg.strip_prefix("--engine=").unwrap_or(""))
+				.map_err(|e| (2, e))?,
+		};
+		if !matches!(args.len(), 5 | 6)
+			|| args[1] != "--control-read"
+			|| args[3] != "--control-write"
+		{
 			return Err((2, "worker needs --control-read N --control-write N".into()));
 		}
 		let number = |s: &str| {
@@ -28,6 +40,7 @@ impl Transport {
 		let (read, write) = crate::worker_transport::open(number(&args[2])?, number(&args[4])?)
 			.map_err(|e| (1, format!("cannot open worker control: {e}")))?;
 		Ok(Self {
+			engine,
 			read: BufReader::new(read),
 			write,
 		})
@@ -166,15 +179,25 @@ pub fn run(
 	lifecycle: crate::lifecycle::Lifecycle,
 	presenters: crate::present::Presenters,
 ) -> io::Result<()> {
-	let mut session = Session::with_ceiling(context, crate::repl::ceiling())
-		.map_err(|e| io::Error::other(e.to_string()))?
-		.with_http(http)
-		.with_lifecycle(lifecycle)
-		.with_presenters(presenters);
+	let engine = transport.engine;
+	let mut session = InteractiveSession::new(
+		context,
+		crate::repl::ceiling(),
+		engine,
+		http,
+		lifecycle,
+		presenters,
+	)
+	.map_err(|e| io::Error::other(e.to_string()))?;
 	crate::memory::record_baseline();
 	session.sample();
-	transport.send(json!({"type":"ready","protocol":1,"rnx":crate::VERSION,"rune":crate::RUNE_VERSION,
-        "bounds":{"control_bytes":FRAME_CAP,"source_bytes":crate::session::INPUT_CAP,"render_bytes":16384,"stream_bytes":2097152,"pending_stream_bytes":2097152,"unassociated_stream_bytes":2097152,"parent_wait_ms":5000,"budget":crate::session::BUDGET}}))?;
+	let mut ready = json!({"type":"ready","protocol":1,"rnx":crate::VERSION,"rune":crate::RUNE_VERSION,
+        "bounds":{"control_bytes":FRAME_CAP,"source_bytes":crate::session::INPUT_CAP,"render_bytes":16384,"stream_bytes":2097152,"pending_stream_bytes":2097152,"unassociated_stream_bytes":2097152,"parent_wait_ms":5000,"budget":crate::session::BUDGET}});
+	if engine == EngineChoice::Execution {
+		ready["engine"] = json!("execution");
+		ready["capabilities"] = json!({"html":false,"async":false});
+	}
+	transport.send(ready)?;
 	let mut epoch = 1_u64;
 	let mut last = 0;
 	loop {
@@ -215,30 +238,18 @@ pub fn run(
 			let source = request["source"]
 				.as_str()
 				.ok_or_else(|| io::Error::other("worker source must be a string"))?;
-			let result = session.eval_with_armed(source, |input| {
+			let result = session.eval_worker(source, &mut |input| {
+				test_pause("armed");
 				reply["input"] = json!(input);
 				transport.send(json!({"type":"armed","id":id,"epoch":epoch,"input":input}))
 			})?;
 			match result {
-				Ok(value) if !crate::runner::is_unit(&value) => {
-					let limits = crate::format::Limits::default();
-					let text = match session.present(&value, limits.total_bytes) {
-						Some(outcome) => crate::present::finish(
-							outcome,
-							&crate::format::render(&value, None, &limits),
-							limits.total_bytes,
-						),
-						None => crate::format::render(&value, Some(&session.fields()), &limits),
-					};
-					reply["text_plain"] = json!(text);
+				Ok(Some(text)) => {
+					reply["text_plain"] = json!(text.plain);
 					reply["render_bounded"] = json!(true);
-					// record 0159: an optional HTML form beside the text, never
-					// instead of it
-					if let Some(html) = session.present_html(&value) {
-						reply["text_html"] = json!(html);
-					}
+					reply["text_html"] = json!(text.html);
 				}
-				Ok(_) => {}
+				Ok(None) => {}
 				Err(f) => reply["failure"] = failure(&f, epoch),
 			}
 			if session.lifecycle_failed() {
@@ -267,6 +278,10 @@ pub fn run(
 				epoch += 1;
 				reply["epoch"] = json!(epoch);
 			}
+		}
+		for note in session.take_cleanup_notes() {
+			let (note, _) = bounded(note, 16 * 1024);
+			eprintln!("cleanup error: {}", crate::format::terminal_safe(&note));
 		}
 		test_pause("stdout");
 		marker(id, "stdout", nonce, std::io::stdout().lock())?;
@@ -331,6 +346,12 @@ fn test_pause(phase: &str) {
 		if let Some(path) = std::env::var_os("RNX_TEST_WORKER_PHASE_FILE") {
 			std::fs::write(path, phase).expect("worker phase fixture");
 			loop {
+				if phase == "armed"
+					&& std::env::var_os("RNX_TEST_WORKER_ARMED_RELEASE")
+						.is_some_and(|p| std::path::Path::new(&p).exists())
+				{
+					break;
+				}
 				std::thread::sleep(std::time::Duration::from_millis(10));
 			}
 		}

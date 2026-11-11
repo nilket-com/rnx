@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "test-support",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "session::domain_session::tests::armed_transport_failure_and_prearmed_interrupt_preserve_state",
+      "ignored": false,
+      "timeout_seconds": 3600
+    }
+  ]
+}

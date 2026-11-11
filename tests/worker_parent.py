@@ -39,7 +39,7 @@ class Stream:
 
 
 class Parent:
-    def __init__(self, binary, env=None, probe=False):
+    def __init__(self, binary, env=None, probe=False, engine=None):
         r, w = os.pipe()
         rr, ww = os.pipe()
         endpoints = [r, ww]
@@ -73,6 +73,8 @@ class Parent:
                     str(endpoints[1]),
                 ]
             )
+            if engine is not None:
+                command.append("--engine="+engine)
             self.p = subprocess.Popen(
                 command,
                 stdin=subprocess.DEVNULL,

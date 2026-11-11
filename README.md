@@ -964,3 +964,8 @@ Thus a handler can return `web::html(200, markup)` directly, and use `?` for
 fallible intermediate calls. Nested `Ok(Ok(response))` is refused.
 
 Historical probe data and measurement provenance: see [Archived data](ARCHIVED-DATA.md).
+
+The Jupyter kernel also has a synchronous execution opt-in:
+`rnx-jupyter install --rnx /absolute/path/to/rnx --engine=execution` installs a
+separate `rnx-execution` kernel. Its engine survives restart; async and native
+presenters remain unavailable. See [Jupyter](jupyter/README.md).

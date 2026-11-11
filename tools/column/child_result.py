@@ -21,7 +21,7 @@ ENV_KEYS = frozenset({'RUSTFLAGS', 'RUSTDOCFLAGS', 'RUSTUP_TOOLCHAIN', 'RUSTC',
 ENV_PREFIXES = ('CARGO_', 'RNX_')
 PRODUCERS = frozenset(('tools/column/' + n + '.py') for n in (
 	'accept', 'verify', 'clippy', 'inventories', 'cli', 'resume', 'recover_cross', 'chain', 'borrowed_controls', 'ir_pool', 'old_path', 'boolean_capture', 'f64_plan_capture',
-	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate', 'fixed_route_gate', 'suite_stage', 'miri_exact', 'repl_session_controls')) | {'tools/verify.py',
+	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate', 'fixed_route_gate', 'suite_stage', 'miri_exact', 'repl_session_controls', 'jupyter_controls')) | {'tools/verify.py',
 	'rune/tools/xtask/column/ck1.py', 'rune/tools/xtask/column/measure.py',
 	'rune/tools/xtask/column/cli_capture.py', 'rune/tools/xtask/supplemental/run.py'}
 LEAVES = {'ci/preflight.py', 'ci/disk_space.py', 'ci/hygiene.py', 'ci/commit_subjects.py',

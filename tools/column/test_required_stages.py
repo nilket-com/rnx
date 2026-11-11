@@ -5,6 +5,9 @@ from miri_exact import manifest
 
 
 class Coverage(unittest.TestCase):
+	def test_jupyter_only_diff_requires_its_package_and_kernel(self):
+		self.assertTrue({'jupyter-format','jupyter-clippy','jupyter-tests','jupyter-kernel'} <= set(required(['jupyter/src/worker.rs'])))
+
 	def test_before_graph_retains_removed_dependents(self):
 		old={'Cargo.toml':['tools/project/Cargo.toml'],'tools/project/Cargo.toml':[]};new={'Cargo.toml':[]}
 		self.assertEqual(affected(['tools/project/Cargo.toml'],[old,new]),set(old))

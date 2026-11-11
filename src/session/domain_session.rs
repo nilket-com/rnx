@@ -220,6 +220,22 @@ impl DomainSession {
 		limits: &crate::format::Limits,
 	) -> std::result::Result<Option<String>, Failure> {
 		let root = self.eval(input)?;
+		self.render_root(root, limits)
+	}
+	pub(crate) fn eval_rendered_with_armed(
+		&mut self,
+		input: &str,
+		limits: &crate::format::Limits,
+		armed: &mut dyn FnMut(usize) -> std::io::Result<()>,
+	) -> std::io::Result<std::result::Result<Option<String>, Failure>> {
+		let result = self.eval_interruptible_armed(input, crate::host::interrupted, armed)?;
+		Ok(result.and_then(|root| self.render_root(root, limits)))
+	}
+	fn render_root(
+		&mut self,
+		root: DomainRoot,
+		limits: &crate::format::Limits,
+	) -> std::result::Result<Option<String>, Failure> {
 		let rendered = (|| {
 			let view = self
 				.domain
@@ -268,8 +284,11 @@ impl DomainSession {
 			(result, Ok(())) => result,
 		}
 	}
+	pub(crate) fn take_cleanup_notes(&mut self) -> Vec<String> {
+		std::mem::take(&mut self.cleanup_notes)
+	}
 	pub(crate) fn report_cleanup(&mut self) {
-		for note in self.cleanup_notes.drain(..) {
+		for note in self.take_cleanup_notes() {
 			eprintln!("cleanup error: {}", crate::format::terminal_safe(&note));
 		}
 	}
@@ -299,21 +318,39 @@ impl DomainSession {
 	fn eval_interruptible(
 		&mut self,
 		input: &str,
-		mut interrupted: impl FnMut() -> bool,
+		interrupted: impl FnMut() -> bool,
 	) -> std::result::Result<DomainRoot, Failure> {
-		self.collect()?;
-		if self.over_ceiling {
-			return Err(Failure::OverCeiling {
-				live: super::super::memory::live().unwrap_or(0),
-				ceiling: self.ceiling,
-			});
-		}
-		if input.len() > INPUT_CAP {
-			return Err(Failure::Refused(format!("input exceeds {INPUT_CAP} bytes")));
+		self.eval_interruptible_armed(input, interrupted, &mut |_| Ok(()))
+			.expect("infallible arming")
+	}
+	fn eval_interruptible_armed(
+		&mut self,
+		input: &str,
+		mut interrupted: impl FnMut() -> bool,
+		armed: &mut dyn FnMut(usize) -> std::io::Result<()>,
+	) -> std::io::Result<std::result::Result<DomainRoot, Failure>> {
+		let admission = (|| {
+			self.collect()?;
+			if self.over_ceiling {
+				return Err(Failure::OverCeiling {
+					live: super::super::memory::live().unwrap_or(0),
+					ceiling: self.ceiling,
+				});
+			}
+			if input.len() > INPUT_CAP {
+				return Err(Failure::Refused(format!("input exceeds {INPUT_CAP} bytes")));
+			}
+			Ok(())
+		})();
+		if let Err(error) = admission {
+			return Ok(Err(error));
 		}
 		super::super::host::clear_interrupt();
 		self.inputs.push(input.to_owned());
 		let number = self.inputs.len();
+		// Same boundary as legacy: a numbered input is armed before compilation.
+		// Transport failure has no compiled entry, lifecycle begin or script effect.
+		armed(number)?;
 		let result = self.eval_inner(input, number, &mut interrupted);
 		let finished = self.lifecycle.finish(result.is_err()).map_err(fault);
 		if finished.is_err() {
@@ -321,8 +358,9 @@ impl DomainSession {
 		}
 		let result = self.after_cleanup(result, finished);
 		let collected = self.collect();
-		self.after_cleanup(result, collected)
+		Ok(self.after_cleanup(result, collected))
 	}
+
 	fn eval_inner(
 		&mut self,
 		input: &str,
@@ -583,6 +621,53 @@ mod tests {
 		c
 	}
 	#[test]
+	fn armed_transport_failure_and_prearmed_interrupt_preserve_state() {
+		// This ownership/arming test does not need host signal registration.
+		let mut s =
+			DomainSession::new(Context::with_default_modules().unwrap(), DEFAULT_CEILING).unwrap();
+		let limits = crate::format::Limits::default();
+		s.eval_rendered("let a=[1];let alias=a;0", &limits).unwrap();
+		let before = s.next_number();
+		let generated = s.last_generated().to_owned();
+		let error = s
+			.eval_rendered_with_armed("alias.push(2);9", &limits, &mut |number| {
+				assert_eq!(number, before);
+				Err(std::io::Error::other("lost armed transport"))
+			})
+			.unwrap_err();
+		assert_eq!(error.to_string(), "lost armed transport");
+		assert_eq!(s.last_generated(), generated);
+		assert_eq!(
+			s.eval_rendered("a.len()", &limits).unwrap(),
+			Some("1".into())
+		);
+		let interrupted = std::cell::Cell::new(false);
+		let result = s
+			.eval_interruptible_armed("alias.push(2);9", || interrupted.get(), &mut |_| {
+				interrupted.set(true);
+				Ok(())
+			})
+			.unwrap();
+		assert!(matches!(result, Err(Failure::Interrupted)));
+		assert_eq!(
+			s.eval_rendered("a.len()", &limits).unwrap(),
+			Some("1".into())
+		);
+		let mut armed = 0;
+		let result = s
+			.eval_rendered_with_armed("a.push(2);async {1}.await", &limits, &mut |_| {
+				armed += 1;
+				Ok(())
+			})
+			.unwrap();
+		assert_eq!(armed, 1);
+		assert!(matches!(result, Err(Failure::Refused(_))));
+		assert_eq!(
+			s.eval_rendered("a.len()", &limits).unwrap(),
+			Some("1".into())
+		);
+	}
+	#[test]
 	fn refusal_policy_and_budget_preserve_state() {
 		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 		s.eval_rendered(
@@ -736,7 +821,15 @@ mod tests {
 		let mut s = DomainSession::new(c, DEFAULT_CEILING)
 			.unwrap()
 			.with_presenters(presenters);
-		assert!(matches!(s.eval("native()"), Err(Failure::Refused(_))));
+		let mut armed = 0;
+		let refused = s
+			.eval_rendered_with_armed("native()", &crate::format::Limits::default(), &mut |_| {
+				armed += 1;
+				Ok(())
+			})
+			.unwrap();
+		assert_eq!(armed, 1);
+		assert!(matches!(refused, Err(Failure::Refused(_))));
 		assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 0);
 		assert_eq!(
 			s.eval_rendered("7", &crate::format::Limits::default())

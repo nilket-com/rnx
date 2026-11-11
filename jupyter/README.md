@@ -131,3 +131,24 @@ saved notebooks. Its separate Python environment pins Tornado 6.5.8: the origina
 6.5.9/Jupyter Server 2.21.0 combination failed serving static assets before the
 notebook loaded. This is a test-environment compatibility pin, not a Python or
 Tornado dependency of rnx-jupyter. See the evidence for versions and limits.
+
+## Opt-in synchronous execution worker
+
+`rnx-jupyter install --rnx /absolute/path/to/rnx --engine=execution` installs
+`rnx-execution` alongside the unchanged default `rnx` kernel. The selected engine
+survives reset and kernel restart. The execution worker supports synchronous
+inputs and plain-text results; async input and native values requiring presenters
+are refused before script effects. It never falls back to legacy.
+
+Every numbered input emits `armed` before compilation, then an ordinary settled
+result or failure. Execution readiness adds `engine: "execution"` and capabilities
+`html: false, async: false`; default readiness remains unchanged. Secondary cleanup
+notes precede the input's stderr barrier. Transport failure while sending `armed`
+executes no script instruction.
+
+The installed-kernelspec acceptance uses `RNX_JUPYTER_PYTHON`, or
+`target/jupyter-client/bin/python`, with Jupyter Client installed. The fixture
+isolates Jupyter data/config/runtime directories and leaves user kernels alone.
+Run `python3 -B tools/column/jupyter_controls.py --out target/jupyter-check` from
+the repository root. The required-stage table selects this check, package tests,
+formatting and Clippy for changes under `jupyter/`.

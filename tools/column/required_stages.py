@@ -21,6 +21,7 @@ def direct(paths):
 			name = p.split('/')[1]
 			if name not in {'candle', 'polars', 'postgres'}: raise ValueError('unregistered adapter: ' + name)
 			stages.update(('suite-adapter-' + name, 'clippy-adapter-' + name))
+		if p.startswith('jupyter/'): stages.update(('jupyter-format', 'jupyter-clippy', 'jupyter-tests', 'jupyter-kernel'))
 		if p.startswith('tools/project/'): stages.update(('project-suite', 'project-clippy', 'cross'))
 		if p.startswith('tools/verify/') or p == 'tools/verify.py': stages.add('cross')
 	return stages
@@ -83,6 +84,7 @@ def required(paths, graphs=None):
 			stages.update(('rune-suite', 'rune-clippy', 'fixed-route'))
 		elif manifest.startswith('adapters/'):
 			stages.update(direct([str(Path(manifest).parent/'src/lib.rs')]))
+		elif manifest == 'jupyter/Cargo.toml': stages.update(('jupyter-format', 'jupyter-clippy', 'jupyter-tests', 'jupyter-kernel'))
 		elif manifest == 'tools/project/Cargo.toml': stages.update(('project-suite', 'project-clippy'))
 		elif manifest.startswith(('ci/', 'rune/tools/')):
 			stages.add('controller-controls')

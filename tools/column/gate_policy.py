@@ -53,6 +53,9 @@ def select(root, out, names=None, candidate='HEAD'):
 	if len(names) != len(set(names)): raise ValueError('duplicate stage selection')
 	if set(names) - dict(commands).keys(): raise ValueError('unknown selected stage')
 	selected = set(names) | set(info['required'])
+	if 'fixed-route' in selected:
+		from fixed_route_gate import valgrind_root
+		valgrind_root()  # Refuse before any expensive selected stage.
 	return {'schema': 1, 'record': info, 'policy': policy_digest(), 'source': child.source(root),
 		'root': str(root), 'out': str(out), 'stages': [[n, c] for n, c in commands if n in selected]}
 

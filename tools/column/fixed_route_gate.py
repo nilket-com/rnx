@@ -16,6 +16,20 @@ from paired_build import build_environment, BUILD_KEYS, BUILD_PREFIXES
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def valgrind_root(explicit=None):
+	configured = explicit or os.environ.get('RNX_VALGRIND_ROOT')
+	if configured:
+		root = Path(configured).resolve()
+	else:
+		binary = shutil.which('valgrind')
+		if not binary:
+			raise ValueError('Valgrind missing: set RNX_VALGRIND_ROOT or put valgrind on PATH')
+		root = Path(binary).resolve().parent.parent
+	if not (root/'bin/valgrind').is_file() or not os.access(root/'bin/valgrind', os.X_OK):
+		raise ValueError('Valgrind root must contain executable bin/valgrind')
+	return root
+
+
 def recipe(policy):
 	from ir_pool import capture_environment
 	cpu = Path('/proc/cpuinfo').read_text().split('\n\n')[0]
@@ -113,12 +127,13 @@ def main():
 	p = argparse.ArgumentParser(description=__doc__)
 	p.add_argument('--out', type=Path, required=True)
 	p.add_argument('--cargo', type=Path, default=Path(shutil.which('cargo') or 'cargo'))
-	p.add_argument('--valgrind-root', type=Path, default=Path(os.environ.get('RNX_VALGRIND_ROOT', '/usr')))
+	p.add_argument('--valgrind-root', type=Path, default=None)
 	p.add_argument('--anchor-only', action='store_true')
 	p.add_argument('--import-anchor', type=Path, help='Verify and import an immutable prior capture under the binary identity rule')
 	a = p.parse_args(); out = a.out.resolve(); out.mkdir(parents=True, exist_ok=False)
 	r = dict(status='FAIL')
 	try:
+		a.valgrind_root = valgrind_root(a.valgrind_root)
 		import gate_policy
 		info = gate_policy.record(ROOT); candidate = info['candidate']; source = child.source(ROOT)
 		if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT): raise ValueError('clean candidate required')

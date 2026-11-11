@@ -560,8 +560,15 @@ impl App {
 }
 
 pub async fn run(connection: Connection, binary: &Path) -> Res<()> {
+	run_with_engine(connection, binary, crate::engine::Engine::Legacy).await
+}
+pub async fn run_with_engine(
+	connection: Connection,
+	binary: &Path,
+	engine: crate::engine::Engine,
+) -> Res<()> {
 	let interrupt = Arc::new(Interrupt::default());
-	let mut worker = match Worker::spawn(binary, interrupt.clone()).await {
+	let mut worker = match Worker::spawn_with_engine(binary, interrupt.clone(), engine).await {
 		Ok(w) => w,
 		Err(e) => {
 			crate::containment::sweep(0, Instant::now() + Duration::from_secs(5)).await?;
