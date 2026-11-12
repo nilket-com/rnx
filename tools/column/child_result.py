@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import time
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -147,6 +148,8 @@ def validate(directory, expected, exit_code):
 
 def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, directory=None, root=ROOT, after=None):
 	"""Run once and persist parent validation; callers retain their semantic checks."""
+	from owned_build import run_process
+	started = time.monotonic()
 	command = [str(x) for x in command]; cwd = Path(cwd).resolve(); root = Path(root).resolve()
 	if directory is None:
 		if not stdout or not isinstance(getattr(stdout, 'name', None), str):
@@ -177,10 +180,10 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 			tail = command[command.index('--')+1:] if '--' in command else []
 			discovery += ['--'] + [v for v in tail if not v.startswith('--test-threads')] + ['--list']
 			with (directory/'discovery.log').open('x') as log:
-				done = subprocess.run(discovery, cwd=cwd, env=clean_env, stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
+				done = run_process(discovery, termination_grace=30, cwd=cwd, env=clean_env, stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
 			if done.returncode: raise ValueError('test discovery failed')
 			row['discovery'] = discovered((directory/'discovery.log').read_text())
-		child = subprocess.run(command, cwd=cwd, env=clean_env, stdout=stdout, stderr=stderr, timeout=timeout)
+		child = run_process(command, termination_grace=30, cwd=cwd, env=clean_env, stdout=stdout, stderr=stderr, timeout=timeout)
 		row['process_exit'] = child.returncode
 		if after is not None: row['declared_output'] = after()
 		if child.returncode != 0: raise ValueError('child exit is nonzero')
@@ -195,6 +198,7 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 		row['status'] = 'PASS'
 	except Exception as error:
 		row['error'] = repr(error)
+		row['error_type'] = type(error).__name__
 		child = subprocess.CompletedProcess(command, child.returncode or 1)
 	finally:
 		artifacts = {}
@@ -210,6 +214,16 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 			row.update(status='FAIL', error='stage has no log evidence')
 			child = subprocess.CompletedProcess(command, 1)
 		if (directory/'discovery.log').exists(): artifacts[str((directory/'discovery.log').resolve())] = digest(directory/'discovery.log')
+		cleanup = []
+		for p in sorted(directory.glob('CLEANUP-*.json')):
+			event = json.loads(p.read_text())
+			if digest(event['path']) != event['sha256']: raise ValueError('cleanup evidence changed')
+			cleanup.append(event); artifacts[str(p.resolve())] = digest(p)
+			artifacts[event['path']] = event['sha256']
+			if event['status'] != 'PASS':
+				row.update(status='FAIL', cleanup_error='owned build removal failed')
+				child = subprocess.CompletedProcess(command, child.returncode or 1)
+		row.update(seconds=time.monotonic()-started, cleanup_seconds=sum(e['seconds'] for e in cleanup), cleanup=cleanup)
 		row['artifacts'] = artifacts
 		atomic_json(directory / 'RESULT.json', row)
 	child.declared_output = row.get('declared_output')

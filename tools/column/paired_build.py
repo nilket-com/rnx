@@ -9,6 +9,7 @@ import subprocess
 import sys
 import traceback
 from child_result import atomic_json, digest, environment
+from owned_build import OwnedBuild, run_process
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -54,7 +55,7 @@ def compiled_crates(text, required):
 	return sorted(compiled)
 
 
-def cleanup_target(target, binary, sha256, build_receipt):
+def verify_copy(target, binary, sha256, build_receipt):
 	"""Remove only an invocation-owned cache after its copied artifact is durable."""
 	target, binary, build_receipt = map(Path, (target, binary, build_receipt))
 	assert re.fullmatch(r'cache-[0-9]{2}', target.name), 'unexpected cache name'
@@ -66,26 +67,7 @@ def cleanup_target(target, binary, sha256, build_receipt):
 	assert digest(binary) == sha256, 'copied binary does not verify'
 	with binary.open('rb') as stream:
 		os.fsync(stream.fileno())
-	seen = set()
-	logical = allocated = 0
-	for directory, _, files in os.walk(target, followlinks=False):
-		for name in files:
-			stat = (Path(directory) / name).lstat()
-			key = (stat.st_dev, stat.st_ino)
-			if key not in seen:
-				seen.add(key)
-				logical += stat.st_size
-				allocated += stat.st_blocks * 512
-	journal = target.parent / (target.name + '-CLEANUP.json')
-	row = dict(status='STARTED', removed_path=str(target), logical_file_bytes=logical,
-		allocated_file_bytes=allocated, binary=str(binary), sha256=sha256,
-		build_receipt=str(build_receipt), build_receipt_sha256=digest(build_receipt))
-	atomic_json(journal, row)
-	shutil.rmtree(target)
-	assert digest(binary) == sha256, 'copied binary changed during cleanup'
-	row.update(status='PASS', removed=not target.exists(), binary_verified=True)
-	atomic_json(journal, row)
-	return dict(receipt=str(journal), sha256=digest(journal))
+	return dict(binary=str(binary), sha256=sha256, build_receipt=str(build_receipt))
 
 
 def run(out, baseline, candidate, cargo):
@@ -106,23 +88,26 @@ def run(out, baseline, candidate, cargo):
 				shutil.rmtree(source)  # Only this invocation's preceding export.
 			source.mkdir()
 			subprocess.run(['tar', '-xf', str(archive), '-C', str(source)], check=True)
-			target = fresh_target(out, index)
-			env = dict(build_environment(os.environ), CARGO_TARGET_DIR=str(target))
-			log = out / (role + '.log')
-			with log.open('x') as stream:
-				p = subprocess.run(command, cwd=source, env=env, stdout=stream,
-					stderr=subprocess.STDOUT, timeout=14400)
-			assert p.returncode == 0, (role, 'build failed', p.returncode)
-			compiled = compiled_crates(log.read_text(), ('rune', 'rnx'))
-			binary = out / ('rnx-' + role)
-			shutil.copy2(target / 'release/rnx', binary)
-			row = dict(role=role, source_commit=revision, rnx=revision, rune=revision,
-				binary=str(binary), sha256=digest(binary), archive_sha256=digest(archive),
-				command=command, environment=environment(env), target_directory=str(target),
-				compiled_crates=compiled, log_sha256=digest(log))
-			receipt = out / (role + '-BUILD.json')
-			atomic_json(receipt, dict(status='PASS', **row))
-			row['cleanup'] = cleanup_target(target, binary, row['sha256'], receipt)
+			with OwnedBuild(out, f'cache-{index:02d}') as owned:
+				target = fresh_target(out, index)
+				env = dict(build_environment(os.environ), CARGO_TARGET_DIR=str(target))
+				log = out / (role + '.log')
+				with log.open('x') as stream:
+					p = run_process(command, cwd=source, env=env, stdout=stream,
+						stderr=subprocess.STDOUT, timeout=14400)
+				assert p.returncode == 0, (role, 'build failed', p.returncode)
+				compiled = compiled_crates(log.read_text(), ('rune', 'rnx'))
+				binary = out / ('rnx-' + role)
+				shutil.copy2(target / 'release/rnx', binary)
+				row = dict(role=role, source_commit=revision, rnx=revision, rune=revision,
+					binary=str(binary), sha256=digest(binary), archive_sha256=digest(archive),
+					command=command, environment=environment(env), target_directory=str(target),
+					compiled_crates=compiled, log_sha256=digest(log))
+				receipt = out / (role + '-BUILD.json')
+				atomic_json(receipt, dict(status='PASS', **row))
+				row['retained_copy'] = verify_copy(target, binary, row['sha256'], receipt)
+				owned.keep([binary, receipt])
+			row['cleanup'] = dict(receipt=str(out/(target.name+'-RELEASE.json')), sha256=digest(out/(target.name+'-RELEASE.json')))
 			result['builds'].append(row)
 		result['status'] = 'PASS'
 	except Exception:

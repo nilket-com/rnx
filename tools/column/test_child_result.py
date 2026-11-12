@@ -36,10 +36,38 @@ class Results(unittest.TestCase):
 			p = c.run([sys.executable, '--version'], cwd=self.root, root=self.root, stdout=log, stderr=subprocess.STDOUT, directory=self.out/'leaf')
 		self.assertEqual(p.returncode, 0)
 
+	def test_cleanup_duration_and_receipt_revalidation(self):
+		code = self.script.read_text()
+		code = code.replace('c.publish(', "from owned_build import OwnedBuild\nwith OwnedBuild(Path(sys.argv[-1]), 'target') as owned:\n owned.path.mkdir()\n (owned.path/'object').write_text('build')\nc.publish(")
+		p = self.invoke(code)
+		self.assertEqual(p.returncode, 0)
+		row = c.evidence(p.validation, c.source(self.root))
+		self.assertGreaterEqual(row['seconds'], row['cleanup_seconds'])
+		self.assertGreater(row['cleanup_seconds'], 0)
+		self.assertFalse((self.out/'producer/target').exists())
+		Path(row['cleanup'][0]['path']).write_text('tampered')
+		with self.assertRaises(ValueError): c.evidence(p.validation, c.source(self.root))
+
+	def test_stage_timeout_drains_child_and_grandchild(self):
+		import signal
+		pids = self.out/'pids'
+		grandchild = "import os,signal;open("+repr(str(pids))+",'a').write(str(os.getpid())+'\\n');signal.pause()"
+		code = "import os,subprocess,sys,signal;open("+repr(str(pids))+",'a').write(str(os.getpid())+'\\n');subprocess.Popen([sys.executable,'-c',"+repr(grandchild)+"]);signal.pause()"
+		with patch.object(c, 'contract', return_value='leaf'), (self.out/'timeout.log').open('w') as log:
+			p=c.run([sys.executable,'-c',code],cwd=self.root,root=self.root,stdout=log,stderr=subprocess.STDOUT,timeout=1,directory=self.out/'timeout')
+		self.assertNotEqual(p.returncode,0)
+		row=json.loads(Path(p.validation['path']).read_text())
+		self.assertEqual(row['status'],'FAIL'); self.assertEqual(row['error_type'],'TimeoutExpired')
+		ids=pids.read_text().splitlines(); self.assertEqual(len(ids),2)
+		for pid in ids:
+			stat=Path('/proc')/pid/'stat'
+			if stat.exists(): self.assertEqual(stat.read_text().rsplit(')',1)[1].split()[0],'Z')
+
 	def test_zero_exit_missing_receipt_is_failure(self):
 		p = self.invoke('pass\n'); self.assertNotEqual(p.returncode, 0)
 		row = json.loads(Path(p.validation['path']).read_text())
 		self.assertEqual(row['process_exit'], 0); self.assertEqual(row['status'], 'FAIL')
+		self.assertGreaterEqual(row['seconds'], 0); self.assertEqual(row['cleanup_seconds'], 0)
 
 	def test_fail_receipt_zero_exit_and_pass_nonzero_exit(self):
 		original = self.script.read_text()

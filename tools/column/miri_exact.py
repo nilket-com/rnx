@@ -8,6 +8,7 @@ import sys
 import traceback
 import uuid
 
+from owned_build import OwnedBuild
 import child_result as child
 from miri_cache import Cache, description, input_files
 
@@ -37,7 +38,7 @@ def run(root, package, inventory, cache_root, workers=None):
 	before = backend.source_identity(root, m, env)
 	inputs = input_files(root, package, inventory['features'], inventory['toolchain'])
 	recipe = description(root, inputs, inventory['toolchain'], env['MIRIFLAGS'], inventory['features'],
-		dict(before['tools'], backend=before['runner'], runner=child.digest(__file__), cache=child.digest(Path(__file__).with_name('miri_cache.py'))), child.environment(env), package)
+		dict(before['tools'], backend=before['runner'], runner=child.digest(__file__), cache=child.digest(Path(__file__).with_name('miri_cache.py')), cleanup=child.digest(Path(__file__).with_name('owned_build.py'))), child.environment(env), package)
 	cache = Cache(cache_root, recipe)
 	limits = backend.admit(*backend.resources(), 4*1024**3, requested=workers or 6)
 	prepare = lambda path: backend.preparation(path, root, m, env, 'selected')
@@ -47,7 +48,13 @@ def run(root, package, inventory, cache_root, workers=None):
 	def job(spec):
 		# Ignored state and execution timeout belong to this test's recipe too.
 		test_cache = Cache(cache_root, dict(recipe, test_contract={'ignored': spec['ignored'], 'timeout': spec['timeout']}))
-		return test_cache.stage('test', spec['names'][0], lambda path: backend.semantic(path, root, m, env, spec, prepared))
+		def action(path):
+			with OwnedBuild(path, 'target') as owned:
+				details, artifacts = backend.semantic(path, root, m, env, spec, prepared)
+				owned.keep(artifacts)
+			details['cleanup'] = owned.result
+			return details, [p for p in path.iterdir() if p.is_file()]
+		return test_cache.stage('test', spec['names'][0], action)
 	with ThreadPoolExecutor(max_workers=limits['workers']) as pool: rows = list(pool.map(job, jobs))
 	cache.stage('prepare', '', prepare)
 	if backend.source_identity(root, m, env) != before or input_files(root, package, inventory['features'], inventory['toolchain']) != inputs:

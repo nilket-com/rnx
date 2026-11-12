@@ -94,8 +94,10 @@ def finalize(manifest, evidence, root=ROOT):
 	check_selection(manifest, root, final=True)
 	if set(evidence) != {n for n, _ in manifest['stages']}:
 		raise ValueError('missing or extraneous stage evidence')
+	durations = {}
 	for name, command in manifest['stages']:
 		row = child.evidence(evidence[name], manifest['source'])
+		durations[name] = {key: row.get(key) for key in ('seconds', 'cleanup_seconds')}
 		if row['context'].get('candidate') != manifest['record']['candidate']:
 			raise ValueError('stage candidate differs: ' + name)
 		if row['command'] != command or row['context']['command'] != command:
@@ -105,7 +107,7 @@ def finalize(manifest, evidence, root=ROOT):
 		if name == 'cross' and row['context']['kind'] != 'producer':
 			raise ValueError('cross requires its own producer receipt')
 	return {'schema': 1, 'status': 'PASS', 'candidate': manifest['record']['candidate'],
-		'source': manifest['source'], 'selection': child.identity(manifest), 'evidence': evidence}
+		'source': manifest['source'], 'selection': child.identity(manifest), 'evidence': evidence, 'durations': durations}
 
 
 def main():

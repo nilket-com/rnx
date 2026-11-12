@@ -82,90 +82,115 @@ def main():
 	with (output / "PIN-CONSISTENCY.json").open("x") as stream:
 		json.dump(pin_consistency, stream, indent=2)
 		stream.write("\n")
-	manifest = output / "Cargo.toml"
-	lock = output / "Cargo.lock"
-	original_manifest = output / "original-Cargo.toml"
-	original_lock = output / "original-Cargo.lock"
-	shutil.copyfile(root / "Cargo.toml", original_manifest)
-	shutil.copyfile(root / "Cargo.lock", original_lock)
-	rune_repo = None
-	resolved = None
-	rune = canonical_engine
-	if output.is_relative_to(rune):
-		parser.error("--out must be outside the Rune source tree")
-	text = (root / "Cargo.toml").read_text()
-	text = text.replace('[package]\n', '[package]\nautolib = false\nautobins = false\nautotests = false\nautoexamples = false\nautobenches = false\n', 1)
-	text = text.replace('[features]\n', '[features]\ncross-verification = []\n', 1)
-	text += '\n[[test]]\nname = "rnx"\npath = "src/lib.rs"\nharness = false\nrequired-features = ["cross-verification"]\n'
-	manifest.write_text(text)
-	shutil.copyfile(root / "Cargo.lock", lock)
-	request = dict(vars(args))
-	request.update(rnx_root=root, rune_root=rune, rune_path=rune, rune_repo=rune_repo,
-				   controller_root=controller_root,
-				   out=output, bwrap_version=version,
-				   original_manifest=original_manifest, original_lock=original_lock,
-				   rune_revision_resolved=resolved,
-				   rune_archive=None)
-	validate_request(request)
-	request_path = output / "REQUEST.json"
-	request_path.write_text(json.dumps(request, default=str, indent=2) + "\n")
-	env = dict(os.environ, CARGO_TARGET_DIR=str(output / "target"),
-			   RNX_VERIFY_RUNE_ROOT=str(rune),
-			   CARGO_BUILD_JOBS=str(args.jobs), CARGO_INCREMENTAL="0",
-			   CARGO_PROFILE_DEV_DEBUG="2", CARGO_PROFILE_TEST_DEBUG="2",
-			   CARGO_PROFILE_DEV_STRIP="none", CARGO_PROFILE_TEST_STRIP="none",
-			   RUSTFLAGS="-Cdebuginfo=2 -Cstrip=none")
-	env.pop("CARGO_ENCODED_RUSTFLAGS", None)
-	cargo_home_env = os.environ.get("CARGO_HOME")
-	cargo_home = (Path(cargo_home_env) if cargo_home_env else Path.home() / ".cargo").resolve(strict=True)
-	namespace = ["bwrap", "--die-with-parent", "--ro-bind", "/", "/",
-				 "--tmpfs", "/tmp",
-				 "--ro-bind", str(root), str(root),
-				 "--bind", str(output), str(output),
-				 "--ro-bind", str(rune), str(rune),
-				 "--bind", str(cargo_home), str(cargo_home),
-				 "--ro-bind", str(manifest), str(root / "Cargo.toml"),
-				 "--bind", str(lock), str(root / "Cargo.lock"),
-				 "--proc", "/proc", "--dev", "/dev", "--chdir", str(root)]
-	cargo = [cargo_path, "+1.98.1"]
-	# Resolve only the private lock. The Rust controller validates all seven
-	# packages, including the compiler-only project dependency.
-	with (output / "metadata.json").open("xb") as stdout, (output / "metadata.stderr").open("xb") as stderr:
-		subprocess.run(namespace + cargo + ["metadata", "--offline", "--format-version", "1",
-										   "--features", "cross-verification"],
-					   env=env, stdout=stdout, stderr=stderr, check=True)
-	from engine_source import check_metadata
-	check_metadata(controller_root, json.loads((output / "metadata.json").read_text()))
-	command = namespace + cargo + ["test", "--offline", "--locked", "--test", "rnx",
-								   "--features", "cross-verification", "--no-run",
-								   "--message-format=json"]
-	with (output / "cargo.stdout").open("xb") as stdout, (output / "cargo.stderr").open("xb") as stderr:
-		subprocess.run(command, env=env, stdout=stdout, stderr=stderr, check=True)
-	# This locates a launch candidate only. Rust independently validates the
-	# entire artifact stream, uniqueness and source/binary identity before use.
-	records = (json.loads(line) for line in (output / "cargo.stdout").read_text().splitlines())
-	executable = next(row["executable"] for row in records
-					  if row.get("reason") == "compiler-artifact"
-					  and row.get("target", {}).get("name") == "rnx"
-					  and row.get("target", {}).get("kind") == ["test"]
-					  and row.get("executable"))
-	try:
-		with (output / "controller.stdout").open("xb") as stdout, (output / "controller.stderr").open("xb") as stderr:
-			subprocess.run([executable, "--controller", str(request_path)],
-						   env=env, stdout=stdout, stderr=stderr, check=True)
-	finally:
-		binary = output / "bound-verification-child"
-		if binary.exists():
-			with (output / "host-check.stdout").open("xb") as stdout, (output / "host-check.stderr").open("xb") as stderr:
-				subprocess.run([str(binary), "--host-check", str(request_path)],
-							   env=env, stdout=stdout, stderr=stderr, check=True)
-	if not (output / "bound-verification-child").is_file():
-		raise RuntimeError("the Rust controller did not bind an executable; see controller.stderr")
-
-	# The Rust result is authoritative; the Python launcher only binds it.
 	sys.path.insert(0, str(controller_root / "tools/column"))
 	import child_result
-	child_result.bind(output / "RESULT.json")
+	from owned_build import OwnedBuild, run_process
+	owned = OwnedBuild(output, 'target')
+	failure = None
+	try:
+		with owned:
+			try:
+				manifest = output / "Cargo.toml"
+				lock = output / "Cargo.lock"
+				original_manifest = output / "original-Cargo.toml"
+				original_lock = output / "original-Cargo.lock"
+				shutil.copyfile(root / "Cargo.toml", original_manifest)
+				shutil.copyfile(root / "Cargo.lock", original_lock)
+				rune_repo = None
+				resolved = None
+				rune = canonical_engine
+				if output.is_relative_to(rune):
+					parser.error("--out must be outside the Rune source tree")
+				text = (root / "Cargo.toml").read_text()
+				text = text.replace('[package]\n', '[package]\nautolib = false\nautobins = false\nautotests = false\nautoexamples = false\nautobenches = false\n', 1)
+				text = text.replace('[features]\n', '[features]\ncross-verification = []\n', 1)
+				text += '\n[[test]]\nname = "rnx"\npath = "src/lib.rs"\nharness = false\nrequired-features = ["cross-verification"]\n'
+				manifest.write_text(text)
+				shutil.copyfile(root / "Cargo.lock", lock)
+				request = dict(vars(args))
+				request.update(rnx_root=root, rune_root=rune, rune_path=rune, rune_repo=rune_repo,
+							   controller_root=controller_root,
+							   out=output, bwrap_version=version,
+							   original_manifest=original_manifest, original_lock=original_lock,
+							   rune_revision_resolved=resolved,
+							   rune_archive=None)
+				validate_request(request)
+				request_path = output / "REQUEST.json"
+				request_path.write_text(json.dumps(request, default=str, indent=2) + "\n")
+				env = dict(os.environ, CARGO_TARGET_DIR=str(output / "target"),
+						   RNX_VERIFY_RUNE_ROOT=str(rune),
+						   CARGO_BUILD_JOBS=str(args.jobs), CARGO_INCREMENTAL="0",
+						   CARGO_PROFILE_DEV_DEBUG="2", CARGO_PROFILE_TEST_DEBUG="2",
+						   CARGO_PROFILE_DEV_STRIP="none", CARGO_PROFILE_TEST_STRIP="none",
+						   RUSTFLAGS="-Cdebuginfo=2 -Cstrip=none")
+				env.pop("CARGO_ENCODED_RUSTFLAGS", None)
+				cargo_home_env = os.environ.get("CARGO_HOME")
+				cargo_home = (Path(cargo_home_env) if cargo_home_env else Path.home() / ".cargo").resolve(strict=True)
+				namespace = ["bwrap", "--die-with-parent", "--ro-bind", "/", "/",
+							 "--tmpfs", "/tmp",
+							 "--ro-bind", str(root), str(root),
+							 "--bind", str(output), str(output),
+							 "--ro-bind", str(rune), str(rune),
+							 "--bind", str(cargo_home), str(cargo_home),
+							 "--ro-bind", str(manifest), str(root / "Cargo.toml"),
+							 "--bind", str(lock), str(root / "Cargo.lock"),
+							 "--proc", "/proc", "--dev", "/dev", "--chdir", str(root)]
+				cargo = [cargo_path, "+1.98.1"]
+				# Resolve only the private lock. The Rust controller validates all seven
+				# packages, including the compiler-only project dependency.
+				with (output / "metadata.json").open("xb") as stdout, (output / "metadata.stderr").open("xb") as stderr:
+					run_process(namespace + cargo + ["metadata", "--offline", "--format-version", "1",
+													   "--features", "cross-verification"],
+								   env=env, stdout=stdout, stderr=stderr, check=True)
+				from engine_source import check_metadata
+				check_metadata(controller_root, json.loads((output / "metadata.json").read_text()))
+				command = namespace + cargo + ["test", "--offline", "--locked", "--test", "rnx",
+											   "--features", "cross-verification", "--no-run",
+											   "--message-format=json"]
+				with (output / "cargo.stdout").open("xb") as stdout, (output / "cargo.stderr").open("xb") as stderr:
+					run_process(command, env=env, stdout=stdout, stderr=stderr, check=True)
+				# This locates a launch candidate only. Rust independently validates the
+				# entire artifact stream, uniqueness and source/binary identity before use.
+				records = (json.loads(line) for line in (output / "cargo.stdout").read_text().splitlines())
+				executable = next(row["executable"] for row in records
+								  if row.get("reason") == "compiler-artifact"
+								  and row.get("target", {}).get("name") == "rnx"
+								  and row.get("target", {}).get("kind") == ["test"]
+								  and row.get("executable"))
+				controller_error = None
+				try:
+					with (output / "controller.stdout").open("xb") as stdout, (output / "controller.stderr").open("xb") as stderr:
+						run_process([executable, "--controller", str(request_path)],
+									   env=env, stdout=stdout, stderr=stderr, check=True)
+				except Exception as error:
+					controller_error = error
+					raise
+				finally:
+					binary = output / "bound-verification-child"
+					try:
+						if binary.exists():
+							with (output / "host-check.stdout").open("xb") as stdout, (output / "host-check.stderr").open("xb") as stderr:
+								run_process([str(binary), "--host-check", str(request_path)],
+											   env=env, stdout=stdout, stderr=stderr, check=True)
+					except Exception as host_error:
+						if controller_error is None: raise
+						controller_error.add_note("host check also failed: " + repr(host_error))
+				if not (output / "bound-verification-child").is_file():
+					raise RuntimeError("the Rust controller did not bind an executable; see controller.stderr")
+			finally:
+				# Freeze the controller's result before publishing the launcher's
+				# terminal cleanup result. No previously bound receipt is rewritten.
+				if (output/'RESULT.json').exists():
+					(output/'RESULT.json').rename(output/'CONTROLLER-RESULT.json')
+	except Exception as error:
+		failure = error
+	result_path = output/'CONTROLLER-RESULT.json'
+	result = json.loads(result_path.read_text()) if result_path.exists() else {'status':'FAIL'}
+	result['cleanup'] = owned.result
+	if failure is not None: result.update(status='FAIL', launcher_error=repr(failure), launcher_notes=getattr(failure, '__notes__', []))
+	child_result.atomic_json(output/'RESULT.json', result)
+	child_result.bind(output/'RESULT.json')
+	if failure is not None: raise failure
 
 
 if __name__ == "__main__":
