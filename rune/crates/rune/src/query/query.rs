@@ -57,6 +57,8 @@ const MAX_ITEM_RECURSION: usize = 8;
 pub(crate) struct QueryInner<'arena> {
 	#[cfg(feature = "execution")]
 	pub(crate) collecting: bool,
+	#[cfg(feature = "execution")]
+	pub(crate) constant_work: crate::experimental_core::constants::Work,
 	/// Monotonic script-associated numeric-name collision mask, set while indexing.
 	#[cfg(feature = "execution")]
 	pub(crate) numeric_script: u8,
@@ -139,6 +141,11 @@ pub(crate) struct VariantShape<'a> {
 }
 
 impl QueryInner<'_> {
+	#[cfg(feature = "execution")]
+	pub(crate) fn constant_function(&self, id: ItemId) -> Option<&ConstFn<'_>> {
+		self.const_fns.get(&id).map(|f| f.as_ref())
+	}
+
 	#[cfg(feature = "execution")]
 	pub(crate) fn variant_shape(&self, hash: Hash) -> Option<VariantShape<'_>> {
 		self.meta.values().find_map(|m| {
@@ -1129,12 +1136,18 @@ impl<'a, 'arena> Query<'a, 'arena> {
 		#[cfg(feature = "execution")]
 		if self.inner.collecting {
 			return match entry {
-				Entry::Expr(exprs, expr) => {
-					crate::experimental_core::constants::eval(self.inner, exprs, expr)
-				}
-				Entry::Block(exprs, block) => {
-					crate::experimental_core::constants::eval_block(self.inner, exprs, block)
-				}
+				Entry::Expr(exprs, expr) => crate::experimental_core::constants::eval(
+					location.source_id,
+					self.inner,
+					exprs,
+					expr,
+				),
+				Entry::Block(exprs, block) => crate::experimental_core::constants::eval_block(
+					location.source_id,
+					self.inner,
+					exprs,
+					block,
+				),
 				Entry::Call(_) => Err(compile::Error::new(
 					span,
 					compile::ErrorKind::ExecutionRefusal {
@@ -2028,15 +2041,6 @@ impl<'a, 'arena> Query<'a, 'arena> {
 				meta::Kind::Const
 			}
 			Indexed::ConstFn(c) => {
-				#[cfg(feature = "execution")]
-				if self.inner.collecting {
-					return Err(compile::Error::new(
-						item_meta.location.span,
-						compile::ErrorKind::ExecutionRefusal {
-							construct: "constant functions",
-						},
-					));
-				}
 				// The body may call the function it belongs to, directly or
 				// through another constant function, so the function answers
 				// for itself while its body is lowered.
@@ -2062,6 +2066,12 @@ impl<'a, 'arena> Query<'a, 'arena> {
 				self.inner.const_fns.try_insert(
 					item_meta.item,
 					Rc::new(ConstFn {
+						#[cfg(feature = "execution")]
+						execution_name: if self.inner.collecting {
+							Some(self.pool.item(item_meta.item).try_to_owned()?)
+						} else {
+							None
+						},
 						item_meta,
 						hir,
 						exprs,

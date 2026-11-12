@@ -745,7 +745,7 @@ mod tests {
 	#[test]
 	fn constant_deferred_forms_are_not_async() {
 		for (source, construct) in [
-			("const fn f(x){x+1} const A=f(2);A", "constant functions"),
+			("const fn f(x){x+1} f(2)", "constant expression"),
 			("const A=b\"ab\";A", "byte-string constants"),
 		] {
 			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
@@ -754,6 +754,98 @@ mod tests {
 			};
 			assert!(message.contains(construct), "{source}: {message}");
 			assert!(!message.contains("async"), "{source}: {message}");
+		}
+	}
+
+	#[test]
+	fn constant_functions_values_and_independent_materialization() {
+		for (source, expected) in [
+			(
+				"const fn f(){Some([1])} const A=f();let x=A;let y=x.0;y.push(2);(x,A)",
+				"(Some([1, 2]), Some([1]))",
+			),
+			(
+				"const fn f(){[#{x:[1]}]} const A=f();let x=A;x[0].x.push(2);(x,A)",
+				"([{\"x\": [1, 2]}], [{\"x\": [1]}])",
+			),
+			(
+				"const fn f(n){if n==0{0}else{1+f(n-1)}} const A=f(8);A",
+				"8",
+			),
+			(
+				"const fn g(x){x} const fn f(){g(return 7)} const A=f();A",
+				"7",
+			),
+		] {
+			let mut old = Session::new(context()).unwrap();
+			let mut fresh = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			let (legacy, domain) = super::transcripts::parity_observe(&mut old, &mut fresh, source);
+			assert_eq!(legacy, domain, "{source}");
+			assert_eq!(domain["value"], expected);
+			old.close().unwrap();
+			fresh.close().unwrap();
+		}
+	}
+	#[test]
+	fn constant_function_failures_preserve_session() {
+		for source in [
+			"const fn f(x){x} const A=f();A",
+			"const fn f(x,y){x} const A=f(1/0,Some(1)+1);A",
+			"const fn f(){loop{}} const A=f();A",
+			"const fn f(){let x=0;x=1;x} const A=f();A",
+			"const fn f(){f()} const A=f();A",
+			"const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}} const A=[f(14),f(14),f(14),f(14),f(14)];A",
+			"const fn f(){A} const A=f();A",
+			"const fn f(){B} const fn g(){A} const A=f();const B=g();A",
+		] {
+			let mut session = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			let limits = crate::format::Limits::default();
+			session
+				.eval_rendered("let keep=[7];const OLD=9;0", &limits)
+				.unwrap();
+			assert!(session.eval(source).is_err(), "{source}");
+			assert_eq!(
+				session.eval_rendered("(keep,OLD)", &limits).unwrap(),
+				Some("([7], 9)".into())
+			);
+			session.close().unwrap();
+		}
+	}
+
+	#[test]
+	fn constant_function_cross_input_refusals() {
+		for (definition, call, construct) in [
+			(
+				"const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}}",
+				"const A=f(17);A",
+				"work",
+			),
+			("const fn f(){loop{}}", "const A=f();A", "loop"),
+			("const fn f(){f()}", "const A=f();A", "live-call"),
+		] {
+			let mut session = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			let limits = crate::format::Limits::default();
+			session
+				.eval_rendered("let keep=[7];const OLD=9;0", &limits)
+				.unwrap();
+			session.eval(definition).unwrap();
+			let Err(Failure::Refused(message)) = session.eval(call) else {
+				panic!("expected cross-input refusal: {construct}");
+			};
+			assert!(message.contains(construct), "{message}");
+			assert!(message.contains("without --engine=execution"), "{message}");
+			let mut single = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+			let Err(Failure::Refused(same)) = single.eval(&format!("{definition} {call}")) else {
+				panic!("expected single-input refusal");
+			};
+			let detail = |s: &str| s.split(" (input ").next().unwrap().to_owned();
+			assert_eq!(detail(&message), detail(&same));
+			assert_eq!(
+				session.eval_rendered("(keep,OLD)", &limits).unwrap(),
+				Some("([7], 9)".into())
+			);
+			single.close().unwrap();
+			session.close().unwrap();
 		}
 	}
 

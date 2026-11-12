@@ -212,3 +212,42 @@ pub fn target(){let a=A;let b=A;a.0.push(3);let d=D;d.0.push(4);let e=E;e.0.push
 		assert_eq!(store.live_entries(), 0);
 	}
 }
+
+/// ADR0259: source-to-store control for calls, Return and owned aggregate results.
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "Miri: source frontend; exact constant function inventory"
+)]
+fn constant_functions_materialize_and_return() {
+	let source = r#"
+const fn id(x){x}
+const fn return_arg(){id(return 7)}
+const fn even(n){if n==0{true}else{odd(n-1)}}
+const fn odd(n){if n==0{false}else{even(n-1)}}
+const fn local(x){let y={let x=2;x+1};x+y}
+const fn data(){Some([#{x:[1]}])}
+const A=data();const B=return_arg();const C=local(9);const D=even(4);
+pub fn target(){let a=A;let b=A;a.0[0].x.push(2);a.0[0].x.len()==2 && b.0[0].x.len()==1 && A.0[0].x.len()==1 && B==7 && C==12 && D}
+"#;
+	let context = Context::with_default_modules().unwrap();
+	let (mut stock, program) =
+		super::differential::compile_unit(&context, "constant-functions", source, "target");
+	assert!(crate::from_value::<bool>(stock.call(["target"], ()).unwrap()).unwrap());
+	let mut store = Store::new(Limits::default()).unwrap();
+	let mut executor = Executor::new().unwrap();
+	for _ in 0..2 {
+		let root = executor
+			.invoke(
+				&program,
+				&mut store,
+				program.function(Hash::type_hash(["target"])).unwrap(),
+				&[],
+				100_000,
+			)
+			.unwrap();
+		assert_eq!(store.root_scalar(&root).unwrap(), Some(Scalar::Bool(true)));
+		store.root_release(root).unwrap();
+		assert_eq!(store.live_entries(), 0);
+	}
+}

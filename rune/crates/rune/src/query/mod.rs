@@ -268,6 +268,8 @@ pub(crate) enum DeferEntry {
 
 /// A compiled constant function.
 pub(crate) struct ConstFn<'hir> {
+	#[cfg(feature = "execution")]
+	pub(crate) execution_name: Option<crate::ItemBuf>,
 	/// The item of the const fn.
 	pub(crate) item_meta: ItemMeta,
 	/// HIR function associated with this constant function.

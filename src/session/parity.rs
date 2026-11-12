@@ -348,6 +348,18 @@ fn constant_report() -> serde_json::Value {
 		("constant blocks", "const A={let x=2;x+1}; A"),
 		("constant if", "const A=if true {1}else{2}; A"),
 		("constant functions", "const fn f(x){x+1} const A=f(2); A"),
+		(
+			"constant function recursion",
+			"const fn f(n){if n==0{0}else{1+f(n-1)}} const A=f(8); A",
+		),
+		(
+			"constant function early return",
+			"const fn g(x){x} const fn f(){g(return 7)} const A=f(); A",
+		),
+		(
+			"constant function wildcard",
+			"const fn f(_,x){x+1} const A=f(99,2); A",
+		),
 		("constant option construction", "const A=Some(1); A"),
 		("constant None", "const A=None; A"),
 		("constant tuple field", "const A=(1,[2]);const B=A.1; B"),
