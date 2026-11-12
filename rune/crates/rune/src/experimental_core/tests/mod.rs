@@ -41,6 +41,7 @@ mod allocation_path;
 mod boundary_internal;
 #[cfg(feature = "std")]
 mod compile_diagnostics;
+mod constant_structure;
 mod diagnostics;
 mod differential;
 mod dispatch_state;

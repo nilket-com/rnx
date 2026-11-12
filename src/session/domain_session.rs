@@ -728,6 +728,9 @@ mod tests {
 			),
 			("const A=\"x\";let x=A;x.push('y');(x,A)", "(\"xy\", \"x\")"),
 			("const A=2;const B=A*3+1;B", "7"),
+			("const A=[1,2];const B=A[0];B", "1"),
+			("const A={let x=2;x+1};A", "3"),
+			("const A=if true {1}else{2};A", "1"),
 		] {
 			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 			assert_eq!(
@@ -742,9 +745,6 @@ mod tests {
 	#[test]
 	fn constant_deferred_forms_are_not_async() {
 		for (source, construct) in [
-			("const A=[1,2];const B=A[0];B", "constant indexing"),
-			("const A={let x=2;x+1};A", "constant blocks"),
-			("const A=if true {1}else{2};A", "constant if"),
 			("const fn f(x){x+1} const A=f(2);A", "constant functions"),
 			("const A=Some(1);A", "option construction"),
 			("const A=b\"ab\";A", "byte-string constants"),

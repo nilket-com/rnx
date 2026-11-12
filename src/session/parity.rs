@@ -1,5 +1,6 @@
 //! ADR0246: source-derived session coverage, confined to tests.
 mod conditionals;
+mod constant_structure;
 pub(crate) mod external;
 mod witnesses;
 use quote::ToTokens;

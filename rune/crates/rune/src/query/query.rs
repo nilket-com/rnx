@@ -1128,13 +1128,20 @@ impl<'a, 'arena> Query<'a, 'arena> {
 	) -> compile::Result<ConstValueBuf> {
 		#[cfg(feature = "execution")]
 		if self.inner.collecting {
-			let Entry::Expr(exprs, expr) = entry else {
-				return Err(compile::Error::msg(
+			return match entry {
+				Entry::Expr(exprs, expr) => {
+					crate::experimental_core::constants::eval(self.inner, exprs, expr)
+				}
+				Entry::Block(exprs, block) => {
+					crate::experimental_core::constants::eval_block(self.inner, exprs, block)
+				}
+				Entry::Call(_) => Err(compile::Error::new(
 					span,
-					"execution core: constant blocks/calls refused",
-				));
+					compile::ErrorKind::ExecutionRefusal {
+						construct: "constant calls and option construction",
+					},
+				)),
 			};
-			return crate::experimental_core::constants::eval(self.inner, exprs, expr);
 		}
 		let value = const_eval::eval(self, location, span, entry, Vec::new())?;
 		Ok(crate::from_value(value).with_span(span)?)
@@ -1991,15 +1998,6 @@ impl<'a, 'arena> Query<'a, 'arena> {
 				meta::Kind::Static
 			}
 			Indexed::ConstBlock(c) => {
-				#[cfg(feature = "execution")]
-				if self.inner.collecting {
-					return Err(compile::Error::new(
-						item_meta.location.span,
-						compile::ErrorKind::ExecutionRefusal {
-							construct: "constant blocks",
-						},
-					));
-				}
 				let (hir, exprs) = {
 					let mut hir_ctx = crate::hir::Ctxt::with_const(
 						self.const_arena,

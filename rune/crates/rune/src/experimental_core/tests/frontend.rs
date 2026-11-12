@@ -165,12 +165,14 @@ fn source_vector_alias_and_short_circuit() {
 	miri,
 	ignore = "Miri: builds a std-module Context and compiles Rune source (minutes per build); native CI runs it; opt in with --ignored"
 )]
-fn construction_refuses_constant_indexing_and_format_but_admits_stock_closure() {
+fn construction_refuses_format_but_admits_constant_indexing_and_stock_closure() {
+	assert_eq!(
+		run("const A=[42];const B=A[0];pub fn main(){B}", &[]),
+		Value::I64(42)
+	);
 	let context = Context::with_default_modules().unwrap();
-	for text in [
-		"const A = [42]; const B=A[0]; pub fn main() { B }",
-		"pub fn main() { format!(\"{:x}\",42) }",
-	] {
+	{
+		let text = "pub fn main() { format!(\"{:x}\",42) }";
 		let mut sources = Sources::new();
 		sources.insert(Source::memory(text).unwrap()).unwrap();
 		let mut diagnostics = Diagnostics::new();
