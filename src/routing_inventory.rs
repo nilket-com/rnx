@@ -890,6 +890,11 @@ pub(crate) fn session_parity_hosts(remove: bool) -> Result<Json> {
 					life.close()?;
 					continue;
 				}
+				if crate::clock_properties::Property::for_function(p.path).is_some() {
+					rows.push(crate::session::parity::clocks::observe(p.path, c)?);
+					life.close()?;
+					continue;
+				}
 				let safe = p.path.starts_with("path::")
 					|| p.path.starts_with("text::")
 					|| matches!(

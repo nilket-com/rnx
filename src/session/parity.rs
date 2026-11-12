@@ -1,4 +1,5 @@
 //! ADR0246: source-derived session coverage, confined to tests.
+pub(crate) mod clocks;
 mod conditionals;
 mod constant_patterns;
 mod constant_structure;
@@ -611,7 +612,12 @@ fn host_report() -> serde_json::Value {
 	let stop = rows.as_array().unwrap().iter().any(|r| {
 		matches!(
 			r["class"].as_str(),
-			Some("Different result" | "Domain-only failure" | "Unreviewed wording")
+			Some(
+				"Different result"
+					| "Domain-only failure"
+					| "Unreviewed wording"
+					| "Property failure"
+			)
 		)
 	});
 	let report = serde_json::json!({"status":if stop {"STOP"} else {"PASS"},"rows":rows});

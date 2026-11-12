@@ -5,6 +5,9 @@
 //! REPL and worker behavior is retained; only serving contexts load extensions.
 //! With the default `count-allocations` feature this library supplies the
 //! process's global allocator. The executable must not supply a second one.
+#[cfg(test)]
+#[path = "verification/clock.rs"]
+mod clock_properties;
 #[cfg(all(test, feature = "cross-verification"))]
 mod verification;
 

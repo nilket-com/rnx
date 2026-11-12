@@ -3,7 +3,7 @@
 mod binding;
 mod census;
 mod census_execution;
-mod clock;
+use crate::clock_properties as clock;
 mod enrollment;
 
 use serde_json::{Value, json};
