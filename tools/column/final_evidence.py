@@ -26,6 +26,16 @@ def canonical(path):
 	return path
 
 
+def assigned_root(variable, standalone):
+	"""Standalone recipes keep their paths; a final must supply an owned root."""
+	if not os.environ.get('RNX_FINAL'): return Path(standalone)
+	value = os.environ.get(variable)
+	if not value: raise ValueError('final output root not assigned: '+variable)
+	p = canonical(value)
+	if not p.is_dir(): raise ValueError('final owner must create root')
+	return p
+
+
 def tree(path, known=None):
 	"""Hash link text, never its target; stream file contents, sorted by relative name."""
 	started = time.monotonic(); rows = []; logical = allocated = reused = 0; known = known or {}
@@ -182,7 +192,7 @@ def compact(selection, evidence, owners, tools):
 			receipt_sha256=ref['sha256'], artifact_set_sha256=identity(r['artifacts'])))
 	roots=[dict(owner=e, payload=tree(e['path'],known)) for e in owners.row['roots']]
 	m=dict(schema=1,candidate=selection['record']['candidate'],source=selection['source'],policy=selection['policy'],
-		selection_sha256=identity(selection),tools=tools,stages=stages,roots=roots)
+		acceptance_scope=selection.get('scope'),selection_sha256=identity(selection),tools=tools,stages=stages,roots=roots)
 	if len(json.dumps(m,indent=2).encode())>CAP: raise ValueError('compact manifest exceeds 256 KiB')
 	return m
 
@@ -196,8 +206,12 @@ def revalidate(out):
 	if result['candidate']!=m['candidate'] or a['candidate']!=m['candidate']: raise ValueError('candidate differs')
 	if r['acceptance_sha256']!=result['records']['ACCEPTANCE'] or r['manifest_sha256']!=result['records']['MANIFEST']: raise ValueError('release not bound')
 	if [x['path'] for x in r['roots']] != [x['owner']['path'] for x in m['roots']] or any(x['state']!='released' for x in r['roots']): raise ValueError('incomplete release')
+	if 'publication_eligible' in result:
+		from gate_policy import publication_eligible
+		if not a['acceptance_scope']==m['acceptance_scope']==result['acceptance_scope']: raise ValueError('scope differs')
+		if result['publication_eligible']!=publication_eligible(result['acceptance_scope']) or result['complete_final']!=(result['acceptance_scope']=='complete'): raise ValueError('scope eligibility differs')
 	return dict(status='PASS',candidate=m['candidate'],bulk='released; not rehashed',release=result['records']['RELEASE'],
-		acceptance_scope=result['acceptance_scope'],complete_final=result['complete_final'])
+		acceptance_scope=result['acceptance_scope'],complete_final=result['complete_final'],publication_eligible=result.get('publication_eligible',result['complete_final']))
 
 
 def abandon_diagnostics(out):

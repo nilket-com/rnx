@@ -59,9 +59,11 @@ def main():
 	args = parser.parse_args()
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
-	base = out / "published"
+	from final_evidence import assigned_root
+	bulk = assigned_root("RNX_FINAL_BASELINE_ROOT", out)
+	base = bulk / "published"
 	base.mkdir()
-	archive = out / "published.tar"
+	archive = bulk / "published.tar"
 	with archive.open("xb") as stream:
 		subprocess.run(["git", "archive", BASE], cwd=ROOT, stdout=stream, check=True)
 	with tarfile.open(archive) as packed:

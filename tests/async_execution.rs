@@ -406,23 +406,48 @@ fn native_heavy_session_work_is_interrupted_and_the_next_input_works() {
 
 #[test]
 fn a_string_that_looks_like_an_await_keeps_the_synchronous_slices() {
-	// `.await` inside a string literal is not an await. The input must stay
-	// on the synchronous path, where Ctrl-C ends a loop within a slice.
-	let ran = interrupted(
-		&["repl"],
-		Some("let text = \".await\"; loop { }\n1 + 1\n"),
-		Duration::from_millis(400),
-	);
-	assert_eq!(
-		ran.code,
-		Some(0),
-		"stdout: {}\nstderr: {}",
-		ran.stdout,
-		ran.stderr
-	);
-	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
-	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
-	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
+	// Readiness comes from this input, after compilation and cancellation arming.
+	// :debug checks that adding the print did not select the async wrapper.
+	let script = r#"
+import os,queue,re,signal,subprocess,sys,threading,time
+p=subprocess.Popen([sys.argv[1],'--no-splash','repl','--engine=legacy'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=dict(os.environ,RNX_CONFIG='',RNX_HISTORY='/dev/null',NO_COLOR='1'))
+def line(stream,seconds,message):
+ q=queue.Queue()
+ threading.Thread(target=lambda:q.put(stream.readline()),daemon=True).start()
+ try:return q.get(timeout=seconds)
+ except queue.Empty:raise AssertionError(message)
+try:
+ p.stdin.write(b'let text = ".await"; println!("ready"); loop { }\n');p.stdin.flush()
+ ready=line(p.stdout,10,'input never became ready')
+ assert ready.endswith(b'ready\n'),('input never became ready',ready)
+ started=time.monotonic()
+ p.send_signal(signal.SIGINT)
+ diagnostic=line(p.stderr,3,'input became ready but was not interrupted')
+ assert diagnostic==b'interrupted\n',diagnostic
+ p.stdin.write(b':debug\n1 + 1\n:quit\n');p.stdin.flush()
+ out,err=p.communicate(timeout=3)
+ assert p.returncode==0,(p.returncode,out,err)
+ assert err==b'',err
+ assert b'pub fn main(__rnx_state)' in out and b'pub async fn main' not in out,out
+ assert b'let text = ".await"' in out,out
+ out=re.sub(rb'\[\d+\] (?:> )?',b'',out)
+ assert b'2\n' in out,out
+ assert time.monotonic()-started<3,'interrupt and next input exceeded three seconds'
+finally:
+ if p.poll() is None:p.kill();p.wait()
+"#;
+	let result = Command::new("timeout")
+		.args([
+			"--kill-after=2s",
+			"20s",
+			"python3",
+			"-c",
+			script,
+			env!("CARGO_BIN_EXE_rnx"),
+		])
+		.output()
+		.unwrap();
+	assert!(result.status.success(), "{result:?}");
 }
 
 #[test]

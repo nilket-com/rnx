@@ -84,6 +84,48 @@ class Gates(unittest.TestCase):
 			with self.subTest(commands=commands), self.assertRaisesRegex(ValueError, 'consumer.*producer'):
 				g.close_prerequisites(commands, {'consumer'}, {'consumer': ('producer',)})
 
+	def test_required_complete_explicit_scopes(self):
+		self.write('adapters/polars/src/example.rs','change');self.commit('impl: adr 9999 controls')
+		required=g.select(self.root,self.root/'runs',scope='required')
+		names=[n for n,_ in required['stages']]
+		self.assertIn('polars-inventories',names)
+		explicit=g.select(self.root,self.root/'runs',names,scope='explicit')
+		self.assertEqual(explicit['stages'],required['stages'])
+		self.assertFalse(explicit['publication_eligible']);self.assertTrue(required['publication_eligible'])
+		with patch('fixed_route_gate.valgrind_root'):
+			complete=g.select(self.root,self.root/'runs',scope='complete')
+		import accept
+		self.assertEqual(complete['stages'],[list(x) for x in accept.commands(self.root/'runs',root=self.root)])
+		with patch('fixed_route_gate.valgrind_root'):
+			for value in (required,explicit,complete):g.check_selection(value,self.root,final=True)
+		bad=copy.deepcopy(required);bad['scope']='explicit'
+		with self.assertRaises(ValueError):g.check_selection(bad,self.root,final=True)
+		bad=copy.deepcopy(required);bad['stages'].append(['extra',['extra']])
+		with self.assertRaises(ValueError):g.check_selection(bad,self.root,final=True)
+		with self.assertRaises(ValueError):g.select(self.root,self.root/'runs',names,scope='required')
+
+	def test_bulk_assignments_cover_producer_calls(self):
+		import ast
+		import accept
+		import suite_stage
+		root=Path(accept.ROOT)
+		names=dict(accept.commands(self.root/'runs',root=root))
+		self.assertFalse(set(accept.BULK_ROOTS)-names.keys())
+		for name,command in names.items():
+			producer=g.child.script(command,root)
+			files=[producer] if producer is not None else []
+			for source in files:
+				tree=ast.parse(source.read_text())
+				variables={n.args[0].value for n in ast.walk(tree) if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=='assigned_root'}
+				if source.name=='suite_stage.py':
+					# This producer's baseline reader is conditional on its actual recipes.
+					if name=='rune-clippy' or not any('clippy' in c for c in suite_stage.recipes(name)):variables=set()
+				for variable in variables:
+					kind={'RNX_FINAL_BASELINE_ROOT':'baseline','RNX_FINAL_FIXED_ROOT':'fixed'}[variable]
+					self.assertIn(kind,accept.BULK_ROOTS.get(name,()),name)
+		self.assertIn('project',accept.BULK_ROOTS['generated-projects'])
+		self.assertIn('cross',accept.BULK_ROOTS['cross'])
+
 	def test_failed_producer_never_runs_consumer(self):
 		import final
 		from types import SimpleNamespace

@@ -7,6 +7,9 @@ import shutil
 import subprocess
 import sys
 import traceback
+import time
+from anchor_cache import Cache
+from final_evidence import assigned_root
 
 import child_result as child
 import drift_band as band
@@ -130,7 +133,8 @@ def main():
 	p.add_argument('--valgrind-root', type=Path, default=None)
 	p.add_argument('--anchor-only', action='store_true')
 	p.add_argument('--import-anchor', type=Path, help='Verify and import an immutable prior capture under the binary identity rule')
-	a = p.parse_args(); out = a.out.resolve(); out.mkdir(parents=True, exist_ok=False)
+	a = p.parse_args(); retained = a.out.resolve(); retained.mkdir(parents=True, exist_ok=False)
+	out = assigned_root('RNX_FINAL_FIXED_ROOT',retained)
 	r = dict(status='FAIL')
 	try:
 		a.valgrind_root = valgrind_root(a.valgrind_root)
@@ -149,42 +153,65 @@ def main():
 		current = recipe(policy)
 		# Valgrind's executable is an explicit recipe input, never merely a path.
 		current['valgrind'] = child.digest(a.valgrind_root/'bin/valgrind')
+		anchor_started=time.monotonic()
 		attempt = out/'anchor'; attempt.mkdir()
 		anchor_pair = build(attempt, policy['anchor'], policy['anchor'], a.cargo)
+		anchor_build_seconds=time.monotonic()-anchor_started
 		anchor_binary = anchor_pair['builds'][0]
-		cache = ROOT/'target/fixed-route-anchors'/capture_key(anchor_binary['sha256'],current)
-		cache.mkdir(parents=True, exist_ok=True)
-		import fcntl
-		with (cache/'LOCK').open('a+') as lock:
-			fcntl.flock(lock, fcntl.LOCK_EX)
-			anchor_path = cache/'ANCHOR.json'
-			if anchor_path.exists():
-				anchor = reuse_anchor(anchor_path, anchor_binary, current, policy)
-			elif a.import_anchor:
-				# A different binary is a cache miss, never a license to relabel it.
-				try: anchor = reuse_anchor(a.import_anchor, anchor_binary, current, policy)
-				except ValueError as error:
-					if 'new capture required' not in str(error): raise
-					r['import_miss'] = str(error)
-					anchor = captures(attempt, anchor_pair, a.valgrind_root, policy, current)[0]
-				child.atomic_json(anchor_path, anchor)
+		key = capture_key(anchor_binary['sha256'],current)
+		with Cache(ROOT/'target/fixed-route-anchor-cache-v2') as cache:
+			anchor, reason = cache.lookup(key)
+			state = 'hit' if anchor is not None else 'miss'
+			legacy_outcome = dict(status='none')
+			if anchor is None:
+				legacy = ROOT/'target/fixed-route-anchors'/key/'ANCHOR.json'
+				imported = a.import_anchor or (legacy if legacy.is_file() else None)
+				provenance = {}
+				if imported:
+					try:
+						anchor = reuse_anchor(imported,anchor_binary,current,policy)
+						provenance = dict(receipt_sha256=child.digest(imported),
+							manifest_sha256=anchor['reuse_proof']['manifest_sha256'])
+						state = 'migrated'
+						legacy_outcome = dict(status='migrated')
+					except (ValueError,OSError,KeyError,json.JSONDecodeError) as error:
+						legacy_outcome = dict(status='failed',error_class=type(error).__name__)
+						anchor = None
+				if anchor is None:
+					anchor = captures(attempt,anchor_pair,a.valgrind_root,policy,current)[0]
+					provenance = dict(capture_sha256=child.identity(anchor))
+				anchor = cache.publish(anchor,anchor_binary['binary'],provenance)
+			# Cache owns the anchor bytes; current-build proof is ephemeral in the final.
+			if anchor['revision']!=policy['anchor'] or anchor['binary_sha256']!=anchor_binary['sha256'] or measurement_recipe(anchor['recipe'])!=measurement_recipe(current):
+				raise ValueError('anchor cache recipe differs')
+			anchor = dict(anchor,reuse_proof=dict(binary_sha256=anchor_binary['sha256'],
+				current_build=anchor_binary,current_recipe=current))
+			r['anchor_cache'] = dict(state=state,lookup_reason=reason,legacy_import=legacy_outcome,key=key,
+				anchor_build_seconds=anchor_build_seconds,anchor_total_seconds=time.monotonic()-anchor_started)
+			child.atomic_json(retained/'ANCHOR-EVIDENCE.json',anchor)
+			if a.anchor_only:
+				r.update(status='PASS',anchor=str(retained/'ANCHOR-EVIDENCE.json'),recipe=current)
 			else:
-				anchor = captures(attempt, anchor_pair, a.valgrind_root, policy, current)[0]
-				child.atomic_json(anchor_path, anchor)
-		child.atomic_json(out/'ANCHOR-EVIDENCE.json', anchor)
-		if a.anchor_only:
-			r.update(status='PASS', anchor=str(out/'ANCHOR-EVIDENCE.json'), cache=str(anchor_path), recipe=current)
-		else:
-			pair = out/'record'; pair.mkdir()
-			built = build(pair, info['baseline'], candidate, a.cargo)
-			baseline, changed = captures(pair, built, a.valgrind_root, policy, current)
-			r.update(band.score(verified(baseline), verified(changed), anchor, policy), baseline=baseline, candidate=changed, anchor=str(out/'ANCHOR-EVIDENCE.json'))
+				pair = out/'record'; pair.mkdir()
+				built = build(pair,info['baseline'],candidate,a.cargo)
+				baseline,changed = captures(pair,built,a.valgrind_root,policy,current)
+				r.update(band.score(verified(baseline),verified(changed),anchor,policy),
+					baseline=baseline,candidate=changed,anchor=str(retained/'ANCHOR-EVIDENCE.json'))
 		if child.source(ROOT) != source or child.head(ROOT) != candidate: raise ValueError('source changed during gate')
 	except Exception:
 		r.update(status='FAIL', error=traceback.format_exc())
 	finally:
-		child.publish(out/'RESULT.json', r)
-		print(r['status'], out/'RESULT.json', flush=True)
+		if out != retained:
+			# Keep semantic receipts/logs, never the source exports or raw vector payload.
+			for relative in ('guard-build.log','mirror.log','anchor/build-stage.json','anchor/capture-stage.json',
+				'anchor/build.log','anchor/capture.log','record/build-stage.json','record/capture-stage.json',
+				'record/build.log','record/capture.log','record/IDENTITY.json','record/identity.log'):
+				source=out/relative
+				if source.is_file():
+					dest=retained/relative;dest.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,dest)
+			r['payload_lifetime']='artifact paths valid through live final validation; after release see PAYLOAD-RELEASE.json and final MANIFEST.json'
+		child.publish(retained/'RESULT.json',r)
+		print(r['status'],retained/'RESULT.json',flush=True)
 	return r['status'] != 'PASS'
 
 

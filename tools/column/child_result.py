@@ -247,7 +247,7 @@ def validate_remote(exit_code, result, expected):
 	"""Remote transport binds the fresh invocation and bootstrap recipe explicitly."""
 	if exit_code != 0 or result.get('status') != 'PASS':
 		raise ValueError('remote child failed')
-	if result.get('complete_final') is False: raise ValueError('remote selected stages are not a complete final')
+	if result.get('publication_eligible', result.get('complete_final', True)) is False: raise ValueError('remote selected stages are not publication eligible')
 	if result.get('remote_context') != expected or result.get('candidate') != expected['candidate']:
 		raise ValueError('remote invocation, source or recipe differs')
 	final = result.get('finalization', {})

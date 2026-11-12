@@ -62,7 +62,7 @@ class EvidenceControls(unittest.TestCase):
 		p=self.owner.assign(self.root,'bulk');(p/'data').write_text('secret payload')
 		stage=self.out/'stage.json';child.atomic_json(stage,dict(status='PASS',process_exit=0,seconds=1,cleanup_seconds=0,
 			context={'environment':child.environment({'RNX_SECRET':'secret env'})},artifacts={str(p/'data'):child.digest(p/'data')}))
-		s={'record':{'candidate':'c'},'source':'s','policy':'p','stages':[['x',['declared-command']]]}
+		s={'scope':'required','record':{'candidate':'c'},'source':'s','policy':'p','stages':[['x',['declared-command']]]}
 		m=compact(s,{'x':{'path':str(stage),'sha256':child.digest(stage)}},self.owner,{'compiler':'version'})
 		self.assertNotIn('secret',json.dumps(m));self.assertIn('RNX_SECRET',json.dumps(m))
 		child.atomic_json(self.out/'MANIFEST.json',m);child.atomic_json(self.out/'ACCEPTANCE.json',{'status':'PASS','candidate':'c'})
@@ -75,7 +75,7 @@ class EvidenceControls(unittest.TestCase):
 
 	def test_manifest_cap_preserves_bulk(self):
 		p=self.owner.assign(self.root,'bulk')
-		s={'record':{'candidate':'c'},'source':'s','policy':'p','stages':[]}
+		s={'scope':'required','record':{'candidate':'c'},'source':'s','policy':'p','stages':[]}
 		with self.assertRaises(ValueError):compact(s,{},self.owner,{'too_big':'x'*300000})
 		self.assertTrue(p.exists())
 
@@ -107,7 +107,7 @@ class FinalOrderControls(unittest.TestCase):
 		from types import SimpleNamespace
 		with tempfile.TemporaryDirectory() as tmp:
 			root=Path(tmp);out=root/'final';events=[]
-			s={'record':{'candidate':'c'},'source':'s','policy':'p','stages':[['stage',['command']]]}
+			s={'scope':'explicit' if names is not None else 'required','record':{'candidate':'c'},'source':'s','policy':'p','stages':[['stage',['command']]]}
 			def execute(command,**kw):
 				p=Path(kw['env']['RNX_FINAL_ROUTING_ROOT']);(p/'payload').write_text('data')
 				if interrupted:raise KeyboardInterrupt('interrupted')
@@ -126,7 +126,8 @@ class FinalOrderControls(unittest.TestCase):
 				return actual(owner)
 			with patch.object(final,'disk_check'),patch.object(final.child,'head',return_value='c'),patch.object(final.gate,'select',return_value=s),patch.object(final.gate,'check_selection'),patch.object(final.child,'run',side_effect=execute),patch.object(final.gate,'finalize',side_effect=finalize),patch.object(Owners,'release',release_checked):
 				r=final.run(root,out,names=names)
-			self.assertEqual(r['complete_final'],names is None and not (fail_stage or fail_release or interrupted))
+			self.assertFalse(r['complete_final'])
+			self.assertEqual(r['publication_eligible'],names is None and not (fail_stage or fail_release or interrupted))
 			self.assertEqual(r['checks'],[{'name':'stage','exit':int(fail_stage)}] if not interrupted else [])
 			self.assertEqual(r['status'],'FAIL' if fail_stage or fail_release or interrupted else 'PASS')
 			if not fail_release:self.assertFalse(list((root/'target/routing-cli').iterdir()))
@@ -209,11 +210,11 @@ class ReviewControls(unittest.TestCase):
 			text=(root/'DIAGNOSTICS.json').read_text();self.assertNotIn(secret,text)
 			self.assertLessEqual(sum(len(json.dumps(x).encode()) for x in json.loads(text)['files']),256*1024)
 
-	def test_default_selects_all_and_scoped_flag_is_explicit(self):
+	def test_default_required_and_scoped_flag_is_explicit(self):
 		import final
-		for flags,expected in (([],None),(['--stages','format,clippy'],['format','clippy'])):
+		for flags,expected,scope in (([],None,'required'),(['--required'],None,'required'),(['--complete'],None,'complete'),(['--stages','format,clippy'],['format','clippy'],'explicit')):
 			with patch('sys.argv',['final','--out','ignored',*flags]),patch.object(final,'run',return_value={'status':'PASS'}) as run,patch.object(final.signal,'signal'):
-				self.assertEqual(final.main(),0);self.assertEqual(run.call_args.args[2],expected)
+				self.assertEqual(final.main(),0);self.assertEqual(run.call_args.args[2],expected);self.assertEqual(run.call_args.kwargs['scope'],scope)
 
 	def test_fresh_and_override_admission(self):
 		import final

@@ -97,14 +97,20 @@ def run_stages(root, out, selection, owner, environment, evidence, rows):
 		gate.check_selection(selection,root,final=True)
 		env = dict(environment)
 		env['RNX_FINAL_ROUTING_ROOT'] = str(owner.assign(root/'target/routing-cli',name))
-		if name == 'generated-projects':
-			env['RNX_FINAL_PROJECT_ROOT'] = str(owner.assign(Path(tempfile.gettempdir()),name))
-		if name == 'cross':
-			parent = Path(command[command.index('--out')+1]).parent
-			cross = owner.assign(root/'target/rnx-verify',name,name=parent.name)
-			if cross != parent:
-				raise ValueError('cross assignment differs from selection')
-			env['RNX_FINAL_CROSS_ROOT'] = str(cross)
+		from accept import BULK_ROOTS
+		for kind in BULK_ROOTS.get(name, ()):
+			if kind == 'baseline':
+				env['RNX_FINAL_BASELINE_ROOT'] = str(owner.assign(out,name+'-baseline'))
+			elif kind == 'fixed':
+				env['RNX_FINAL_FIXED_ROOT'] = str(owner.assign(out,name+'-payload'))
+			elif kind == 'project':
+				env['RNX_FINAL_PROJECT_ROOT'] = str(owner.assign(Path(tempfile.gettempdir()),name))
+			elif kind == 'cross':
+				parent = Path(command[command.index('--out')+1]).parent
+				cross = owner.assign(root/'target/rnx-verify',name,name=parent.name)
+				if cross != parent: raise ValueError('cross assignment differs from selection')
+				env['RNX_FINAL_CROSS_ROOT'] = str(cross)
+			else: raise ValueError('unknown bulk root kind: '+kind)
 		with (out/(name+'.log')).open('x') as log:
 			done = child.run(command,cwd=root,root=root,env=env,stdout=log,stderr=subprocess.STDOUT,
 				timeout=10800,directory=out/(name+'-child'),after=lambda:finish_stage(root,name,out))
@@ -152,10 +158,16 @@ def terminal(out, owner, selection, evidence, tools, acceptance, environment):
 		if not (out/'ACCEPTANCE.json').exists():
 			child.atomic_json(out/'ACCEPTANCE.json',acceptance)
 	child.atomic_json(out/'RELEASE.json',release)
+	if release['status']=='PASS' and (out/'fixed-route/RESULT.json').is_file():
+		child.atomic_json(out/'fixed-route/PAYLOAD-RELEASE.json',dict(status='PASS',
+			payload='released; artifact paths in measurement receipts are historical',
+			manifest_sha256=child.digest(out/'MANIFEST.json'),release_sha256=child.digest(out/'RELEASE.json')))
 	return release
 
 
-def run(root, out, names=None, remote_context=None, fresh=False):
+def run(root, out, names=None, remote_context=None, fresh=False, scope=None):
+	scope = scope or ('explicit' if names is not None else 'required')
+	gate.publication_eligible(scope)
 	root = Path(root).resolve()
 	out = Path(out).absolute()
 	# Inspect fresh targets before this invocation creates registry/output directories.
@@ -169,7 +181,7 @@ def run(root, out, names=None, remote_context=None, fresh=False):
 	evidence, tools, rows = {}, {}, []
 	environment = dict(os.environ,CARGO_BUILD_JOBS='4',PYTHONDONTWRITEBYTECODE='1',RNX_FINAL='1')
 	acceptance = dict(status='FAIL',candidate=child.head(root),
-		acceptance_scope='complete-final' if names is None else 'selected-stages',
+		acceptance_scope=scope,
 		mode='fresh-clone' if fresh else 'ordinary')
 	lock = (registry/'DRIVER.lock').open('a+')
 	try:
@@ -180,7 +192,7 @@ def run(root, out, names=None, remote_context=None, fresh=False):
 		if violation:
 			raise ValueError(violation)
 		disk_check(root,out)
-		selection = gate.select(root,out,names=names)
+		selection = gate.select(root,out,names=names,scope=scope)
 		gate.check_selection(selection,root,final=True)
 		child.atomic_json(out/'SELECTION.json',selection)
 		tools = tools_identity()
@@ -200,12 +212,13 @@ def run(root, out, names=None, remote_context=None, fresh=False):
 				error=acceptance.get('error'),release_error=release.get('error'),
 				manifest_error=acceptance.get('manifest_error'),diagnostics_error=acceptance.get('diagnostics_error'),
 				finalization=acceptance.get('finalization'),remote_context=remote_context,
-				acceptance_scope=acceptance['acceptance_scope'],complete_final=names is None and acceptance['status']==release['status']=='PASS',
+				acceptance_scope=acceptance['acceptance_scope'],complete_final=scope=='complete' and acceptance['status']==release['status']=='PASS',
+				publication_eligible=gate.publication_eligible(scope) and acceptance['status']==release['status']=='PASS',
 				free_bytes_before=free_before,free_bytes_after=shutil.disk_usage(root).free,
 				records={n:child.digest(out/(n+'.json')) for n in ('ACCEPTANCE','MANIFEST','RELEASE') if (out/(n+'.json')).exists()})
 			if owner and release['status']=='PASS':
 				try: owner.retire()
-				except Exception: r.update(status='FAIL',complete_final=False,retirement_error=traceback.format_exc())
+				except Exception: r.update(status='FAIL',complete_final=False,publication_eligible=False,retirement_error=traceback.format_exc())
 			child.publish(out/'RESULT.json',r)
 		finally:
 			if owner:
@@ -219,7 +232,10 @@ def run(root, out, names=None, remote_context=None, fresh=False):
 def main():
 	p = argparse.ArgumentParser(description=__doc__)
 	p.add_argument('--out',type=Path,required=True)
-	p.add_argument('--stages',help='explicit selected-stage check, not a complete final')
+	modes=p.add_mutually_exclusive_group()
+	modes.add_argument('--required',action='store_true',help='exactly policy-required stages (default)')
+	modes.add_argument('--complete',action='store_true',help='all catalogue stages')
+	modes.add_argument('--stages',help='explicit selection; never publication eligible')
 	p.add_argument('--revalidate',action='store_true')
 	p.add_argument('--abandon-diagnostics',action='store_true')
 	a = p.parse_args()
@@ -233,7 +249,8 @@ def main():
 			raise RuntimeError('final interrupted by signal '+str(signum))
 		for sig in (signal.SIGTERM,signal.SIGINT):
 			signal.signal(sig,stop)
-		r = run(ROOT,a.out,a.stages.split(',') if a.stages else None)
+		r = run(ROOT,a.out,a.stages.split(',') if a.stages is not None else None,
+			scope='explicit' if a.stages is not None else ('complete' if a.complete else 'required'))
 	print(r['status'],r.get('acceptance_scope',''),a.out/'RESULT.json',flush=True)
 	return r['status']!='PASS'
 

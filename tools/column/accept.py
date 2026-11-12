@@ -28,6 +28,20 @@ PREREQUISITES = {
 }
 
 
+# Final-owned bulk requirements. Producers refuse missing assignments inside a final.
+BULK_ROOTS = {
+	'clippy': ('baseline',),
+	'adapter-clippy': ('baseline',),
+	'project-clippy': ('baseline',),
+	'clippy-adapter-candle': ('baseline',),
+	'clippy-adapter-polars': ('baseline',),
+	'clippy-adapter-postgres': ('baseline',),
+	'fixed-route': ('fixed',),
+	'generated-projects': ('project',),
+	'cross': ('cross',),
+}
+
+
 def commands(out, root=ROOT):
 	# The verifier only permits ignored in-tree output below this directory.
 	cross_out = root / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16]) / "payload"
@@ -98,7 +112,7 @@ def main():
 			raise ValueError('remote source context differs')
 	if child_result.head(ROOT) != args.candidate: raise ValueError('candidate differs')
 	from final import run
-	result=run(ROOT,out,names=None,remote_context=context if args.remote_context else None,fresh=True)
+	result=run(ROOT,out,names=None,remote_context=context if args.remote_context else None,fresh=True,scope='complete')
 	print(result['status'],out/'RESULT.json')
 	return result['status']!='PASS'
 

@@ -63,25 +63,35 @@ def close_prerequisites(commands, selected, prerequisites):
 	return selected
 
 
-def select(root, out, names=None, candidate='HEAD'):
+def publication_eligible(scope):
+	if scope not in {'required', 'complete', 'explicit'}: raise ValueError('unknown final scope')
+	return scope in {'required', 'complete'}
+
+
+def select(root, out, names=None, candidate='HEAD', scope=None):
 	import accept
 	root = Path(root).resolve(); out = Path(out).resolve()
 	info = record(root, candidate)
 	commands = accept.commands(out, root=root)
-	names = list(dict(commands)) if names is None else list(names)
+	scope = scope or ('complete' if names is None else 'explicit')
+	publication_eligible(scope)
+	if scope != 'explicit' and names is not None: raise ValueError('named list requires explicit scope')
+	names = list(dict(commands)) if scope == 'complete' else ([] if scope == 'required' else list(names or []))
 	if len(names) != len(set(names)): raise ValueError('duplicate stage selection')
 	if set(names) - dict(commands).keys(): raise ValueError('unknown selected stage')
 	selected = close_prerequisites(commands, set(names) | set(info['required']), accept.PREREQUISITES)
 	if 'fixed-route' in selected:
 		from fixed_route_gate import valgrind_root
 		valgrind_root()  # Refuse before any expensive selected stage.
-	return {'schema': 1, 'record': info, 'policy': policy_digest(), 'source': child.source(root),
+	return {'schema': 1, 'scope': scope, 'publication_eligible': publication_eligible(scope), 'record': info, 'policy': policy_digest(), 'source': child.source(root),
 		'root': str(root), 'out': str(out), 'stages': [[n, c] for n, c in commands if n in selected]}
 
 
 def check_selection(manifest, root, *, final=False):
 	if manifest.get('schema') != 1: raise ValueError('unknown selection schema')
-	actual = select(root, manifest['out'], [n for n, _ in manifest['stages']], manifest['record']['candidate'])
+	scope = manifest['scope']
+	names = [n for n, _ in manifest['stages']] if scope == 'explicit' else None
+	actual = select(root, manifest['out'], names, manifest['record']['candidate'], scope=scope)
 	if actual != manifest: raise ValueError('selection, source, policy or required gates changed')
 	if git(root, 'rev-parse', 'HEAD').decode().strip() != manifest['record']['candidate']:
 		raise ValueError('selection is not for checkout candidate')
@@ -107,6 +117,7 @@ def finalize(manifest, evidence, root=ROOT):
 		if name == 'cross' and row['context']['kind'] != 'producer':
 			raise ValueError('cross requires its own producer receipt')
 	return {'schema': 1, 'status': 'PASS', 'candidate': manifest['record']['candidate'],
+		'scope': manifest['scope'], 'publication_eligible': publication_eligible(manifest['scope']),
 		'source': manifest['source'], 'selection': child.identity(manifest), 'evidence': evidence, 'durations': durations}
 
 

@@ -86,8 +86,10 @@ def run(stage, out, root=ROOT):
 			import gate_policy
 			from clippy import diagnostics
 			baseline = gate_policy.record(root)['baseline']
-			base = out/f'baseline-{i}'; base.mkdir()
-			archive = out/f'baseline-{i}.tar'
+			from final_evidence import assigned_root
+			bulk = assigned_root('RNX_FINAL_BASELINE_ROOT',out)
+			base = bulk/f'baseline-{i}'; base.mkdir()
+			archive = bulk/f'baseline-{i}.tar'
 			with archive.open('wb') as f: subprocess.run(['git', 'archive', baseline], cwd=root, stdout=f, check=True)
 			with tarfile.open(archive) as t: t.extractall(base, filter='data')
 			sets = []
