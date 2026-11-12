@@ -792,7 +792,7 @@ mod tests {
 			"const fn f(x){x} const A=f();A",
 			"const fn f(x,y){x} const A=f(1/0,Some(1)+1);A",
 			"const fn f(){loop{}} const A=f();A",
-			"const fn f(){let x=0;x=1;x} const A=f();A",
+			"const fn f(){let x=[0];x[0]=1;x} const A=f();A",
 			"const fn f(){f()} const A=f();A",
 			"const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}} const A=[f(14),f(14),f(14),f(14),f(14)];A",
 			"const fn f(){A} const A=f();A",
@@ -820,7 +820,7 @@ mod tests {
 				"const A=f(17);A",
 				"work",
 			),
-			("const fn f(){loop{}}", "const A=f();A", "loop"),
+			("const fn f(){loop{}}", "const A=f();A", "work"),
 			("const fn f(){f()}", "const A=f();A", "live-call"),
 		] {
 			let mut session = DomainSession::new(context(), DEFAULT_CEILING).unwrap();

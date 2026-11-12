@@ -1,0 +1,268 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_00",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_01",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_02",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_03",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_04",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_05",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_06",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_07",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_08",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_10",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_11",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_12",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_13",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_14",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_15",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_16",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_17",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_19",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_20",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_21",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_22",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_23",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_24",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_25",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_26",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_27",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_28",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_29",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_return",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_argument_control",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_cross_call_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_part_assignment_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_pattern_failure",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_signed_max",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_signed_second",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_unsigned_max",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_unsigned_second",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_char_max",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_char_second",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_signed_before",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_unsigned_before",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_open_char_before",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_inclusive_unsigned_max",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_inclusive_char_max",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_reassign_iterable",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_assign_shadow",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_condition_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_condition_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_let_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_let_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_object_first_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_loop_object_all_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

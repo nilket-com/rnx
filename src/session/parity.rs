@@ -1,6 +1,7 @@
 //! ADR0246: source-derived session coverage, confined to tests.
 pub(crate) mod clocks;
 mod conditionals;
+mod constant_loops;
 mod constant_patterns;
 mod constant_structure;
 pub(crate) mod external;
@@ -399,6 +400,35 @@ fn constant_report() -> serde_json::Value {
 		(
 			"constant byte scalar pattern",
 			"const A=match b'a'{b'a'=>7,_=>0};A",
+		),
+		(
+			"constant counting loop",
+			"const A={let n=0;loop{n+=1;if n==3{break n}}};A",
+		),
+		(
+			"constant while assignment",
+			"const A={let n=0;while n<3{n+=1;}n};A",
+		),
+		(
+			"constant for range",
+			"const A={let n=0;for x in 0..4{n+=x;}n};A",
+		),
+		(
+			"constant for vector",
+			"const A={let n=0;for x in [1,2,3]{n+=x;}n};A",
+		),
+		("constant valued break", "const A=loop{break 7};A"),
+		(
+			"constant continue",
+			"const A={let n=0;let s=0;while n<5{n+=1;if n==3{continue;}s+=n;}s};A",
+		),
+		(
+			"constant loop return",
+			"const fn f(){let n=0;loop{while n<5{n+=1;if n==3{return n;}}}}const A=f();A",
+		),
+		(
+			"constant 10000 iterations",
+			"const fn f(){let n=0;while n<10000{n+=1;}n}const A=f();A",
 		),
 		("constant bytes", "const A=b\"ab\"; A"),
 	] {

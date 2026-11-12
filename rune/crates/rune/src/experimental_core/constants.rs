@@ -24,12 +24,16 @@ use hir::ExprKind as E;
 enum Flow<T = ConstValueBuf> {
 	Value(T),
 	Return(ConstValueBuf),
+	Break(usize, ConstValueBuf),
+	Continue(usize),
 }
 macro_rules! constant_value {
 	($e:expr) => {
 		match $e? {
 			Flow::Value(v) => v,
 			Flow::Return(v) => return Ok(Flow::Return(v)),
+			Flow::Break(id, v) => return Ok(Flow::Break(id, v)),
+			Flow::Continue(id) => return Ok(Flow::Continue(id)),
 		}
 	};
 }
@@ -43,6 +47,8 @@ macro_rules! refuse {
 		return Err(refusal($span, $name))
 	};
 }
+#[path = "constant_loops.rs"]
+mod loops;
 #[path = "constant_patterns.rs"]
 mod patterns;
 const MAX_WORK: usize = 2_000_000;
@@ -121,6 +127,8 @@ const MAX_DEPTH: usize = 128;
 
 #[derive(Default)]
 struct Budget {
+	targets: Vec<loops::Target>,
+	target_base: usize,
 	body_base: usize,
 	calls: usize,
 	source: Option<crate::SourceId>,
@@ -151,7 +159,9 @@ pub(crate) fn eval(
 	)
 	.map(|flow| match flow {
 		Flow::Value(value) => value,
-		Flow::Return(_) => unreachable!("top-level return refused"),
+		Flow::Return(_) | Flow::Break(..) | Flow::Continue(..) => {
+			unreachable!("top-level control refused")
+		}
 	})
 }
 
@@ -191,10 +201,9 @@ fn evaluate(
 			evaluate_const_call(inner, exprs, expr, depth, budget, locals)
 		}
 		E::Call(_) => evaluate_option(inner, exprs, expr, depth, budget, locals),
-		E::Assign(_) => Err(refusal(span, "constant assignment")),
-		E::Loop(_) | E::For(_) => Err(refusal(span, "constant loops")),
-		E::Break(_) => Err(refusal(span, "constant break")),
-		E::Continue(_) => Err(refusal(span, "constant continue")),
+		E::Assign(_) => loops::assign(inner, exprs, expr, depth, budget, locals),
+		E::Loop(_) | E::For(_) => loops::run(inner, exprs, expr, depth, budget, locals),
+		E::Break(_) | E::Continue(_) => loops::transfer(inner, exprs, expr, depth, budget, locals),
 		E::Return(_) => evaluate_return(inner, exprs, expr, depth, budget, locals),
 		E::AsyncBlock(_) | E::Await(_) | E::Select(_) => {
 			Err(refusal(span, "constant async expressions"))
@@ -416,7 +425,7 @@ fn evaluate_binary(
 	match expr.kind {
 		E::Binary(binary) => {
 			if binary.op.is_assign() {
-				refuse!(span, "constant assignment");
+				return loops::assign(inner, exprs, expr, depth, budget, locals);
 			}
 			let a = constant_value!(next(binary.lhs));
 			if let ConstNodeKind::Inline(Inline::Bool(v)) = a.kind() {
@@ -559,6 +568,8 @@ fn evaluate_conditional(
 		locals.truncate(mark);
 		match result? {
 			Flow::Return(v) => return Ok(Flow::Return(v)),
+			Flow::Break(id, v) => return Ok(Flow::Break(id, v)),
+			Flow::Continue(id) => return Ok(Flow::Continue(id)),
 			Flow::Value(Some(v)) => return Ok(Flow::Value(v)),
 			Flow::Value(None) => {}
 		}
@@ -641,6 +652,8 @@ fn evaluate_match(
 		locals.truncate(mark);
 		match result? {
 			Flow::Return(v) => return Ok(Flow::Return(v)),
+			Flow::Break(id, v) => return Ok(Flow::Break(id, v)),
+			Flow::Continue(id) => return Ok(Flow::Continue(id)),
 			Flow::Value(Some(v)) => return Ok(Flow::Value(v)),
 			Flow::Value(None) => {}
 		}
@@ -852,7 +865,9 @@ fn binary_finish(
 			checked!(span, read(&a).map_err(|e| e.operation)),
 			checked!(span, read(&b).map_err(|e| e.operation)),
 		) {
-			(Scalar::Text(mut a), Scalar::Text(b)) if matches!(op, BinOp::Add(..)) => {
+			(Scalar::Text(mut a), Scalar::Text(b))
+				if matches!(op, BinOp::Add(..) | BinOp::AddAssign(..)) =>
+			{
 				if budget.bytes.saturating_add(a.len()).saturating_add(b.len()) > MAX_BYTES {
 					refuse!(span, "constant byte bound (16 MiB) exceeded");
 				}
@@ -911,7 +926,8 @@ fn evaluate_const_call(
 	if budget.calls >= MAX_CALLS {
 		refuse!(span, "constant live-call bound (224) exceeded");
 	}
-	let saved = (budget.body_base, budget.source);
+	let saved = (budget.body_base, budget.source, budget.target_base);
+	budget.target_base = budget.targets.len();
 	budget.calls += 1;
 	budget.body_base = depth + 1;
 	budget.source = Some(function.item_meta.location.source_id);
@@ -926,8 +942,14 @@ fn evaluate_const_call(
 	budget.calls -= 1;
 	budget.body_base = saved.0;
 	budget.source = saved.1;
+	budget.targets.truncate(budget.target_base);
+	budget.target_base = saved.2;
 	let result = match result {
 		Ok(Flow::Value(v) | Flow::Return(v)) => Ok(Flow::Value(v)),
+		Ok(Flow::Break(..) | Flow::Continue(..)) => Err(diagnostic(
+			span,
+			"loop control cannot cross a constant function call",
+		)),
 		Err(error) => {
 			if saved.1 == Some(function.item_meta.location.source_id) {
 				Err(error)
@@ -1209,19 +1231,32 @@ fn block_value(
 			"constant expanded-node bound (65536) exceeded",
 		));
 	}
-	if block.label.is_some() {
-		return Err(refusal(span, "constant block labels"));
-	}
+	let target = block
+		.label
+		.map(|label| loops::push_target(budget, Some(label), false, true, span))
+		.transpose()?;
 	let mark = locals.len();
 	let result = match block_statements(inner, exprs, block, depth, budget, locals) {
 		Err(e) => Err(e),
 		Ok(Flow::Return(value)) => Ok(Flow::Return(value)),
+		Ok(Flow::Break(id, value)) => Ok(Flow::Break(id, value)),
+		Ok(Flow::Continue(id)) => Ok(Flow::Continue(id)),
 		Ok(Flow::Value(())) => match block.value {
 			Some(id) => evaluate(inner, exprs, exprs.get(id), depth + 1, budget, locals),
 			None => unit(budget, span).map(Flow::Value),
 		},
 	};
 	locals.truncate(mark);
+	if let Some(id) = target {
+		budget.targets.truncate(id);
+		if let Ok(Flow::Break(found, value)) = result {
+			return Ok(if found == id {
+				Flow::Value(value)
+			} else {
+				Flow::Break(found, value)
+			});
+		}
+	}
 	result
 }
 
@@ -1482,7 +1517,9 @@ pub(crate) fn eval_block(
 	)
 	.map(|flow| match flow {
 		Flow::Value(value) => value,
-		Flow::Return(_) => unreachable!("top-level return refused"),
+		Flow::Return(_) | Flow::Break(..) | Flow::Continue(..) => {
+			unreachable!("top-level control refused")
+		}
 	})
 }
 
@@ -1787,6 +1824,272 @@ mod function_tests {
 		}
 		let (ok, d) = compile("const fn f((a,b)){a+b} const A=f((2,));pub fn main(){A}");
 		assert!(!ok && d.contains("pattern did not match"), "{d}");
+	}
+
+	macro_rules! loop_cases { ($($name:ident => ($body:expr,$expected:expr)),* $(,)?) => {$(#[test] fn $name(){let src=rust_alloc::format!("const A={};const CHECK=if A=={}{{0}}else{{1/0}};pub fn main(){{CHECK}}",$body,$expected);let(ok,d)=compile(&src);assert!(ok,"{src}: {d}");})*};}
+	loop_cases! {
+		constant_loop_00 => (r#"loop {break 7}"#, "7"),
+		constant_loop_01 => (r#"{let n=0;while n<3{n+=1;}n}"#, "3"),
+		constant_loop_02 => (r#"{let v=Some(3);let n=0;while let Some(x)=v{n+=x;v=None;}n}"#, "3"),
+		constant_loop_03 => (r#"{let n=0;for x in 0..4{n+=x;}n}"#, "6"),
+		constant_loop_04 => (r#"{let n=0;for x in 0..=4{n+=x;}n}"#, "10"),
+		constant_loop_05 => (r#"{let n=0;for x in [1,2,3]{n+=x;}n}"#, "6"),
+		constant_loop_06 => (r#"{let n=0;for x in (1,2){n+=x;}n}"#, "3"),
+		constant_loop_07 => (r#"{let n=0;for x in Some(7){n+=x;}n}"#, "7"),
+		constant_loop_08 => (r#"{let n=0;for x in None{n+=1;}n}"#, "0"),
+		constant_loop_10 => (r#"{let n=0;for (a,b) in [(1,2),(3,4)]{n+=a+b;}n}"#, "10"),
+		constant_loop_11 => (r#"{let n=0;let s=0;while n<5{n+=1;if n==3{continue;}s+=n;}s}"#, "12"),
+		constant_loop_12 => (r#"'outer: loop{loop{break 'outer 7}}"#, "7"),
+		constant_loop_13 => (r#"{let n=0;'outer: while n<3{n+=1;loop{continue 'outer;}}n}"#, "3"),
+		constant_loop_14 => (r#"while true{break 7}"#, "7"),
+		constant_loop_15 => (r#"'out:{break 'out 7}"#, "7"),
+		constant_loop_16 => (r#"{let x=1;x+={x=10;2};x}"#, "12"),
+		constant_loop_17 => (r#"{let x=5;x*=3;x-=1;x/=2;x%=4;x}"#, "3"),
+		constant_loop_18 => (r#"{let n=0;for x in 3..1{n+=1;}n}"#, "0"),
+		constant_loop_19 => (r#"{let n=0;for x in 0..{n+=1;if n==3{break;}}n}"#, "3"),
+		constant_loop_20 => (r#"{let n=0;for x in 'a'..'d'{n+=1;}n}"#, "3"),
+		constant_loop_21 => (r#"{let x=11;for x in [2,3]{if x==2{continue;}break;}x}"#, "11"),
+		constant_loop_22 => (r#"{let n=0;for x in 9223372036854775807..=9223372036854775807{n+=1;}n}"#, "1"),
+		constant_loop_23 => (r#"{let n=0;for x in (){n+=1;}n}"#, "0"),
+		constant_loop_24 => (r#"{let n=0;for x in (0..3){n+=1;}n}"#, "3"),
+		constant_loop_25 => (r#"{let n=0;for x in 1u64..3u64{n+=1;}n}"#, "2"),
+		constant_loop_26 => (r#"{let n=0;for x in '\u{d7ff}'..='\u{e000}'{n+=1;}n}"#, "2"),
+		constant_loop_27 => (r#"{let x=1;x<<=3;x|=2;x^=3;x&=7;x>>=1;x}"#, "0"),
+		constant_loop_28 => (r#"{let x=9;while let Some(x)=Some(2){break;}x}"#, "9"),
+		constant_loop_29 => (r#"'out: {let x=7;loop{break 'out x}}"#, "7"),
+	}
+
+	macro_rules! range_error_cases { ($($name:ident => $body:expr),* $(,)?) => {$(
+        #[test] fn $name() {
+            let src=rust_alloc::format!("const A={};pub fn main(){{A}}",$body);
+            let(ok,d)=compile(&src);
+            assert!(!ok && d.contains("Numerical overflow"),"{src}: {d}");
+        }
+    )*}; }
+	range_error_cases! {
+		constant_loop_open_signed_max => "for x in 9223372036854775807..{break;}",
+		constant_loop_open_signed_second => "for x in 9223372036854775806..{}",
+		constant_loop_open_unsigned_max => "for x in 18446744073709551615u64..{break;}",
+		constant_loop_open_unsigned_second => "for x in 18446744073709551614u64..{}",
+		constant_loop_open_char_max => r"for x in '\u{10ffff}'..{break;}",
+		constant_loop_open_char_second => r"for x in '\u{10fffe}'..{}",
+	}
+	loop_cases! {
+		constant_loop_open_signed_before => ("{let n=0;for x in 9223372036854775806..{n+=1;break;}n}","1"),
+		constant_loop_open_unsigned_before => ("{let n=0;for x in 18446744073709551614u64..{n+=1;break;}n}","1"),
+		constant_loop_open_char_before => (r"{let n=0;for x in '\u{10fffe}'..{n+=1;break;}n}","1"),
+		constant_loop_inclusive_unsigned_max => ("{let n=0;for x in 18446744073709551615u64..=18446744073709551615u64{n+=1;}n}","1"),
+		constant_loop_inclusive_char_max => (r"{let n=0;for x in '\u{10ffff}'..='\u{10ffff}'{n+=1;}n}","1"),
+		constant_loop_reassign_iterable => ("{let v=[1,2,3];let n=0;for x in v{v=[9];n+=x;}n}","6"),
+		constant_loop_assign_shadow => ("{let x=11;for x in [1,2]{x=9;}x}","11"),
+	}
+
+	loop_cases! {
+		constant_loop_condition_break => ("{let n=0;loop{n+=1;while {break} {} if n==3{break}}n}","3"),
+		constant_loop_condition_continue => ("{let n=0;while {n+=1;if n<3{continue;}false} {} n}","3"),
+		constant_loop_let_break => ("{let n=0;loop{n+=1;while let Some(x)={break} {} if n==3{break}}n}","3"),
+		constant_loop_let_continue => ("{let n=0;while let Some(x)={n+=1;if n<3{continue;}None} {} n}","3"),
+	}
+	#[test]
+	fn constant_loop_object_first_refused() {
+		let (ok, d) = compile(
+			r#"const A={let s="!";for(k,v) in #{z:1,a:2,m:3,b:4}{s=k;break;}s};pub fn main(){A}"#,
+		);
+		assert!(
+			!ok && d.contains("ExecutionRefusal") && d.contains("constant object iteration"),
+			"{d}"
+		);
+	}
+	#[test]
+	fn constant_loop_object_all_refused() {
+		let (ok, d) = compile(
+			r#"const A={let s="!";for(k,v) in #{z:1,a:2,m:3,b:4}{s+=k;}s};pub fn main(){A}"#,
+		);
+		assert!(
+			!ok && d.contains("ExecutionRefusal") && d.contains("constant object iteration"),
+			"{d}"
+		);
+	}
+
+	#[test]
+	fn constant_loop_argument_control() {
+		let (ok, d) = compile(
+			"const fn id(x){x} const A=loop{id(break 7)};const CHECK=if A==7{0}else{1/0};pub fn main(){CHECK}",
+		);
+		assert!(ok, "{d}");
+	}
+	#[test]
+	fn constant_loop_cross_call_refused() {
+		let (ok, d) = compile("const fn f(){break;}const A=loop{f();};pub fn main(){A}");
+		assert!(!ok, "cross-call break admitted");
+		assert!(d.to_lowercase().contains("break"), "{d}");
+	}
+	#[test]
+	fn constant_loop_part_assignment_refused() {
+		let (ok, d) = compile("const A={let a=[1,2];let b=a;b[0]=7;a};pub fn main(){A}");
+		assert!(
+			!ok && d.contains("ExecutionRefusal") && d.contains("constant assignment to a part"),
+			"{d}"
+		);
+	}
+	#[test]
+	fn constant_loop_pattern_failure() {
+		let (ok, d) = compile("const A=for (a,b) in [(1,)]{};pub fn main(){A}");
+		assert!(!ok && d.contains("pattern did not match"), "{d}");
+	}
+	#[test]
+	#[cfg_attr(miri, ignore)]
+	fn constant_loop_data_boundaries() {
+		for (n, expected) in [(32768, true), (32769, false)] {
+			let src = rust_alloc::format!(
+				"const A={{let v=[];for _ in 0..{n}{{v=[0,0];}}0}};pub fn main(){{A}}"
+			);
+			let (ok, d) = compile(&src);
+			assert_eq!(ok, expected, "{d}");
+			assert_eq!(STATS.with(|s| s.get().nodes), MAX_NODES);
+			if !ok {
+				assert!(d.contains("expanded-node bound"), "{d}");
+			}
+		}
+		for n in [122, 123] {
+			let src = rust_alloc::format!(
+				"const A={{let v=[];for _ in 0..{n}{{v=[v,0];}}0}};pub fn main(){{A}}"
+			);
+			let (ok, d) = compile(&src);
+			std::eprintln!(
+				"0264_NEST_DATA n={n} ok={ok} stats={:?} d={d}",
+				STATS.with(|s| s.get())
+			);
+			assert_eq!(ok, n == 122, "{d}");
+			if !ok {
+				assert!(d.contains("nesting bound (128)"), "{d}");
+			}
+		}
+	}
+
+	#[test]
+	fn constant_loop_return() {
+		let (ok, d) = compile(
+			"const fn f(){let n=0;loop{while n<5{n+=1;if n==3{return n;}}}}const A=f();const CHECK=if A==3{0}else{1/0};pub fn main(){CHECK}",
+		);
+		assert!(ok, "{d}");
+	}
+	#[test]
+	fn constant_loop_refusals() {
+		for (body, expected) in [
+			("for x in [1]{break 7}", "Can only break with a value"),
+			(
+				"{let a=[1,2];let b=a;b[0]=7;a}",
+				"constant assignment to a part",
+			),
+			("{let a=#{x:1};a.x+=1;a}", "constant assignment to a part"),
+			("{let r=0..3;for x in r{}}", "constant ranges"),
+			("for x in ..3{}", "constant range without a start"),
+			("for x in \"ab\"{}", "Cannot iterate over"),
+			("for (a,b) in [(1,)]{}", "pattern did not match"),
+			("{let n=0;while n<3{n+=1;1/0;}}", "primitive operation"),
+		] {
+			let src = rust_alloc::format!("const A={body};pub fn main(){{A}}");
+			let (ok, d) = compile(&src);
+			assert!(!ok && d.contains(expected), "{src}: {d}");
+		}
+	}
+	#[test]
+	#[cfg_attr(miri, ignore)]
+	fn constant_loop_finite_boundary() {
+		for (n, ok_expected) in [(666665, true), (666666, false)] {
+			let src = rust_alloc::format!("const A=for _ in 0..{n}{{}};pub fn main(){{A}}");
+			let start = std::time::Instant::now();
+			let (ok, d) = compile(&src);
+			let stats = STATS.with(|s| s.get());
+			std::eprintln!(
+				"0264_FINITE n={n} seconds={} stats={stats:?} ok={ok}",
+				start.elapsed().as_secs_f64()
+			);
+			assert_eq!(ok, ok_expected, "{d}");
+			assert_eq!(stats.work, if ok_expected { 3 * n + 5 } else { MAX_WORK });
+			if !ok {
+				assert!(d.contains("work"), "{d}");
+			}
+		}
+	}
+	#[test]
+	#[cfg_attr(miri, ignore)]
+	fn constant_loop_stack_boundary_2mib() {
+		std::thread::Builder::new()
+			.stack_size(2 << 20)
+			.spawn(|| {
+				for n in [21, 22] {
+					let src = rust_alloc::format!(
+						"const A={}7{};pub fn main(){{A}}",
+						"loop{break ".repeat(n),
+						"}".repeat(n)
+					);
+					let (ok, d) = compile(&src);
+					let stats = STATS.with(|s| s.get());
+					std::eprintln!("0264_STACK nesting={n} ok={ok} stats={stats:?} d={d}");
+					assert_eq!(ok, n == 21, "{d}");
+					if !ok {
+						assert!(d.contains("MaxConstDepth"), "{d}");
+					}
+					assert!(
+						stats.total + (512 << 10) < (2 << 20),
+						"reserve consumed: {stats:?}"
+					);
+				}
+				let (ok, d) = compile(
+					"const fn f(n){if n==0{loop{break 7}}else{1+f(n-1)}}const A=f(170);pub fn main(){A}",
+				);
+				let stats = STATS.with(|s| s.get());
+				std::eprintln!("0264_STACK loop_calls {stats:?}");
+				assert!(ok, "{d}");
+				assert!(stats.total + (512 << 10) < (2 << 20));
+			})
+			.unwrap()
+			.join()
+			.unwrap();
+	}
+
+	#[test]
+	#[cfg_attr(miri, ignore)]
+	fn constant_loop_measurements() {
+		for (name, source, success) in [
+			(
+				"empty_infinite",
+				"const A=loop{};pub fn main(){A}".to_owned(),
+				false,
+			),
+			(
+				"empty_10000",
+				"const A=for _ in 0..10000{};pub fn main(){A}".to_owned(),
+				true,
+			),
+			(
+				"count_10000",
+				"const fn f(){let n=0;while n<10000{n+=1;}n}const A=f();pub fn main(){A}"
+					.to_owned(),
+				true,
+			),
+			(
+				"replaced_data",
+				"const A={let v=[];for _ in 0..32769{v=[0,0];}0};pub fn main(){A}".to_owned(),
+				false,
+			),
+			(
+				"nested_data",
+				"const A={let v=[];for _ in 0..128{v=[v,0];}0};pub fn main(){A}".to_owned(),
+				false,
+			),
+		] {
+			let start = std::time::Instant::now();
+			let (ok, d) = compile(&source);
+			std::eprintln!(
+				"0264_MEASURE {name} seconds={} stats={:?} ok={ok} diagnostics={d}",
+				start.elapsed().as_secs_f64(),
+				STATS.with(|s| s.get())
+			);
+			assert_eq!(ok, success, "{name}: {d}");
+		}
 	}
 
 	#[test]

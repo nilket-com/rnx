@@ -96,14 +96,6 @@ fn diagnostics_and_cycles() {
 		assert_ne!(b["outcome"], "ok", "{source}");
 		assert_eq!(a, b, "cycle parity: {source}");
 	}
-	for (source, reason) in [
-		("const A={let x=1;x=2;x};A", "constant assignment"),
-		("const A={loop{break 1}};A", "constant loops"),
-	] {
-		let (_, b) = pair(source);
-		assert_ne!(b["outcome"], "ok");
-		assert!(b.to_string().contains(reason), "{source}: {b}");
-	}
 }
 
 #[test]
