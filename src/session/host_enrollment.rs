@@ -20,10 +20,13 @@ const NAMES: &[&str] = &[
 	"web::escape_html",
 ];
 pub(crate) fn is_new(name: &str) -> bool {
-	NAMES.contains(&name)
+	NAMES.contains(&name) || super::parity::external::NAMES.contains(&name)
 }
 
 pub(crate) fn isolated_witness(name: &str) -> crate::routing_inventory::Result<Value> {
+	if super::parity::external::NAMES.contains(&name) {
+		return Ok(super::parity::external::report(name));
+	}
 	static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 	let dir = Scratch(std::env::temp_dir().join(format!(
 			"rnx-0247-{}-{}-{}",

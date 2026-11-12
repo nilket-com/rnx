@@ -1,4 +1,5 @@
 //! ADR0246: source-derived session coverage, confined to tests.
+pub(crate) mod external;
 mod witnesses;
 use quote::ToTokens;
 use serde::Serialize;
@@ -701,6 +702,76 @@ fn summary(rows: &[serde_json::Value]) -> serde_json::Value {
 	serde_json::json!({"classes":classes,"work_groups":groups})
 }
 
+// Keep every classed observation on its own line, including notebook rows.
+// The summary is one line so a reclassification changes only those two lines.
+fn serialize_table(value: &serde_json::Value) -> String {
+	fn render(value: &serde_json::Value, depth: usize, compact: bool) -> String {
+		if compact || value.get("class").is_some() {
+			return serde_json::to_string(value).unwrap();
+		}
+		let pad = "\t".repeat(depth);
+		let child_pad = "\t".repeat(depth + 1);
+		match value {
+			serde_json::Value::Object(fields) if !fields.is_empty() => {
+				let lines = fields
+					.iter()
+					.map(|(key, value)| {
+						format!(
+							"{child_pad}{}: {}",
+							serde_json::to_string(key).unwrap(),
+							render(value, depth + 1, key == "summary")
+						)
+					})
+					.collect::<Vec<_>>();
+				format!("{{\n{}\n{pad}}}", lines.join(",\n"))
+			}
+			serde_json::Value::Array(items) if !items.is_empty() => {
+				let lines = items
+					.iter()
+					.map(|item| format!("{child_pad}{}", render(item, depth + 1, false)))
+					.collect::<Vec<_>>();
+				format!("[\n{}\n{pad}]", lines.join(",\n"))
+			}
+			_ => serde_json::to_string(value).unwrap(),
+		}
+	}
+	format!("{}\n", render(value, 0, false))
+}
+
+#[test]
+fn serializer_preserves_row_diffs() {
+	let pin: serde_json::Value =
+		serde_json::from_str(include_str!("../../tests/fixtures/session_parity.json")).unwrap();
+	let before = serialize_table(&pin);
+	assert_eq!(
+		serde_json::from_str::<serde_json::Value>(&before).unwrap(),
+		pin
+	);
+	assert!(before.len() <= 163840);
+	let mut changed = pin.clone();
+	assert_eq!(changed["hosts"]["rows"][0]["class"], "Equal");
+	changed["hosts"]["rows"][0]["class"] = "Different result".into();
+	let classes = &mut changed["summary"]["classes"];
+	classes["Equal"] = (classes["Equal"].as_u64().unwrap() - 1).into();
+	classes["Different result"] = 1.into();
+	let after = serialize_table(&changed);
+	let a: Vec<_> = before.lines().collect();
+	let b: Vec<_> = after.lines().collect();
+	assert_eq!(a.len(), b.len());
+	let delta: Vec<_> = a.iter().zip(&b).filter(|(a, b)| a != b).collect();
+	assert_eq!(delta.len(), 2);
+	assert!(
+		delta
+			.iter()
+			.any(|(a, _)| a.contains("\"function\":\"json::parse\""))
+	);
+	assert!(
+		delta
+			.iter()
+			.any(|(a, _)| a.trim_start().starts_with("\"summary\":"))
+	);
+}
+
 #[test]
 fn pinned_classification() {
 	let literals = literal_report();
@@ -727,14 +798,19 @@ fn pinned_classification() {
 	}
 	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"moved_json":moved_json,"summary":summary(&all)});
 	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
-		std::fs::write(path, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
+		std::fs::write(path, serialize_table(&report).into_bytes()).unwrap();
 	}
 	let pin =
 		std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/session_parity.json");
 	let expected: serde_json::Value =
-		serde_json::from_slice(&std::fs::read(pin).expect("classification not pinned yet"))
+		serde_json::from_slice(&std::fs::read(&pin).expect("classification not pinned yet"))
 			.unwrap();
 	assert_eq!(report, expected, "session parity pin changed");
+	assert_eq!(
+		std::fs::read_to_string(pin).unwrap(),
+		serialize_table(&report),
+		"pin serialization differs from generator"
+	);
 }
 
 #[test]
