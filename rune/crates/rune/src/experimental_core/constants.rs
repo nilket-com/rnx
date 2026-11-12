@@ -6,6 +6,7 @@ use super::{
 	lower::binary_op,
 	value::Value,
 };
+use crate as rune;
 use crate::alloc::prelude::*;
 use crate::runtime::{ConstNodeKind, ConstValue, ConstValueBuf, Inline};
 use crate::{
@@ -311,7 +312,38 @@ fn evaluate(
 				None => Ok(ConstValueBuf::from(Inline::Unit)),
 			};
 		}
-		E::Call(_) => refuse!("constant calls and option construction"),
+		E::Call(call) => {
+			let hir::Call::Meta { hash } = call.call else {
+				refuse!("constant calls and option construction");
+			};
+			let some = crate::Hash::type_hash(crate::item!(::std::option::Option::Some));
+			let none = crate::Hash::type_hash(crate::item!(::std::option::Option::None));
+			if hash == crate::Hash::type_hash(crate::item!(::std::result::Result::Ok))
+				|| hash == crate::Hash::type_hash(crate::item!(::std::result::Result::Err))
+			{
+				refuse!("Result constants");
+			}
+			if hash != some && hash != none {
+				refuse!("constant calls and option construction");
+			}
+			if call.args.len() != usize::from(hash == some) {
+				refuse!("constant Option constructor arity");
+			}
+			let payload = if hash == some {
+				Some(next(call.args[0])?)
+			} else {
+				None
+			};
+			let copied_bytes = payload.as_ref().map_or(0, |v| data_bytes(v));
+			if budget.bytes.saturating_add(copied_bytes) > MAX_BYTES {
+				refuse!("constant byte-copy bound (16 MiB) exceeded");
+			}
+			check!(ConstValueBuf::instance(
+				Option::<crate::runtime::Value>::HASH,
+				hash,
+				payload.iter()
+			))
+		}
 		E::Assign(_) => refuse!("constant assignment"),
 		E::Loop(_) | E::For(_) => refuse!("constant loops"),
 		E::Break(_) => refuse!("constant break"),
@@ -320,7 +352,11 @@ fn evaluate(
 		E::AsyncBlock(_) | E::Await(_) | E::Select(_) => refuse!("constant async expressions"),
 		E::Yield(_) => refuse!("constant yield"),
 		E::CallClosure(_) | E::Fn(_) => refuse!("constant closures and function values"),
-		E::FieldAccess(_) => refuse!("constant field access"),
+		E::FieldAccess(access) => {
+			let target = next(access.expr)?;
+			let selected = field(&target, access.expr_field, span)?;
+			return copy(selected, depth, budget, span);
+		}
 		E::Match(_) => refuse!("constant match"),
 		E::Try(_) => refuse!("constant try"),
 		E::Range(_) => refuse!("constant ranges"),
@@ -423,6 +459,105 @@ fn type_name(value: &ConstValue) -> rust_alloc::string::String {
 	rust_alloc::format!("{}", value.type_info())
 		.trim_start_matches("::")
 		.into()
+}
+
+// Validate before lowering allocates slots or emits any payload instructions.
+pub(crate) fn option_shape(value: &ConstValue) -> Result<Option<bool>> {
+	use crate::runtime::TypeHash;
+	let ConstNodeKind::Instance {
+		hash,
+		variant_hash,
+		fields,
+	} = value.kind()
+	else {
+		return Ok(None);
+	};
+	let some = crate::Hash::type_hash(crate::item!(::std::option::Option::Some));
+	let none = crate::Hash::type_hash(crate::item!(::std::option::Option::None));
+	if *hash != Option::<crate::runtime::Value>::HASH
+		&& *variant_hash != some
+		&& *variant_hash != none
+	{
+		return Ok(None);
+	}
+	let success = *variant_hash == some;
+	if *hash != Option::<crate::runtime::Value>::HASH
+		|| (*variant_hash != some && *variant_hash != none)
+		|| *fields != u32::from(success)
+	{
+		return Err(Error::new(
+			ErrorKind::InvalidCode,
+			"malformed Option constant",
+		));
+	}
+	Ok(Some(success))
+}
+
+fn field<'a>(
+	target: &'a ConstValue,
+	field: hir::ExprField<'_>,
+	span: crate::ast::Span,
+) -> crate::compile::Result<&'a ConstValue> {
+	use crate::runtime::TypeHash;
+	match field {
+		hir::ExprField::Index(index) => {
+			match target.kind() {
+				ConstNodeKind::Instance { hash, fields, .. }
+					if *hash == crate::runtime::Vec::HASH
+						|| *hash == crate::runtime::OwnedTuple::HASH =>
+				{
+					return target.fields().get(index).ok_or_else(|| {
+						diagnostic(span,
+						format_args!("Index out of bounds, the length is `{fields}` but the index is `{index}`"))
+					});
+				}
+				ConstNodeKind::Inline(Inline::Unit) => {}
+				ConstNodeKind::Instance { hash, .. }
+					if *hash == Option::<crate::runtime::Value>::HASH =>
+				{
+					option_shape(target).map_err(|e| diagnostic(span, e.operation))?;
+					if let Some(value) = target.fields().get(index) {
+						return Ok(value);
+					}
+				}
+				_ => {
+					return Err(diagnostic(
+						span,
+						format_args!(
+							"The tuple index get {index} operation is not supported on `{}`",
+							type_name(target)
+						),
+					))
+				}
+			}
+			Err(diagnostic(
+				span,
+				format_args!(
+					"Type `{}` missing integer index `{index}`",
+					type_name(target)
+				),
+			))
+		}
+		hir::ExprField::Ident(key) => {
+			let ConstNodeKind::Object { keys } = target.kind() else {
+				return Err(diagnostic(
+					span,
+					format_args!("Field `{key}` not available on `{}`", type_name(target)),
+				));
+			};
+			keys.iter()
+				.zip(target.fields())
+				.find(|(k, _)| k.as_ref() == key)
+				.map(|(_, v)| v)
+				.ok_or_else(|| {
+					diagnostic(
+						span,
+						format_args!("Missing field `{key}` on `std::object::Object`"),
+					)
+				})
+		}
+		hir::ExprField::IdentGenerics(..) => Err(refusal(span, "constant generic field access")),
+	}
 }
 
 fn select<'a>(
@@ -568,6 +703,46 @@ fn block_value(
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn option_shapes_and_copy_limits() {
+		use crate::runtime::TypeHash;
+		let some = crate::Hash::type_hash(crate::item!(::std::option::Option::Some));
+		let none = crate::Hash::type_hash(crate::item!(::std::option::Option::None));
+		let family = Option::<crate::runtime::Value>::HASH;
+		for (hash, variant, count) in [
+			(family, some, 0),
+			(family, none, 1),
+			(family, crate::Hash::EMPTY, 0),
+			(crate::runtime::Vec::HASH, some, 1),
+			(family, some, 2),
+		] {
+			let fields = (0..count)
+				.map(|_| ConstValueBuf::from(Inline::Signed(1)))
+				.collect::<rust_alloc::vec::Vec<_>>();
+			let value = ConstValueBuf::instance(hash, variant, fields.iter()).unwrap();
+			assert_eq!(
+				option_shape(&value).unwrap_err().kind,
+				ErrorKind::InvalidCode
+			);
+		}
+		let value =
+			ConstValueBuf::instance(family, some, [ConstValueBuf::string("abc").unwrap()]).unwrap();
+		assert_eq!(option_shape(&value).unwrap(), Some(true));
+		let empty =
+			ConstValueBuf::instance(family, none, core::iter::empty::<&ConstValue>()).unwrap();
+		assert_eq!(option_shape(&empty).unwrap(), Some(false));
+		let span = crate::ast::Span::empty();
+		for (nodes, bytes, depth) in [
+			(MAX_NODES, 0, 0),
+			(1, MAX_BYTES - 2, 0),
+			(1, 0, MAX_DEPTH - 1),
+		] {
+			let mut budget = Budget { nodes, bytes };
+			assert!(copy(&value, depth, &mut budget, span).is_err());
+			assert_eq!((budget.nodes, budget.bytes), (nodes, bytes));
+		}
+	}
+
 	#[test]
 	fn selected_copy_checks_limits_before_copying() {
 		let value = ConstValueBuf::tuple([ConstValueBuf::string("abc").unwrap()]).unwrap();

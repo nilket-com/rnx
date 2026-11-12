@@ -349,6 +349,9 @@ fn constant_report() -> serde_json::Value {
 		("constant if", "const A=if true {1}else{2}; A"),
 		("constant functions", "const fn f(x){x+1} const A=f(2); A"),
 		("constant option construction", "const A=Some(1); A"),
+		("constant None", "const A=None; A"),
+		("constant tuple field", "const A=(1,[2]);const B=A.1; B"),
+		("constant object field", "const A=#{x:[3]};const B=A.x; B"),
 		("constant bytes", "const A=b\"ab\"; A"),
 	] {
 		let mut old = Session::new(context()).unwrap();

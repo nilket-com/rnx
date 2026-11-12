@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::tests::constant_structure::option_fields_materialize_independently",
+      "ignored": true,
+      "timeout_seconds": 3600
+    },
+    {
+      "name": "experimental_core::tests::constant_structure::constant_local_failure_drops_partial_values",
+      "ignored": true,
+      "timeout_seconds": 3600
+    },
+    {
+      "name": "experimental_core::constants::tests::option_shapes_and_copy_limits",
+      "ignored": false,
+      "timeout_seconds": 300
+    }
+  ]
+}

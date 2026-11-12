@@ -1397,6 +1397,29 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 	) -> Result<()> {
 		use crate::runtime::ConstNodeKind;
 		use crate::runtime::TypeHash;
+		if let Some(success) = super::constants::option_shape(constant)? {
+			let payload = if success {
+				let child = constant
+					.fields()
+					.get(0)
+					.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "Option payload"))?;
+				let slot = self.slot()?;
+				self.constant_into(child, slot, span)?;
+				Some(slot)
+			} else {
+				None
+			};
+			self.emit(
+				Op::Variant {
+					out,
+					tag: Type::Option,
+					success,
+					payload,
+				},
+				span,
+			)?;
+			return Ok(());
+		}
 		match constant.kind() {
 			ConstNodeKind::Instance {
 				hash, variant_hash, ..

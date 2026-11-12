@@ -746,7 +746,6 @@ mod tests {
 	fn constant_deferred_forms_are_not_async() {
 		for (source, construct) in [
 			("const fn f(x){x+1} const A=f(2);A", "constant functions"),
-			("const A=Some(1);A", "option construction"),
 			("const A=b\"ab\";A", "byte-string constants"),
 		] {
 			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();

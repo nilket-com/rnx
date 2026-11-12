@@ -111,3 +111,80 @@ fn diagnostics_and_cycles() {
 		assert!(b.to_string().contains(reason), "{source}: {b}");
 	}
 }
+
+#[test]
+fn option_and_field_values() {
+	let (a, b) = pair("const A=Some(1);A");
+	assert_eq!(a["outcome"], "ok");
+	assert_eq!(a["value"], "Some(1)");
+	assert_eq!(a, b);
+	for source in [
+		"const A=None;A",
+		"const A=[3];const B=A.0;let a=[3];(B,a.0)",
+		"const A=Some(3);const B=A.0;let a=Some(3);(B,a.0)",
+		"const A=(3,);const B=A.0;let a=(3,);(B,a.0)",
+		"const A=#{x:3};const B=A.x;let a=#{x:3};(B,a.x)",
+		"const A=Some(Some(None));A",
+		"const A=[Some(1),None];A",
+		"const A=(Some(1),None);A",
+		"const A=#{x:Some([1])};A",
+		"const A=Some([1]);let a=A;let b=A;a.0.push(2);(a,b,A)",
+		"const A=[Some([1])];const B=A[0];let b=B;b.0.push(2);(b,B,A)",
+		"const A=(Some([1]),);const B=A.0;const C=B;let b=C;b.0.push(2);(b,B,C)",
+		"const A=([Some(7)],);const B=A.0.0.0;B",
+		"const A=#{x:[3]};const B=A.x;B",
+		"const A=[1];const B=A.0;B",
+		"const A=Some(3);const B=A.0;B",
+		"const Some=7;const A=Some;A",
+		"const None=8;const A=None;A",
+	] {
+		let (a, b) = pair(source);
+		assert_eq!(a["outcome"], "ok", "{source}: {a}");
+		assert_eq!(a, b, "{source}");
+	}
+}
+
+#[test]
+fn option_and_field_diagnostics() {
+	for source in [
+		"const A=None;const B=A.0;B",
+		"const A=();const B=A.0;B",
+		"const A=(1,2);const B=A.9;B",
+		"const A=[1];const B=A.9;B",
+		"const A=Some(3);const B=A.1;B",
+		"const A=#{x:1};const B=A.y;B",
+		"const A=1;const B=A.0;B",
+		"const A=1;const B=A.x;B",
+		"const A=#{x:1};const B=A.0;B",
+		"const A=(1,2);const B=A.x;B",
+		"const A=((1,),);const B=A.0.9;B",
+		"const A=Some();A",
+		"const A=Some(1,2);A",
+		"const A=None(1);A",
+	] {
+		let (a, b) = pair(source);
+		assert_ne!(a["outcome"], "ok", "{source}: {a}");
+		assert_eq!(a, b, "{source}");
+	}
+	for source in ["const A=Ok(1);A", "const A=Err(1);A"] {
+		let (a, b) = pair(source);
+		assert_ne!(a["outcome"], "ok");
+		assert_ne!(b["outcome"], "ok");
+		assert!(b.to_string().contains("Result constants"), "{b}");
+	}
+	let (_, b) = pair("fn Some(x){x} const A=Some(1);A");
+	assert_ne!(b["outcome"], "ok");
+	let mut old = Session::new(context()).unwrap();
+	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	assert_eq!(
+		parity_old(&mut old, "let kept=[7];"),
+		parity_new(&mut new, "let kept=[7];")
+	);
+	for source in ["const BAD=Some([1]).0.9;", "const BAD=#{x:Some(1)}.y;"] {
+		assert_ne!(parity_old(&mut old, source)["outcome"], "ok");
+		assert_ne!(parity_new(&mut new, source)["outcome"], "ok");
+		assert_eq!(parity_old(&mut old, "kept"), parity_new(&mut new, "kept"));
+	}
+	old.close().unwrap();
+	new.close().unwrap();
+}

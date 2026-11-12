@@ -77,6 +77,8 @@ fn new_forms_share_limits_and_preserve_cycle_detection() {
 		.join(",");
 	for expression in [
 		"{let x=BASE;[x,x,x,x,x,x,x,x]}",
+		"Some([BASE,BASE,BASE,BASE,BASE,BASE,BASE,BASE])",
+		"(BASE,BASE,BASE,BASE,BASE,BASE,BASE,BASE).0",
 		"if true {[BASE,BASE,BASE,BASE,BASE,BASE,BASE,BASE]}else{[]}",
 		"[BASE,BASE,BASE,BASE,BASE,BASE,BASE,BASE][0]",
 	] {
@@ -102,7 +104,7 @@ fn new_forms_share_limits_and_preserve_cycle_detection() {
 		&std::format!("const A={nested};pub fn target(){{A}}"),
 		"MaxConstDepth",
 	);
-	for expression in ["[A][0]", "{A}", "if true {A}else{1}"] {
+	for expression in ["[A][0]", "{A}", "if true {A}else{1}", "Some(A)", "(A,).0"] {
 		let mut sources = Sources::new();
 		sources
 			.insert(
@@ -124,6 +126,14 @@ fn constant_local_failure_drops_partial_values() {
 	use crate::{Diagnostics, Source, Sources};
 	let context = Context::with_default_modules().unwrap();
 	for (source, reason) in [
+		(
+			"const A=Some([1]).0.9;\npub fn target(){A}",
+			"Index out of bounds",
+		),
+		(
+			"const A=#{x:Some([1])}.y;\npub fn target(){A}",
+			"Missing field",
+		),
 		(
 			"const A={let x=[1,2];{let y=x;y[9]}};\npub fn target(){A}",
 			"Index out of bounds",
@@ -163,4 +173,42 @@ fn constant_local_failure_drops_partial_values() {
 	assert_eq!(store.root_scalar(&root).unwrap(), Some(Scalar::I64(3)));
 	store.root_release(root).unwrap();
 	assert_eq!(store.live_entries(), 0);
+}
+
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "Miri: source frontend; run via the exact constant inventory"
+)]
+fn option_fields_materialize_independently() {
+	let source = r#"
+use std::option::Option::Some as Yes;
+use std::option::Option::None as No;
+const A=Yes([1]);
+const B=Some(Some([2]));
+const C=[#{x:(A,No)}];
+const D=C[0].x.0;
+const E=D;
+pub fn target(){let a=A;let b=A;a.0.push(3);let d=D;d.0.push(4);let e=E;e.0.push(5);a.0.len()==2 && b.0.len()==1 && A.0.len()==1 && B.0.0[0]==2 && D.0.len()==1 && E.0.len()==1 && C[0].x.1==None}
+"#;
+	let context = Context::with_default_modules().unwrap();
+	let (mut stock, program) =
+		super::differential::compile_unit(&context, "option-fields", source, "target");
+	assert!(crate::from_value::<bool>(stock.call(["target"], ()).unwrap()).unwrap());
+	let mut store = Store::new(Limits::default()).unwrap();
+	let mut executor = Executor::new().unwrap();
+	for _ in 0..2 {
+		let root = executor
+			.invoke(
+				&program,
+				&mut store,
+				program.function(Hash::type_hash(["target"])).unwrap(),
+				&[],
+				100_000,
+			)
+			.unwrap();
+		assert_eq!(store.root_scalar(&root).unwrap(), Some(Scalar::Bool(true)));
+		store.root_release(root).unwrap();
+		assert_eq!(store.live_entries(), 0);
+	}
 }
