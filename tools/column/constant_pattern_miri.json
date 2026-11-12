@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::constants::patterns::tests::pattern_move_copy_and_partial_failure",
+      "ignored": false,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "experimental_core::constants::patterns::tests::pattern_work_text_and_object_search",
+      "ignored": false,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_00",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_01",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_02",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_03",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_04",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_05",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_06",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_07",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_08",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_09",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_10",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_11",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_12",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_13",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_14",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_15",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_16",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_17",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_18",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_19",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_20",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_21",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_22",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_23",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::constants::function_tests::constant_patterns_semantics_24",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

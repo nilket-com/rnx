@@ -7,8 +7,8 @@ use super::{
 	value::Value,
 };
 use crate as rune;
-use crate::alloc::prelude::*;
 use crate::alloc::Box;
+use crate::alloc::prelude::*;
 use crate::runtime::TypeHash;
 use crate::runtime::{ConstNodeKind, ConstValue, ConstValueBuf, Inline};
 use crate::{
@@ -43,6 +43,8 @@ macro_rules! refuse {
 		return Err(refusal($span, $name))
 	};
 }
+#[path = "constant_patterns.rs"]
+mod patterns;
 const MAX_WORK: usize = 2_000_000;
 const MAX_COMBINED_DEPTH: usize = 896;
 const MAX_CALLS: usize = 224;
@@ -200,7 +202,7 @@ fn evaluate(
 		E::Yield(_) => Err(refusal(span, "constant yield")),
 		E::CallClosure(_) | E::Fn(_) => Err(refusal(span, "constant closures and function values")),
 		E::FieldAccess(_) => evaluate_field(inner, exprs, expr, depth, budget, locals),
-		E::Match(_) => Err(refusal(span, "constant match")),
+		E::Match(_) => evaluate_match(inner, exprs, expr, depth, budget, locals),
 		E::Try(_) => Err(refusal(span, "constant try")),
 		E::Range(_) => Err(refusal(span, "constant ranges")),
 		E::Template(_) | E::Format(_) => Err(refusal(span, "constant formatting")),
@@ -482,54 +484,168 @@ fn evaluate_conditional(
 ) -> crate::compile::Result<Flow> {
 	let span = expr.span;
 
-	match expr.kind {
-		E::If(conditional) => {
-			for branch in conditional.branches {
-				inner.constant_work.charge(span)?;
-				let hir::Condition::Expr(_, id) = branch.condition else {
-					refuse!(span, "constant if pattern conditions");
-				};
-				let condition = constant_value!(evaluate(
-					inner,
-					exprs,
-					exprs.get(*id),
-					depth + 1,
-					budget,
-					locals
-				));
-				let ConstNodeKind::Inline(Inline::Bool(taken)) = condition.kind() else {
-					return Err(diagnostic(
-						span,
-						format_args!(
-							"Expected type `std::bool` but found `{}`",
-							type_name(&condition)
-						),
-					));
-				};
-				if *taken {
-					let value = constant_value!(block_value(
+	let E::If(conditional) = expr.kind else {
+		unreachable!()
+	};
+	for branch in conditional.branches {
+		inner.constant_work.charge(span)?;
+		let mark = locals.len();
+		let result = (|| {
+			let taken = match branch.condition {
+				hir::Condition::Expr(_, id) => {
+					let value = constant_value!(evaluate(
 						inner,
 						exprs,
-						&branch.block,
+						exprs.get(*id),
 						depth + 1,
 						budget,
 						locals
 					));
-					return Ok(Flow::Value(if conditional.fallback.is_some() {
-						value
-					} else {
-						ConstValueBuf::from(Inline::Unit)
-					}));
+					let ConstNodeKind::Inline(Inline::Bool(taken)) = value.kind() else {
+						return Err(diagnostic(
+							span,
+							format_args!(
+								"Expected type `std::bool` but found `{}`",
+								type_name(&value)
+							),
+						));
+					};
+					*taken
+				}
+				hir::Condition::ExprLet(binding) => {
+					let value = constant_value!(evaluate(
+						inner,
+						exprs,
+						exprs.get(binding.expr),
+						depth + 1,
+						budget,
+						locals
+					));
+					match patterns::bind(
+						&inner.constant_work,
+						exprs,
+						binding.pat.pat,
+						patterns::Input::Owned(value),
+						depth + 1,
+						budget,
+					)? {
+						Some(bindings) => {
+							for b in bindings {
+								checked!(span, locals.try_push(b));
+							}
+							true
+						}
+						None => false,
+					}
+				}
+			};
+			if !taken {
+				return Ok(Flow::Value(None));
+			}
+			let value = constant_value!(block_value(
+				inner,
+				exprs,
+				&branch.block,
+				depth + 1,
+				budget,
+				locals
+			));
+			Ok(Flow::Value(Some(if conditional.fallback.is_some() {
+				value
+			} else {
+				ConstValueBuf::from(Inline::Unit)
+			})))
+		})();
+		locals.truncate(mark);
+		match result? {
+			Flow::Return(v) => return Ok(Flow::Return(v)),
+			Flow::Value(Some(v)) => return Ok(Flow::Value(v)),
+			Flow::Value(None) => {}
+		}
+	}
+	match conditional.fallback {
+		Some(block) => block_value(inner, exprs, block, depth + 1, budget, locals),
+		None => unit(budget, span).map(Flow::Value),
+	}
+}
+
+#[inline(never)]
+fn evaluate_match(
+	inner: &QueryInner<'_>,
+	exprs: &hir::Exprs<'_>,
+	expr: &hir::Expr<'_>,
+	depth: usize,
+	budget: &mut Budget,
+	locals: &mut Vec<(hir::Variable, ConstValueBuf)>,
+) -> crate::compile::Result<Flow> {
+	let E::Match(m) = expr.kind else {
+		unreachable!()
+	};
+	let value = constant_value!(evaluate(
+		inner,
+		exprs,
+		exprs.get(m.expr),
+		depth + 1,
+		budget,
+		locals
+	));
+	for branch in m.branches {
+		let Some(bindings) = patterns::bind(
+			&inner.constant_work,
+			exprs,
+			branch.pat.pat,
+			patterns::Input::Borrowed(&value),
+			depth + 1,
+			budget,
+		)?
+		else {
+			continue;
+		};
+		let mark = locals.len();
+		let result = (|| {
+			for b in bindings {
+				checked!(branch.span, locals.try_push(b));
+			}
+			if let Some(id) = branch.condition {
+				let guard = constant_value!(evaluate(
+					inner,
+					exprs,
+					exprs.get(id),
+					depth + 1,
+					budget,
+					locals
+				));
+				let ConstNodeKind::Inline(Inline::Bool(taken)) = guard.kind() else {
+					return Err(diagnostic(
+						exprs.get(id).span,
+						format_args!(
+							"Expected type `std::bool` but found `{}`",
+							type_name(&guard)
+						),
+					));
+				};
+				if !taken {
+					return Ok(Flow::Value(None));
 				}
 			}
-			match conditional.fallback {
-				Some(block) => block_value(inner, exprs, block, depth + 1, budget, locals),
-				None => unit(budget, span).map(Flow::Value),
-			}
+			let v = constant_value!(evaluate(
+				inner,
+				exprs,
+				exprs.get(branch.body),
+				depth + 1,
+				budget,
+				locals
+			));
+			Ok(Flow::Value(Some(v)))
+		})();
+		locals.truncate(mark);
+		match result? {
+			Flow::Return(v) => return Ok(Flow::Return(v)),
+			Flow::Value(Some(v)) => return Ok(Flow::Value(v)),
+			Flow::Value(None) => {}
 		}
-
-		_ => unreachable!(),
 	}
+	unit(budget, expr.span).map(Flow::Value)
 }
 
 #[inline(never)]
@@ -863,15 +979,6 @@ fn prepare_const_call(
 			},
 		));
 	}
-	for param in function.hir.args {
-		let hir::FnArg::Pat(binding) = param;
-		if !matches!(
-			binding.pat.kind,
-			hir::PatKind::Ignore | hir::PatKind::Path(hir::PatPathKind::Ident { .. })
-		) {
-			refuse!(span, "constant function parameter patterns");
-		}
-	}
 	let mut values = Vec::new();
 	for id in call.args {
 		checked!(span, values.try_push(constant_value!(next(*id))));
@@ -879,12 +986,30 @@ fn prepare_const_call(
 	let mut frame = Vec::new();
 	for (param, value) in function.hir.args.iter().zip(values) {
 		let hir::FnArg::Pat(binding) = param;
-		match binding.pat.kind {
-			hir::PatKind::Ignore => {}
-			hir::PatKind::Path(hir::PatPathKind::Ident { variable, .. }) => {
-				checked!(span, frame.try_push((*variable, value)))
+		let bindings = patterns::bind(
+			&inner.constant_work,
+			&function.exprs,
+			binding.pat,
+			patterns::Input::Owned(value),
+			depth + 1,
+			budget,
+		)
+		.and_then(|found| {
+			found.ok_or_else(|| diagnostic(binding.pat.span, "Panicked: pattern did not match"))
+		})
+		.map_err(|e| {
+			if budget.source == Some(function.item_meta.location.source_id) {
+				e
+			} else if let Some(construct) = e.execution_refusal() {
+				refusal(span, construct)
+			} else if let Some(name) = function.execution_name.as_deref() {
+				diagnostic(span, format_args!("in constant function `{name}`: {e}"))
+			} else {
+				diagnostic(span, "constant function origin name unavailable")
 			}
-			_ => return Err(diagnostic(span, "constant function parameter patterns")),
+		})?;
+		for binding in bindings {
+			checked!(span, frame.try_push(binding));
 		}
 	}
 
@@ -904,11 +1029,6 @@ fn block_statements(
 	for statement in block.statements {
 		match statement {
 			hir::Stmt::Local(local) => {
-				let binding = match local.pat.pat.kind {
-					hir::PatKind::Ignore => None,
-					hir::PatKind::Path(hir::PatPathKind::Ident { variable, .. }) => Some(variable),
-					_ => return Err(refusal(local.span, "constant binding patterns")),
-				};
 				let value = constant_value!(evaluate(
 					inner,
 					exprs,
@@ -917,10 +1037,17 @@ fn block_statements(
 					budget,
 					locals,
 				));
-				if let Some(variable) = binding {
-					locals
-						.try_push((*variable, value))
-						.map_err(|e| diagnostic(span, e))?;
+				let bindings = patterns::bind(
+					&inner.constant_work,
+					exprs,
+					local.pat.pat,
+					patterns::Input::Owned(value),
+					depth + 1,
+					budget,
+				)?
+				.ok_or_else(|| diagnostic(local.pat.pat.span, "Panicked: pattern did not match"))?;
+				for binding in bindings {
+					checked!(span, locals.try_push(binding));
 				}
 			}
 			hir::Stmt::Expr(_, id) => {
@@ -1521,6 +1648,147 @@ mod function_tests {
 			super::super::frontend::compile(&mut sources, &context, &mut diagnostics, 0).is_ok();
 		(ok, rust_alloc::format!("{:?}", diagnostics.diagnostics()))
 	}
+	fn constant_patterns_semantics(row: usize) {
+		let values = [
+			("{let (a,b)=(2,3);a+b}", "5"),
+			("{let #{a,b}=#{a:2,b:3};a+b}", "5"),
+			("{let #{a,..}=#{a:2,b:3};a}", "2"),
+			("{let [a,..]=[2,3];a}", "2"),
+			("{let [a,b]=[2,3];a+b}", "5"),
+			("if let Some(x)=Some(7){x}else{0}", "7"),
+			("if let Some(x)=None{x}else{0}", "0"),
+			("match Some(7){Some(x) if x<4=>1,Some(x)=>x,None=>0}", "7"),
+			("match true {1=>2,_=>9}", "9"),
+			(
+				"match (Some([2,3]),#{a:4}) {(Some([x,..]),#{a})=>x+a,_=>0}",
+				"6",
+			),
+			("match (){()=>7,_=>0}", "7"),
+			("match b'a'{b'a'=>7,_=>0}", "7"),
+			("match 'a'{'a'=>7,_=>0}", "7"),
+			("match \"abc\"{\"abc\"=>7,_=>0}", "7"),
+			("match 2{1 if 1/0==0=>3,_=>7}", "7"),
+			("match #{b:2}{#{a,..}=>a,_=>9}", "9"),
+			("match [2,3]{[a]=>a,_=>9}", "9"),
+			("match (2,3){(a,..)=>a,_=>9}", "2"),
+			("match (\"kept\",2){(a,1)=>0,(_,2)=>7,_=>8}", "7"),
+		];
+		if row < values.len() {
+			let (body, expected) = values[row];
+			let src = rust_alloc::format!(
+				"const A={body};const CHECK=if A=={expected}{{0}}else{{1/0}};pub fn main(){{CHECK}}"
+			);
+			let (ok, d) = compile(&src);
+			assert!(ok, "{src}: {d}");
+			return;
+		}
+		let programs = [
+			"const A=match 7{1=>2};const CHECK=match A{()=>7,_=>1/0};pub fn main(){CHECK}",
+			"const A=if let Some(x)=Some(7){x};const CHECK=match A{()=>7,_=>1/0};pub fn main(){CHECK}",
+			"const fn f((a,b)){a+b} const A=f((2,3));const CHECK=if A==5{0}else{1/0};pub fn main(){CHECK}",
+			"const fn f(){Some(7)} const fn g(){match f(){Some(x)=>x,None=>0}} const A=g();const CHECK=if A==7{0}else{1/0};pub fn main(){CHECK}",
+			"const fn f(){match Some(7){Some(x) if {return x;false}=>99,_=>0}}const A=f();const CHECK=if A==7{0}else{1/0};pub fn main(){CHECK}",
+			"const fn f(){let x=11;match Some(2){Some(x) if false=>99,_=>x}} const A=f();const CHECK=if A==11{0}else{1/0};pub fn main(){CHECK}",
+		];
+		{
+			let src = programs[row - values.len()];
+			let (ok, d) = compile(src);
+			assert!(ok, "{src}: {d}");
+		}
+	}
+
+	// Separate exact tests make every compiler invocation durably resumable in Miri.
+	macro_rules! pattern_semantic_cases {
+		($($name:ident => $row:expr),* $(,)?) => {$(
+			#[test]
+			fn $name() { constant_patterns_semantics($row); }
+		)*};
+	}
+	pattern_semantic_cases! {
+		constant_patterns_semantics_00 => 0,
+		constant_patterns_semantics_01 => 1,
+		constant_patterns_semantics_02 => 2,
+		constant_patterns_semantics_03 => 3,
+		constant_patterns_semantics_04 => 4,
+		constant_patterns_semantics_05 => 5,
+		constant_patterns_semantics_06 => 6,
+		constant_patterns_semantics_07 => 7,
+		constant_patterns_semantics_08 => 8,
+		constant_patterns_semantics_09 => 9,
+		constant_patterns_semantics_10 => 10,
+		constant_patterns_semantics_11 => 11,
+		constant_patterns_semantics_12 => 12,
+		constant_patterns_semantics_13 => 13,
+		constant_patterns_semantics_14 => 14,
+		constant_patterns_semantics_15 => 15,
+		constant_patterns_semantics_16 => 16,
+		constant_patterns_semantics_17 => 17,
+		constant_patterns_semantics_18 => 18,
+		constant_patterns_semantics_19 => 19,
+		constant_patterns_semantics_20 => 20,
+		constant_patterns_semantics_21 => 21,
+		constant_patterns_semantics_22 => 22,
+		constant_patterns_semantics_23 => 23,
+		constant_patterns_semantics_24 => 24,
+	}
+
+	#[test]
+	fn constant_patterns_miss_matrix_and_work_exhaustion() {
+		for body in [
+			"match 1{2=>0,_=>7}",
+			"match true{false=>0,_=>7}",
+			"match 'a'{'b'=>0,_=>7}",
+			"match \"abc\"{\"abd\"=>0,_=>7}",
+			"match 1{()=>0,_=>7}",
+			"match (1,){(a,b)=>0,_=>7}",
+			"match []{[a,..]=>0,_=>7}",
+			"match #{b:1}{#{a,..}=>0,_=>7}",
+			"match Some(2){None=>0,Some(1)=>0,_=>7}",
+			"match None{Some(x)=>0,_=>7}",
+			"match Some([2]){Some([1])=>0,_=>7}",
+			"if let Some(1)=Some(2){0}else{7}",
+			"match 1{_=>7}",
+			"match 1{x=>x+6}",
+		] {
+			let source = rust_alloc::format!(
+				"const A={body};const CHECK=if A==7{{0}}else{{1/0}};pub fn main(){{CHECK}}"
+			);
+			let (ok, d) = compile(&source);
+			assert!(ok, "{source}: {d}");
+		}
+		let (ok, d) =
+			compile("const fn f(n){match n{0=>1,x=>f(x-1)+f(x-1)}} const A=f(18);pub fn main(){A}");
+		assert!(!ok && d.contains("work bound"), "{d}");
+		STATS.with(|s| assert_eq!(s.get().work, MAX_WORK));
+	}
+
+	#[test]
+	fn constant_patterns_failures_and_reached_refusals() {
+		for (body, error) in [
+			("{let (a,b)=(2,);a}", "pattern did not match"),
+			("{let (a,b)=true;a}", "pattern did not match"),
+			("{let 1=2;7}", "pattern did not match"),
+			("{let #{a}=#{a:2,b:3};a}", "pattern did not match"),
+			("match 7{Ok(x)=>x,_=>0}", "constant Result patterns"),
+			("match 7{b\"a\"=>1,_=>0}", "constant byte-string patterns"),
+			("match 7{1.5=>1,_=>0}", "constant floating-point patterns"),
+			("match 7{_ if 3=>1}", "Expected type"),
+		] {
+			let src = rust_alloc::format!("const A={body};pub fn main(){{A}}");
+			let (ok, d) = compile(&src);
+			assert!(!ok && d.contains(error), "{src}: {d}");
+		}
+		for src in [
+			"const A=if false{match 7{Ok(x)=>x,_=>0}}else{7};pub fn main(){A}",
+			"const A=match 7{_=>7,Ok(x)=>x};pub fn main(){A}",
+		] {
+			let (ok, d) = compile(src);
+			assert!(ok, "{src}: {d}");
+		}
+		let (ok, d) = compile("const fn f((a,b)){a+b} const A=f((2,));pub fn main(){A}");
+		assert!(!ok && d.contains("pattern did not match"), "{d}");
+	}
+
 	#[test]
 	fn constant_function_calls_and_return() {
 		for source in [
@@ -1539,12 +1807,15 @@ mod function_tests {
 		assert!(ok, "accepted calibration reference must fit: {diagnostics}");
 		STATS.with(|s| {
 			assert_eq!(s.get().nodes, 0);
-			assert_eq!(s.get().work, 425969);
+			// One newly charged parameter-pattern node for each of 32,767 calls.
+			assert_eq!(s.get().work, 425969 + 32767);
 		});
 	}
 	#[test]
 	fn scalar_work_and_data_are_independent() {
-		let (ok,diagnostics)=compile("const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}} const A=[f(14),f(14),f(14),f(14),f(14)];pub fn main(){A}");
+		let (ok, diagnostics) = compile(
+			"const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}} const A=[f(14),f(14),f(14),f(14),f(14)];pub fn main(){A}",
+		);
 		assert!(!ok && diagnostics.contains("work bound"), "{diagnostics}");
 		STATS.with(|s| {
 			assert_eq!(s.get().work, MAX_WORK);
@@ -1565,10 +1836,12 @@ mod function_tests {
 			copy(&aggregate, 0, &mut b, span).unwrap();
 		}
 		assert_eq!(b.nodes, MAX_NODES);
-		assert!(copy(&aggregate, 0, &mut b, span)
-			.unwrap_err()
-			.to_string()
-			.contains("expanded-node"));
+		assert!(
+			copy(&aggregate, 0, &mut b, span)
+				.unwrap_err()
+				.to_string()
+				.contains("expanded-node")
+		);
 	}
 	#[test]
 	#[cfg_attr(miri, ignore)]
@@ -1582,6 +1855,10 @@ let cases=[
 ("object_limit",rust_alloc::format!("const fn f(n){{if n==0{{0}}else{{{}f(n-1){}}}}} const A=f(60);pub fn main(){{A}}","#{a:".repeat(16),"}".repeat(16)),Some("combined nesting")),
 ("vector_limit",rust_alloc::format!("const fn f(n){{if n==0{{0}}else{{{}f(n-1){}}}}} const A=f(60);pub fn main(){{A}}","[".repeat(16),"]".repeat(16)),Some("combined nesting")),
 ("failure_unwind","const fn f(n){if n==0{1/0}else{1+f(n-1)}} const A=f(170);pub fn main(){A}".to_owned(),Some("primitive operation")),
+("pattern_nested",rust_alloc::format!("const A=match {}7{}{{{}x{}=>x,_=>0}};pub fn main(){{A}}","[".repeat(50),"]".repeat(50),"[".repeat(50),"]".repeat(50)),None),
+("pattern_calls","const fn f(n){if n==0{match Some((7,2)){Some((x,_))=>x,_=>0}}else{1+f(n-1)}}const A=f(170);pub fn main(){A}".to_owned(),None),
+("pattern_failure_calls","const fn f(n){if n==0{let (a,b)=(1,);a}else{1+f(n-1)}}const A=f(170);pub fn main(){A}".to_owned(),Some("pattern did not match")),
+
 ];
 for (name,source,error) in cases {
 let (ok,d)=compile(&source);let stats=STATS.with(|s|s.get());
@@ -1595,26 +1872,49 @@ let (ok,d)=compile("const A=7;pub fn main(){A}");assert!(ok,"recovery: {d}");
 	}
 	#[test]
 	fn constant_function_control_flow_values() {
-		for (body,expected) in [
-("const fn g(x){x} const fn f(){g(return 7)} const A=f();","7"),
-("const fn g(x){let x=x+1;x} const fn f(x){let y=g(2);x+y} const A=f(9);","12"),
-("const fn f(){if {return 7;false}{99}else{100}} const A=f();","7"),
-("const fn f(){1+{return 7;99}} const A=f();","7"),
-("const fn g(){return 2} const fn f(){g()+3} const A=f();","5"),
-("const fn f(_,x){x+1} const A=f(99,2);","3"),
-("const fn even(n){if n==0{true}else{odd(n-1)}} const fn odd(n){if n==0{false}else{even(n-1)}} const A=even(8);","true"),
-("const fn f(){Some([2,3])} const V=f(); const A=V.0[1];","3"),
-("const fn f(){if false{loop{}}else{7}} const A=f();","7"),
-] {
-let source=rust_alloc::format!("{body} const CHECK=if A=={expected}{{0}}else{{1/0}};pub fn main(){{CHECK}}");
-let (ok,d)=compile(&source);assert!(ok,"{source}: {d}");
-}
+		for (body, expected) in [
+			(
+				"const fn g(x){x} const fn f(){g(return 7)} const A=f();",
+				"7",
+			),
+			(
+				"const fn g(x){let x=x+1;x} const fn f(x){let y=g(2);x+y} const A=f(9);",
+				"12",
+			),
+			(
+				"const fn f(){if {return 7;false}{99}else{100}} const A=f();",
+				"7",
+			),
+			("const fn f(){1+{return 7;99}} const A=f();", "7"),
+			(
+				"const fn g(){return 2} const fn f(){g()+3} const A=f();",
+				"5",
+			),
+			("const fn f(_,x){x+1} const A=f(99,2);", "3"),
+			(
+				"const fn even(n){if n==0{true}else{odd(n-1)}} const fn odd(n){if n==0{false}else{even(n-1)}} const A=even(8);",
+				"true",
+			),
+			(
+				"const fn f(){Some([2,3])} const V=f(); const A=V.0[1];",
+				"3",
+			),
+			("const fn f(){if false{loop{}}else{7}} const A=f();", "7"),
+		] {
+			let source = rust_alloc::format!(
+				"{body} const CHECK=if A=={expected}{{0}}else{{1/0}};pub fn main(){{CHECK}}"
+			);
+			let (ok, d) = compile(&source);
+			assert!(ok, "{source}: {d}");
+		}
 	}
 	#[test]
 	fn constant_function_data_bounds() {
 		let values = rust_alloc::vec!["0";1024].join(",");
 		for (n, expect) in [(63, true), (64, false)] {
-			let source=rust_alloc::format!("const V=[{values}];const fn f(n){{let x=V;if n==0{{0}}else{{f(n-1)}}}} const A=f({n});pub fn main(){{A}}");
+			let source = rust_alloc::format!(
+				"const V=[{values}];const fn f(n){{let x=V;if n==0{{0}}else{{f(n-1)}}}} const A=f({n});pub fn main(){{A}}"
+			);
 			let (ok, d) = compile(&source);
 			assert_eq!(ok, expect, "{d}");
 			if !ok {
@@ -1632,7 +1932,9 @@ let (ok,d)=compile(&source);assert!(ok,"{source}: {d}");
 	}
 	#[test]
 	fn constant_function_work_shared_across_initializers() {
-		let (ok,d)=compile("const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}} const A=f(14);const B=f(14);const C=f(14);const D=f(14);const E=f(14);pub fn main(){(A,B,C,D,E)}");
+		let (ok, d) = compile(
+			"const fn f(n){if n==0{1}else{f(n-1)+f(n-1)}} const A=f(14);const B=f(14);const C=f(14);const D=f(14);const E=f(14);pub fn main(){(A,B,C,D,E)}",
+		);
 		assert!(!ok && d.contains("work bound"), "{d}");
 		STATS.with(|s| assert_eq!(s.get().work, MAX_WORK));
 		let work = Work(core::cell::Cell::new(2));
@@ -1645,21 +1947,25 @@ let (ok,d)=compile(&source);assert!(ok,"{source}: {d}");
 	#[test]
 	fn constant_function_small_limits_and_failure_cleanup() {
 		let span = crate::ast::Span::empty();
-		assert!(check_depth(MAX_DEPTH, &Budget::default(), span)
+		assert!(
+			check_depth(MAX_DEPTH, &Budget::default(), span)
+				.unwrap_err()
+				.to_string()
+				.contains("expression nesting")
+		);
+		assert!(
+			check_depth(
+				MAX_COMBINED_DEPTH,
+				&Budget {
+					body_base: MAX_COMBINED_DEPTH,
+					..Budget::default()
+				},
+				span
+			)
 			.unwrap_err()
 			.to_string()
-			.contains("expression nesting"));
-		assert!(check_depth(
-			MAX_COMBINED_DEPTH,
-			&Budget {
-				body_base: MAX_COMBINED_DEPTH,
-				..Budget::default()
-			},
-			span
-		)
-		.unwrap_err()
-		.to_string()
-		.contains("combined nesting"));
+			.contains("combined nesting")
+		);
 		let work = Work(core::cell::Cell::new(2));
 		work.charge(span).unwrap();
 		work.charge(span).unwrap();

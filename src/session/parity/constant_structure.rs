@@ -20,6 +20,9 @@ fn pair(source: &str) -> (Value, Value) {
 #[test]
 fn values_and_transactionality() {
 	for source in [
+		"const A={let (x,y)=(1,2);x};A",
+		"const A=if let Some(x)=Some(1){x};A",
+		"const A=if false{1}else if let Some(x)=Some(2){x}else{3};A",
 		"const A=[1,2];const B=A[1u64];B",
 		"const A=(1,2);const B=A[1];B",
 		"const A=#{x:([2],3)};const B=A[\"x\"][0][0];B",
@@ -94,16 +97,7 @@ fn diagnostics_and_cycles() {
 		assert_eq!(a, b, "cycle parity: {source}");
 	}
 	for (source, reason) in [
-		("const A={let (x,y)=(1,2);x};A", "constant binding patterns"),
 		("const A={let x=1;x=2;x};A", "constant assignment"),
-		(
-			"const A=if let Some(x)=Some(1){x};A",
-			"constant if pattern conditions",
-		),
-		(
-			"const A=if false {1}else if let Some(x)=Some(2){x}else{3};A",
-			"constant if pattern conditions",
-		),
 		("const A={loop{break 1}};A", "constant loops"),
 	] {
 		let (_, b) = pair(source);

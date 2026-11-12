@@ -1,5 +1,6 @@
 //! ADR0246: source-derived session coverage, confined to tests.
 mod conditionals;
+mod constant_patterns;
 mod constant_structure;
 pub(crate) mod external;
 mod witnesses;
@@ -364,6 +365,40 @@ fn constant_report() -> serde_json::Value {
 		("constant None", "const A=None; A"),
 		("constant tuple field", "const A=(1,[2]);const B=A.1; B"),
 		("constant object field", "const A=#{x:[3]};const B=A.x; B"),
+		("constant tuple pattern", "const A={let (a,b)=(2,3);a+b};A"),
+		(
+			"constant object pattern",
+			"const A={let #{a,b}=#{a:2,b:3};a+b};A",
+		),
+		(
+			"constant vector rest pattern",
+			"const A={let [a,..]=[2,3];a};A",
+		),
+		(
+			"constant if let Some",
+			"const A=if let Some(x)=Some(7){x}else{0};A",
+		),
+		(
+			"constant if let None",
+			"const A=if let Some(x)=None{x}else{0};A",
+		),
+		(
+			"constant guarded match",
+			"const A=match Some(7){Some(x) if x<4=>1,Some(x)=>x,None=>0};A",
+		),
+		("constant unmatched match", "const A=match 7{1=>2};A"),
+		(
+			"constant pattern parameter",
+			"const fn f((a,b)){a+b} const A=f((2,3));A",
+		),
+		(
+			"constant Option call match",
+			"const fn f(){Some(7)}const fn g(){match f(){Some(x)=>x,None=>0}}const A=g();A",
+		),
+		(
+			"constant byte scalar pattern",
+			"const A=match b'a'{b'a'=>7,_=>0};A",
+		),
 		("constant bytes", "const A=b\"ab\"; A"),
 	] {
 		let mut old = Session::new(context()).unwrap();
