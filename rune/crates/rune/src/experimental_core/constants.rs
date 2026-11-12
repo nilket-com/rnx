@@ -1893,7 +1893,7 @@ mod function_tests {
 	#[test]
 	fn constant_loop_object_first_refused() {
 		let (ok, d) = compile(
-			r#"const A={let s="!";for(k,v) in #{z:1,a:2,m:3,b:4}{s=k;break;}s};pub fn main(){A}"#,
+			r#"const A={let s="";for(k,v) in #{z:1,a:2,m:3,b:4}{s=k;break;}s};pub fn main(){A}"#,
 		);
 		assert!(
 			!ok && d.contains("ExecutionRefusal") && d.contains("constant object iteration"),
@@ -1903,7 +1903,7 @@ mod function_tests {
 	#[test]
 	fn constant_loop_object_all_refused() {
 		let (ok, d) = compile(
-			r#"const A={let s="!";for(k,v) in #{z:1,a:2,m:3,b:4}{s+=k;}s};pub fn main(){A}"#,
+			r#"const A={let s="";for(k,v) in #{z:1,a:2,m:3,b:4}{s+=k;}s};pub fn main(){A}"#,
 		);
 		assert!(
 			!ok && d.contains("ExecutionRefusal") && d.contains("constant object iteration"),

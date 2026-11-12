@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_text",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_text",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_vector",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_vector",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_object",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_object",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_tuple",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_tuple",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_block",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_block",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_function",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_function",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_constant_text",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_constant_text",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_bytes",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_bytes_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_pointer_format",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_pointer_format_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::zero_size_addresses_and_storage",
+      "ignored": false,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::legacy_pointer_padding",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "hir::arena::tests::empty_literals::execution_pointer_padding_refused",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

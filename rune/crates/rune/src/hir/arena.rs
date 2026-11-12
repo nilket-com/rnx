@@ -165,8 +165,13 @@ impl Arena {
 		assert!(layout.align() != 0);
 
 		if layout.size() == 0 {
-			// SAFETY: we've asserted that alignment is non-zero above.
-			return unsafe { Ok(ptr::NonNull::new_unchecked(layout.align() as *mut u8)) };
+			// SAFETY: Layout alignment is nonzero; this aligned address is used
+			// only for zero-byte accesses and needs no allocation provenance.
+			return unsafe {
+				Ok(ptr::NonNull::new_unchecked(ptr::without_provenance_mut(
+					layout.align(),
+				)))
+			};
 		}
 
 		loop {

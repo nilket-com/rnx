@@ -545,7 +545,11 @@ impl FormatSpec {
 		match value.as_inline() {
 			Some(Inline::Signed(n)) => {
 				let (n, padding) = self.uint_traits(*n as u64);
-				write!(f.buf_mut(), "{:p}", n as *const ())?;
+				write!(
+					f.buf_mut(),
+					"{:p}",
+					core::ptr::without_provenance::<()>(n as usize)
+				)?;
 				self.format_fill(f, padding)?;
 			}
 			_ => {

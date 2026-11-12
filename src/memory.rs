@@ -134,7 +134,7 @@ mod tests {
 	#[test]
 	fn every_event_is_accounted_and_a_failure_is_not() {
 		let counter = Counter::new();
-		let pointer = 1usize as *mut u8;
+		let pointer = core::ptr::NonNull::<u8>::dangling().as_ptr();
 		let failed = std::ptr::null_mut();
 
 		counter.allocated(pointer, 100);
