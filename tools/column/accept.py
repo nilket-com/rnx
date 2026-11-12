@@ -30,7 +30,7 @@ PREREQUISITES = {
 
 def commands(out, root=ROOT):
 	# The verifier only permits ignored in-tree output below this directory.
-	cross_out = root / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16])
+	cross_out = root / "target/rnx-verify" / (out.name + "-" + hashlib.sha256(str(out.resolve()).encode()).hexdigest()[:16]) / "payload"
 	cargo = ["cargo", "+1.98.1"]
 	steps = [("commit-discipline", ["python3", "-B", "ci/preflight.py"])]
 	steps += [("fetch-" + m.replace("/", "-"), cargo + ["fetch", "--locked", "--manifest-path", m]) for m in MANIFESTS]
@@ -92,48 +92,15 @@ def main():
 	if args.plan:
 		print(json.dumps(steps, indent=2))
 		return 0
-	out.mkdir(parents=True, exist_ok=False)
-	start = time.monotonic()
-	result = {"status": "FAIL", "candidate": args.candidate, "checks": []}
-	env = dict(os.environ, CARGO_BUILD_JOBS="4", PYTHONDONTWRITEBYTECODE="1")
-	def exact():
-		assert subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip() == args.candidate
-		assert not subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT, text=True).strip(), "source changed"
-	try:
-		subprocess.run(["python3", "-B", str(ROOT / "ci/disk_space.py"), "--path", str(ROOT), "--path", str(out)], check=True)
-		exact()
-		if args.remote_context:
-			context = json.loads(args.remote_context.read_text())
-			if context["candidate"] != args.candidate or context["source"] != child_result.source(ROOT):
-				raise ValueError("remote source context differs")
-			result["remote_context"] = context
-		selection = gate_policy.select(ROOT, out, candidate=args.candidate)
-		child_result.atomic_json(out / "SELECTION.json", selection)
-		assert not env.get("CARGO_TARGET_DIR"), "fresh acceptance requires native workspace targets"
-		for manifest in MANIFESTS:
-			assert not (ROOT / manifest).parent.joinpath("target").exists(), "fresh target already exists"
-		for name, command in steps:
-			exact()
-			before = time.monotonic()
-			with (out / (name + ".stdout")).open("x") as stdout, (out / (name + ".stderr")).open("x") as stderr:
-				done = child_result.run(command, cwd=ROOT, env=env, stdout=stdout, stderr=stderr, timeout=10800, after=lambda: finish_stage(ROOT, name, out))
-			result["checks"].append({"name": name, "exit": done.returncode, "command": command, "seconds": time.monotonic() - before, "validation": done.validation})
-			output = done.declared_output
-			if output is not None:
-				result["checks"][-1]["declared_output"] = output
-			exact()
-			assert done.returncode == 0, f"{name} failed"
-		result["finalization"] = gate_policy.finalize(selection, {r["name"]: r["validation"] for r in result["checks"]}, ROOT)
-		result["status"] = "PASS"
-	except BaseException as error:
-		result["error"] = repr(error)
-		(out / "TRACEBACK.txt").write_text(traceback.format_exc())
-	finally:
-		result["seconds"] = time.monotonic() - start
-		result["controller_sha256"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-		child_result.publish(out / "RESULT.json", result)
-	print(result["status"], str(out / "RESULT.json"))
-	return 0 if result["status"] == "PASS" else 1
+	if args.remote_context:
+		context=json.loads(args.remote_context.read_text())
+		if context['candidate'] != args.candidate or context['source'] != child_result.source(ROOT):
+			raise ValueError('remote source context differs')
+	if child_result.head(ROOT) != args.candidate: raise ValueError('candidate differs')
+	from final import run
+	result=run(ROOT,out,names=None,remote_context=context if args.remote_context else None,fresh=True)
+	print(result['status'],out/'RESULT.json')
+	return result['status']!='PASS'
 
 
 if __name__ == "__main__":

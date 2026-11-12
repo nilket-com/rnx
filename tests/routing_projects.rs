@@ -1,6 +1,9 @@
 //! Explicit end-to-end gate: the real management CLI, an executable override,
 //! and a genuinely generated assembly. No mode change may relock or rebuild.
 #![cfg(all(unix, feature = "stock-management", feature = "project-sources"))]
+#[path = "support/final_output.rs"]
+mod final_output;
+
 use std::{
 	fs,
 	path::{Path, PathBuf},
@@ -77,10 +80,12 @@ fn actual_project_cli_routes_overrides_and_generated_assemblies_without_rebuildi
 		.as_nanos();
 	// A generated project's outputs must also be outside the runtime package
 	// root, so neither source nor native fingerprints can include them.
-	let out = std::env::temp_dir().join(format!(
-		"rnx-routing-projects-{}-{nonce}",
-		std::process::id()
-	));
+	let out = final_output::assigned("RNX_FINAL_PROJECT_ROOT", "projects").unwrap_or_else(|| {
+		std::env::temp_dir().join(format!(
+			"rnx-routing-projects-{}-{nonce}",
+			std::process::id()
+		))
+	});
 	fs::create_dir_all(&out).unwrap();
 	fs::write(out.join("RESULT.json"), b"{\"status\":\"FAIL\"}\n").unwrap();
 	for generated in [false, true] {

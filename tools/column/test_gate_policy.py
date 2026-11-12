@@ -85,24 +85,23 @@ class Gates(unittest.TestCase):
 				g.close_prerequisites(commands, {'consumer'}, {'consumer': ('producer',)})
 
 	def test_failed_producer_never_runs_consumer(self):
-		import accept
+		import final
 		from types import SimpleNamespace
-		out = self.root/'runs/failure'
-		steps = [('polars-inventories', ['producer']), ('suite-adapter-polars', ['consumer'])]
-		calls = []
+		out=self.root/'runs/failure'
+		steps=[('producer',['producer']),('consumer',['consumer'])];calls=[]
+		selection={'record':{'candidate':'candidate'},'source':'s','policy':'p','stages':steps}
 		def fail(command, **kwargs):
 			calls.append(command)
-			return SimpleNamespace(returncode=1, validation={}, declared_output=None)
-		with patch.object(accept, 'ROOT', self.root), patch.object(accept, 'MANIFESTS', []), \
-			patch.object(accept, 'commands', return_value=steps), \
-			patch.object(accept.gate_policy, 'select', return_value={}), \
-			patch.object(accept.subprocess, 'run'), \
-			patch.object(accept.subprocess, 'check_output', side_effect=lambda c, **kw: 'candidate\n' if 'rev-parse' in c else ''), \
-			patch.object(accept.child_result, 'run', side_effect=fail), \
-			patch('sys.argv', ['accept', '--candidate', 'candidate', '--out', str(out)]):
-			self.assertEqual(accept.main(), 1)
-		self.assertEqual(calls, [['producer']])
-		self.assertEqual(json.loads((out/'RESULT.json').read_text())['status'], 'FAIL')
+			path=kwargs['directory'];path.mkdir()
+			row=dict(status='FAIL',process_exit=1,seconds=0,cleanup_seconds=0,context={'environment':{'keys':[],'sha256':'x'}},artifacts={})
+			g.child.atomic_json(path/'RESULT.json',row)
+			return SimpleNamespace(returncode=1,validation={'path':str(path/'RESULT.json'),'sha256':g.child.digest(path/'RESULT.json')})
+		with patch.object(final,'disk_check'), patch.object(final.child,'head',return_value='candidate'), patch.object(final.gate,'select',return_value=selection), \
+			patch.object(final.gate,'check_selection'), patch.object(final.child,'run',side_effect=fail):
+			self.assertEqual(final.run(self.root,out)['status'],'FAIL')
+		self.assertEqual(calls,[['producer']])
+		self.assertEqual(json.loads((out/'RELEASE.json').read_text())['status'],'PASS')
+		self.assertIn('producer',json.loads((out/'RESULT.json').read_text())['error'])
 
 
 if __name__ == '__main__':unittest.main()

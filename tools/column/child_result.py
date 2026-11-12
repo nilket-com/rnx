@@ -21,7 +21,7 @@ ENV_KEYS = frozenset({'RUSTFLAGS', 'RUSTDOCFLAGS', 'RUSTUP_TOOLCHAIN', 'RUSTC',
 	'CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS', 'LANG', 'LC_ALL', 'TZ'})
 ENV_PREFIXES = ('CARGO_', 'RNX_')
 PRODUCERS = frozenset(('tools/column/' + n + '.py') for n in (
-	'accept', 'verify', 'clippy', 'inventories', 'cli', 'resume', 'recover_cross', 'chain', 'borrowed_controls', 'ir_pool', 'old_path', 'boolean_capture', 'f64_plan_capture',
+	'accept', 'final', 'verify', 'clippy', 'inventories', 'cli', 'resume', 'recover_cross', 'chain', 'borrowed_controls', 'ir_pool', 'old_path', 'boolean_capture', 'f64_plan_capture',
 	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate', 'fixed_route_gate', 'suite_stage', 'miri_exact', 'repl_session_controls', 'jupyter_controls')) | {'tools/verify.py',
 	'rune/tools/xtask/column/ck1.py', 'rune/tools/xtask/column/measure.py',
 	'rune/tools/xtask/column/cli_capture.py', 'rune/tools/xtask/supplemental/run.py'}
@@ -247,6 +247,7 @@ def validate_remote(exit_code, result, expected):
 	"""Remote transport binds the fresh invocation and bootstrap recipe explicitly."""
 	if exit_code != 0 or result.get('status') != 'PASS':
 		raise ValueError('remote child failed')
+	if result.get('complete_final') is False: raise ValueError('remote selected stages are not a complete final')
 	if result.get('remote_context') != expected or result.get('candidate') != expected['candidate']:
 		raise ValueError('remote invocation, source or recipe differs')
 	final = result.get('finalization', {})

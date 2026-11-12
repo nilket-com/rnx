@@ -5,6 +5,9 @@
 mod adapter;
 #[path = "../src/verification/clock.rs"]
 mod clock;
+#[path = "support/final_output.rs"]
+mod final_output;
+
 use serde_json::{Value, json};
 use std::{
 	fs,
@@ -583,8 +586,8 @@ fn compare(case: &Case, dir: &Path, native: bool) -> Result<Value> {
 fn real_cli_live_census_demos_and_l1_match_legacy_with_native_off_and_on() -> Result<()> {
 	let root = Path::new(env!("CARGO_MANIFEST_DIR"));
 	let nonce = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
-	let out = std::env::var_os("RNX_ROUTING_OUT")
-		.map(PathBuf::from)
+	let out = final_output::assigned("RNX_FINAL_ROUTING_ROOT", "cli")
+		.or_else(|| std::env::var_os("RNX_ROUTING_OUT").map(PathBuf::from))
 		.unwrap_or_else(|| root.join(format!("target/routing-cli/{}-{nonce}", std::process::id())));
 	fs::create_dir_all(out.parent().ok_or("output parent missing")?)?;
 	fs::create_dir(&out)?;
@@ -678,10 +681,12 @@ fn real_cli_live_census_demos_and_l1_match_legacy_with_native_off_and_on() -> Re
 #[test]
 fn entry_reexports_fall_back_before_effects_and_missing_entry_is_terminal() -> Result<()> {
 	let nonce = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
-	let out = Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
-		"target/routing-alias/{}-{nonce}",
-		std::process::id()
-	));
+	let out = final_output::assigned("RNX_FINAL_ROUTING_ROOT", "alias").unwrap_or_else(|| {
+		Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+			"target/routing-alias/{}-{nonce}",
+			std::process::id()
+		))
+	});
 	fs::create_dir_all(&out)?;
 	for (id, source) in [
 		(

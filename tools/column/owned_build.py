@@ -9,6 +9,7 @@ import subprocess
 import time
 import threading
 import uuid
+import sys
 
 from child_result import CONTEXT, atomic_json, digest
 
@@ -38,6 +39,31 @@ def drain_group(pgid):
 		for fd in fds: os.close(fd)
 
 
+def process_identity(pid):
+	text = Path(f'/proc/{pid}/stat').read_text()
+	fields = text[text.rindex(')')+2:].split()
+	return int(fields[2]), int(fields[19])
+
+
+def drain_recorded_groups(out):
+	for path in sorted(Path(out).glob('GROUP-*.json')):
+		row = json.loads(path.read_text())
+		if row.get('drained'): continue
+		pid = row['pid']
+		try:
+			group, started = process_identity(pid)
+			if group != pid or started != row['started']: raise ValueError('producer pid reused')
+		except FileNotFoundError:
+			# Members cannot predate their recorded group leader. Refuse ambiguity.
+			for proc in Path('/proc').iterdir():
+				if not proc.name.isdigit(): continue
+				try: group, started = process_identity(int(proc.name))
+				except (FileNotFoundError, ProcessLookupError): continue
+				if group == pid and started < row['started']: raise ValueError('producer group identity ambiguous')
+		drain_group(pid)
+		row['drained'] = True; atomic_json(path,row)
+
+
 def run_process(command, *, timeout=None, check=False, termination_grace=5, **kwargs):
 	"""Forward launcher termination and drain the isolated producer group."""
 	if threading.current_thread() is not threading.main_thread():
@@ -51,10 +77,28 @@ def run_process(command, *, timeout=None, check=False, termination_grace=5, **kw
 	previous = {sig: signal.getsignal(sig) for sig in (signal.SIGTERM, signal.SIGINT)}
 	try:
 		for sig in previous: signal.signal(sig, interrupted)
-		child = subprocess.Popen(command, start_new_session=True, **kwargs)
+		group_record = None
+		group_root = (kwargs.get('env') or os.environ).get('RNX_FINAL_GROUPS')
+		if group_root:
+			read_fd,write_fd=os.pipe()
+			try:
+				wrapped=[sys.executable,'-B',str(Path(__file__).with_name('final_child.py')),str(read_fd),*map(str,command)]
+				inherited=tuple(kwargs.pop('pass_fds',()))+(read_fd,)
+				child=subprocess.Popen(wrapped,start_new_session=True,pass_fds=inherited,**kwargs)
+				group_record=Path(group_root)/('GROUP-'+uuid.uuid4().hex+'.json')
+				_,group_start=process_identity(child.pid)
+				atomic_json(group_record,dict(pid=child.pid,started=group_start,drained=False))
+				os.write(write_fd,b'!')
+			finally:
+				os.close(read_fd);os.close(write_fd)
+		else:
+			child = subprocess.Popen(command, start_new_session=True, **kwargs)
 		try:
 			if pending: raise RuntimeError('producer interrupted by signal ' + str(pending[0]))
 			code = child.wait(timeout=timeout)
+			if group_record:
+				drain_group(child.pid)
+				row=json.loads(group_record.read_text()); row['drained']=True; atomic_json(group_record,row)
 		except BaseException:
 			# A second ordinary signal must not interrupt descendant termination.
 			for sig in previous: signal.signal(sig, signal.SIG_IGN)

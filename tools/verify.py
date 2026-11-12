@@ -69,6 +69,10 @@ def main():
 	if args.out is None:
 		args.out = root / "target" / "rnx-verify" / f"{os.getpid()}-{time.time_ns()}"
 	output = args.out.resolve()
+	if os.environ.get('RNX_FINAL'):
+		assigned=os.environ.get('RNX_FINAL_CROSS_ROOT')
+		if not assigned or output.parent != Path(assigned) or output.name != 'payload':
+			parser.error('final cross output was not assigned')
 	if output.is_relative_to(root):
 		scratch_root = (root / "target" / "rnx-verify").resolve()
 		if not output.is_relative_to(scratch_root):

@@ -1,5 +1,8 @@
 //! Actual adapter executables share the one-shot routing contract. Raw streams
 //! and exit statuses are retained; debug selection uses a separate invocation.
+#[path = "final_output.rs"]
+mod final_output;
+
 use std::{
 	fs,
 	path::Path,
@@ -35,8 +38,13 @@ pub fn verify(binary: &str, manifest: &str, refusal: &str) {
 		.duration_since(UNIX_EPOCH)
 		.unwrap()
 		.as_nanos();
-	let root =
-		Path::new(manifest).join(format!("target/routing-cli/{}-{nonce}", std::process::id()));
+	let label = format!(
+		"adapter-{}",
+		Path::new(manifest).file_name().unwrap().to_string_lossy()
+	);
+	let root = final_output::assigned("RNX_FINAL_ROUTING_ROOT", &label).unwrap_or_else(|| {
+		Path::new(manifest).join(format!("target/routing-cli/{}-{nonce}", std::process::id()))
+	});
 	fs::create_dir_all(&root).unwrap();
 	// The receipt starts terminal FAIL so an assertion cannot leave a false PASS.
 	fs::write(root.join("RESULT.json"), b"{\"status\":\"FAIL\"}\n").unwrap();
