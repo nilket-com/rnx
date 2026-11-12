@@ -710,7 +710,12 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				}
 			};
 			if let Some(out) = out {
-				self.block(&branch.block, Mode::Into(out))?;
+				if hir.fallback.is_none() {
+					self.block(&branch.block, Mode::Discard)?;
+					self.unit_into(out, span)?;
+				} else {
+					self.block(&branch.block, Mode::Into(out))?;
+				}
 			} else {
 				self.block(&branch.block, Mode::Discard)?;
 			}

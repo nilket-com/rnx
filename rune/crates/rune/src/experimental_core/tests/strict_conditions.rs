@@ -131,3 +131,84 @@ fn both_engines_preserve_short_circuit_and_single_rhs_evaluation() {
 		assert_eq!(store.live_entries(), 0);
 	}
 }
+
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "full default-module frontend compilation; opt in explicitly"
+)]
+fn no_else_instruction_counts() {
+	let context = Context::with_default_modules().unwrap();
+	for (body, expected) in [
+		("if x {7}; 0", 5),
+		("if x {7}else if y {8}; 0", 8),
+		("if let Some(a)=x {a}; 0", 18),
+		("if x {7}", 6),
+		("if x {7}else if y {8}", 10),
+		("if let Some(a)=x {a}", 19),
+	] {
+		let source = std::format!("pub fn target(x,y) {{ {body} }}");
+		let (_, program) =
+			super::differential::compile_unit(&context, "unused-no-else", &source, "target");
+		let counts: std::vec::Vec<_> = (0..program.code.functions())
+			.map(|i| {
+				program
+					.code
+					.function(i as u32)
+					.unwrap()
+					.instructions()
+					.len()
+			})
+			.collect();
+		// Statement counts were measured on published 485babed; value-position
+		// counts pin discard-then-unit lowering without a dead tail store.
+		assert_eq!(counts, [expected], "{body}");
+	}
+}
+
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "full default-module frontend compilation; opt in explicitly"
+)]
+fn no_else_is_unit_and_effect_occurs_once() {
+	let context = Context::with_default_modules().unwrap();
+	for (body, marks) in [
+		("if true {mark(w);7}", 1),
+		("if false {mark(w);7}", 0),
+		("if true {mark(w);7}else if true {mark(w);8}", 1),
+		("if false {mark(w);7}else if true {mark(w);8}", 1),
+		("if false {mark(w);7}else if false {mark(w);8}", 0),
+		("if let Some(x)=Some(7) {mark(w);x}", 1),
+		("if let Some(x)=None {mark(w);x}", 0),
+		("if true {mark(w);[1,2,3]}", 1),
+		("if let Some(x)=Some([1,2]) {mark(w);x}", 1),
+	] {
+		let source = std::format!("pub fn target(w){{{body}}} fn mark(w){{w.push(0);}}");
+		let (mut stock, program) =
+			super::differential::compile_unit(&context, "no-else", &source, "target");
+		let legacy_w = crate::to_value(crate::runtime::Vec::new()).unwrap();
+		let value = stock.call(["target"], (legacy_w.clone(),)).unwrap();
+		crate::from_value::<()>(value).unwrap();
+		assert_eq!(
+			legacy_w.borrow_ref::<crate::runtime::Vec>().unwrap().len(),
+			marks
+		);
+		let mut store = Store::new(Limits::default()).unwrap();
+		let witness = store.root_list(Type::Vec, &[]).unwrap();
+		let mut executor = Executor::new().unwrap();
+		let function = program.function(Hash::type_hash(["target"])).unwrap();
+		let root = executor
+			.invoke(&program, &mut store, function, &[&witness], 100_000)
+			.unwrap();
+		assert_eq!(
+			store.root_scalar(&root).unwrap(),
+			Some(crate::experimental_core::value::Scalar::Unit),
+			"{body}"
+		);
+		assert_eq!(store.root_len(&witness).unwrap(), marks);
+		store.root_release(root).unwrap();
+		store.root_release(witness).unwrap();
+		assert_eq!(store.live_entries(), 0);
+	}
+}

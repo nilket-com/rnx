@@ -1067,7 +1067,14 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			let yes = self.pc();
 
 			match out {
-				Some(out) => self.block(&branch.block, Mode::Into(out))?,
+				Some(out) => {
+					if conditional.fallback.is_none() {
+						self.block(&branch.block, Mode::Discard)?;
+						self.unit_into(out, span)?;
+					} else {
+						self.block(&branch.block, Mode::Into(out))?;
+					}
+				}
 				None => self.block(&branch.block, Mode::Discard)?,
 			}
 

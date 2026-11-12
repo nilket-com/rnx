@@ -1,4 +1,5 @@
 //! ADR0246: source-derived session coverage, confined to tests.
+mod conditionals;
 pub(crate) mod external;
 mod witnesses;
 use quote::ToTokens;
@@ -779,6 +780,7 @@ fn pinned_classification() {
 	let notebooks = notebook_reports();
 	let constants = constant_report();
 	let moved_json = moved_json_report();
+	let conditionals = conditionals::report();
 	let mut probes = Vec::new();
 	for row in constants.as_array().unwrap() {
 		let (class, rule, worse) = classify(&row["legacy"], &row["domain"]);
@@ -793,10 +795,11 @@ fn pinned_classification() {
 	all.extend(hosts["rows"].as_array().unwrap().iter().cloned());
 	all.extend(probes.iter().cloned());
 	all.extend(moved_json.as_array().unwrap().iter().cloned());
+	all.extend(conditionals.as_array().unwrap().iter().cloned());
 	for book in notebooks.as_array().unwrap() {
 		all.extend(book["report"]["rows"].as_array().unwrap().iter().cloned());
 	}
-	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"moved_json":moved_json,"summary":summary(&all)});
+	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"moved_json":moved_json,"summary":summary(&all)});
 	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
 		std::fs::write(path, serialize_table(&report).into_bytes()).unwrap();
 	}

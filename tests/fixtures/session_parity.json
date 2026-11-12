@@ -1,4 +1,13 @@
 {
+	"conditional_probes": [
+		{"class":"Equal","construct":"if true","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if true {7}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
+		{"class":"Equal","construct":"if false","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if false {7}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
+		{"class":"Equal","construct":"else-if first","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if true {7}else if true {8}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
+		{"class":"Equal","construct":"else-if second","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if false {7}else if true {8}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
+		{"class":"Equal","construct":"else-if none","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if false {7}else if false {8}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
+		{"class":"Equal","construct":"if-let match","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if let Some(x)=Some(7){x}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
+		{"class":"Equal","construct":"if-let miss","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if let Some(x)=None{x}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null}
+	],
 	"constant_probes": [
 		{"class":"Equal","construct":"string constant","domain":{"outcome":"ok","value":"\"x\""},"domain_worse":false,"input":"const S = \"x\"; S","legacy":{"outcome":"ok","value":"\"x\""},"wording_rule":null},
 		{"class":"Equal","construct":"vector constant","domain":{"outcome":"ok","value":"[1, 2]"},"domain_worse":false,"input":"const T = [1, 2]; T","legacy":{"outcome":"ok","value":"[1, 2]"},"wording_rule":null},
@@ -1753,5 +1762,5 @@
 			"source": "demos/notebooks/03_report.ipynb"
 		}
 	],
-	"summary": {"classes":{"Admitted, not executed":3,"Equal":166,"Intentional difference":3,"Not classified":4,"Refused at admission":6,"Refused for a host function":10,"Wording":20},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"async":{"count":5,"top_constructs":[["http::get",1],["http::get_bytes",1],["http::request",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":1,"top_constructs":[["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":6,"top_constructs":[["constant blocks",1],["constant bytes",1],["constant functions",1]]}}}
+	"summary": {"classes":{"Admitted, not executed":3,"Equal":173,"Intentional difference":3,"Not classified":4,"Refused at admission":6,"Refused for a host function":10,"Wording":20},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"async":{"count":5,"top_constructs":[["http::get",1],["http::get_bytes",1],["http::request",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":1,"top_constructs":[["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":6,"top_constructs":[["constant blocks",1],["constant bytes",1],["constant functions",1]]}}}
 }
