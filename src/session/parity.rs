@@ -1,4 +1,5 @@
 //! ADR0246: source-derived session coverage, confined to tests.
+mod witnesses;
 use quote::ToTokens;
 use serde::Serialize;
 use syn::{
@@ -235,6 +236,8 @@ fn literal_report() -> serde_json::Value {
 		domain_session::{DomainSession, transcripts::parity_observe},
 	};
 	use std::collections::BTreeMap;
+	let witnessed = witnesses::report();
+	let mut used_witnesses = 0;
 	let mut rows = Vec::new();
 	let mut sequence_summary = Vec::new();
 	let mut defects = Vec::new();
@@ -265,7 +268,17 @@ fn literal_report() -> serde_json::Value {
 				continue;
 			}
 			if let Some(blocker) = &pair.2 {
-				rows.push(serde_json::json!({"sequence":sequence.name,"ordinal":ordinal,"input":event.input,"class":"Not classified","blocked_by":blocker}));
+				let row = witnesses::blocked_row(
+					&witnessed,
+					&sequence.name,
+					ordinal,
+					&event.input,
+					blocker,
+				);
+				if row.get("witness").is_some() {
+					used_witnesses += 1;
+				}
+				rows.push(row);
 				continue;
 			}
 			let (a, b) = parity_observe(&mut pair.0, &mut pair.1, &event.input);
@@ -302,6 +315,7 @@ fn literal_report() -> serde_json::Value {
 			break;
 		}
 	}
+	assert_eq!(used_witnesses, witnessed.len(), "unused witness target");
 	let wording = rows
 		.iter()
 		.filter(|r| matches!(r["class"].as_str(), Some("Wording" | "Wording candidate")))

@@ -1,0 +1,436 @@
+[
+  {
+    "name": "checks",
+    "actions": [
+      {
+        "input": "let (x, y) = (2, 3); let shared = [1]; let effects = []; fn f() { 10 } struct Boxed { value } let old = f; let c = || f() + shared[0]; let b = Boxed { value: 7 }; x + y",
+        "expect": {
+          "outcome": "ok",
+          "value": "5"
+        }
+      },
+      {
+        "input": "effects.push(1); fn f() { 20 } (old(), f(), c(), b.value, b is Boxed)",
+        "expect": {
+          "outcome": "ok",
+          "value": "(10, 20, 11, 7, true)"
+        }
+      },
+      {
+        "input": "let x = x + 5; let [left, right] = [8,9]; let #{a: renamed} = #{a: 4}; (x,y,left,right,renamed,effects.len())",
+        "expect": {
+          "outcome": "ok",
+          "value": "(7, 3, 8, 9, 4, 1)"
+        }
+      },
+      {
+        "input": "fn f() { 99 } let broken = ;",
+        "expect": {
+          "outcome": "compile"
+        }
+      },
+      {
+        "input": "shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");",
+        "expect": {
+          "outcome": "runtime"
+        }
+      },
+      {
+        "input": "new_name",
+        "expect": {
+          "outcome": "compile"
+        }
+      },
+      {
+        "input": "(x, shared, f(), effects.len())",
+        "expect": {
+          "outcome": "ok",
+          "value": "(7, [1, 2], 20, 1)"
+        }
+      },
+      {
+        "input": "struct Boxed { other }",
+        "expect": {
+          "outcome": "refused"
+        }
+      },
+      {
+        "budget": 2000000
+      },
+      {
+        "input": "while true {} ",
+        "expect": {
+          "outcome": "budget"
+        }
+      },
+      {
+        "input": "x",
+        "expect": {
+          "outcome": "ok",
+          "value": "7"
+        }
+      },
+      {
+        "external": true
+      },
+      {
+        "input": "x",
+        "target": {
+          "ordinal": 11,
+          "blocked_by": "unclassified site 10",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "7"
+        }
+      },
+      {
+        "release_effect": true
+      },
+      {
+        "independent_reset": true
+      },
+      {
+        "input": "let x = x + 1; x",
+        "expect": {
+          "outcome": "ok"
+        },
+        "repeat": 100
+      },
+      {
+        "input": "x",
+        "target": {
+          "ordinal": 14,
+          "blocked_by": "unclassified site 13",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "107"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+    "actions": [
+      {
+        "budget": "max"
+      },
+      {
+        "input": "let counter = [0];",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "let bump = || counter.push(1);",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "let unrelated = 0;",
+        "expect": {
+          "outcome": "ok"
+        },
+        "repeat": 10
+      },
+      {
+        "input": "bump(); bump();",
+        "target": {
+          "ordinal": 3,
+          "blocked_by": "unclassified site 2",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "counter",
+        "target": {
+          "ordinal": 4,
+          "blocked_by": "unclassified site 2",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "[0, 1, 1]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+    "actions": [
+      {
+        "budget": "max"
+      },
+      {
+        "input": "let captured = 7;",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "let noise = 0;",
+        "expect": {
+          "outcome": "ok"
+        },
+        "repeat": 10
+      },
+      {
+        "input": "format!(\"{captured}\")",
+        "target": {
+          "ordinal": 2,
+          "blocked_by": "unclassified site 1",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "\"7\""
+        }
+      },
+      {
+        "input": "format!(\"{captured:?} and {captured}\")",
+        "target": {
+          "ordinal": 3,
+          "blocked_by": "unclassified site 1",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "\"7 and 7\""
+        }
+      },
+      {
+        "input": "println!(\"{captured}\");",
+        "target": {
+          "ordinal": 4,
+          "blocked_by": "unclassified site 1",
+          "stdout": "7\n"
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      }
+    ]
+  },
+  {
+    "name": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
+    "actions": [
+      {
+        "budget": "max"
+      },
+      {
+        "input": "let inside = 3;",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "let noise = 0;",
+        "expect": {
+          "outcome": "ok"
+        },
+        "repeat": 5
+      },
+      {
+        "input": "`v ${inside}`",
+        "target": {
+          "ordinal": 2,
+          "blocked_by": "unclassified site 1",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "\"v 3\""
+        }
+      }
+    ]
+  },
+  {
+    "name": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+    "actions": [
+      {
+        "budget": "max"
+      },
+      {
+        "input": "let original = [1];",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "let alias = original;",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "let other = 0;",
+        "expect": {
+          "outcome": "ok"
+        },
+        "repeat": 10
+      },
+      {
+        "input": "alias.push(2);",
+        "target": {
+          "ordinal": 3,
+          "blocked_by": "unclassified site 2",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "original",
+        "target": {
+          "ordinal": 4,
+          "blocked_by": "unclassified site 2",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "[1, 2]"
+        }
+      },
+      {
+        "input": "original.push(3);",
+        "target": {
+          "ordinal": 5,
+          "blocked_by": "unclassified site 2",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "alias",
+        "target": {
+          "ordinal": 6,
+          "blocked_by": "unclassified site 2",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "[1, 2, 3]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+    "actions": [
+      {
+        "budget": "max"
+      },
+      {
+        "input": "let a = 1; let b = 2; let c = 3;",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "a = 10;",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "a",
+        "expect": {
+          "outcome": "ok",
+          "value": "10"
+        }
+      },
+      {
+        "input": "let b = b + 40;",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "b",
+        "expect": {
+          "outcome": "ok",
+          "value": "42"
+        }
+      },
+      {
+        "input": "let [d, e] = [4, 5];",
+        "expect": {
+          "outcome": "ok",
+          "value": null
+        }
+      },
+      {
+        "input": "(c, d, e)",
+        "expect": {
+          "outcome": "ok",
+          "value": "(3, 4, 5)"
+        }
+      },
+      {
+        "input": "let filler = 0;",
+        "expect": {
+          "outcome": "ok"
+        },
+        "repeat": 20
+      },
+      {
+        "input": "(a, b, c, d, e)",
+        "target": {
+          "ordinal": 8,
+          "blocked_by": "unclassified site 7",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "(10, 42, 3, 4, 5)"
+        }
+      }
+    ]
+  },
+  {
+    "name": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+    "actions": [
+      {
+        "budget": "max"
+      },
+      {
+        "declarations": 100
+      },
+      {
+        "input": "n000 + n099",
+        "target": {
+          "ordinal": 1,
+          "blocked_by": "unclassified site 0",
+          "stdout": ""
+        },
+        "expect": {
+          "outcome": "ok",
+          "value": "99"
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "checks": {
+    "recipe": "70e3a27c1111ce98e6778bc5e5dac89e664357b3a10c580c36f89a4278a578ce",
+    "source": "ed73617e441aa049fc835d5279882e552372265e850c71cd9f00a3209d3015cb"
+  },
+  "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it": {
+    "recipe": "7353ec2a3e3c359eb92ca05e9a5c44e050c17f76b860848fd563be6db26e4cc6",
+    "source": "1c5ea0edf3fb009554d06c83cb22fccc586919fac92b9cf49dc3e91f736fc72b"
+  },
+  "prelude_tests::a_format_capture_restores_the_binding_it_names": {
+    "recipe": "59c49f7c254a56190ab573185a4eaeec176035694ea21a89868bc205e8a06330",
+    "source": "429293ec0811ea726a043a6eb65c5a38678140f8081720902fcdd9a9ac902bc5"
+  },
+  "prelude_tests::a_template_interpolation_restores_the_binding_it_names": {
+    "recipe": "9f22415f591aa8678e9320b4e581c6225b65e14aa1e204acea4a6df340527f72",
+    "source": "ffdc296a60e015ede1f319b7c6c3d6809fd559a482f435782de09d145a4aa7b8"
+  },
+  "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude": {
+    "recipe": "52fe95d8f2762c2a338b30dec2ed2e976b097bcf088141a0ae8de9953e6b5d24",
+    "source": "6d4271c854c8e55b9179ccfd560be65a61657c9e7b8c5a5ef28bdeae877e5cbf"
+  },
+  "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly": {
+    "recipe": "81c466777c99d714a0a761fb992819217e9a64273e9670d800e34e1c924438bb",
+    "source": "c8b27590c205cc837d3e27a910d4dc4c8169aac161ced3bf734abb95e9d43188"
+  },
+  "prelude_tests::the_generated_source_follows_the_input_not_the_session": {
+    "recipe": "2ba344025590b8ed5ce51da070ec621198c124e7389eda5e323765e79e8a8ea8",
+    "source": "2c070a42bc2691028e3e247eb88bff9f8014f34ee453fe0a0159fd06790bcaad"
+  }
+}

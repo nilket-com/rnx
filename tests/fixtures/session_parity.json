@@ -2446,10 +2446,27 @@
       },
       {
         "blocked_by": "unclassified site 10",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "7"
+        },
+        "domain_worse": false,
         "input": "x",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "7"
+        },
         "ordinal": 11,
-        "sequence": "checks"
+        "sequence": "checks",
+        "tie": {
+          "recipe": "70e3a27c1111ce98e6778bc5e5dac89e664357b3a10c580c36f89a4278a578ce",
+          "source": "ed73617e441aa049fc835d5279882e552372265e850c71cd9f00a3209d3015cb"
+        },
+        "witness": "checks",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -2479,10 +2496,27 @@
       },
       {
         "blocked_by": "unclassified site 13",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "107"
+        },
+        "domain_worse": false,
         "input": "x",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "107"
+        },
         "ordinal": 14,
-        "sequence": "checks"
+        "sequence": "checks",
+        "tie": {
+          "recipe": "70e3a27c1111ce98e6778bc5e5dac89e664357b3a10c580c36f89a4278a578ce",
+          "source": "ed73617e441aa049fc835d5279882e552372265e850c71cd9f00a3209d3015cb"
+        },
+        "witness": "checks",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -3208,10 +3242,27 @@
       },
       {
         "blocked_by": "unclassified site 0",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "99"
+        },
+        "domain_worse": false,
         "input": "n000 + n099",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "99"
+        },
         "ordinal": 1,
-        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session"
+        "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+        "tie": {
+          "recipe": "2ba344025590b8ed5ce51da070ec621198c124e7389eda5e323765e79e8a8ea8",
+          "source": "2c070a42bc2691028e3e247eb88bff9f8014f34ee453fe0a0159fd06790bcaad"
+        },
+        "witness": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -3375,10 +3426,27 @@
       },
       {
         "blocked_by": "unclassified site 7",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "(10, 42, 3, 4, 5)"
+        },
+        "domain_worse": false,
         "input": "(a, b, c, d, e)",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "(10, 42, 3, 4, 5)"
+        },
         "ordinal": 8,
-        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly"
+        "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "tie": {
+          "recipe": "81c466777c99d714a0a761fb992819217e9a64273e9670d800e34e1c924438bb",
+          "source": "c8b27590c205cc837d3e27a910d4dc4c8169aac161ced3bf734abb95e9d43188"
+        },
+        "witness": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -3414,31 +3482,99 @@
       },
       {
         "blocked_by": "unclassified site 2",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": null
+        },
+        "domain_worse": false,
         "input": "alias.push(2);",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": null
+        },
         "ordinal": 3,
-        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "tie": {
+          "recipe": "52fe95d8f2762c2a338b30dec2ed2e976b097bcf088141a0ae8de9953e6b5d24",
+          "source": "6d4271c854c8e55b9179ccfd560be65a61657c9e7b8c5a5ef28bdeae877e5cbf"
+        },
+        "witness": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "wording_rule": null
       },
       {
         "blocked_by": "unclassified site 2",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "[1, 2]"
+        },
+        "domain_worse": false,
         "input": "original",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "[1, 2]"
+        },
         "ordinal": 4,
-        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "tie": {
+          "recipe": "52fe95d8f2762c2a338b30dec2ed2e976b097bcf088141a0ae8de9953e6b5d24",
+          "source": "6d4271c854c8e55b9179ccfd560be65a61657c9e7b8c5a5ef28bdeae877e5cbf"
+        },
+        "witness": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "wording_rule": null
       },
       {
         "blocked_by": "unclassified site 2",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": null
+        },
+        "domain_worse": false,
         "input": "original.push(3);",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": null
+        },
         "ordinal": 5,
-        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "tie": {
+          "recipe": "52fe95d8f2762c2a338b30dec2ed2e976b097bcf088141a0ae8de9953e6b5d24",
+          "source": "6d4271c854c8e55b9179ccfd560be65a61657c9e7b8c5a5ef28bdeae877e5cbf"
+        },
+        "witness": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "wording_rule": null
       },
       {
         "blocked_by": "unclassified site 2",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "[1, 2, 3]"
+        },
+        "domain_worse": false,
         "input": "alias",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "[1, 2, 3]"
+        },
         "ordinal": 6,
-        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude"
+        "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "tie": {
+          "recipe": "52fe95d8f2762c2a338b30dec2ed2e976b097bcf088141a0ae8de9953e6b5d24",
+          "source": "6d4271c854c8e55b9179ccfd560be65a61657c9e7b8c5a5ef28bdeae877e5cbf"
+        },
+        "witness": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -3474,17 +3610,51 @@
       },
       {
         "blocked_by": "unclassified site 2",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": null
+        },
+        "domain_worse": false,
         "input": "bump(); bump();",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": null
+        },
         "ordinal": 3,
-        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it"
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "tie": {
+          "recipe": "7353ec2a3e3c359eb92ca05e9a5c44e050c17f76b860848fd563be6db26e4cc6",
+          "source": "1c5ea0edf3fb009554d06c83cb22fccc586919fac92b9cf49dc3e91f736fc72b"
+        },
+        "witness": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "wording_rule": null
       },
       {
         "blocked_by": "unclassified site 2",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "[0, 1, 1]"
+        },
+        "domain_worse": false,
         "input": "counter",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "[0, 1, 1]"
+        },
         "ordinal": 4,
-        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it"
+        "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "tie": {
+          "recipe": "7353ec2a3e3c359eb92ca05e9a5c44e050c17f76b860848fd563be6db26e4cc6",
+          "source": "1c5ea0edf3fb009554d06c83cb22fccc586919fac92b9cf49dc3e91f736fc72b"
+        },
+        "witness": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -3604,24 +3774,75 @@
       },
       {
         "blocked_by": "unclassified site 1",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "\"7\""
+        },
+        "domain_worse": false,
         "input": "format!(\"{captured}\")",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "\"7\""
+        },
         "ordinal": 2,
-        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names"
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "tie": {
+          "recipe": "59c49f7c254a56190ab573185a4eaeec176035694ea21a89868bc205e8a06330",
+          "source": "429293ec0811ea726a043a6eb65c5a38678140f8081720902fcdd9a9ac902bc5"
+        },
+        "witness": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "wording_rule": null
       },
       {
         "blocked_by": "unclassified site 1",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "\"7 and 7\""
+        },
+        "domain_worse": false,
         "input": "format!(\"{captured:?} and {captured}\")",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "\"7 and 7\""
+        },
         "ordinal": 3,
-        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names"
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "tie": {
+          "recipe": "59c49f7c254a56190ab573185a4eaeec176035694ea21a89868bc205e8a06330",
+          "source": "429293ec0811ea726a043a6eb65c5a38678140f8081720902fcdd9a9ac902bc5"
+        },
+        "witness": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "wording_rule": null
       },
       {
         "blocked_by": "unclassified site 1",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "7\n",
+          "value": null
+        },
+        "domain_worse": false,
         "input": "println!(\"{captured}\");",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "7\n",
+          "value": null
+        },
         "ordinal": 4,
-        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names"
+        "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "tie": {
+          "recipe": "59c49f7c254a56190ab573185a4eaeec176035694ea21a89868bc205e8a06330",
+          "source": "429293ec0811ea726a043a6eb65c5a38678140f8081720902fcdd9a9ac902bc5"
+        },
+        "witness": "prelude_tests::a_format_capture_restores_the_binding_it_names",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -3641,10 +3862,27 @@
       },
       {
         "blocked_by": "unclassified site 1",
-        "class": "Not classified",
+        "class": "Equal",
+        "domain": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "\"v 3\""
+        },
+        "domain_worse": false,
         "input": "`v ${inside}`",
+        "legacy": {
+          "outcome": "ok",
+          "stdout": "",
+          "value": "\"v 3\""
+        },
         "ordinal": 2,
-        "sequence": "prelude_tests::a_template_interpolation_restores_the_binding_it_names"
+        "sequence": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
+        "tie": {
+          "recipe": "9f22415f591aa8678e9320b4e581c6225b65e14aa1e204acea4a6df340527f72",
+          "source": "ffdc296a60e015ede1f319b7c6c3d6809fd559a482f435782de09d145a4aa7b8"
+        },
+        "witness": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
+        "wording_rule": null
       },
       {
         "class": "Equal",
@@ -4419,7 +4657,7 @@
       {
         "clean_end_to_end": false,
         "sequence": "checks",
-        "successful_inputs_before_first_gap": 5
+        "successful_inputs_before_first_gap": 7
       },
       {
         "clean_end_to_end": true,
@@ -4484,22 +4722,22 @@
       {
         "clean_end_to_end": false,
         "sequence": "prelude_tests::the_generated_source_follows_the_input_not_the_session",
-        "successful_inputs_before_first_gap": 0
+        "successful_inputs_before_first_gap": 4
       },
       {
         "clean_end_to_end": false,
         "sequence": "prelude_tests::assignment_shadowing_and_destructuring_publish_correctly",
-        "successful_inputs_before_first_gap": 7
+        "successful_inputs_before_first_gap": 8
       },
       {
         "clean_end_to_end": false,
         "sequence": "prelude_tests::aliases_keep_one_shared_handle_across_a_narrowed_prelude",
-        "successful_inputs_before_first_gap": 2
+        "successful_inputs_before_first_gap": 6
       },
       {
         "clean_end_to_end": false,
         "sequence": "prelude_tests::a_closure_captures_a_restored_binding_and_keeps_seeing_it",
-        "successful_inputs_before_first_gap": 2
+        "successful_inputs_before_first_gap": 4
       },
       {
         "clean_end_to_end": true,
@@ -4509,12 +4747,12 @@
       {
         "clean_end_to_end": false,
         "sequence": "prelude_tests::a_format_capture_restores_the_binding_it_names",
-        "successful_inputs_before_first_gap": 1
+        "successful_inputs_before_first_gap": 4
       },
       {
         "clean_end_to_end": false,
         "sequence": "prelude_tests::a_template_interpolation_restores_the_binding_it_names",
-        "successful_inputs_before_first_gap": 1
+        "successful_inputs_before_first_gap": 2
       },
       {
         "clean_end_to_end": true,
@@ -4883,9 +5121,9 @@
   "summary": {
     "classes": {
       "Admitted, not executed": 16,
-      "Equal": 139,
+      "Equal": 153,
       "Intentional difference": 3,
-      "Not classified": 18,
+      "Not classified": 4,
       "Refused at admission": 6,
       "Refused for a host function": 10,
       "Wording": 20

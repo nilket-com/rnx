@@ -302,3 +302,8 @@ pub(in crate::session) fn parity_ledger() -> serde_json::Value {
 	let rows:Vec<_>=ROWS.iter().map(|r|serde_json::json!({"input":r.input,"existing_class":match r.class {Class::Equal=>"Equal",Class::Wording{..}=>"Wording",Class::Policy{..}=>"Policy (historical fixture label, not a classification decision)"}})).collect();
 	serde_json::json!({"source":"src/session/domain_session/transcripts.rs::ROWS","rows":rows})
 }
+
+// Test-only access for exact source-linked replay budgets.
+pub(in crate::session) fn parity_budget(session: &mut DomainSession, budget: usize) {
+	session.budget = budget;
+}
