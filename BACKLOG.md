@@ -13,8 +13,17 @@
   bridge. Removing that runtime must replace this native ownership/borrow and
   handler ABI as well; the execution engine does not inspect the native object.
 
-- ADR 0267 cost attribution: ProgramDomain::collect_programs traces every
-  live data child after each session input, even a scalar query on a large
-  vector. At 5M elements, 100 queries took about 57.4 s already on 093e7caf
-  in engine-dev. Investigate program-reachability metadata or collection
-  policy without weakening whole-store ownership and idle release guarantees.
+- ADR 0268 removes the repeated session collection walk when no unleased
+  program may have escaped, and stops when all candidate programs are found.
+  Direct function/closure bindings are checked before unrelated data. A live
+  candidate buried behind that data, or a dead candidate being proved dead,
+  can still require a full walk. Investigate reachability metadata separately,
+  without weakening ownership, cycle handling or idle release guarantees.
+
+- ADR 0269, from the ADR 0268 measurement: an input referencing a held 5M-integer
+  vector still spends about 140 ms in two formatting-admission traversals
+  (unoptimized engine-dev), even though collection makes no graph walk.
+  ProgramDomain::start and start_cross both prepare the entry. Investigate
+  removing redundant admission / proving unchanged formatting authority,
+  preserving all entry validation and fixed-route protections; no such
+  admission or executor edit is included in 0268.

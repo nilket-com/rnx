@@ -82,3 +82,20 @@ Reclaiming data values, which reference counting already does. The
 cost of compiling an input. The per-input walk of the bindings
 themselves, which is bounded by their number. Changing when the legacy
 session releases anything.
+
+## Limitations of the implemented scope
+
+This record removes the unconditional collection walk. An input that
+references a large binding still pays a data-sized formatting-admission
+scan: measured, pre-existing, and not addressed here. With 5M held integers,
+`v.len()` and `v[0]+1` take about 142 ms in the unoptimized engine-dev
+measurement, including about 140 ms in two formatting-admission checks.
+The implementation results contain the complete input table. That separate
+mechanism is the subject of ADR 0269.
+
+Closures, function values, native method tables (including inputs that define
+or use impl methods through a method table), unknown call IDs and unused
+producer bodies still make a program a collection candidate. A hidden live
+candidate or an absent candidate being proved dead may still require a
+data-sized collection walk. Collection stops when all candidates are found;
+a dead program is released at the next successful idle collection.

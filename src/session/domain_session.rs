@@ -6,6 +6,11 @@ use rune::experimental_core::{
 	value::Scalar,
 };
 
+#[cfg(test)]
+mod collection_costs;
+#[cfg(test)]
+mod collection_tests;
+
 pub(crate) struct DomainSession {
 	context: Context,
 	domain: ProgramDomain,

@@ -8,6 +8,7 @@ use crate::alloc::{String, Vec};
 use core::sync::atomic::{AtomicU32, Ordering};
 
 mod call_arity;
+mod escape;
 mod missing_methods;
 use missing_methods::MethodEntry;
 
@@ -889,6 +890,25 @@ fn host_binding(
 ) -> Option<&crate::function::host::HostBinding> {
 	hosts.get(id.checked_sub(FIRST_HOST)? as usize)
 }
+// Named text IDs shared by registration and the cold escape census.
+const TEXT_SPLIT: u32 = crate::function::text::Method::Split.id();
+const TEXT_REPLACE: u32 = crate::function::text::Method::Replace.id();
+const TEXT_STARTS_WITH: u32 = crate::function::text::Method::StartsWith.id();
+const TEXT_ENDS_WITH: u32 = crate::function::text::Method::EndsWith.id();
+const TEXT_CONTAINS: u32 = crate::function::text::Method::Contains.id();
+const TEXT_TRIM: u32 = crate::function::text::Method::Trim.id();
+const PIPELINE_CHARS: u32 = crate::function::pipeline::Method::Chars.id();
+const PIPELINE_UNWRAP: u32 = crate::function::pipeline::Method::Unwrap.id();
+const PIPELINE_SKIP: u32 = crate::function::pipeline::Method::Skip.id();
+const PIPELINE_TAKE: u32 = crate::function::pipeline::Method::Take.id();
+const PIPELINE_COUNT: u32 = crate::function::pipeline::Method::Count.id();
+const PIPELINE_NEXT: u32 = crate::function::pipeline::Method::Next.id();
+const PIPELINE_COLLECT_VEC: u32 = crate::function::pipeline::Method::CollectVec.id();
+const PIPELINE_COLLECT_STRING: u32 = crate::function::pipeline::Method::CollectString.id();
+const PIPELINE_CHILD: u32 = FIRST_INTRINSIC_ID + 0x78;
+const PIPELINE_SKIP_REMAINING: u32 = FIRST_INTRINSIC_ID + 0x79;
+const PIPELINE_TAKE_NEXT: u32 = FIRST_INTRINSIC_ID + 0x7a;
+const PIPELINE_APPEND: u32 = FIRST_INTRINSIC_ID + 0x7b;
 const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
 	CertifiedIntrinsic {
 		id: PRINT_RAW,
@@ -1011,75 +1031,75 @@ const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0060,
+		id: TEXT_SPLIT,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0061,
+		id: TEXT_REPLACE,
 		arity: 3,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0062,
+		id: TEXT_STARTS_WITH,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0063,
+		id: TEXT_ENDS_WITH,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0064,
+		id: TEXT_CONTAINS,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0065,
+		id: TEXT_TRIM,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0070,
+		id: PIPELINE_CHARS,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0071,
+		id: PIPELINE_UNWRAP,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0072,
+		id: PIPELINE_SKIP,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0073,
+		id: PIPELINE_TAKE,
 		arity: 2,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0074,
+		id: PIPELINE_COUNT,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0075,
+		id: PIPELINE_NEXT,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0076,
+		id: PIPELINE_COLLECT_VEC,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0077,
+		id: PIPELINE_COLLECT_STRING,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0078,
+		id: PIPELINE_CHILD,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_0079,
+		id: PIPELINE_SKIP_REMAINING,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_007a,
+		id: PIPELINE_TAKE_NEXT,
 		arity: 1,
 	},
 	CertifiedIntrinsic {
-		id: 0x8000_007b,
+		id: PIPELINE_APPEND,
 		arity: 2,
 	},
 	CertifiedIntrinsic {

@@ -101,6 +101,7 @@ pub(crate) struct Member {
 	session: Option<SessionSchema>,
 	pub(crate) program: Program,
 	leased: bool,
+	may_escape: bool,
 }
 
 /// Result of a complete, transactional program collection.
@@ -365,6 +366,7 @@ impl ProgramDomain {
 		let code = program.code.id();
 		self.programs.try_push(Member {
 			session: None,
+			may_escape: program.code.may_escape(),
 			program,
 			leased: true,
 		})?;
@@ -429,6 +431,7 @@ impl ProgramDomain {
 			.ok_or_else(invalid)?;
 		let code = program.code.id();
 		self.programs.try_push(Member {
+			may_escape: program.code.may_escape(),
 			program,
 			leased: true,
 			session: Some(SessionSchema {
@@ -472,18 +475,21 @@ impl ProgramDomain {
 	/// Collect only after all dropped handles have been released successfully.
 	pub fn collect_programs(&mut self) -> Result<CollectionReport> {
 		self.drain()?;
-		let mut keep = {
+		let mut missing = crate::alloc::HashSet::new();
+		for member in &self.programs {
+			if !member.leased && member.may_escape {
+				missing.try_insert(member.program.code.id())?;
+			}
+		}
+		if !missing.is_empty() {
 			let r = self.registry.borrow();
 			self.store
-				.reachable_programs(r.slots.iter().filter_map(|s| s.root.as_ref()))?
-		};
-		let leases = self.programs.iter().filter(|p| p.leased).count();
-		for p in self.programs.iter().filter(|p| p.leased) {
-			keep.try_insert(p.program.code.id())?;
+				.find_programs(r.slots.iter().filter_map(|s| s.root.as_ref()), &mut missing)?;
 		}
+		let leases = self.programs.iter().filter(|p| p.leased).count();
 		let before = self.programs.len();
 		self.programs
-			.retain(|p| keep.contains(&p.program.code.id()));
+			.retain(|p| p.leased || (p.may_escape && !missing.contains(&p.program.code.id())));
 		Ok(CollectionReport {
 			released: before - self.programs.len(),
 			retained: self.programs.len(),
@@ -807,20 +813,294 @@ mod tests {
 		}
 	}
 	#[test]
-	fn returned_scalar_function_and_closure_keep_defining_program() {
-		for source in ["fn f(){7} pub fn main(){f}", "pub fn main(){let n=7; ||n}"] {
-			let c = context();
-			let mut d = domain(&c);
+	fn nonescaping_members_and_leases_do_not_walk() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(&mut d, &c, "pub fn main(){7}");
+		Store::collection_probe();
+		assert_eq!(d.collect_programs().unwrap().leases, 1);
+		assert_eq!(Store::collection_probe(), (0, 0));
+		let root = call(&mut d, key, &[], 1);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+		assert_eq!(Store::collection_probe(), (0, 0));
+		assert_eq!(d.scalar(&root).unwrap(), Some(Scalar::I64(7)));
+	}
+	#[test]
+	fn common_library_calls_with_held_data_do_not_walk() {
+		let mut c = context();
+		let mut module = crate::Module::with_crate("collection_host").unwrap();
+		module.host_function("scalar", |x: i64| x).unwrap();
+		c.install(module).unwrap();
+		let mut d = domain(&c);
+		d.executor.test_output = Some(std::vec::Vec::new());
+		let key = compile(
+			&mut d,
+			&c,
+			"pub fn main(){let v=[];for i in 0..256{v.push(i);}v}",
+		);
+		let v = call(&mut d, key, &[], 256);
+		d.collect_programs().unwrap();
+		for source in [
+			"pub fn main(v){v.len()}",
+			"pub fn main(v){v[0]+1}",
+			"pub fn main(v){let n=0;for i in 0..8{n+=i;}n}",
+			"pub fn main(v){println!(\"collection control\");7}",
+			"pub fn main(v){collection_host::scalar(7)}",
+		] {
 			let key = compile(&mut d, &c, source);
-			let value = call(&mut d, key, &[], 1);
-			assert_eq!(d.collect_programs().unwrap().retained, 1);
-			let key = compile(&mut d, &c, "pub fn main(f){f()}");
-			let result = call(&mut d, key, &[&value], 1);
-			assert_eq!(d.scalar(&result).unwrap(), Some(Scalar::I64(7)));
-			drop(value);
-			drop(result);
-			assert_eq!(d.collect_programs().unwrap().retained, 0);
+			let output = call(&mut d, key, &[&v], 256);
+			Store::collection_probe();
+			assert_eq!(d.collect_programs().unwrap().retained, 0, "{source}");
+			assert_eq!(Store::collection_probe(), (0, 0), "{source}");
+			drop(output);
 		}
+		assert_eq!(
+			d.executor.test_output.as_deref(),
+			Some(&b"collection control\n"[..])
+		);
+	}
+
+	#[test]
+	fn iterator_callback_forwarding_preserves_the_original_program() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(
+			&mut d,
+			&c,
+			"fn identity(x){x} pub fn main(){(||7,identity)}",
+		);
+		let pair = call(&mut d, key, &[], 256);
+		let f = d.get(&pair, 0).unwrap();
+		let callback = d.get(&pair, 1).unwrap();
+		let key = compile(
+			&mut d,
+			&c,
+			"pub fn main(f,callback){[f].iter().map(|x|callback(x)).collect::<Vec>()[0]}",
+		);
+		let forwarded = call(&mut d, key, &[&f, &callback], 256);
+		drop(pair);
+		drop(f);
+		drop(callback);
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		let key = compile(&mut d, &c, "pub fn main(f){f()}");
+		let output = call(&mut d, key, &[&forwarded], 256);
+		assert_eq!(d.scalar(&output).unwrap(), Some(Scalar::I64(7)));
+		drop(output);
+		drop(forwarded);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn typed_host_rejects_function_input_without_releasing_its_program() {
+		use std::sync::{
+			atomic::{AtomicUsize, Ordering},
+			Arc,
+		};
+		let calls = Arc::new(AtomicUsize::new(0));
+		let seen = calls.clone();
+		let mut c = context();
+		let mut m = crate::Module::with_crate("collection_host").unwrap();
+		m.host_function("scalar", move |x: i64| {
+			seen.fetch_add(1, Ordering::SeqCst);
+			x
+		})
+		.unwrap();
+		c.install(m).unwrap();
+		let mut d = domain(&c);
+		let key = compile(&mut d, &c, "pub fn main(){||7}");
+		let f = call(&mut d, key, &[], 256);
+		let key = compile(&mut d, &c, "pub fn main(f){collection_host::scalar(f)}");
+		let id = d.function(&key, crate::Hash::type_hash(["main"])).unwrap();
+		{
+			let mut invocation = d.start(&key, id, &[&f], 10000).unwrap();
+			match invocation.resume(core::num::NonZeroUsize::new(10000).unwrap()) {
+				CrossOutcome::Failed(error) => {
+					assert_eq!(error.failure.error.kind, ErrorKind::Host);
+					assert!(
+						matches!(
+							error.failure.error.detail,
+							super::super::detail::Detail::HostExpectedNumber { arg: Some(0), .. }
+						),
+						"{}",
+						error.message()
+					);
+				}
+				_ => panic!("expected function conversion error"),
+			}
+		}
+		assert_eq!(calls.load(Ordering::SeqCst), 0);
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		drop(f);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+
+	fn top_level_closure_root_order(closure_first: bool) {
+		let c = context();
+		let mut d = domain(&c);
+		let (first, second) = if closure_first {
+			(
+				"pub fn main(){let x=7;||x}",
+				"pub fn main(){let v=[];for i in 0..256{v.push(i);}v}",
+			)
+		} else {
+			(
+				"pub fn main(){let v=[];for i in 0..256{v.push(i);}v}",
+				"pub fn main(){let x=7;||x}",
+			)
+		};
+		let key = compile(&mut d, &c, first);
+		let a = call(&mut d, key, &[], 1);
+		let key = compile(&mut d, &c, second);
+		let b = call(&mut d, key, &[], 1);
+		d.collect_programs().unwrap(); // Remove any dead conservative producer.
+		Store::collection_probe();
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		assert_eq!(Store::collection_probe(), (1, 2));
+		drop((a, b));
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn top_level_closure_is_found_before_data_in_both_root_orders() {
+		top_level_closure_root_order(true);
+		top_level_closure_root_order(false);
+	}
+	#[test]
+	fn top_level_closure_before_data_is_found_directly() {
+		top_level_closure_root_order(true);
+	}
+	#[test]
+	fn top_level_closure_after_data_is_found_directly() {
+		top_level_closure_root_order(false);
+	}
+	#[test]
+	fn repeated_function_bits_stop_at_the_first_child() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(
+			&mut d,
+			&c,
+			"pub fn main(){let f=||7;let v=[];for i in 0..256{v.push(f);}v}",
+		);
+		let root = call(&mut d, key, &[], 1);
+		Store::collection_probe();
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		assert_eq!(Store::collection_probe(), (1, 2));
+		drop(root);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn dead_candidate_needs_one_full_walk_and_no_more() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(
+			&mut d,
+			&c,
+			"pub fn main(){let v=[];for i in 0..256{v.push(i);}v}",
+		);
+		let held = call(&mut d, key, &[], 1);
+		d.collect_programs().unwrap();
+		let key = compile(&mut d, &c, "pub fn main(){||7}");
+		drop(call(&mut d, key, &[], 1));
+		Store::collection_probe();
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+		assert_eq!(Store::collection_probe(), (1, 257));
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+		assert_eq!(Store::collection_probe(), (0, 0));
+		let last = d.get(&held, 255).unwrap();
+		assert_eq!(d.scalar(&last).unwrap(), Some(Scalar::I64(255)));
+	}
+	#[test]
+	fn borrowed_and_forwarded_function_keeps_only_its_defining_program() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(&mut d, &c, "pub fn main(){||7}");
+		let f = call(&mut d, key, &[], 1);
+		let key = compile(&mut d, &c, "pub fn main(f){f}");
+		let forwarded = call(&mut d, key, &[&f], 1);
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		drop(f);
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		drop(forwarded);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn a_candidate_found_at_the_root_does_not_hide_another_in_its_captures() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(&mut d, &c, "pub fn main(){||7}");
+		let f = call(&mut d, key, &[], 1);
+		let key = compile(&mut d, &c, "pub fn main(f){move ||f()}");
+		let g = call(&mut d, key, &[&f], 1);
+		drop(f);
+		Store::collection_probe();
+		assert_eq!(d.collect_programs().unwrap().retained, 2);
+		let (walks, values) = Store::collection_probe();
+		assert_eq!(walks, 1);
+		assert!(
+			values > 1,
+			"the second candidate is only in the capture graph"
+		);
+		drop(g);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn allocation_failure_inside_the_walk_releases_no_program() {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(
+			&mut d,
+			&c,
+			"pub fn main(){let v=[];for i in 0..32{v.push(i);}v}",
+		);
+		let _held = call(&mut d, key, &[], 1);
+		d.collect_programs().unwrap();
+		let key = compile(&mut d, &c, "pub fn main(){||7}");
+		drop(call(&mut d, key, &[], 1));
+		let before = d.programs.len();
+		let mut walk_failed = false;
+		let mut completed = false;
+		for bytes in (0..2048).step_by(16) {
+			Store::collection_probe();
+			let result = rune_alloc::limit::with(bytes, || d.collect_programs()).call();
+			let (walks, _) = Store::collection_probe();
+			match result {
+				Err(_) => {
+					assert_eq!(d.programs.len(), before);
+					walk_failed |= walks > 0;
+				}
+				Ok(report) => {
+					assert_eq!(report.retained, 0);
+					completed = true;
+					break;
+				}
+			}
+		}
+		assert!(walk_failed && completed);
+	}
+	fn returned_function_keeps_defining_program(source: &str) {
+		let c = context();
+		let mut d = domain(&c);
+		let key = compile(&mut d, &c, source);
+		let value = call(&mut d, key, &[], 1);
+		assert_eq!(d.collect_programs().unwrap().retained, 1);
+		let key = compile(&mut d, &c, "pub fn main(f){f()}");
+		let result = call(&mut d, key, &[&value], 1);
+		assert_eq!(d.scalar(&result).unwrap(), Some(Scalar::I64(7)));
+		drop(value);
+		drop(result);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+	}
+	#[test]
+	fn returned_scalar_function_and_closure_keep_defining_program() {
+		returned_function_keeps_defining_program("fn f(){7} pub fn main(){f}");
+		returned_function_keeps_defining_program("pub fn main(){let n=7; ||n}");
+	}
+	#[test]
+	fn returned_function_literal_keeps_defining_program() {
+		returned_function_keeps_defining_program("fn f(){7} pub fn main(){f}");
+	}
+	#[test]
+	fn returned_capturing_closure_keeps_defining_program() {
+		returned_function_keeps_defining_program("pub fn main(){let n=7; ||n}");
 	}
 	#[test]
 	fn dropped_handles_and_retained_aliases_drain_before_collect() {
@@ -917,12 +1197,12 @@ mod tests {
 	}
 	#[test]
 	fn foreign_sort_and_iterator_callbacks_obey_slices() {
+		let c = context();
 		for slice in [1, 2, 3, 10000] {
 			for (callback, body, want) in [
 				("|a,b|a.cmp(b)", "let v=[3,1,2];v.sort_by(f);v[0]", 1),
 				("|n|n+1", "[1,2,3].iter().map(|x|f(x)).sum::<i64>()", 9),
 			] {
-				let c = context();
 				let mut d = domain(&c);
 				let key = compile(&mut d, &c, &format!("pub fn main(){{{callback}}}"));
 				let f = call(&mut d, key, &[], slice);
@@ -962,42 +1242,52 @@ mod tests {
 		drop(root);
 		assert_eq!(d.collect_programs().unwrap().retained, 0);
 	}
-	#[test]
-	fn cancel_and_budget_leave_domain_reusable() {
-		for cancel in [false, true] {
-			let c = context();
-			let mut d = domain(&c);
-			let k = compile(&mut d, &c, "pub fn main(){||loop {}}");
-			let root = call(&mut d, k, &[], 1);
-			let k = compile(&mut d, &c, "pub fn main(f){f()}");
-			let id = d.function(&k, crate::Hash::type_hash(["main"])).unwrap();
-			{
-				let mut inv = d.start(&k, id, &[&root], 10).unwrap();
-				if cancel {
-					assert!(matches!(
-						inv.resume(core::num::NonZeroUsize::new(2).unwrap()),
-						CrossOutcome::Limited
-					));
-					assert_eq!(inv.cancel().failure.error.kind, ErrorKind::Cancelled);
-				} else {
-					loop {
-						match inv.resume(core::num::NonZeroUsize::new(1).unwrap()) {
-							CrossOutcome::Limited => {}
-							CrossOutcome::Failed(f) => {
-								assert_eq!(f.failure.error.kind, ErrorKind::FuelExhausted);
-								break;
-							}
-							_ => panic!("unexpected completion"),
+	fn cancel_and_budget_leave_domain_case(cancel: bool) {
+		let c = context();
+		let mut d = domain(&c);
+		let k = compile(&mut d, &c, "pub fn main(){||loop {}}");
+		let root = call(&mut d, k, &[], 1);
+		let k = compile(&mut d, &c, "pub fn main(f){f()}");
+		let id = d.function(&k, crate::Hash::type_hash(["main"])).unwrap();
+		{
+			let mut inv = d.start(&k, id, &[&root], 10).unwrap();
+			if cancel {
+				assert!(matches!(
+					inv.resume(core::num::NonZeroUsize::new(2).unwrap()),
+					CrossOutcome::Limited
+				));
+				assert_eq!(inv.cancel().failure.error.kind, ErrorKind::Cancelled);
+			} else {
+				loop {
+					match inv.resume(core::num::NonZeroUsize::new(1).unwrap()) {
+						CrossOutcome::Limited => {}
+						CrossOutcome::Failed(f) => {
+							assert_eq!(f.failure.error.kind, ErrorKind::FuelExhausted);
+							break;
 						}
+						_ => panic!("unexpected completion"),
 					}
 				}
 			}
-			drop(root);
-			d.collect_programs().unwrap();
-			let k = compile(&mut d, &c, "pub fn main(){42}");
-			let result = call(&mut d, k, &[], 1);
-			assert_eq!(d.scalar(&result).unwrap(), Some(Scalar::I64(42)));
 		}
+		drop(root);
+		d.collect_programs().unwrap();
+		let k = compile(&mut d, &c, "pub fn main(){42}");
+		let result = call(&mut d, k, &[], 1);
+		assert_eq!(d.scalar(&result).unwrap(), Some(Scalar::I64(42)));
+	}
+	#[test]
+	fn cancel_and_budget_leave_domain_reusable() {
+		cancel_and_budget_leave_domain_case(false);
+		cancel_and_budget_leave_domain_case(true);
+	}
+	#[test]
+	fn budget_exhaustion_leaves_domain_reusable() {
+		cancel_and_budget_leave_domain_case(false);
+	}
+	#[test]
+	fn cancellation_leaves_domain_reusable() {
+		cancel_and_budget_leave_domain_case(true);
 	}
 	#[test]
 	fn domain_brand_and_recycled_generation_reject_old_handles() {
@@ -1017,18 +1307,32 @@ mod tests {
 		drop(stale);
 		assert_eq!(a.scalar(&fresh).unwrap(), Some(Scalar::I64(8)));
 	}
-	#[test]
-	fn other_context_and_failed_install_invalidate_admission() {
-		let mut c = context();
-		let mut d = domain(&c);
-		let other = context();
+	fn other_context_is_refused(c: &Context, other: &Context) {
+		let mut d = domain(c);
 		let mut sources = Sources::new();
 		sources
 			.insert(crate::Source::memory("pub fn main(){7}").unwrap())
 			.unwrap();
+		// Both contexts must independently admit the identical source. Empty
+		// host tables match too; origin, not a module mismatch, must reject it.
+		let key = d
+			.compile_insert(c, &mut sources, &mut Diagnostics::new(), 0)
+			.unwrap();
+		d.release_program(key).unwrap();
+		let mut other_domain = domain(other);
+		let key = other_domain
+			.compile_insert(other, &mut sources, &mut Diagnostics::new(), 0)
+			.unwrap();
+		other_domain.release_program(key).unwrap();
 		assert!(d
-			.compile_insert(&other, &mut sources, &mut Diagnostics::new(), 0)
+			.compile_insert(other, &mut sources, &mut Diagnostics::new(), 0)
 			.is_err());
+	}
+	fn failed_install_is_refused(mut c: Context) {
+		let mut sources = Sources::new();
+		sources
+			.insert(crate::Source::memory("pub fn main(){7}").unwrap())
+			.unwrap();
 		let mut module = crate::Module::new();
 		module.function("collision", || 7i64).build().unwrap();
 		c.install(&module).unwrap();
@@ -1037,6 +1341,23 @@ mod tests {
 		assert!(d
 			.compile_insert(&c, &mut sources, &mut Diagnostics::new(), 0)
 			.is_err());
+	}
+	#[test]
+	fn other_context_and_failed_install_invalidate_admission() {
+		let c = context();
+		let other = context();
+		other_context_is_refused(&c, &other);
+		failed_install_is_refused(c);
+	}
+	#[test]
+	fn other_context_with_matching_empty_hosts_is_refused() {
+		// This origin check needs no standard-library function. The complete
+		// default-module variants remain in the aggregate native control above.
+		other_context_is_refused(&Context::new(), &Context::new());
+	}
+	#[test]
+	fn failed_module_install_invalidates_admission() {
+		failed_install_is_refused(Context::new());
 	}
 	#[test]
 	fn closure_calls_back_into_entry_program() {
@@ -1077,30 +1398,40 @@ mod tests {
 			}
 		}
 	}
+	fn drain_failure_case(stage: u8) {
+		let c = context();
+		let mut d = domain(&c);
+		let k = compile(&mut d, &c, "pub fn main(){||7}");
+		let f = call(&mut d, k, &[], 1);
+		drop(f);
+		drain_injection::STAGE.with(|s| s.set(stage));
+		assert_eq!(
+			d.collect_programs().unwrap_err().kind,
+			ErrorKind::Allocation
+		);
+		assert_eq!(d.programs.len(), 1);
+		let r = d.registry.borrow();
+		assert_eq!(r.pending.is_some(), stage == 1);
+		assert_eq!(
+			r.slots.iter().filter(|s| s.root.is_some()).count(),
+			usize::from(stage == 1)
+		);
+		drop(r);
+		assert_eq!(d.collect_programs().unwrap().retained, 0);
+		assert_eq!(d.store.live_entries(), 0);
+	}
 	#[test]
 	fn drain_failure_before_and_after_consumption_is_transactional() {
-		for stage in [1, 2] {
-			let c = context();
-			let mut d = domain(&c);
-			let k = compile(&mut d, &c, "pub fn main(){||7}");
-			let f = call(&mut d, k, &[], 1);
-			drop(f);
-			drain_injection::STAGE.with(|s| s.set(stage));
-			assert_eq!(
-				d.collect_programs().unwrap_err().kind,
-				ErrorKind::Allocation
-			);
-			assert_eq!(d.programs.len(), 1);
-			let r = d.registry.borrow();
-			assert_eq!(r.pending.is_some(), stage == 1);
-			assert_eq!(
-				r.slots.iter().filter(|s| s.root.is_some()).count(),
-				usize::from(stage == 1)
-			);
-			drop(r);
-			assert_eq!(d.collect_programs().unwrap().retained, 0);
-			assert_eq!(d.store.live_entries(), 0);
-		}
+		drain_failure_case(1);
+		drain_failure_case(2);
+	}
+	#[test]
+	fn drain_failure_before_consumption_is_transactional() {
+		drain_failure_case(1);
+	}
+	#[test]
+	fn drain_failure_after_consumption_is_transactional() {
+		drain_failure_case(2);
 	}
 	#[test]
 	fn collection_traces_captures_nested_collections_and_cycles() {
@@ -1118,34 +1449,53 @@ mod tests {
 		d.close().unwrap();
 		assert_eq!(d.store.live_entries(), 0);
 	}
+	fn owner_publication_and_leave_failure(stage: u8) {
+		let c = context();
+		let mut d = domain(&c);
+		let k = compile(&mut d, &c, "pub fn main(){|x|x+1}");
+		let f = call(&mut d, k, &[], 1);
+		let k = compile(&mut d, &c, "pub fn main(f){f(6)}");
+		let id = d.function(&k, crate::Hash::type_hash(["main"])).unwrap();
+		super::super::execute::inject_cross_stage(stage);
+		{
+			let mut inv = d.start(&k, id, &[&f], 100).unwrap();
+			loop {
+				match inv.resume(core::num::NonZeroUsize::new(1).unwrap()) {
+					CrossOutcome::Limited => {}
+					CrossOutcome::Failed(f) => {
+						assert_eq!(f.failure.error.kind, ErrorKind::Allocation);
+						break;
+					}
+					_ => panic!("injection missed"),
+				}
+			}
+		}
+		assert!(d.executor.is_idle());
+		let k = compile(&mut d, &c, "pub fn main(){42}");
+		let value = call(&mut d, k, &[], 1);
+		assert_eq!(d.scalar(&value).unwrap(), Some(Scalar::I64(42)));
+	}
 	#[test]
 	fn owner_publication_and_leave_failures_keep_stacks_coherent() {
 		for stage in 1..=4 {
-			let c = context();
-			let mut d = domain(&c);
-			let k = compile(&mut d, &c, "pub fn main(){|x|x+1}");
-			let f = call(&mut d, k, &[], 1);
-			let k = compile(&mut d, &c, "pub fn main(f){f(6)}");
-			let id = d.function(&k, crate::Hash::type_hash(["main"])).unwrap();
-			super::super::execute::inject_cross_stage(stage);
-			{
-				let mut inv = d.start(&k, id, &[&f], 100).unwrap();
-				loop {
-					match inv.resume(core::num::NonZeroUsize::new(1).unwrap()) {
-						CrossOutcome::Limited => {}
-						CrossOutcome::Failed(f) => {
-							assert_eq!(f.failure.error.kind, ErrorKind::Allocation);
-							break;
-						}
-						_ => panic!("injection missed"),
-					}
-				}
-			}
-			assert!(d.executor.is_idle());
-			let k = compile(&mut d, &c, "pub fn main(){42}");
-			let value = call(&mut d, k, &[], 1);
-			assert_eq!(d.scalar(&value).unwrap(), Some(Scalar::I64(42)));
+			owner_publication_and_leave_failure(stage);
 		}
+	}
+	#[test]
+	fn owner_publication_and_leave_failure_stage_1() {
+		owner_publication_and_leave_failure(1);
+	}
+	#[test]
+	fn owner_publication_and_leave_failure_stage_2() {
+		owner_publication_and_leave_failure(2);
+	}
+	#[test]
+	fn owner_publication_and_leave_failure_stage_3() {
+		owner_publication_and_leave_failure(3);
+	}
+	#[test]
+	fn owner_publication_and_leave_failure_stage_4() {
+		owner_publication_and_leave_failure(4);
 	}
 	#[test]
 	fn refused_start_keeps_a_releasable_lease() {
