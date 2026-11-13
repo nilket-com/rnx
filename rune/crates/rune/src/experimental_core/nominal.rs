@@ -22,7 +22,7 @@ use core::sync::atomic::{AtomicBool, AtomicU32, AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 pub(super) const PROVISIONAL: u32 = 1 << 31;
-const MAX_ENTRIES: usize = 4096;
+pub(super) const MAX_ENTRIES: usize = 4096;
 
 #[derive(Clone, Copy, Debug)]
 pub(crate) struct Limits {

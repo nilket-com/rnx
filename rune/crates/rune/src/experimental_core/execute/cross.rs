@@ -86,23 +86,30 @@ impl Executor {
 	#[allow(clippy::result_large_err)]
 	pub(crate) fn start_cross<'a>(
 		&'a mut self,
-		programs: &'a [Member],
+		programs: &'a mut [Member],
 		entry: u32,
 		store: &'a mut Store,
 		function: u32,
 		args: &[&Root],
 		fuel: usize,
-	) -> core::result::Result<SlicedInvocation<'a>, crate::experimental_core::domain::StartError> {
-		let program = programs
+	) -> core::result::Result<
+		(SlicedInvocation<'a>, &'a [Member]),
+		crate::experimental_core::domain::StartError,
+	> {
+		let index = programs
 			.iter()
-			.find(|m| m.program.code.id() == entry)
-			.map(|m| &m.program)
+			.position(|m| m.program.code.id() == entry)
 			.ok_or_else(|| error(ErrorKind::InvalidCode))?;
-		// Use the complete preparation admission, but do not keep its argument borrow.
+		// Exactly one complete preparation. Refusal preserves the lease and roots;
+		// later setup failures have the existing post-admission semantics.
 		{
-			let _prepared = self.prepare(program, store, function, args)?;
+			let _prepared = self.prepare(&programs[index].program, store, function, args)?;
 		}
-		for member in programs {
+		programs[index].consume_entry_lease();
+		// Return this shared reborrow for both invocation and diagnostic owners.
+		let programs: &'a [Member] = programs;
+		let program = &programs[index].program;
+		for member in programs.iter() {
 			member
 				.program
 				.code
@@ -130,21 +137,24 @@ impl Executor {
 				failure,
 			));
 		}
-		Ok(SlicedInvocation {
-			executor: self,
-			program,
-			store,
-			remaining: fuel.min(usize::MAX - 1),
-			active: true,
-			cross: Some(CrossState {
-				programs,
-				owners,
-				failure_frames,
-				truncated: false,
-				last_owner: entry,
-				departed: None,
-			}),
-		})
+		Ok((
+			SlicedInvocation {
+				executor: self,
+				program,
+				store,
+				remaining: fuel.min(usize::MAX - 1),
+				active: true,
+				cross: Some(CrossState {
+					programs,
+					owners,
+					failure_frames,
+					truncated: false,
+					last_owner: entry,
+					departed: None,
+				}),
+			},
+			programs,
+		))
 	}
 	pub(super) fn cross_prepare_owner(
 		cross: &mut Option<CrossState<'_>>,

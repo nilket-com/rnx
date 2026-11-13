@@ -4,9 +4,54 @@ use crate::alloc::HashSet;
 use crate::experimental_core::{nominal, value::Root};
 use crate::function::formatting::Certificate;
 
+// A monotone superset, not a liveness map. Failed constructions and dead types
+// may cost the fallback walk, but can never grant a permission. No mutation or
+// ownership operation maintains this metadata.
+pub(super) struct StructCensus {
+	words: [u64; nominal::MAX_ENTRIES.div_ceil(64)],
+	used: usize,
+	unknown: bool,
+}
+
+impl StructCensus {
+	#[cfg(any(test, debug_assertions))]
+	pub(super) fn contains(&self, nominal: super::super::value::Nominal) -> bool {
+		let index = nominal.0 as usize;
+		self.words
+			.get(index / 64)
+			.map_or(self.unknown, |word| word & (1 << (index % 64)) != 0)
+	}
+
+	fn permits(&self, certificate: &Certificate) -> bool {
+		if self.unknown {
+			return false;
+		}
+		for (index, word) in self.words[..self.used].iter().enumerate() {
+			let mut remaining = *word;
+			while remaining != 0 {
+				let bit = remaining.trailing_zeros() as usize;
+				let nominal = super::super::value::Nominal((index * 64 + bit) as u32);
+				#[cfg(test)]
+				WALKS.with(|p| {
+					let (walks, nodes, types) = p.get();
+					p.set((walks, nodes, types + 1));
+				});
+				if !nominal::hash_copy(nominal)
+					.is_some_and(|hash| certificate.permits(crate::Hash::new(hash)))
+				{
+					return false;
+				}
+				remaining &= remaining - 1;
+			}
+		}
+		true
+	}
+}
+
 #[cfg(test)]
 std::thread_local! {
 	static PROBE: core::cell::Cell<(bool,usize)> = const { core::cell::Cell::new((false,0)) };
+	static WALKS: core::cell::Cell<(usize,usize,usize)> = const { core::cell::Cell::new((0,0,0)) };
 }
 pub(super) enum AdmissionChildren<'a> {
 	Small(core::array::IntoIter<Option<Value>, 3>),
@@ -66,12 +111,46 @@ impl Payload {
 	}
 }
 impl Store {
+	#[cold]
+	#[inline(never)]
+	pub(super) fn record_struct_nominal(
+		&mut self,
+		nominal: super::super::value::Nominal,
+	) -> Result<()> {
+		let census = match self.struct_census {
+			Some(ref mut census) => census,
+			None => self.struct_census.insert(
+				Box::try_new(StructCensus {
+					words: [0; nominal::MAX_ENTRIES.div_ceil(64)],
+					used: 0,
+					unknown: false,
+				})
+				.map_err(crate::alloc::Error::from)?,
+			),
+		};
+		let index = nominal.0 as usize;
+		if let Some(word) = census.words.get_mut(index / 64) {
+			*word |= 1 << (index % 64);
+			census.used = census.used.max(index / 64 + 1);
+		} else {
+			// Keep malformed private construction on the exact validator; do not
+			// turn an unknown/provisional id into a permission or a new error.
+			census.unknown = true;
+		}
+		Ok(())
+	}
+
 	#[cfg(test)]
 	pub(crate) fn format_admission_probe(fail: bool) -> usize {
 		PROBE.with(|p| {
 			let (_, n) = p.replace((fail, 0));
 			n
 		})
+	}
+
+	#[cfg(test)]
+	pub(crate) fn format_walk_probe() -> (usize, usize, usize) {
+		WALKS.with(|p| p.replace((0, 0, 0)))
 	}
 
 	#[cold]
@@ -90,6 +169,18 @@ impl Store {
 		}) {
 			return Err(err(ErrorKind::Allocation));
 		}
+		if self
+			.struct_census
+			.as_ref()
+			.is_none_or(|census| census.permits(certificate))
+		{
+			return Ok(());
+		}
+		#[cfg(test)]
+		WALKS.with(|p| {
+			let (walks, nodes, types) = p.get();
+			p.set((walks + 1, nodes, types));
+		});
 
 		let mut visited = HashSet::new();
 		let mut nominals = HashSet::new();
@@ -109,6 +200,11 @@ impl Store {
 			discover(root.value, &mut visited, &mut pending)?;
 		}
 		while let Some(handle) = pending.pop() {
+			#[cfg(test)]
+			WALKS.with(|p| {
+				let (walks, nodes, types) = p.get();
+				p.set((walks, nodes + 1, types));
+			});
 			let payload = self
 				.entry(handle)?
 				.payload
@@ -129,6 +225,9 @@ impl Store {
 		Ok(())
 	}
 }
+
+#[cfg(test)]
+mod census_tests;
 
 #[cfg(test)]
 mod tests {

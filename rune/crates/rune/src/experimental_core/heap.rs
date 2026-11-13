@@ -390,6 +390,8 @@ pub struct Store {
 	format_capacity_extra: usize,
 	// The experiment is local to one runtime. No accidental cross-thread host use.
 	_local: core::marker::PhantomData<std::rc::Rc<()>>,
+	// Cold entry-admission proof, allocated only by a Struct constructor.
+	struct_census: Option<Box<admission::StructCensus>>,
 }
 
 fn err(kind: ErrorKind) -> Error {
@@ -437,6 +439,7 @@ impl Store {
 			#[cfg(test)]
 			format_capacity_extra: 0,
 			_local: core::marker::PhantomData,
+			struct_census: None,
 		})
 	}
 
@@ -537,6 +540,13 @@ impl Store {
 						.map_or(0, |marks| size_of::<Vec<bool>>() + marks.capacity()),
 				)
 			})
+			.and_then(|n| {
+				n.checked_add(
+					self.struct_census
+						.as_ref()
+						.map_or(0, |_| size_of::<admission::StructCensus>()),
+				)
+			})
 			.ok_or_else(|| err(ErrorKind::Overflow))
 	}
 
@@ -550,6 +560,10 @@ impl Store {
 				.host_contents
 				.as_ref()
 				.map_or(0, |marks| size_of::<Vec<bool>>() + marks.capacity())
+			+ self
+				.struct_census
+				.as_ref()
+				.map_or(0, |_| size_of::<admission::StructCensus>())
 	}
 
 	fn heap_edge(value: Value) -> usize {
@@ -664,6 +678,15 @@ impl Store {
 	fn admit_inner<const HOST: bool>(&mut self, payload: Payload) -> Result<Value> {
 		if matches!(payload, Payload::Moved(_)) {
 			return Err(err(ErrorKind::InvalidCode));
+		}
+		#[cfg(any(test, debug_assertions))]
+		if let Type::Struct(nominal) = payload.tag() {
+			assert!(
+				self.struct_census
+					.as_ref()
+					.is_some_and(|census| census.contains(nominal)),
+				"Struct payload bypassed the constructor census"
+			);
 		}
 		if self.closed {
 			return Err(err(ErrorKind::ClosedStore));
@@ -889,6 +912,7 @@ impl Store {
 			if values.len() != arity {
 				return Err(err(ErrorKind::Type));
 			}
+			self.record_struct_nominal(n)?;
 		}
 
 		let bytes = values
@@ -973,8 +997,10 @@ impl Store {
 			return Err(err(ErrorKind::ClosedStore));
 		}
 
-		if !matches!(tag, Type::Object | Type::Struct(_)) {
-			return Err(err(ErrorKind::Type));
+		match tag {
+			Type::Object => {}
+			Type::Struct(nominal) => self.record_struct_nominal(nominal)?,
+			_ => return Err(err(ErrorKind::Type)),
 		}
 
 		let mut bytes = fields
@@ -2051,6 +2077,7 @@ impl Store {
 		self.closed = true;
 		self.opaque_names.clear();
 		self.host_contents = None;
+		self.struct_census = None;
 
 		// Handle edges are inert bits. Do not decrement/follow them while draining.
 		while let Some(index) = self.last {

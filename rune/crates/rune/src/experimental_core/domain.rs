@@ -104,6 +104,12 @@ pub(crate) struct Member {
 	may_escape: bool,
 }
 
+impl Member {
+	pub(super) fn consume_entry_lease(&mut self) {
+		self.leased = false;
+	}
+}
+
 /// Result of a complete, transactional program collection.
 #[derive(Debug)]
 pub struct CollectionReport {
@@ -732,14 +738,8 @@ impl ProgramDomain {
 				}
 			}
 		}
-		// A refused preparation retains its lease and caller-owned key.
-		let _prepared =
-			self.executor
-				.prepare(&member.program, &mut self.store, function, &arguments)?;
-		drop(_prepared);
-		member.leased = false;
-		let inner = self.executor.start_cross(
-			&self.programs,
+		let (inner, programs) = self.executor.start_cross(
+			&mut self.programs,
 			key.code,
 			&mut self.store,
 			function,
@@ -750,7 +750,7 @@ impl ProgramDomain {
 			inner,
 			registry: &self.registry,
 			slot,
-			programs: &self.programs,
+			programs,
 		})
 	}
 }
@@ -1760,3 +1760,6 @@ mod host_session_tests {
 		d.close().unwrap();
 	}
 }
+
+#[cfg(test)]
+mod admission_tests;

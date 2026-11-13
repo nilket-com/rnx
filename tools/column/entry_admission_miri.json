@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::heap::admission::census_tests::plain_constructors_allocate_no_census",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::first_struct_census_allocation_failure_is_visible",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::permitted_nominals_are_checked_once_per_type_not_instance",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::aliased_push_of_denied_struct_invalidates_no_cached_answer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::field_replacement_and_object_insert_keep_deep_refusal",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::clone_and_capture_transfer_preserve_nominal_census",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::dead_unpermitted_type_causes_walk_not_false_refusal",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::changed_certificate_and_other_store_do_not_reuse_permissions",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::provisional_or_unknown_nominal_forces_exact_validation",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::unrecorded_payload_admission_panics_before_publication",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::census_tests::tuple_struct_first_census_allocation_failure_is_visible",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::domain::admission_tests::successful_start_prepares_once_before_any_effect",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::domain::admission_tests::failed_prepare_keeps_lease_roots_and_is_retryable_without_effects",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::domain::admission_tests::deep_formatter_refusal_keeps_lease_and_untouched_arguments",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::domain::admission_tests::callback_from_an_older_member_records_new_struct_before_next_entry",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::tests::bounded_enum_parent_authority_distinguishes_safe_variants",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::tests::bounded_shared_and_cyclic_graphs_preserve_inputs",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::tests::bounded_deep_and_shared_safe_graphs_complete_without_a_depth_limit",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::admission::tests::bounded_authority_snapshots_share_identity_until_native_mutation",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

@@ -7,6 +7,8 @@ use rune::experimental_core::{
 };
 
 #[cfg(test)]
+mod admission_costs;
+#[cfg(test)]
 mod collection_costs;
 #[cfg(test)]
 mod collection_tests;
