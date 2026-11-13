@@ -5,6 +5,7 @@ mod constant_loops;
 mod constant_patterns;
 mod constant_structure;
 pub(crate) mod external;
+mod loop_control;
 mod witnesses;
 use quote::ToTokens;
 use serde::Serialize;
@@ -868,6 +869,7 @@ fn pinned_classification() {
 	let constants = constant_report();
 	let moved_json = moved_json_report();
 	let conditionals = conditionals::report();
+	let loop_controls = loop_control::report();
 	let mut probes = Vec::new();
 	for row in constants.as_array().unwrap() {
 		let (class, rule, worse) = classify(&row["legacy"], &row["domain"]);
@@ -883,10 +885,11 @@ fn pinned_classification() {
 	all.extend(probes.iter().cloned());
 	all.extend(moved_json.as_array().unwrap().iter().cloned());
 	all.extend(conditionals.as_array().unwrap().iter().cloned());
+	all.extend(loop_controls.as_array().unwrap().iter().cloned());
 	for book in notebooks.as_array().unwrap() {
 		all.extend(book["report"]["rows"].as_array().unwrap().iter().cloned());
 	}
-	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"moved_json":moved_json,"summary":summary(&all)});
+	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"loop_control_probes":loop_controls,"moved_json":moved_json,"summary":summary(&all)});
 	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
 		std::fs::write(path, serialize_table(&report).into_bytes()).unwrap();
 	}

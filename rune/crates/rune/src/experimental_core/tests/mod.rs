@@ -112,3 +112,5 @@ mod cmp_ordering_pins {
 }
 
 mod name_projection;
+
+mod loop_control;

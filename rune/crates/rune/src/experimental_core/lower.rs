@@ -88,6 +88,7 @@ pub(crate) fn function(
 	context: &crate::Context,
 	transaction: &mut CompileTransaction,
 	moved_error: &core::cell::Cell<Option<(Span, Span)>>,
+	invalid_break: &core::cell::Cell<Option<Location>>,
 	self_receiver: Option<Hash>,
 	self_proof: &core::cell::Cell<Option<Location>>,
 	proofs: &mut super::frontend::receiver_proofs::Proofs,
@@ -105,6 +106,7 @@ pub(crate) fn function(
 		variables: Vec::new(),
 		moved: Vec::new(),
 		moved_error,
+		invalid_break,
 		text_bindings: Vec::new(),
 		loops: Vec::new(),
 		dirty: Vec::new(),
@@ -188,6 +190,7 @@ struct Loop {
 	/// Where a `break value` is delivered, when the loop's value is used.
 	out: Option<u32>,
 	breaks: Vec<u32>,
+	valued: bool,
 }
 
 struct Lower<'a, 'hir> {
@@ -200,6 +203,7 @@ struct Lower<'a, 'hir> {
 	variables: Vec<(hir::Variable, u32)>,
 	moved: Vec<(hir::Variable, Span)>,
 	moved_error: &'a core::cell::Cell<Option<(Span, Span)>>,
+	invalid_break: &'a core::cell::Cell<Option<Location>>,
 	text_bindings: Vec<(hir::Variable, hir::ExprId)>,
 	loops: Vec<Loop>,
 	/// Per slot: may currently hold a heap handle that needs a Release.
@@ -428,6 +432,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			cleanup: self.next,
 			out,
 			breaks: Vec::new(),
+			valued: true,
 		})?;
 		self.block_body(block, out.map_or(Mode::Discard, Mode::Into))?;
 		let end = self.pc();
@@ -1112,6 +1117,14 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		// once after the loop; each iteration overwrites it.
 		let mark = self.next;
 		let start = self.pc();
+		self.loops.try_push(Loop {
+			label: loop_.label.map(String::try_from).transpose()?,
+			start: Some(start),
+			cleanup: mark,
+			out,
+			breaks: Vec::new(),
+			valued: true,
+		})?;
 		let condition = if let Some(condition) = loop_.condition {
 			let hir::Condition::Expr(_, id) = condition else {
 				return Err(self.refused(span, Refusal::Condition));
@@ -1124,13 +1137,10 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			None
 		};
 
-		self.loops.try_push(Loop {
-			label: loop_.label.map(String::try_from).transpose()?,
-			start: Some(start),
-			cleanup: self.next,
-			out,
-			breaks: Vec::new(),
-		})?;
+		self.loops
+			.last_mut()
+			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "loop context"))?
+			.cleanup = self.next;
 		let body_start = self.pc();
 		self.block(&loop_.body, Mode::Discard)?;
 		self.emit(Op::Jump { target: start }, span)?;
@@ -1208,6 +1218,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			cleanup: if destructure { binding + 1 } else { self.next },
 			out,
 			breaks: Vec::new(),
+			valued: false,
 		})?;
 		self.block(&for_.body, Mode::Discard)?;
 		if destructure {
@@ -1729,6 +1740,10 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			return Err(Error::new(ErrorKind::InvalidCode, "lowering arm"));
 		};
 		let index = self.loop_index(break_.label, span)?;
+		if break_.expr.is_some() && !self.loops[index].valued {
+			self.invalid_break.set(Some(self.location(span)));
+			return Err(self.refused(span, Refusal::FrontendDiagnostic));
+		}
 		match (self.loops[index].out, break_.expr) {
 			(Some(target), Some(id)) => self.expr_into(id, target)?,
 			(Some(target), None) => self.unit_into(target, span)?,

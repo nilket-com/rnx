@@ -149,6 +149,7 @@ pub(crate) struct Collector {
 	native_helpers: crate::hash::Map<u32>,
 	pub(crate) failure: Option<Error>,
 	variable_moved: Option<(Span, Span)>,
+	invalid_break: Option<Location>,
 	unenrolled_host: Option<(Location, crate::ItemBuf)>,
 	source_uses: Vec<Hash>,
 	self_proofs: Vec<(u32, Hash, Hash, Location)>,
@@ -240,6 +241,15 @@ impl Collector {
 	}
 
 	pub(crate) fn compile_error(&mut self, error: Error, fallback: Span) -> crate::compile::Error {
+		if let Some(at) = self.invalid_break.filter(|at| {
+			error.refusal == Some(Refusal::FrontendDiagnostic) && error.location == Some(*at)
+		}) {
+			self.invalid_break = None;
+			return crate::compile::Error::new(
+				Span::new(at.start, at.end),
+				crate::compile::ErrorKind::BreakUnsupportedValue,
+			);
+		}
 		if let Some((at, item)) = self.unenrolled_host.take() {
 			if error.refusal == Some(Refusal::Native) && error.location == Some(at) {
 				return crate::compile::Error::new(
@@ -327,6 +337,7 @@ impl Collector {
 		let native_helpers = &mut self.native_helpers;
 		let unenrolled_host = &mut self.unenrolled_host;
 		let moved_error = core::cell::Cell::new(None);
+		let invalid_break = core::cell::Cell::new(None);
 		let self_proof = core::cell::Cell::new(None);
 		let result = super::lower::function(
 			exprs,
@@ -415,6 +426,7 @@ impl Collector {
 			context,
 			&mut self.transaction,
 			&moved_error,
+			&invalid_break,
 			method.map(|(receiver, _)| receiver),
 			&self_proof,
 			&mut self.proofs,
@@ -428,6 +440,7 @@ impl Collector {
 					error.location = Some(function_at);
 				}
 				self.variable_moved = moved_error.get();
+				self.invalid_break = invalid_break.get();
 				self.record_failure(error);
 				return Err(error);
 			}
@@ -581,6 +594,7 @@ pub fn compile(
 		native_helpers: crate::hash::Map::default(),
 		failure: None,
 		variable_moved: None,
+		invalid_break: None,
 		unenrolled_host: None,
 		source_uses: Vec::new(),
 		self_proofs: Vec::new(),

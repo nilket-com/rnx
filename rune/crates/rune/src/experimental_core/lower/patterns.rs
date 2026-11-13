@@ -757,6 +757,14 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		// Linear slots precede condition temporaries so each iteration can reuse them.
 		let linear = self.pattern_slots(let_.pat.names.len())?;
 		let start = self.pc();
+		self.loops.try_push(Loop {
+			label: hir.label.map(String::try_from).transpose()?,
+			start: Some(start),
+			cleanup: mark,
+			out,
+			breaks: Vec::new(),
+			valued: true,
+		})?;
 		let root = self.pattern_root(let_.expr, Refusal::Condition)?;
 		let temps = self.next;
 		let misses = self
@@ -765,13 +773,10 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		let cleanup = self.pattern_dirty(temps)?;
 		self.pop_to(temps, let_.pat.pat.span)?;
 		self.pattern_bindings(&let_.pat, &linear)?;
-		self.loops.try_push(Loop {
-			label: hir.label.map(String::try_from).transpose()?,
-			start: Some(start),
-			cleanup: self.next,
-			out,
-			breaks: Vec::new(),
-		})?;
+		self.loops
+			.last_mut()
+			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "pattern loop context"))?
+			.cleanup = self.next;
 		self.block(&hir.body, Mode::Discard)?;
 		self.emit(Op::Jump { target: start }, span)?;
 		let miss = self.pc();

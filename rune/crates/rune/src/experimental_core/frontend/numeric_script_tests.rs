@@ -43,6 +43,7 @@ fn indexed(text: &str, loader: &mut dyn compile::SourceLoader) -> (Result<Progra
 		native_helpers: crate::hash::Map::default(),
 		failure: None,
 		variable_moved: None,
+		invalid_break: None,
 		unenrolled_host: None,
 		source_uses: Vec::new(),
 		self_proofs: Vec::new(),
@@ -183,4 +184,49 @@ fn custom_collector_keeps_unresolved_receiver_sites_as_located_method_refusals()
 	assert_eq!(error.refusal, Some(Refusal::Method));
 	let at = error.location.unwrap();
 	assert_eq!(&source[at.start as usize..at.end as usize], "(-2.0).abs()");
+}
+
+
+#[test]
+fn invalid_break_marker_belongs_only_to_its_error() {
+	let mut collector = Collector {
+		revision: 7,
+		entries: Vec::new(),
+		transaction: CompileTransaction::default(),
+		sort_helper: None,
+		any_helper: None,
+		native_helpers: crate::hash::Map::default(),
+		failure: None,
+		variable_moved: None,
+		invalid_break: None,
+		unenrolled_host: None,
+		source_uses: Vec::new(),
+		self_proofs: Vec::new(),
+		proofs: receiver_proofs::Proofs::default(),
+		proof_entries: Vec::new(),
+	};
+	let at = Location {
+		source: 2,
+		revision: 7,
+		start: 10,
+		end: 20,
+	};
+	let other = Location { source: 3, ..at };
+	collector.invalid_break = Some(at);
+	let unrelated = collector.compile_error(Error::refused(Refusal::Yield).at(at), Span::new(1, 2));
+	assert!(!std::format!("{unrelated}").contains("Can only break"));
+	assert_eq!(collector.invalid_break, Some(at));
+	let wrong_source = collector.compile_error(
+		Error::refused(Refusal::FrontendDiagnostic).at(other),
+		Span::new(1, 2),
+	);
+	assert!(!std::format!("{wrong_source}").contains("Can only break"));
+	assert_eq!(collector.invalid_break, Some(at));
+	let own = collector.compile_error(
+		Error::refused(Refusal::FrontendDiagnostic).at(at),
+		Span::new(1, 2),
+	);
+	assert!(std::format!("{own}").contains("Can only break with a value"));
+	assert_eq!(own.span(), Span::new(at.start, at.end));
+	assert_eq!(collector.invalid_break, None);
 }

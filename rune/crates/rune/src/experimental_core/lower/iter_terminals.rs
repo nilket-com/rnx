@@ -1573,6 +1573,7 @@ impl<'hir> Lower<'_, 'hir> {
 			cleanup: if destructure { binding + 1 } else { self.next },
 			out,
 			breaks: Vec::new(),
+			valued: false,
 		})?;
 		self.block(&for_.body, Mode::Discard)?;
 		if destructure {

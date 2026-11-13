@@ -1,0 +1,328 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::frontend::numeric_script_tests::invalid_break_marker_belongs_only_to_its_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::adapted_for_value",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::body_label_outer_valued_for",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::body_label_while_value",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::body_unknown_label",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_lease_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_lease_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_lease_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_lease_nested",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_lease_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_pattern_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_pattern_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_pattern_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_pattern_nested",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_pattern_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_text_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_text_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_text_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_text_nested",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_text_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_vector_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_vector_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_vector_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_vector_nested",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::cleanup_vector_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_driver_selection_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_inner_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_iter_break_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_iter_break_plain",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_iter_break_self",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_iter_continue_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_iter_continue_plain",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_iter_continue_self",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_unknown_label",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::for_value_discarded",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_pattern_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_pattern_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_pattern_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_pattern_nested",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_pattern_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_text_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_text_continue",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::operand_text_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::text_for_value",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::unrelated_refusal_before_for_is_not_a_break_error",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::valued_for",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::valued_while",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::valued_while_let",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_break_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_break_plain",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_break_self",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_continue_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_continue_plain",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_continue_self",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_inner_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_break_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_break_plain",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_break_self",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_continue_outer",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_continue_plain",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_continue_self",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_inner_break",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_let_unknown_label",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::tests::loop_control::while_unknown_label",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}
