@@ -271,6 +271,7 @@ impl Store {
 	pub fn root_set(&mut self, root: &Root, index: usize, new: &Root) -> Result<()> {
 		let value = self.import(root)?;
 		let new = self.import(new)?;
+		self.plain_host_child(new)?;
 		self.set(value, index, new)
 	}
 
@@ -278,6 +279,7 @@ impl Store {
 	pub fn root_push(&mut self, root: &Root, new: &Root) -> Result<()> {
 		let value = self.import(root)?;
 		let new = self.import(new)?;
+		self.plain_host_child(new)?;
 		self.push(value, new)
 	}
 
@@ -292,6 +294,7 @@ impl Store {
 	pub fn root_set_field(&mut self, root: &Root, key: &str, new: &Root) -> Result<()> {
 		let value = self.import(root)?;
 		let new = self.import(new)?;
+		self.plain_host_child(new)?;
 		self.set_field(value, key, new)
 	}
 
@@ -301,6 +304,14 @@ impl Store {
 	/// to the store. See [`Self::root_format_with_limits`] to raise limits explicitly.
 	pub fn root_format(&self, root: &Root, debug: bool) -> Result<String> {
 		let value = self.import(root)?;
+		if matches!(self.host_tag(value), Ok((Type::Host(_), _))) {
+			if debug {
+				return Err(super::super::error::Error::refused(
+					super::super::error::Refusal::OpaqueDebug,
+				));
+			}
+			return self.host_display(value, super::FormatLimits::default().bytes);
+		}
 		self.format_value(value, debug)
 	}
 
@@ -314,6 +325,14 @@ impl Store {
 		limits: &super::FormatLimits,
 	) -> Result<String> {
 		let value = self.import(root)?;
+		if matches!(self.host_tag(value), Ok((Type::Host(_), _))) {
+			if debug {
+				return Err(super::super::error::Error::refused(
+					super::super::error::Refusal::OpaqueDebug,
+				));
+			}
+			return self.host_display(value, limits.bytes);
+		}
 		self.format_value_with_limits(value, debug, limits)
 	}
 

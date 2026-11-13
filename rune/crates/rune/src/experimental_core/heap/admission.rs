@@ -8,7 +8,7 @@ use crate::function::formatting::Certificate;
 std::thread_local! {
 	static PROBE: core::cell::Cell<(bool,usize)> = const { core::cell::Cell::new((false,0)) };
 }
-enum AdmissionChildren<'a> {
+pub(super) enum AdmissionChildren<'a> {
 	Small(core::array::IntoIter<Option<Value>, 3>),
 	Values(core::slice::Iter<'a, Value>),
 	Fields(core::slice::Iter<'a, (String, Value)>),
@@ -28,12 +28,14 @@ impl Iterator for AdmissionChildren<'_> {
 impl Payload {
 	// Deliberately separate from ownership/drop children. Every new payload
 	// must classify all state that an admitted computation could later reach.
-	fn admission_children(&self) -> AdmissionChildren<'_> {
+	pub(super) fn admission_children(&self) -> AdmissionChildren<'_> {
 		let small = |a, b, c| AdmissionChildren::Small([a, b, c].into_iter());
 		match self {
-			Self::Moved(_) | Self::String(_) | Self::Range { .. } | Self::RangeIterator { .. } => {
-				small(None, None, None)
-			}
+			Self::Host { .. }
+			| Self::Moved(_)
+			| Self::String(_)
+			| Self::Range { .. }
+			| Self::RangeIterator { .. } => small(None, None, None),
 			Self::Variant { payload, .. } | Self::OptionIterator { payload } => {
 				small(*payload, None, None)
 			}

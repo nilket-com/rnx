@@ -105,7 +105,9 @@ impl Store {
 			Item::Text(_) => Ok(TypeName::String),
 			Item::Pair(..) => Ok(TypeName::Tuple),
 			Item::Value(Value::Heap(h)) => {
-				self.payload(h)?;
+				if matches!(self.payload(h)?, Payload::Host { .. }) {
+					return Err(error(ErrorKind::Type));
+				}
 				self.diagnostic_type(Value::Heap(h))
 					.ok_or_else(|| error(ErrorKind::InvalidCode))
 			}
@@ -562,8 +564,10 @@ pub(super) fn type_hash(tag: Type) -> Result<u64> {
 		Type::RangeInclusive => rt::RangeInclusive::HASH.into_inner(),
 		Type::RangeTo => rt::RangeTo::HASH.into_inner(),
 		Type::RangeToInclusive => rt::RangeToInclusive::HASH.into_inner(),
-		Type::Struct(nominal) => crate::experimental_core::nominal::hash_copy(nominal)
-			.ok_or_else(|| error(ErrorKind::InvalidCode))?,
+		Type::Struct(nominal) | Type::Host(nominal) => {
+			crate::experimental_core::nominal::hash_copy(nominal)
+				.ok_or_else(|| error(ErrorKind::InvalidCode))?
+		}
 		// One new tag stands for several stock iterator types.
 		Type::Iterator => return Err(error(ErrorKind::InvalidCode)),
 	})

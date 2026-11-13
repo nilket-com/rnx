@@ -240,13 +240,23 @@ pub(crate) fn present(presenters: &mut crate::present::Presenters) -> Result<(),
 /// The `interchange` module: the `Dense` type and its read-only surface.
 /// rnx installs it in every context; an adapter's own tests (or an
 /// embedder building a context by hand) install it with this.
+fn logical_bytes(this: &Dense) -> usize {
+	let values = this.data.len().saturating_mul(match &this.data {
+		Data::F32(_) => 4,
+		Data::F64(_) => 8,
+	});
+	this.names.iter().fold(
+		values.saturating_add(std::mem::size_of::<Dense>()),
+		|bytes, name| bytes.saturating_add(name.len()),
+	)
+}
 pub fn module() -> Result<Module, rune::ContextError> {
 	let mut module = Module::with_crate("interchange")?;
-	module.ty::<Dense>()?;
-	module.associated_function("shape", shape)?;
-	module.associated_function("names", names)?;
-	module.associated_function("dtype", dtype)?;
-	module.associated_function(&rune::runtime::Protocol::DISPLAY_FMT, display)?;
+	use rune::host::OutputCertificate;
+	module.opaque_type::<Dense>(logical_bytes, display)?;
+	module.opaque_method::<Dense, _, _>("shape", shape, Some(OutputCertificate::I64_PAIR))?;
+	module.opaque_method::<Dense, _, _>("names", names, Some(OutputCertificate::STRING_LIST))?;
+	module.opaque_method::<Dense, _, _>("dtype", dtype, None)?;
 	Ok(module)
 }
 
@@ -270,6 +280,22 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 			doc: "dtype() -> String: \"f32\" or \"f64\"",
 		},
 	])
+}
+
+#[cfg(test)]
+pub(crate) fn install_test_factory(context: &mut Context) -> crate::Result<()> {
+	let mut module = Module::with_crate("rnx_test")?;
+	module.opaque_factory::<Dense, _, _>("dense", || {
+		Dense::new(
+			Data::F64(Arc::new(vec![1.0, 2.0, 3.0, 4.0])),
+			2,
+			2,
+			vec!["x".into(), "y".into()],
+		)
+		.unwrap()
+	})?;
+	context.install(module)?;
+	Ok(())
 }
 
 #[cfg(test)]

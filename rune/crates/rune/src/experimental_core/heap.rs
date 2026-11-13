@@ -16,6 +16,9 @@ mod cloning;
 mod comparison;
 mod formatting;
 mod growth;
+pub(crate) mod host_value;
+#[cfg(test)]
+mod host_value_tests;
 mod hot;
 mod indexing;
 mod iter_terminals;
@@ -170,6 +173,10 @@ enum Payload {
 	SortGuard(Box<sorting::SortState>),
 	OtherRange(Box<ranges::RangeShape>),
 	OtherRangeIterator(Box<boxed_iterator::State>),
+	Host {
+		tag: Type,
+		value: Box<host_value::HostValue>,
+	},
 }
 
 // Child values are inert copies; this iterator never acquires ownership.
@@ -201,6 +208,7 @@ impl Iterator for Children<'_> {
 impl Payload {
 	fn bytes(&self) -> Result<usize> {
 		let bytes = match self {
+			Self::Host { value, .. } => Some(value.bytes),
 			Self::Moved(_) => Some(0),
 			Self::SortGuard(state) => Some(state.bytes()?),
 			Self::OtherRange(_) => Some(size_of::<ranges::RangeShape>()),
@@ -234,6 +242,7 @@ impl Payload {
 	/// when admission retains them; dropping an unpublished payload owns none.
 	fn children(&self) -> Children<'_> {
 		match self {
+			Self::Host { .. } => Children::Empty,
 			Self::OtherRangeIterator(state) => Children::One(state.source.map(Value::Heap)),
 			Self::Moved(_)
 			| Self::String(_)
@@ -272,7 +281,7 @@ impl Payload {
 			| Self::OptionIterator { .. }
 			| Self::RangeIterator { .. }
 			| Self::ValueRangeIterator { .. } => Type::Iterator,
-			Self::List { tag, .. } | Self::Record { tag, .. } => *tag,
+			Self::List { tag, .. } | Self::Record { tag, .. } | Self::Host { tag, .. } => *tag,
 			Self::Closure { .. } => Type::Function,
 		}
 	}
@@ -311,6 +320,7 @@ const _: () = {
 	assert!(size_of::<Payload>() == 40);
 };
 impl Entry {
+	#[inline(always)]
 	fn tag(&self) -> Result<Type> {
 		self.payload
 			.as_ref()
@@ -365,6 +375,11 @@ pub struct Store {
 	// Cold moved-iterator diagnostic identity; never read by heap accessors.
 	opaque_names: Vec<(Handle, super::error::TypeName)>,
 	opaque_sweep_at: usize,
+	// Lazily allocated, parallel to slots. Plain-only stores allocate none.
+	// Each marked entry may contain a host value, through children too.
+	// Mutation through public Roots cannot insert a marked child, so a
+	// false mark remains valid even when plain containers form cycles.
+	host_contents: Option<Box<Vec<bool>>>,
 	/// Heap child edges held by all admitted payloads (scalars do not count).
 	edges: usize,
 	first: Option<u32>,
@@ -413,6 +428,7 @@ impl Store {
 			work: Vec::try_with_capacity(INITIAL_WORK)?,
 			opaque_names: Vec::new(),
 			opaque_sweep_at: 8,
+			host_contents: None,
 			edges: 0,
 			first: None,
 			last: None,
@@ -514,6 +530,13 @@ impl Store {
 						.checked_mul(size_of::<(Handle, super::error::TypeName)>())?,
 				)
 			})
+			.and_then(|n| {
+				n.checked_add(
+					self.host_contents
+						.as_ref()
+						.map_or(0, |marks| size_of::<Vec<bool>>() + marks.capacity()),
+				)
+			})
 			.ok_or_else(|| err(ErrorKind::Overflow))
 	}
 
@@ -523,6 +546,10 @@ impl Store {
 			+ self.free.capacity() * size_of::<u32>()
 			+ self.work.capacity() * size_of::<Value>()
 			+ self.opaque_names.capacity() * size_of::<(Handle, super::error::TypeName)>()
+			+ self
+				.host_contents
+				.as_ref()
+				.map_or(0, |marks| size_of::<Vec<bool>>() + marks.capacity())
 	}
 
 	fn heap_edge(value: Value) -> usize {
@@ -531,7 +558,8 @@ impl Store {
 
 	fn payload_edges(payload: &Payload) -> usize {
 		match payload {
-			Payload::Moved(_)
+			Payload::Host { .. }
+			| Payload::Moved(_)
 			| Payload::String(_)
 			| Payload::Range { .. }
 			| Payload::RangeIterator { .. }
@@ -618,6 +646,22 @@ impl Store {
 	}
 
 	fn admit(&mut self, payload: Payload) -> Result<Value> {
+		if self.host_contents.is_some() {
+			return self.admit_with_host(payload);
+		}
+		self.admit_inner::<false>(payload)
+	}
+
+	#[cold]
+	#[inline(never)]
+	fn admit_with_host(&mut self, payload: Payload) -> Result<Value> {
+		self.admit_inner::<true>(payload)
+	}
+
+	// Only stores that have admitted a native object maintain containment marks.
+	// Specialization leaves the original admission transaction on the plain path.
+	#[inline(always)]
+	fn admit_inner<const HOST: bool>(&mut self, payload: Payload) -> Result<Value> {
 		if matches!(payload, Payload::Moved(_)) {
 			return Err(err(ErrorKind::InvalidCode));
 		}
@@ -648,6 +692,12 @@ impl Store {
 				return Err(err(ErrorKind::InvalidHandle));
 			}
 		}
+
+		let marked = if HOST {
+			self.prepare_host_contents(&payload)?
+		} else {
+			false
+		};
 
 		let readers = if let Payload::VectorIterator(iter) = &payload {
 			if !matches!(
@@ -730,6 +780,13 @@ impl Store {
 
 		if reused.is_some() {
 			self.free.pop();
+		}
+
+		if HOST {
+			// prepare_host_contents reserved this slot before acquiring any edges.
+			if let Some(marks) = &mut self.host_contents {
+				marks[index as usize] = marked;
+			}
 		}
 
 		self.slots[index as usize].entry = Some(Entry {
@@ -1577,9 +1634,10 @@ impl Store {
 		// Transfer held values back before accounting this guard's detached edges.
 		let mut failure = match &mut payload {
 			// These adjacent cold discriminants share one cold boundary.
-			Payload::SortGuard(_) | Payload::OtherRange(_) | Payload::OtherRangeIterator(_) => {
-				self.prepare_boxed_detach(&mut payload)?
-			}
+			Payload::SortGuard(_)
+			| Payload::OtherRange(_)
+			| Payload::OtherRangeIterator(_)
+			| Payload::Host { .. } => self.prepare_boxed_detach(&mut payload)?,
 			_ => None,
 		};
 		// The detached payload no longer holds live edges. Its children become
@@ -1985,21 +2043,27 @@ impl Store {
 			return Err(err(ErrorKind::AccessConflict));
 		}
 
-		self.drain();
-		Ok(())
+		self.drain().map_or(Ok(()), Err)
 	}
 
-	fn drain(&mut self) {
+	fn drain(&mut self) -> Option<Error> {
+		let mut failure = None;
 		self.closed = true;
 		self.opaque_names.clear();
+		self.host_contents = None;
 
 		// Handle edges are inert bits. Do not decrement/follow them while draining.
 		while let Some(index) = self.last {
-			let Some(entry) = self.slots[index as usize].entry.take() else {
+			let Some(mut entry) = self.slots[index as usize].entry.take() else {
 				break;
 			};
 
 			self.last = entry.previous;
+			if let Some(Payload::Host { value, .. }) = &mut entry.payload {
+				if let Err(error) = value.dispose() {
+					failure.get_or_insert(error);
+				}
+			}
 
 			// Dropping payload buffers follows no heap edge; Value::Heap is plain bits.
 			drop(entry);
@@ -2011,12 +2075,13 @@ impl Store {
 		self.free.clear();
 		self.live = 0;
 		self.bytes = 0;
+		failure
 	}
 }
 
 impl Drop for Store {
 	fn drop(&mut self) {
-		self.drain();
+		let _ = self.drain();
 	}
 }
 

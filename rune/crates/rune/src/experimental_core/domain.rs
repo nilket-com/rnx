@@ -93,7 +93,12 @@ pub struct ProgramKey {
 	domain: u64,
 	code: u32,
 }
+struct SessionSchema {
+	entry: u32,
+	bindings: Vec<(String, Option<super::heap::host_value::Identity>)>,
+}
 pub(crate) struct Member {
+	session: Option<SessionSchema>,
 	pub(crate) program: Program,
 	leased: bool,
 }
@@ -359,8 +364,77 @@ impl ProgramDomain {
 		}
 		let code = program.code.id();
 		self.programs.try_push(Member {
+			session: None,
 			program,
 			leased: true,
+		})?;
+		Ok(ProgramKey {
+			domain: self.id,
+			code,
+		})
+	}
+	/// Compile a structurally checked synchronous session wrapper. Binding facts
+	/// come from this domain's actual roots, never caller-supplied type hashes.
+	/// The wrapper must restore exactly these fields and return (delta, result).
+	pub fn compile_session(
+		&mut self,
+		context: &Context,
+		sources: &mut Sources,
+		diagnostics: &mut Diagnostics,
+		revision: u64,
+		bindings: &[(&str, &DomainRoot)],
+		delta: &[&str],
+	) -> Result<ProgramKey> {
+		self.drain()?;
+		if context.execution_epoch.snapshot()? != self.epoch {
+			return Err(invalid());
+		}
+		let mut schema = Vec::try_with_capacity(bindings.len())?;
+		let mut facts = Vec::try_with_capacity(bindings.len())?;
+		let mut seen = crate::alloc::HashSet::new();
+		{
+			let registry = self.registry.borrow();
+			for (name, root) in bindings {
+				if !seen.try_insert(*name)? {
+					return Err(invalid());
+				}
+				let identity = self.store.session_identity(self.check(&registry, root)?)?;
+				if let Some(id) = identity {
+					if !context.opaque.types.get(&id.hash).is_some_and(|r| {
+						id.native
+							.is_none_or(|native| r.descriptor.type_id == native)
+					}) {
+						return Err(invalid());
+					}
+				}
+				facts.try_push((String::try_from(*name)?, identity.map(|id| id.hash)))?;
+				schema.try_push((String::try_from(*name)?, identity))?;
+			}
+		}
+		let mut names = Vec::try_with_capacity(delta.len())?;
+		for name in delta {
+			names.try_push(String::try_from(*name)?)?;
+		}
+		let envelope = frontend::opaque::Envelope {
+			bindings: facts,
+			delta: names,
+		};
+		let program =
+			frontend::compile_inner(sources, context, diagnostics, revision, Some(envelope))?;
+		if program.epoch != Some(self.epoch) {
+			return Err(invalid());
+		}
+		let entry = program
+			.function(crate::Hash::type_hash(["main"]))
+			.ok_or_else(invalid)?;
+		let code = program.code.id();
+		self.programs.try_push(Member {
+			program,
+			leased: true,
+			session: Some(SessionSchema {
+				entry,
+				bindings: schema,
+			}),
 		})?;
 		Ok(ProgramKey {
 			domain: self.id,
@@ -639,6 +713,19 @@ impl ProgramDomain {
 			.iter_mut()
 			.find(|m| m.program.code.id() == key.code)
 			.ok_or_else(invalid)?;
+		if let Some(schema) = &member.session {
+			if function != schema.entry || arguments.len() != 1 {
+				return Err(invalid().into());
+			}
+			self.store
+				.validate_session_record(arguments[0], &schema.bindings)?;
+		} else {
+			for root in &arguments {
+				if self.store.session_identity(root)?.is_some() {
+					return Err(Error::refused(super::error::Refusal::OpaqueEntry).into());
+				}
+			}
+		}
 		// A refused preparation retains its lease and caller-owned key.
 		let _prepared =
 			self.executor
@@ -1174,5 +1261,152 @@ mod tests {
 		assert!(d.field(&record, "absent").is_err());
 		let child = d.field(&record, "x").unwrap();
 		assert_eq!(d.scalar(&child).unwrap(), Some(Scalar::I64(7)));
+	}
+}
+
+#[cfg(test)]
+mod host_session_tests {
+	use super::super::error::Refusal;
+	use super::*;
+	use crate as rune;
+	use crate::runtime::{Formatter, VmError};
+	#[derive(crate::Any)]
+	#[rune(item=::domain_host)]
+	struct Native;
+	fn display(_: &Native, _: &mut Formatter) -> core::result::Result<(), VmError> {
+		Ok(())
+	}
+	fn context() -> Context {
+		let mut c = Context::with_default_modules().unwrap();
+		let mut m = crate::Module::with_crate("domain_host").unwrap();
+		m.opaque_type::<Native>(|_| 1, display).unwrap();
+		m.opaque_factory::<Native, _, _>("make", || Native).unwrap();
+		c.install(m).unwrap();
+		c
+	}
+	fn domain(c: &Context) -> ProgramDomain {
+		ProgramDomain::new(
+			Default::default(),
+			Default::default(),
+			c.execution_runtime().unwrap(),
+		)
+		.unwrap()
+	}
+	fn sources(text: &str) -> Sources {
+		let mut s = Sources::new();
+		s.insert(crate::Source::memory(text).unwrap()).unwrap();
+		s
+	}
+	fn compile(
+		d: &mut ProgramDomain,
+		c: &Context,
+		text: &str,
+		bindings: &[(&str, &DomainRoot)],
+	) -> Result<ProgramKey> {
+		d.compile_session(
+			c,
+			&mut sources(text),
+			&mut Diagnostics::new(),
+			1,
+			bindings,
+			&[],
+		)
+	}
+	fn call(d: &mut ProgramDomain, key: &ProgramKey, state: &DomainRoot) -> DomainRoot {
+		let entry = d.entry(key, crate::Hash::type_hash(["main"])).unwrap();
+		let mut invocation = d.start(key, entry, &[state], 10000).unwrap();
+		loop {
+			match invocation.resume(core::num::NonZeroUsize::new(256).unwrap()) {
+				CrossOutcome::Limited => {}
+				CrossOutcome::Complete(root) => return root,
+				CrossOutcome::Failed(f) => panic!("{}", f.message()),
+			}
+		}
+	}
+	fn make(d: &mut ProgramDomain, c: &Context) -> DomainRoot {
+		let key = compile(
+			d,
+			c,
+			"pub fn main(s){let r=domain_host::make();(#{},r)}",
+			&[],
+		)
+		.unwrap();
+		let empty = d.record().unwrap();
+		let output = call(d, &key, &empty);
+		d.get(&output, 1).unwrap()
+	}
+	#[test]
+	fn restored_host_schema_is_checked_before_prepare_and_cannot_claim_plain() {
+		let c = context();
+		let mut d = domain(&c);
+		let host = make(&mut d, &c);
+		let plain = d.i64(7).unwrap();
+		let key = compile(
+			&mut d,
+			&c,
+			"pub fn main(s){let x=s[\"x\"];let r=7;(#{},r)}",
+			&[("x", &host)],
+		)
+		.unwrap();
+		let forged = d.record_from_fields(&[("x", &plain)]).unwrap();
+		let entry = d.entry(&key, crate::Hash::type_hash(["main"])).unwrap();
+		assert!(
+			matches!(d.start(&key,entry,&[&forged],1000),Err(StartError::Prepare(super::super::execute::PrepareError::Invalid(e))) if e.refusal==Some(Refusal::OpaqueEnvelope))
+		);
+		let valid = d.record_from_fields(&[("x", &host)]).unwrap();
+		let output = call(&mut d, &key, &valid);
+		let value = d.get(&output, 1).unwrap();
+		assert_eq!(d.scalar(&value).unwrap(), Some(Scalar::I64(7)));
+		let nested = d.record_from_fields(&[("nested", &host)]).unwrap();
+		let error = compile(
+			&mut d,
+			&c,
+			"pub fn main(s){let x=s[\"x\"];let r=x;(#{},r)}",
+			&[("x", &nested)],
+		)
+		.unwrap_err();
+		assert_eq!(error.refusal, Some(Refusal::OpaqueContainer));
+		d.close().unwrap();
+	}
+	#[test]
+	fn restored_record_cannot_escape_through_user_code_or_wrapper_function_values() {
+		let c = context();
+		let mut d = domain(&c);
+		for body in [
+			"let r=s;(#{},r)",
+			"let r=||s;(#{},r)",
+			"let r=main;(#{},r)",
+			"let r=main(s);(#{},r)",
+		] {
+			let source = std::format!("pub fn main(s){{{body}}}");
+			let error = compile(&mut d, &c, &source, &[]).unwrap_err();
+			assert!(
+				matches!(
+					error.refusal,
+					Some(Refusal::OpaqueEnvelope | Refusal::OpaqueIngress)
+				),
+				"{source}: {error:?}"
+			);
+		}
+		d.close().unwrap();
+	}
+	#[test]
+	fn a_host_value_cannot_enter_a_non_session_program() {
+		let c = context();
+		let mut d = domain(&c);
+		let host = make(&mut d, &c);
+		let key = d
+			.compile_insert(
+				&c,
+				&mut sources("pub fn main(x){x}"),
+				&mut Diagnostics::new(),
+				2,
+			)
+			.unwrap();
+		let entry = d.entry(&key, crate::Hash::type_hash(["main"])).unwrap();
+		assert!(
+			matches!(d.start(&key,entry,&[&host],1000),Err(StartError::Prepare(super::super::execute::PrepareError::Invalid(e))) if e.refusal==Some(Refusal::OpaqueEntry))
+		);
+		d.close().unwrap();
 	}
 }

@@ -11,6 +11,15 @@ use crate::{Hash, ItemBuf};
 #[allow(missing_docs)]
 #[non_exhaustive]
 pub enum ContextError {
+	#[cfg(feature = "execution")]
+	OpaqueBuiltin {
+		info: TypeInfo,
+	},
+	#[cfg(feature = "execution")]
+	OpaqueType {
+		declared: TypeInfo,
+		registered: Option<TypeInfo>,
+	},
 	AllocError {
 		error: alloc::Error,
 	},
@@ -189,6 +198,30 @@ impl From<alloc::alloc::AllocError> for ContextError {
 impl fmt::Display for ContextError {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			#[cfg(feature = "execution")]
+			ContextError::OpaqueBuiltin { info } => {
+				write!(
+					f,
+					"Builtin or reserved type {info} cannot be enrolled as an opaque host value"
+				)?;
+			}
+			#[cfg(feature = "execution")]
+			ContextError::OpaqueType {
+				declared,
+				registered,
+			} => {
+				if let Some(actual) = registered {
+					write!(
+						f,
+						"Opaque native type mismatch: declared {declared}, registered {actual}"
+					)?;
+				} else {
+					write!(
+						f,
+						"Opaque native type {declared} needs an enrolled descriptor"
+					)?;
+				}
+			}
 			ContextError::AllocError { error } => {
 				error.fmt(f)?;
 			}
@@ -243,14 +276,20 @@ impl fmt::Display for ContextError {
 				name,
 				field,
 			} => {
-				write!(f,"Field function `{name}` for field `{field}` and type `{type_info}` already exists")?;
+				write!(
+					f,
+					"Field function `{name}` for field `{field}` and type `{type_info}` already exists"
+				)?;
 			}
 			ContextError::ConflictingIndexFunction {
 				type_info,
 				name,
 				index,
 			} => {
-				write!(f,"Index function `{name}` for index `{index}` and type `{type_info}` already exists")?;
+				write!(
+					f,
+					"Index function `{name}` for index `{index}` and type `{type_info}` already exists"
+				)?;
 			}
 			ContextError::ConflictingModule { item, hash } => {
 				write!(f, "Module `{item}` with hash `{hash}` already exists")?;
@@ -284,9 +323,9 @@ impl fmt::Display for ContextError {
 				hash,
 			} => {
 				write!(
-                    f,
-                    "Trait `{trait_item}` with hash `{trait_hash}` is implemented multiple types for type `{item}` with hash `{hash}`"
-                )?;
+					f,
+					"Trait `{trait_item}` with hash `{trait_hash}` is implemented multiple types for type `{item}` with hash `{hash}`"
+				)?;
 			}
 			ContextError::MissingTraitFunction {
 				name,
@@ -296,9 +335,9 @@ impl fmt::Display for ContextError {
 				trait_hash,
 			} => {
 				write!(
-                    f,
-                    "Missing required associated `{name}` for type `{item}` with hash `{hash}` when implementing trait `{trait_item}` with hash `{trait_hash}`"
-                )?;
+					f,
+					"Missing required associated `{name}` for type `{item}` with hash `{hash}` when implementing trait `{trait_item}` with hash `{trait_hash}`"
+				)?;
 			}
 			ContextError::MissingTrait {
 				item,
@@ -307,9 +346,9 @@ impl fmt::Display for ContextError {
 				impl_hash,
 			} => {
 				write!(
-                    f,
-                    "Missing trait `{item}` with hash `{hash}` when implementing it for `{impl_item}` with hash `{impl_hash}`"
-                )?;
+					f,
+					"Missing trait `{item}` with hash `{hash}` when implementing it for `{impl_item}` with hash `{impl_hash}`"
+				)?;
 			}
 			ContextError::ConflictingTypeMeta { item, type_info } => {
 				write!(
@@ -328,7 +367,10 @@ impl fmt::Display for ContextError {
 				hash,
 				existing,
 			} => {
-				write!(f,"Conflicting meta hash `{hash}` for existing `{existing}` when inserting item `{item}`")?;
+				write!(
+					f,
+					"Conflicting meta hash `{hash}` for existing `{existing}` when inserting item `{item}`"
+				)?;
 			}
 			ContextError::ConflictingTypeHash { hash, existing } => {
 				write!(
@@ -365,9 +407,9 @@ impl fmt::Display for ContextError {
 				actual,
 			} => {
 				write!(
-                    f,
-                    "Constructor for variant `{name}` for `{type_info}` has {actual} arguments but expected {expected}"
-                )?;
+					f,
+					"Constructor for variant `{name}` for `{type_info}` has {actual} arguments but expected {expected}"
+				)?;
 			}
 			ContextError::ConflictingConstConstruct { type_info, hash } => {
 				write!(
@@ -402,10 +444,10 @@ impl fmt::Display for ContextError {
 				let expected = item.parent().unwrap_or_default();
 
 				write!(
-                    f,
-                    "Type hash mismatch for `{type_info}`, from module is `{hash}` while from item `{item}` is `{item_hash}`.\n\
+					f,
+					"Type hash mismatch for `{type_info}`, from module is `{hash}` while from item `{item}` is `{item_hash}`.\n\
                     You might not have the #[rune(item = {expected})] attribute set."
-                )?;
+				)?;
 			}
 			ContextError::StaticTypeHashMismatch {
 				type_info,
@@ -413,7 +455,10 @@ impl fmt::Display for ContextError {
 				hash,
 				item_hash,
 			} => {
-				write!(f, "Static type hash mismatch for `{type_info}`, from module is `{hash}` while from item `{item}` is `{item_hash}`. The static item might be registered in the wrong module, or that the static type hash is miscalculated.")?;
+				write!(
+					f,
+					"Static type hash mismatch for `{type_info}`, from module is `{hash}` while from item `{item}` is `{item_hash}`. The static item might be registered in the wrong module, or that the static type hash is miscalculated."
+				)?;
 			}
 		}
 

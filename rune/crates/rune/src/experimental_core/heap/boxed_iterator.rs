@@ -34,6 +34,7 @@ impl Store {
 	#[inline(never)]
 	pub(super) fn prepare_boxed_detach(&mut self, payload: &mut Payload) -> Result<Option<Error>> {
 		match payload {
+			Payload::Host { value: host, .. } => Ok(host.dispose().err()),
 			Payload::SortGuard(state) if state.active => {
 				self.sort_restore(state)?;
 				Ok(None)

@@ -197,33 +197,31 @@ pub(super) fn run(
 	match expr.kind {
 		E::Loop(l) => {
 			let id = push_target(budget, l.label, true, true, span)?;
-			let result = (|| {
-				loop {
-					inner.constant_work.charge(span)?;
-					let mark = locals.len();
-					let attempt = (|| {
-						if let Some(c) = l.condition {
-							if !constant_value!(condition(
-								inner,
-								exprs,
-								c,
-								depth + 1,
-								budget,
-								locals,
-								span
-							)) {
-								return Ok(Flow::Break(id, unit(budget, span)?));
-							}
+			let result = (|| loop {
+				inner.constant_work.charge(span)?;
+				let mark = locals.len();
+				let attempt = (|| {
+					if let Some(c) = l.condition {
+						if !constant_value!(condition(
+							inner,
+							exprs,
+							c,
+							depth + 1,
+							budget,
+							locals,
+							span
+						)) {
+							return Ok(Flow::Break(id, unit(budget, span)?));
 						}
-						block_value(inner, exprs, &l.body, depth + 1, budget, locals)
-					})();
-					locals.truncate(mark);
-					match attempt? {
-						Flow::Value(_) => {}
-						Flow::Continue(found) if found == id => {}
-						Flow::Break(found, v) if found == id => return Ok(Flow::Value(v)),
-						other => return Ok(other),
 					}
+					block_value(inner, exprs, &l.body, depth + 1, budget, locals)
+				})();
+				locals.truncate(mark);
+				match attempt? {
+					Flow::Value(_) => {}
+					Flow::Continue(found) if found == id => {}
+					Flow::Break(found, v) if found == id => return Ok(Flow::Value(v)),
+					other => return Ok(other),
 				}
 			})();
 			budget.targets.truncate(id);

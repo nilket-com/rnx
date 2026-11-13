@@ -1,4 +1,5 @@
-//! Bounded, borrowed inspection. No script protocol or host handler is invoked.
+//! Bounded, borrowed inspection. Only the explicit display_host method invokes
+//! the enrolled native callback; structural inspection invokes no handler.
 
 use super::{err, Payload, Store};
 use crate::experimental_core::{
@@ -112,7 +113,7 @@ pub enum ViewKind<'a> {
 	},
 	/// A function token or closure. Captures are intentionally not exposed.
 	Function,
-	/// A range or iterator. Its diagnostic type name is available separately.
+	/// A range, iterator or host value. Its diagnostic type name is separate.
 	Opaque(Type),
 	/// A script type value.
 	Type(Type),
@@ -195,6 +196,45 @@ pub struct ValueView<'v, 's> {
 }
 
 impl<'v, 's> ValueView<'v, 's> {
+	/// Borrow a native object without exporting an owning runtime handle.
+	/// The native guard and the Store borrow remain live together.
+	pub fn borrow_host<T: crate::Any>(&self) -> Result<crate::runtime::BorrowRef<'_, T>> {
+		let Payload::Host { value: host, .. } = self.payload()? else {
+			return Err(err(ErrorKind::Type));
+		};
+		host.value()?
+			.borrow_ref::<T>()
+			.map_err(|_| err(ErrorKind::Type))
+	}
+	/// Enrolled native type hash, including a moved value's diagnostic metadata.
+	/// This does not authorize a cast; borrow_host checks the native TypeId.
+	pub fn host_type_hash(&self) -> Result<crate::Hash> {
+		let nominal = match self.kind()? {
+			ViewKind::Opaque(Type::Host(n)) | ViewKind::Moved(Type::Host(n)) => n,
+			_ => return Err(err(ErrorKind::Type)),
+		};
+		nominal::hash_copy(nominal)
+			.map(crate::Hash::new)
+			.ok_or_else(|| err(ErrorKind::InvalidCode))
+	}
+
+	/// Exact enrolled display name, including its rooted module spelling.
+	/// Reading this metadata never borrows or invokes the native object.
+	pub fn host_type_name(&self) -> Result<crate::alloc::String> {
+		let n = match self.kind()? {
+			ViewKind::Opaque(Type::Host(n)) | ViewKind::Moved(Type::Host(n)) => n,
+			_ => return Err(err(ErrorKind::Type)),
+		};
+		let mut name = [0; 256];
+		let len = nominal::name_copy(n, &mut name).ok_or_else(|| err(ErrorKind::InvalidCode))?;
+		let name = core::str::from_utf8(&name[..len]).map_err(|_| err(ErrorKind::InvalidCode))?;
+		Ok(crate::alloc::String::try_from(name)?)
+	}
+	/// Run the enrolled native display with an explicit byte bound.
+	pub fn display_host(&self, limit: usize) -> Result<crate::alloc::String> {
+		self.view.store.host_display(self.value, limit)
+	}
+
 	fn payload(&self) -> Result<&'s Payload> {
 		let Value::Heap(handle) = self.value else {
 			return Err(err(ErrorKind::Type));

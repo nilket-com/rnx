@@ -107,10 +107,10 @@
 			{"class":"Refused for a host function","construct":"http::get_bytes","function":"http::get_bytes","input":"http::get_bytes(\"\")","input_shape":"&str","reason":"async","work_group":"async"},
 			{"class":"Refused for a host function","construct":"http::request","function":"http::request","input":"http::request(\"GET\",\"\",#{})","input_shape":"Value options","reason":"async","work_group":"async"},
 			{"class":"Refused for a host function","construct":"http::request_bytes","function":"http::request_bytes","input":"http::request_bytes(\"GET\",\"\",#{})","input_shape":"Value options","reason":"async","work_group":"async"},
-			{"class":"Not classified","function":"interchange::Dense::shape","input":null,"reason":"receiver"},
-			{"class":"Not classified","function":"interchange::Dense::names","input":null,"reason":"receiver"},
-			{"class":"Not classified","function":"interchange::Dense::dtype","input":null,"reason":"receiver"},
-			{"class":"Not classified","function":"interchange::Dense::<DISPLAY_FMT>","input":null,"reason":"receiver"}
+			{"class":"Equal","domain":{"outcome":"ok","value":"(2, 2)"},"domain_worse":false,"function":"interchange::Dense::shape","input":"rnx_test::dense().shape()","legacy":{"outcome":"ok","value":"(2, 2)"},"wording_rule":null},
+			{"class":"Equal","domain":{"outcome":"ok","value":"[\"x\", \"y\"]"},"domain_worse":false,"function":"interchange::Dense::names","input":"rnx_test::dense().names()","legacy":{"outcome":"ok","value":"[\"x\", \"y\"]"},"wording_rule":null},
+			{"class":"Equal","domain":{"outcome":"ok","value":"\"f64\""},"domain_worse":false,"function":"interchange::Dense::dtype","input":"rnx_test::dense().dtype()","legacy":{"outcome":"ok","value":"\"f64\""},"wording_rule":null},
+			{"class":"Equal","domain":{"outcome":"ok","value":"\"Dense[f64; 2 x 2](x, y)\""},"domain_worse":false,"function":"interchange::Dense::<DISPLAY_FMT>","input":"format!(\"{}\",rnx_test::dense())","legacy":{"outcome":"ok","value":"\"Dense[f64; 2 x 2](x, y)\""},"wording_rule":null}
 		],
 		"status": "PASS"
 	},
@@ -1818,5 +1818,5 @@
 			"source": "demos/notebooks/03_report.ipynb"
 		}
 	],
-	"summary": {"classes":{"Equal":232,"Equal by property":3,"Intentional difference":3,"Not classified":4,"Refused at admission":1,"Refused for a host function":10,"Wording":20},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"async":{"count":5,"top_constructs":[["http::get",1],["http::get_bytes",1],["http::request",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":1,"top_constructs":[["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":1,"top_constructs":[["constant bytes",1]]}}}
+	"summary": {"classes":{"Equal":236,"Equal by property":3,"Intentional difference":3,"Refused at admission":1,"Refused for a host function":10,"Wording":20},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"async":{"count":5,"top_constructs":[["http::get",1],["http::get_bytes",1],["http::request",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":1,"top_constructs":[["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":1,"top_constructs":[["constant bytes",1]]}}}
 }

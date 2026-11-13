@@ -256,7 +256,16 @@ impl<'ast> Visit<'ast> for Scan {
 		}
 		let method = n.method.to_string();
 		self.site(format!("METHOD {method}"));
+		if method == "opaque_type" {
+			self.registration(
+				"<DISPLAY_FMT>".into(),
+				"host-value",
+				n.to_token_stream().to_string(),
+			);
+		}
 		if [
+            "opaque_method",
+            "opaque_factory",
 			"function",
 			"function_meta",
 			"raw_function",
@@ -295,6 +304,7 @@ impl<'ast> Visit<'ast> for Scan {
 				})
 				.unwrap_or_default();
 			let class = match method.as_str() {
+				"opaque_method" | "opaque_factory" => "host-value",
 				"host_function" => "typed",
 				"host_function_with_output" => "dynamic-output",
 				"host_function_string_input" => "string-input",

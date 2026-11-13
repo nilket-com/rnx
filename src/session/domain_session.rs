@@ -22,9 +22,8 @@ pub(crate) struct DomainSession {
 	http: crate::http::State,
 	lifecycle: crate::lifecycle::Lifecycle,
 	runtime: crate::execute::Runtime,
-	// Kept with the installed context, including across reset. Native values
-	// are refused by frontend admission; no presenter is invoked on this route.
-	_presenters: crate::present::Presenters,
+	// Typed native presenters stay with the installed context across reset.
+	presenters: crate::present::Presenters,
 	cleanup_notes: Vec<String>,
 	#[cfg(test)]
 	collect_fail_after: Option<usize>,
@@ -56,14 +55,14 @@ impl DomainSession {
 			http: Default::default(),
 			lifecycle: Default::default(),
 			runtime: crate::execute::Runtime::new()?,
-			_presenters: Default::default(),
+			presenters: Default::default(),
 			cleanup_notes: Vec::new(),
 			#[cfg(test)]
 			collect_fail_after: None,
 		})
 	}
 	pub(crate) fn with_presenters(mut self, presenters: crate::present::Presenters) -> Self {
-		self._presenters = presenters;
+		self.presenters = presenters;
 		self
 	}
 
@@ -256,6 +255,42 @@ impl DomainSession {
 			) {
 				return Ok(None);
 			}
+			if let Some(outcome) = self
+				.presenters
+				.present_execution(&value, limits.total_bytes)
+			{
+				let label = format!(
+					"<{}>",
+					value
+						.host_type_name()
+						.map_err(|e| fault(format!("{e:?}")))?
+				);
+				return Ok(Some(crate::present::finish(
+					outcome,
+					&label,
+					limits.total_bytes,
+				)));
+			}
+			if matches!(
+				value.kind().map_err(|e| fault(format!("{e:?}")))?,
+				ViewKind::Opaque(rune::experimental_core::value::Type::Host(_))
+			) {
+				let outcome = value
+					.display_host(limits.total_bytes)
+					.map(|s| s.to_string())
+					.map_err(|e| format!("{e:?}"));
+				let label = format!(
+					"<{}>",
+					value
+						.host_type_name()
+						.map_err(|e| fault(format!("{e:?}")))?
+				);
+				return Ok(Some(crate::present::finish(
+					outcome,
+					&label,
+					limits.total_bytes,
+				)));
+			}
 			crate::format::execution::render(
 				value,
 				Some(&self.fields()),
@@ -392,11 +427,19 @@ impl DomainSession {
 			.insert(Source::memory(&generated.text).map_err(|e| fault(e.to_string()))?)
 			.map_err(|e| fault(e.to_string()))?;
 		let mut diagnostics = rune::Diagnostics::new();
-		let key = match self.domain.compile_insert(
+		let referenced: Vec<_> = p
+			.referenced
+			.iter()
+			.filter_map(|n| self.state.get(n).map(|v| (n.as_str(), v)))
+			.collect();
+		let delta_names: Vec<_> = p.delta_names.iter().map(String::as_str).collect();
+		let key = match self.domain.compile_session(
 			&self.context,
 			&mut sources,
 			&mut diagnostics,
 			number as u64,
+			&referenced,
+			&delta_names,
 		) {
 			Ok(k) => k,
 			Err(e) => {
@@ -584,6 +627,18 @@ impl DomainSession {
 fn refused_construct(refusal: rune::experimental_core::error::Refusal) -> &'static str {
 	use rune::experimental_core::error::Refusal::*;
 	match refusal {
+		OpaqueEntry => "host values outside a checked session entry",
+		OpaqueDebug => "debug formatting of a host value",
+		OpaqueProofLimit => "host-value admission exceeding the proof work limit",
+		OpaqueEnvelope => "an invalid host-value session envelope",
+		OpaqueIngress => "a host-value factory or method taken as a function value",
+		OpaqueReceiver => "an unproven or unsupported host-value receiver",
+		OpaquePattern => "a pattern on a host value",
+		OpaqueArgument => "a host value passed to a script or unsupported host function",
+		OpaqueOperation => "this operation on a host value",
+		OpaqueCapture => "a closure capturing a host value",
+		OpaqueContainer => "a host value in a user container",
+		OpaqueReturn => "a host value returned from a script function",
 		AsyncBlock | AsyncFunction | Await | Select => "async input",
 		Arity | CallClosure => "a call with unsupported or unknown closure arity",
 		Assignment => "this assignment target",
@@ -1156,5 +1211,524 @@ pub(crate) fn host_wait_reason(name: &str) -> &'static str {
 		"process::run_bytes" => "argument-vector/options input and bytes output",
 		"web::response" => "dynamic body/headers and response output",
 		_ => "host enrollment",
+	}
+}
+
+#[cfg(test)]
+mod opaque_tests {
+	use super::*;
+	fn context() -> Context {
+		let mut context = Context::with_default_modules().unwrap();
+		crate::install_core(&mut context).unwrap();
+		crate::interchange::install_test_factory(&mut context).unwrap();
+		context
+	}
+	fn session() -> DomainSession {
+		DomainSession::new(context(), DEFAULT_CEILING).unwrap()
+	}
+	fn shown(session: &mut DomainSession, input: &str) -> String {
+		session
+			.eval_rendered(input, &crate::format::Limits::default())
+			.unwrap()
+			.unwrap_or_default()
+	}
+	#[derive(rune::Any)]
+	#[rune(item=::other_host)]
+	struct Other {
+		made: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+		drops: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+		displays: std::sync::Arc<std::sync::atomic::AtomicUsize>,
+	}
+	impl Drop for Other {
+		fn drop(&mut self) {
+			self.drops.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+		}
+	}
+	fn other_context() -> (
+		Context,
+		std::sync::Arc<std::sync::atomic::AtomicUsize>,
+		std::sync::Arc<std::sync::atomic::AtomicUsize>,
+		std::sync::Arc<std::sync::atomic::AtomicUsize>,
+	) {
+		let mut c = context();
+		let made = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+		let drops = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+		let displays = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+		let mut m = rune::Module::with_crate("other_host").unwrap();
+		m.opaque_type::<Other>(
+			|_| 1,
+			|v, f| {
+				use rune::alloc::fmt::TryWrite;
+				v.displays.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+				f.try_write_str("other")?;
+				Ok(())
+			},
+		)
+		.unwrap();
+		m.opaque_method::<Other, _, _>(
+			"shape",
+			|v: &Other| v.made.load(std::sync::atomic::Ordering::SeqCst) as i64,
+			None,
+		)
+		.unwrap();
+		c.install(m).unwrap();
+		let mut m = rune::Module::with_crate("rnx_test").unwrap();
+		let (a, b, d) = (made.clone(), drops.clone(), displays.clone());
+		m.opaque_factory::<Other, _, _>("other", move || {
+			a.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+			Other {
+				made: a.clone(),
+				drops: b.clone(),
+				displays: d.clone(),
+			}
+		})
+		.unwrap();
+		c.install(m).unwrap();
+		(c, made, drops, displays)
+	}
+	#[test]
+	fn host_refusals_precede_factory_effects() {
+		use std::sync::atomic::Ordering::SeqCst;
+		let (c, made, drops, _) = other_context();
+		let mut s = DomainSession::new(c, DEFAULT_CEILING).unwrap();
+		for input in [
+			"let x=rnx_test::other();[x]",
+			"let x=rnx_test::other();||x",
+			"fn f(x){7}f(rnx_test::other())",
+			"fn f(callback){callback()}f(rnx_test::other)",
+			"let x={if true{rnx_test::other()}else{7}};x.shape()",
+			"let x=0;loop{x=rnx_test::other();break;}x.shape()",
+			"let x='label:{if true{break 'label 7;}rnx_test::other()};x.shape()",
+			"format!(\"{:?}\",rnx_test::other())",
+			"const X=rnx_test::other();X",
+			"const fn f(){rnx_test::other()}const X=f();X",
+		] {
+			let result = s.eval(input);
+			assert!(
+				matches!(
+					result,
+					Err(Failure::Refused(_)) | Err(Failure::Compile { .. })
+				),
+				"{input}: {result:?}"
+			);
+			assert_eq!(made.load(SeqCst), 0, "{input}");
+		}
+		assert_eq!(made.load(SeqCst), 0);
+		assert_eq!(drops.load(SeqCst), 0);
+		s.close().unwrap();
+	}
+	#[test]
+	fn host_proof_scales_to_twenty_thousand_chained_locals() {
+		for initial in ["7", "rnx_test::other()"] {
+			let (context, made, drops, _) = other_context();
+			let mut session = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+			let mut source = format!("{{let a0={initial};");
+			for n in 1..20_000 {
+				source.push_str(&format!("let a{n}=a{};", n - 1));
+			}
+			source.push_str(if initial == "7" {
+				"a19999}"
+			} else {
+				"a19999.shape()}"
+			});
+			let source = format!("pub fn main(s){{let r={source};(#{{}},r)}}");
+			let mut sources = Sources::new();
+			sources.insert(Source::memory(&source).unwrap()).unwrap();
+			let start = std::time::Instant::now();
+			let key = session
+				.domain
+				.compile_session(
+					&session.context,
+					&mut sources,
+					&mut rune::Diagnostics::new(),
+					1,
+					&[],
+					&[],
+				)
+				.unwrap();
+			eprintln!(
+				"chained-locals initial={initial} elapsed_ns={}",
+				start.elapsed().as_nanos()
+			);
+			session.domain.release_program(key).unwrap();
+			session.close().unwrap();
+			use std::sync::atomic::Ordering::SeqCst;
+			assert_eq!(made.load(SeqCst), drops.load(SeqCst));
+		}
+	}
+	#[test]
+	fn assigning_a_host_to_a_capture_does_not_escape_or_persist_between_calls() {
+		use std::sync::atomic::Ordering::SeqCst;
+		let (context, made, drops, _) = other_context();
+		let mut session = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+		assert_eq!(
+			shown(
+				&mut session,
+				"let x=0;let f=||{x=rnx_test::other();0};f();f();x"
+			),
+			"0"
+		);
+		assert_eq!(made.load(SeqCst), 2);
+		assert_eq!(drops.load(SeqCst), 2);
+		assert_eq!(shown(&mut session, "f();x"), "0");
+		assert_eq!(made.load(SeqCst), 3);
+		assert_eq!(drops.load(SeqCst), 3);
+		session.close().unwrap();
+	}
+	#[test]
+	fn host_display_once_second_type_and_presenter_failure_policy() {
+		use std::sync::atomic::Ordering::SeqCst;
+		let (c, made, drops, displays) = other_context();
+		let mut s = DomainSession::new(c, DEFAULT_CEILING).unwrap();
+		assert_eq!(
+			shown(&mut s, "let other=rnx_test::other();other.shape()"),
+			"1"
+		);
+		assert_eq!(shown(&mut s, "format!(\"{}\",other)"), "\"other\"");
+		assert_eq!(displays.load(SeqCst), 1);
+		assert_eq!(shown(&mut s, "other"), "other");
+		assert_eq!(displays.load(SeqCst), 2);
+		// Shared plain closures continue to work beside a live host binding.
+		assert_eq!(shown(&mut s, "let n=7;let f=||n;f()+other.shape()"), "8");
+		let mut presenters = crate::present::Presenters::default();
+		presenters
+			.register::<Other>(|_, _| Err("no\u{1b}preview".into()))
+			.unwrap();
+		s = s.with_presenters(presenters);
+		let text = shown(&mut s, "other");
+		assert!(
+			text.contains("preview unavailable") && !text.contains('\u{1b}'),
+			"{text}"
+		);
+		assert_eq!(displays.load(SeqCst), 2);
+		assert_eq!(made.load(SeqCst), 1);
+		s.reset_fallible().unwrap();
+		assert_eq!(drops.load(SeqCst), 1);
+		s.close().unwrap();
+	}
+	#[test]
+	fn legacy_host_debug_is_an_address_label_and_execution_refuses_by_name() {
+		let mut old = Session::new(context()).unwrap();
+		let result = old.eval("format!(\"{:?}\",rnx_test::dense())").unwrap();
+		let text = result.borrow_string_ref().unwrap();
+		assert!(
+			text.starts_with("<::interchange::Dense object at 0x") && text.ends_with('>'),
+			"{}",
+			&*text
+		);
+		let mut s = session();
+		let result = s.eval("format!(\"{:?}\",rnx_test::dense())");
+		assert!(
+			matches!(result,Err(Failure::Refused(message)) if message.contains("debug formatting"))
+		);
+		s.close().unwrap();
+		old.close().unwrap();
+	}
+	#[test]
+	fn host_failed_input_and_moved_reads_release_once() {
+		use std::sync::atomic::Ordering::SeqCst;
+		let (c, made, drops, _) = other_context();
+		let mut s = DomainSession::new(c, DEFAULT_CEILING).unwrap();
+		let result = s.eval("let x=rnx_test::other();1/0");
+		assert!(matches!(result, Err(Failure::Runtime { .. })), "{result:?}");
+		assert_eq!((made.load(SeqCst), drops.load(SeqCst)), (1, 1));
+		assert_eq!(shown(&mut s, "let x=rnx_test::other();0"), "0");
+		assert_eq!(shown(&mut s, "drop(x);0"), "0");
+		let result = s.eval("x.shape()");
+		assert!(
+			matches!(&result,Err(Failure::Runtime{message,..}) if message.contains("moved")),
+			"{result:?}"
+		);
+		assert_eq!((made.load(SeqCst), drops.load(SeqCst)), (2, 2));
+		s.close().unwrap();
+		assert_eq!(drops.load(SeqCst), 2);
+	}
+	#[test]
+	fn host_wrong_native_presenter_never_runs_the_callback() {
+		#[derive(rune::Any)]
+		#[rune(item=::other_host,name=Other)]
+		struct Wrong;
+		let (c, _, _, _) = other_context();
+		let mut presenters = crate::present::Presenters::default();
+		presenters
+			.register::<Wrong>(|_, _| panic!("wrong native presenter called"))
+			.unwrap();
+		let mut s = DomainSession::new(c, DEFAULT_CEILING)
+			.unwrap()
+			.with_presenters(presenters);
+		let shown = shown(&mut s, "rnx_test::other()");
+		assert!(shown.contains("preview unavailable"), "{shown}");
+		s.close().unwrap();
+	}
+
+	#[test]
+	fn host_presenter_failure_uses_the_same_label_and_bound_as_legacy() {
+		let limits = crate::format::Limits::default();
+		let mut old = Session::new(context()).unwrap();
+		let native = old.eval("rnx_test::dense()").unwrap();
+		let mut presenters = crate::present::Presenters::default();
+		let calls = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+		let observed = calls.clone();
+		presenters
+			.register::<crate::interchange::Dense>(move |_, _| {
+				observed.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+				Err("no preview".into())
+			})
+			.unwrap();
+		let label = crate::format::render(&native, None, &limits);
+		let expected = crate::present::finish(
+			presenters.present(&native, limits.total_bytes).unwrap(),
+			&label,
+			limits.total_bytes,
+		);
+		let mut fresh = session().with_presenters(presenters);
+		assert_eq!(shown(&mut fresh, "rnx_test::dense()"), expected);
+		assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 2);
+		fresh.close().unwrap();
+		old.close().unwrap();
+	}
+
+	#[test]
+	fn shipped_context_cannot_resolve_test_factories() {
+		let mut c = Context::with_default_modules().unwrap();
+		crate::install_core(&mut c).unwrap();
+		for name in ["dense", "other"] {
+			let mut sources = Sources::new();
+			sources
+				.insert(Source::memory(format!("pub fn main(){{rnx_test::{name}()}}")).unwrap())
+				.unwrap();
+			assert!(
+				rune::prepare(&mut sources)
+					.with_context(&c)
+					.build()
+					.is_err()
+			);
+		}
+	}
+
+	#[test]
+	fn opaque_binding_methods_aliases_and_cross_input_reassignment() {
+		let mut session = session();
+		assert_eq!(shown(&mut session, "let a=rnx_test::dense();0"), "0");
+		assert_eq!(shown(&mut session, "a.shape()"), "(2, 2)");
+		assert_eq!(shown(&mut session, "a.names()"), "[\"x\", \"y\"]");
+		assert_eq!(shown(&mut session, "a.dtype()"), "\"f64\"");
+		assert_eq!(shown(&mut session, "let b=a;0"), "0");
+		assert_eq!(shown(&mut session, "a=7;a"), "7");
+		assert_eq!(shown(&mut session, "b.shape()"), "(2, 2)");
+		assert_eq!(shown(&mut session, "a=rnx_test::dense();0"), "0");
+		assert_eq!(shown(&mut session, "a.shape()"), "(2, 2)");
+		session.close().unwrap();
+	}
+	#[test]
+	fn host_shadowing_changes_the_verified_native_identity_between_inputs() {
+		use std::sync::atomic::Ordering::SeqCst;
+		let (context, made, drops, _) = other_context();
+		let mut session = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+		assert_eq!(shown(&mut session, "let a=rnx_test::dense();0"), "0");
+		assert_eq!(shown(&mut session, "a.shape()"), "(2, 2)");
+		assert_eq!(shown(&mut session, "let a=7;a"), "7");
+		assert_eq!(shown(&mut session, "let a=rnx_test::other();0"), "0");
+		assert_eq!(shown(&mut session, "a.shape()"), "1");
+		assert_eq!(made.load(SeqCst), 1);
+		assert_eq!(shown(&mut session, "let a=8;a"), "8");
+		assert_eq!(drops.load(SeqCst), 1);
+		session.close().unwrap();
+		assert_eq!(drops.load(SeqCst), 1);
+	}
+	#[test]
+	fn opaque_prompt_presenter_and_explicit_display() {
+		let mut legacy = Session::new(context()).unwrap();
+		let mut fresh = session();
+		let limits = crate::format::Limits::default();
+		// The prompt descriptor and legacy formatter use the same callback.
+		let expected = crate::interchange::summary(
+			&crate::interchange::Dense::new(
+				crate::interchange::Data::F64(std::sync::Arc::new(vec![1.0, 2.0, 3.0, 4.0])),
+				2,
+				2,
+				vec!["x".into(), "y".into()],
+			)
+			.unwrap(),
+		);
+		assert_eq!(shown(&mut fresh, "rnx_test::dense()"), expected);
+		let a = legacy.eval("format!(\"{}\",rnx_test::dense())").unwrap();
+		assert_eq!(
+			crate::format::render(&a, None, &limits),
+			shown(&mut fresh, "format!(\"{}\",rnx_test::dense())")
+		);
+		let mut presenters = crate::present::Presenters::default();
+		crate::interchange::present(&mut presenters).unwrap();
+		let legacy_value = legacy.eval("rnx_test::dense()").unwrap();
+		let legacy_presented = presenters
+			.present(&legacy_value, limits.total_bytes)
+			.unwrap()
+			.unwrap();
+		assert_eq!(legacy_presented, expected);
+		fresh = fresh.with_presenters(presenters);
+		assert_eq!(shown(&mut fresh, "rnx_test::dense()"), expected);
+		fresh.close().unwrap();
+		legacy.close().unwrap();
+	}
+	#[test]
+	fn opaque_forbidden_consumers_are_admission_refusals() {
+		for input in [
+			"let x=rnx_test::dense();clone(x)",
+			"let x=rnx_test::dense();x.clone()",
+			"let x=rnx_test::dense();x==x",
+			"let x=rnx_test::dense();[x]",
+			"let x=rnx_test::dense();(x,)",
+			"let x=rnx_test::dense();#{x:x}",
+			"let x=rnx_test::dense();||x",
+			"fn f(){rnx_test::dense()}f()",
+			"fn f(x){0}f(rnx_test::dense())",
+			"let f=rnx_test::dense;f()",
+			"[rnx_test::dense][0]()",
+			"#{f:rnx_test::dense}.f()",
+			"let x=if true{rnx_test::dense()}else{7};x.shape()",
+			"let x=match true{true=>rnx_test::dense(),_=>7};[x]",
+			"let x=0;while false{x=rnx_test::dense();}[x]",
+			"let x=rnx_test::dense();x?",
+			"let x=rnx_test::dense();x..10",
+		] {
+			let mut s = session();
+			let result = s.eval(input);
+			assert!(
+				matches!(result, Err(Failure::Refused(_))),
+				"{input}: {result:?}"
+			);
+			assert_eq!(shown(&mut s, "7"), "7");
+			s.close().unwrap();
+		}
+	}
+}
+
+#[cfg(test)]
+mod host_value_cost_tests {
+	use super::*;
+
+	#[test]
+	#[ignore = "explicit 0267 allocation cost with an adapter value bound"]
+	fn host_bound_allocation_costs() {
+		let loops = "{let n=0;for i in 0..30000{let a=[i,i+1];let b=[a,[i]];let text=format!(\"item {}\",i);n+=b[0][0]+text.len() as i64;}n}".to_owned();
+		let literal = format!(
+			"{{let n=0;for i in 0..100{{let v=[{}];n+=v.len() as i64;}}n}}",
+			std::iter::repeat_n("0", 14_000)
+				.collect::<Vec<_>>()
+				.join(",")
+		);
+		assert!(literal.len() <= INPUT_CAP);
+		let mut rows = Vec::new();
+		let mut sources = BTreeMap::new();
+		let mut observations = BTreeMap::new();
+		for (round, host_bound) in [false, true, true, false].into_iter().enumerate() {
+			let mut context = Context::with_default_modules().unwrap();
+			crate::install_core(&mut context).unwrap();
+			crate::interchange::install_test_factory(&mut context).unwrap();
+			let mut session = DomainSession::new(context, usize::MAX).unwrap();
+			drop(
+				session
+					.eval(if host_bound {
+						"let held=rnx_test::dense();0"
+					} else {
+						"0"
+					})
+					.unwrap(),
+			);
+			for (name, input) in [
+				("small-vectors-strings", &loops),
+				("large-vector-literal", &literal),
+			] {
+				let start = std::time::Instant::now();
+				let output = session.eval(input).unwrap();
+				let elapsed_ns = start.elapsed().as_nanos();
+				let Some(Scalar::I64(value)) = session.domain.scalar(&output).unwrap() else {
+					panic!("integer result expected");
+				};
+				if let Some(prior) = observations.insert(name, value) {
+					assert_eq!(prior, value);
+				}
+				if let Some(prior) = sources.insert(name, session.last_generated.clone()) {
+					assert_eq!(prior, session.last_generated);
+				}
+				drop(output);
+				rows.push(serde_json::json!({"round":round,"host_bound":host_bound,"case":name,"elapsed_ns":elapsed_ns,"result":value,"input_bytes":input.len()}));
+			}
+			session.close().unwrap();
+		}
+		eprintln!(
+			"ALLOCATION-COSTS-JSON {}",
+			serde_json::json!({"order":[false,true,true,false],"same_generated_source":true,"rows":rows})
+		);
+	}
+
+	// This explicit measurement is too large for the ordinary native suite.
+	// The baseline harness changes only compile_session to compile_insert:
+	// that revision predates the checked wrapper API. Source text is identical.
+	#[test]
+	#[ignore = "explicit 0267 baseline/candidate cost measurement"]
+	fn plain_compile_and_large_binding_costs() {
+		let mut context = Context::with_default_modules().unwrap();
+		crate::install_core(&mut context).unwrap();
+		let mut session = DomainSession::new(context, usize::MAX).unwrap();
+		let mut source = String::from("pub fn main(s){let r={let a0=7;");
+		for n in 1..20_000 {
+			source.push_str(&format!("let a{n}=a{};", n - 1));
+		}
+		source.push_str("a19999};(#{},r)}");
+		let mut compile_ns = Vec::new();
+		for revision in 1..=3 {
+			let mut sources = Sources::new();
+			sources.insert(Source::memory(&source).unwrap()).unwrap();
+			let start = std::time::Instant::now();
+			// BASELINE-ADAPTER-BEGIN
+			let key = session
+				.domain
+				.compile_session(
+					&session.context,
+					&mut sources,
+					&mut rune::Diagnostics::new(),
+					revision,
+					&[],
+					&[],
+				)
+				.unwrap();
+			// BASELINE-ADAPTER-END
+			compile_ns.push(start.elapsed().as_nanos());
+			session.domain.release_program(key).unwrap();
+			session.domain.collect_programs().unwrap();
+		}
+		session.close().unwrap();
+		let mut input_costs = Vec::new();
+		for elements in [0, 5_000_000] {
+			let mut context = Context::with_default_modules().unwrap();
+			crate::install_core(&mut context).unwrap();
+			let mut session = DomainSession::new(context, usize::MAX).unwrap();
+			let setup = format!(
+				"let v=Vec::with_capacity({elements});for i in 0..{elements}{{v.push(i);}}0"
+			);
+			let setup_start = std::time::Instant::now();
+			drop(session.eval(&setup).unwrap());
+			let setup_ns = setup_start.elapsed().as_nanos();
+			let mut elapsed = Vec::new();
+			for _ in 0..100 {
+				let start = std::time::Instant::now();
+				let value = session.eval("v.len()").unwrap();
+				assert_eq!(
+					session.domain.scalar(&value).unwrap(),
+					Some(Scalar::U64(elements as u64))
+				);
+				drop(value);
+				elapsed.push(start.elapsed().as_nanos());
+			}
+			input_costs.push(
+				serde_json::json!({"elements":elements,"setup_ns":setup_ns,"input_ns":elapsed}),
+			);
+			session.close().unwrap();
+		}
+		eprintln!(
+			"COSTS-JSON {}",
+			serde_json::json!({"compile_20000_ns":compile_ns,"further_inputs":input_costs})
+		);
 	}
 }

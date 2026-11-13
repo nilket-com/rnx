@@ -379,6 +379,8 @@ impl fmt::Display for ContextType {
 #[derive(Default)]
 pub struct Context {
 	#[cfg(feature = "execution")]
+	pub(crate) opaque: crate::function::host::opaque::State,
+	#[cfg(feature = "execution")]
 	pub(crate) execution_epoch: crate::experimental_core::provenance::State,
 	/// Unique modules installed in the context.
 	unique: HashSet<&'static str>,
@@ -618,7 +620,7 @@ impl Context {
 	/// # Ok::<_, rune::support::Error>(())
 	/// ```
 	pub fn runtime(&self) -> alloc::Result<RuntimeContext> {
-		Ok(RuntimeContext::new(
+		let runtime = RuntimeContext::new(
 			self.functions.try_clone()?,
 			self.constants.try_clone()?,
 			self.construct.try_clone()?,
@@ -627,7 +629,14 @@ impl Context {
 			self.format.snapshot(),
 			#[cfg(feature = "execution")]
 			Some(self.execution_epoch.snapshot()?),
-		))
+		);
+		#[cfg(feature = "execution")]
+		let runtime = {
+			let mut runtime = runtime;
+			runtime.opaque = self.opaque.try_clone()?;
+			runtime
+		};
+		Ok(runtime)
 	}
 
 	/// Produce the typed runtime snapshot required by the execution engine.
@@ -749,6 +758,10 @@ impl Context {
 		}
 
 		#[cfg(feature = "execution")]
+		let prepared_opaque = self.opaque.merged(&module.opaque)?;
+		#[cfg(feature = "execution")]
+		prepared_opaque.validate()?;
+		#[cfg(feature = "execution")]
 		let (prepared_hosts, prepared_alternates) = {
 			let mut hosts = self.hosts.try_clone()?;
 			let mut alternates = self.alternate_hosts.try_clone()?;
@@ -777,6 +790,26 @@ impl Context {
 							item.hash,
 							crate::function::host::HostBinding {
 								hash: item.hash,
+								handler: function.handler.clone(),
+								signature: enrollment.signature,
+								certificate: enrollment.certificate,
+							},
+						)?;
+					}
+				}
+			}
+			for associated in &module.associated {
+				if let ModuleAssociatedKind::Function(function) = &associated.kind {
+					if let Some(enrollment) = function.host.filter(|e| e.admitted()) {
+						let key = associated
+							.name
+							.kind
+							.hash(associated.container)
+							.with_function_parameters(associated.name.function_parameters);
+						hosts.try_insert(
+							key,
+							crate::function::host::HostBinding {
+								hash: key,
 								handler: function.handler.clone(),
 								signature: enrollment.signature,
 								certificate: enrollment.certificate,
@@ -924,6 +957,7 @@ impl Context {
 
 		#[cfg(feature = "execution")]
 		{
+			self.opaque = prepared_opaque;
 			self.hosts = prepared_hosts;
 			self.alternate_hosts = prepared_alternates;
 			self.numeric.finish_module(numeric_pending);
@@ -2402,3 +2436,26 @@ mod formatter_epoch_tests {
 
 #[cfg(all(test, feature = "execution", feature = "doc", not(miri)))]
 mod r1b_inventory;
+
+#[cfg(all(test, feature = "execution"))]
+#[test]
+fn default_associated_functions_have_no_implicit_host_enrollment() {
+	let c = Context::with_default_modules().unwrap();
+	let mut checked = 0;
+	for meta in &c.meta {
+		if matches!(
+			meta.kind,
+			meta::Kind::Function {
+				associated: Some(_),
+				..
+			}
+		) {
+			assert!(c.host(meta.hash).is_none(), "{:?}", meta.item);
+			checked += 1;
+		}
+	}
+	assert!(
+		checked > 100,
+		"default associated-function control was vacuous"
+	);
+}

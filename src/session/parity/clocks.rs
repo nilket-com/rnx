@@ -34,10 +34,10 @@ fn capture(property: Property, function: &str, mut eval: impl FnMut(&str) -> Val
 	let origin = Instant::now();
 	let wall_before = wall_ms();
 	for (index, name) in names.iter().enumerate() {
-		if index != 0 {
-			if let Property::MonotonicPairEnvelope { pause_ms, .. } = property {
-				std::thread::sleep(Duration::from_millis(pause_ms));
-			}
+		if index != 0
+			&& let Property::MonotonicPairEnvelope { pause_ms, .. } = property
+		{
+			std::thread::sleep(Duration::from_millis(pause_ms));
 		}
 		let start = origin.elapsed().as_nanos();
 		let result = eval(&format!("let {name}={function}();{name}"));

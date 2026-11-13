@@ -1,5 +1,6 @@
 //! Frozen child traversal and ownership contracts, established before optimization.
 use super::*;
+use crate as rune;
 use rune_alloc::limit;
 
 impl Payload {
@@ -53,6 +54,7 @@ fn fields(input: &[Value]) -> Vec<(String, Value)> {
 // Exhaustive on purpose: a new Payload variant must update this oracle matrix.
 fn variant(payload: &Payload) -> &'static str {
 	match payload {
+		Payload::Host { .. } => "Host",
 		Payload::OtherRange(_) => "OtherRange",
 		Payload::OtherRangeIterator(_) => "OtherRangeIterator",
 		Payload::SortGuard(_) => "SortGuard",
@@ -78,7 +80,16 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		generation: 42,
 	};
 	let heap = Value::Heap(h);
+	#[derive(crate::Any)]
+	#[rune(item = ::children_test)]
+	struct NativeLeaf;
+	let descriptor =
+		crate::function::host::opaque::Descriptor::new::<NativeLeaf>(|_| 0, |_, _| Ok(())).unwrap();
 	let mut cases = std::vec![
+		Payload::Host {
+			tag: Type::Host(super::super::value::Nominal(0)),
+			value: Box::try_new(host_value::HostValue::inert(descriptor, 0)).unwrap()
+		},
 		Payload::Moved(Type::Vec),
 		Payload::String(String::try_from("leaf").unwrap()),
 		Payload::Range { start: -1, end: 3 },
@@ -215,7 +226,7 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		}
 		s.edges = 0;
 	}
-	assert_eq!(seen.len(), 14);
+	assert_eq!(seen.len(), 15);
 	assert_eq!(
 		(size_of::<Payload>(), size_of::<Entry>(), size_of::<Slot>()),
 		(40, 72, 80)

@@ -1,8 +1,8 @@
 //! One bounded, non-recursive pattern walker for constant evaluation.
 use super::*;
-use crate::Hash;
 use crate::ast::Span;
 use crate::runtime::ConstFieldsIter;
+use crate::Hash;
 
 type Bindings = Vec<(hir::Variable, ConstValueBuf)>;
 type Pending<'a> = Vec<(hir::Variable, &'a ConstValue, usize, Span)>;
@@ -462,18 +462,16 @@ mod tests {
 					.unwrap();
 				assert!(rust_alloc::format!("{e}").contains("expression nesting"));
 				budget.body_base = MAX_COMBINED_DEPTH - MAX_DEPTH;
-				assert!(
-					bind(
-						&work,
-						&exprs,
-						pat,
-						Input::Borrowed(&value),
-						budget.body_base,
-						&mut budget
-					)
-					.unwrap()
-					.is_some()
-				);
+				assert!(bind(
+					&work,
+					&exprs,
+					pat,
+					Input::Borrowed(&value),
+					budget.body_base,
+					&mut budget
+				)
+				.unwrap()
+				.is_some());
 				let e = bind(
 					&work,
 					&exprs,

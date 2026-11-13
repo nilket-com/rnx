@@ -172,10 +172,14 @@ pub fn html_allowed(html: &str) -> bool {
 }
 
 type Presenter = Box<dyn Fn(&Value, &mut Output) -> Result<(), String>>;
+type ExecutionPresenter = Box<
+	dyn Fn(&rune::experimental_core::heap::ValueView<'_, '_>, &mut Output) -> Result<(), String>,
+>;
 
 /// Presenters keyed by native type hash, owned by one serving context.
 #[derive(Default)]
 pub struct Presenters {
+	execution: BTreeMap<rune::Hash, ExecutionPresenter>,
 	entries: BTreeMap<rune::Hash, (&'static str, Presenter)>,
 	/// Record 0159: optional HTML forms, asked for only by the notebook
 	/// worker for a top-level result; every other path uses `entries`.
@@ -200,12 +204,33 @@ impl Presenters {
 				std::any::type_name::<T>()
 			));
 		}
+		let shared = std::rc::Rc::new(present);
+		let present = shared.clone();
+		let execution: ExecutionPresenter = Box::new(move |value, out| {
+			let borrowed = value.borrow_host::<T>().map_err(|e| format!("{e:?}"))?;
+			shared(&borrowed, out)
+		});
+		self.execution.insert(T::HASH, execution);
 		let presenter: Presenter = Box::new(move |value, out| {
 			let borrowed = value.borrow_ref::<T>().map_err(|e| e.to_string())?;
 			present(&borrowed, out)
 		});
 		self.entries.insert(T::HASH, (owner, presenter));
 		Ok(())
+	}
+	/// The same registered callback, under the Store's borrowed native guard.
+	pub(crate) fn present_execution(
+		&self,
+		value: &rune::experimental_core::heap::ValueView<'_, '_>,
+		limit: usize,
+	) -> Option<Result<String, String>> {
+		let hash = value.host_type_hash().ok()?;
+		let presenter = self.execution.get(&hash)?;
+		let mut out = Output::new(limit);
+		Some(match presenter(value, &mut out) {
+			Ok(()) => Ok(out.finish()),
+			Err(e) => Err(e),
+		})
 	}
 	/// Record 0159: register an HTML form for the concrete native type `T`,
 	/// beside its text presenter. It writes into an [`Output`] of

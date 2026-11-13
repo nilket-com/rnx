@@ -638,6 +638,37 @@ pub(crate) fn observe_host(
 		serde_json::json!({"function":function,"input":input,"legacy":a,"domain":b,"class":class,"wording_rule":rule,"domain_worse":worse}),
 	)
 }
+/// A receiver exists only in these test-owned contexts; production never installs
+/// the rnx_test factory. The row's class is measured by the ordinary classifier.
+pub(crate) fn observe_host_value(
+	function: &str,
+) -> crate::routing_inventory::Result<serde_json::Value> {
+	use super::{
+		Session,
+		domain_session::{DomainSession, transcripts::parity_observe},
+	};
+	let input = match function {
+		"interchange::Dense::shape" => "rnx_test::dense().shape()",
+		"interchange::Dense::names" => "rnx_test::dense().names()",
+		"interchange::Dense::dtype" => "rnx_test::dense().dtype()",
+		"interchange::Dense::<DISPLAY_FMT>" => "format!(\"{}\",rnx_test::dense())",
+		_ => return Err(format!("unreviewed host-value witness: {function}").into()),
+	};
+	let mut a = crate::routing_inventory::session_parity_context()?;
+	let mut b = crate::routing_inventory::session_parity_context()?;
+	crate::interchange::install_test_factory(&mut a)?;
+	crate::interchange::install_test_factory(&mut b)?;
+	let mut old = Session::new(a)?;
+	let mut fresh = DomainSession::new(b, super::DEFAULT_CEILING)?;
+	let (legacy, domain) = parity_observe(&mut old, &mut fresh, input);
+	let (class, wording_rule, domain_worse) = classify(&legacy, &domain);
+	old.close()?;
+	fresh.close()?;
+	Ok(
+		serde_json::json!({"function":function,"input":input,"legacy":legacy,"domain":domain,"class":class,"wording_rule":wording_rule,"domain_worse":domain_worse}),
+	)
+}
+
 fn host_report() -> serde_json::Value {
 	let rows = crate::routing_inventory::session_parity_hosts(false).unwrap();
 	let stop = rows.as_array().unwrap().iter().any(|r| {
@@ -954,4 +985,21 @@ fn worker_ledger() -> serde_json::Value {
 		.unwrap();
 	assert!(out.status.success(), "worker fixture AST extraction failed");
 	serde_json::json!({"source":"tests/worker_execution.py::TABLE","existing_rows":serde_json::from_slice::<serde_json::Value>(&out.stdout).unwrap(),"coverage":"referenced existing differential fixture; historical Policy labels are not new policy decisions"})
+}
+
+#[test]
+fn host_value_classification_is_measured() {
+	let rows = [
+		"interchange::Dense::shape",
+		"interchange::Dense::names",
+		"interchange::Dense::dtype",
+		"interchange::Dense::<DISPLAY_FMT>",
+	]
+	.map(|name| observe_host_value(name).unwrap());
+	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
+		std::fs::write(path, serde_json::to_vec_pretty(&rows).unwrap()).unwrap();
+	}
+	for row in &rows {
+		assert_ne!(row["class"], "Not classified");
+	}
 }

@@ -28,7 +28,18 @@ macro_rules! host_types {
 		}
 	};
 }
-host_types!(Unit, Bool, I64, U64, F64, Char, String, OwnedTreeInput);
+host_types!(
+	Unit,
+	Bool,
+	I64,
+	U64,
+	F64,
+	Char,
+	String,
+	OwnedTreeInput,
+	OpaqueShared
+);
+pub(crate) mod opaque;
 pub(crate) mod owned_tree;
 pub use owned_tree::{OwnedTreeInput, TreeKind, TreeNode};
 /// Closed scalar/optional/result shapes and two concrete dynamic output certificates.
@@ -42,6 +53,8 @@ pub enum HostOutputKind {
 	Dynamic,
 	/// Exactly Rust Result<Value, std::string::String>.
 	ResultDynamicString,
+	/// A uniquely owned, explicitly enrolled native object (session entry only).
+	OpaqueOwned,
 }
 /// One node in a static output-shape graph. Every declared node must be importable.
 /// Indices refer to nodes in the same certificate; recursive containers describe
@@ -73,11 +86,24 @@ pub struct OutputCertificate {
 	pub root: usize,
 }
 impl OutputCertificate {
+	/// A concrete shared-receiver shape result.
+	pub const I64_PAIR: Self = Self {
+		nodes: &[
+			OutputShape::Tuple(&[1, 1]),
+			OutputShape::Scalar(HostType::I64),
+		],
+		root: 0,
+	};
+	/// A concrete shared-receiver list of names.
+	pub const STRING_LIST: Self = Self {
+		nodes: &[OutputShape::Vec(1), OutputShape::Scalar(HostType::String)],
+		root: 0,
+	};
 	fn importable(self) -> bool {
 		let valid = |i: usize| i < self.nodes.len();
 		valid(self.root)
 			&& self.nodes.iter().all(|node| match node {
-				OutputShape::Scalar(HostType::OwnedTreeInput) => false,
+				OutputShape::Scalar(HostType::OwnedTreeInput | HostType::OpaqueShared) => false,
 				OutputShape::Scalar(_) | OutputShape::Ordering => true,
 				OutputShape::Vec(i) | OutputShape::Object(i) | OutputShape::Option(i) => valid(*i),
 				OutputShape::Tuple(items) => items.iter().all(|i| valid(*i)),
@@ -129,6 +155,18 @@ impl TryClone for HostEnrollment {
 }
 impl HostEnrollment {
 	pub(crate) fn admitted(self) -> bool {
+		if !self.signature.valid() {
+			return false;
+		}
+		if matches!(
+			self.signature.output,
+			HostOutputKind::Scalar(HostType::OpaqueShared)
+				| HostOutputKind::Option(HostType::OpaqueShared)
+				| HostOutputKind::Result(HostType::OpaqueShared, _)
+				| HostOutputKind::Result(_, HostType::OpaqueShared)
+		) {
+			return false;
+		}
 		if matches!(
 			self.signature.output,
 			HostOutputKind::Scalar(HostType::OwnedTreeInput)
@@ -164,6 +202,9 @@ impl TryClone for HostSignature {
 impl HostSignature {
 	pub(crate) fn valid(self) -> bool {
 		self.arity <= 4
+			&& (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
+			&& (!self.arguments.contains(&HostType::OpaqueShared)
+				|| (self.arity == 1 && self.arguments[0] == HostType::OpaqueShared))
 			&& self.arguments[self.arity as usize..]
 				.iter()
 				.all(|kind| *kind == HostType::Unit)
@@ -283,6 +324,10 @@ impl HostOutput for Result<crate::runtime::Value, std::string::String> {
 // an explicit output certificate at registration. No blanket ToValue admission.
 impl sealed::Output for std::vec::Vec<std::string::String> {}
 impl HostOutput for std::vec::Vec<std::string::String> {
+	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
+}
+impl sealed::Output for (i64, i64) {}
+impl HostOutput for (i64, i64) {
 	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
 }
 impl sealed::Output for Result<std::vec::Vec<std::string::String>, std::string::String> {}

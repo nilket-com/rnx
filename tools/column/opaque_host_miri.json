@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::execute::host_bridge::minimal_tests::owned_tree_routes_are_exclusive_and_output_marker_is_rejected",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::children_tests::every_payload_preserves_reference_sequence_edges_and_exhaustion",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::a_factory_without_a_descriptor_cannot_install",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::a_rune_hash_collision_never_authorizes_a_native_cast",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::allocation_sweep_never_loses_a_native_output",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_arithmetic",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_callable",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_cast",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_clone",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_condition",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_equality",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_field",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_field_write",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_index",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_index_write",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_iteration",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_len",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_push",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_template",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_try",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_tuple_field",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::backstop_unary",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::builtin_and_unrepresented_hashes_cannot_gain_an_opaque_representation",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::cancellation_after_factory_releases_once",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::certified_shape_and_names_import_builtin_results",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::close_keeps_draining_after_native_destructor_panics",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::construction_marks_are_transitive_and_public_mutation_cannot_hide_a_host",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::debug_root_format_is_a_named_refusal",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::different_native_receivers_name_both_types",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::exclusive_native_borrow_blocks_a_shared_method",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::explicit_drop_has_a_truthful_moved_receiver",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::failed_output_admission_drops_once",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::foreign_store_refuses_before_native_borrow",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::internal_session_envelope_retains_opaque_edges",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::native_layout_does_not_grow",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::native_panic_releases_shared_guard_and_preserves_receiver",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::native_view_is_borrowed_and_display_is_bounded",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::ordinary_associated_registrations_remain_unenrolled",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::output_refusal_keeps_destructor_panic_secondary",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::restored_host_identity_cannot_be_claimed_plain_or_hidden_in_a_container",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::runtime_error_keeps_destructor_panic_secondary",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::runtime_error_releases_the_created_object",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "experimental_core::heap::host_value_tests::shared_receiver_aliases_and_last_release",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

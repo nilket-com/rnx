@@ -28,6 +28,10 @@ use super::{
 	VariantMut,
 };
 
+#[cfg(feature = "execution")]
+#[path = "opaque.rs"]
+mod opaque_api;
+
 #[derive(Debug, TryClone, PartialEq, Eq, Hash)]
 enum Name {
 	/// An associated key.
@@ -48,6 +52,8 @@ enum Name {
 /// [Context::install][crate::compile::Context::install].
 #[derive(Default)]
 pub struct Module {
+	#[cfg(feature = "execution")]
+	pub(crate) opaque: crate::function::host::opaque::State,
 	/// Uniqueness checks.
 	names: HashSet<Name>,
 	/// A special identifier for this module, which will cause it to not conflict if installed multiple times.
@@ -453,6 +459,8 @@ impl Module {
 
 	fn inner_new(item: ItemBuf) -> Self {
 		Self {
+			#[cfg(feature = "execution")]
+			opaque: Default::default(),
 			names: HashSet::new(),
 			unique: None,
 			item,

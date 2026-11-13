@@ -492,7 +492,7 @@ impl TypeName {
 			Type::Vec => Self::Vec,
 			Type::Tuple => Self::Tuple,
 			Type::Object => Self::Object,
-			Type::Struct(n) => Self::Struct(n),
+			Type::Struct(n) | Type::Host(n) => Self::Struct(n),
 			Type::Option => Self::Option,
 			Type::Result => Self::Result,
 			Type::Range => Self::Range,

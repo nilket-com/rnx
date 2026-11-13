@@ -56,7 +56,24 @@ enum Input {
 }
 
 fn input(store: &Store, value: Value, expected: HostType) -> Input {
-	// Only this marker can make a non-string aggregate reach snapshot.
+	if expected == HostType::OpaqueShared {
+		match value {
+			Value::Function { .. } => return Input::Function,
+			Value::Type(_) => return Input::TypeValue,
+			_ => {}
+		}
+		return match store.host_tag(value) {
+			Ok((Type::Host(_), true)) => Input::Plain,
+			Ok((Type::Host(_), false)) => {
+				Input::Failed(error(ErrorKind::AccessConflict).with_detail(Detail::Moved {
+					access: super::super::error::MovedAccess::Read,
+				}))
+			}
+			Ok((tag, _)) => Input::Wrong(tag),
+			Err(failure) => Input::Failed(failure),
+		};
+	}
+	// Builtin owned trees use this marker; native receivers were handled above.
 	if expected == HostType::OwnedTreeInput
 		&& (!matches!(value, Value::Heap(_))
 			|| !matches!(store.host_tag(value), Ok((Type::String, _))))
@@ -95,6 +112,9 @@ fn snapshot(store: &Store, value: Value) -> Result<stock::Value> {
 		Value::Heap(_) if matches!(store.host_tag(value)?, (Type::String, _)) => {
 			stock::Value::try_from(crate::alloc::String::try_from(store.text(value)?)?)?
 		}
+		Value::Heap(_) if matches!(store.host_tag(value)?, (Type::Host(_), _)) => {
+			store.host_snapshot(value)?
+		}
 		_ => store.owned_host_input(value)?,
 	})
 }
@@ -110,6 +130,9 @@ fn prefix_conversion_succeeds(value: &stock::Value, kind: HostType) -> bool {
 		HostType::Char => char::from_value(value.clone()).is_ok(),
 		HostType::String => value.borrow_string_ref().is_ok(),
 		HostType::OwnedTreeInput => false,
+		// Opaque enrollment is restricted to a sole shared receiver, so this
+		// marker never stands for a prefix whose expected TypeId is unavailable.
+		HostType::OpaqueShared => false,
 	}
 }
 
@@ -304,6 +327,24 @@ impl Executor {
 		shape: HostOutputKind,
 	) -> Result<Value> {
 		match shape {
+			HostOutputKind::OpaqueOwned => {
+				let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+					let descriptor = self
+						.active_host_runtime
+						.as_ref()
+						.and_then(|runtime| runtime.opaque_descriptor(value.type_hash()))
+						.ok_or_else(|| error(ErrorKind::InvalidCode))?;
+					store.host_value(value, descriptor)
+				}))
+				.unwrap_or_else(|_| Err(error(ErrorKind::Host).with_detail(Detail::HostPanicked)));
+				if result.is_err() {
+					// The original output remains in host_call's scratch. Invalidate
+					// its native contents now, before that unchanged frame drops it.
+					self.pending_host_cleanup =
+						super::super::heap::host_value::dispose(value).err();
+				}
+				result
+			}
 			HostOutputKind::Dynamic => dynamic::convert(self, store, value),
 			HostOutputKind::ResultDynamicString => {
 				// A malformed raw adapter is corruption. A value outside its declared

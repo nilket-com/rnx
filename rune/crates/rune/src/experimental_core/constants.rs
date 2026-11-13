@@ -7,8 +7,8 @@ use super::{
 	value::Value,
 };
 use crate as rune;
-use crate::alloc::Box;
 use crate::alloc::prelude::*;
+use crate::alloc::Box;
 use crate::runtime::TypeHash;
 use crate::runtime::{ConstNodeKind, ConstValue, ConstValueBuf, Inline};
 use crate::{
@@ -2139,12 +2139,10 @@ mod function_tests {
 			copy(&aggregate, 0, &mut b, span).unwrap();
 		}
 		assert_eq!(b.nodes, MAX_NODES);
-		assert!(
-			copy(&aggregate, 0, &mut b, span)
-				.unwrap_err()
-				.to_string()
-				.contains("expanded-node")
-		);
+		assert!(copy(&aggregate, 0, &mut b, span)
+			.unwrap_err()
+			.to_string()
+			.contains("expanded-node"));
 	}
 	#[test]
 	#[cfg_attr(miri, ignore)]
@@ -2250,25 +2248,21 @@ let (ok,d)=compile("const A=7;pub fn main(){A}");assert!(ok,"recovery: {d}");
 	#[test]
 	fn constant_function_small_limits_and_failure_cleanup() {
 		let span = crate::ast::Span::empty();
-		assert!(
-			check_depth(MAX_DEPTH, &Budget::default(), span)
-				.unwrap_err()
-				.to_string()
-				.contains("expression nesting")
-		);
-		assert!(
-			check_depth(
-				MAX_COMBINED_DEPTH,
-				&Budget {
-					body_base: MAX_COMBINED_DEPTH,
-					..Budget::default()
-				},
-				span
-			)
+		assert!(check_depth(MAX_DEPTH, &Budget::default(), span)
 			.unwrap_err()
 			.to_string()
-			.contains("combined nesting")
-		);
+			.contains("expression nesting"));
+		assert!(check_depth(
+			MAX_COMBINED_DEPTH,
+			&Budget {
+				body_base: MAX_COMBINED_DEPTH,
+				..Budget::default()
+			},
+			span
+		)
+		.unwrap_err()
+		.to_string()
+		.contains("combined nesting"));
 		let work = Work(core::cell::Cell::new(2));
 		work.charge(span).unwrap();
 		work.charge(span).unwrap();

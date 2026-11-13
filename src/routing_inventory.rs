@@ -20,7 +20,7 @@ enum Class {
 	StringInput,
 	TreeInput,
 	Undeclared,
-	Opaque,
+	HostValue,
 }
 #[derive(Clone, Copy, Debug)]
 struct HostPolicy {
@@ -243,16 +243,16 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"interchange::Dense::shape interchange::Dense::names interchange::Dense::dtype",
 		"",
-		Class::Opaque,
-		"&Dense: no Root representation",
-		"opaque receiver",
+		Class::HostValue,
+		"checked &Dense host value",
+		"certified builtin result",
 	);
 	add(
 		"interchange::Dense::<DISPLAY_FMT>",
 		"",
-		Class::Opaque,
-		"&Dense and &mut Formatter",
-		"opaque receiver",
+		Class::HostValue,
+		"checked &Dense and bounded Formatter",
+		"bounded display String",
 	);
 	rows
 }
@@ -360,7 +360,8 @@ fn host_inventory(root: &Path) -> Result<Json> {
 			Class::DynamicOutput => "dynamic-output",
 			Class::StringInput => "string-input",
 			Class::TreeInput => "tree-input",
-			Class::Undeclared | Class::Opaque => "undeclared",
+			Class::Undeclared => "undeclared",
+			Class::HostValue => "host-value",
 		};
 		assert_eq!(
 			base[p.path], class,
@@ -384,8 +385,8 @@ fn host_inventory(root: &Path) -> Result<Json> {
 			"missing live handler {}",
 			p.path
 		);
-		let source = if p.class == Class::Opaque {
-			None
+		let source = if p.class == Class::HostValue {
+			Some("pub fn main(){interchange::Dense}".to_owned())
 		} else {
 			Some(format!("pub fn main(){{{}({})}}", p.path, p.args))
 		};
@@ -405,7 +406,15 @@ fn host_inventory(root: &Path) -> Result<Json> {
 					);
 					"compile-refusal:Native"
 				}
-				Class::Opaque => unreachable!(),
+				Class::HostValue => {
+					assert_eq!(
+						observed.err().and_then(|e| e.refusal),
+						Some(Refusal::OpaqueEntry),
+						"{}",
+						p.path
+					);
+					"checked-session-only; non-session refusal:OpaqueEntry"
+				}
 			}
 		} else {
 			"not-reachable:opaque-receiver"
@@ -775,6 +784,7 @@ fn synchronous_and_byte_boundaries() -> Result<Json> {
 				"builtin payload"
 			}
 			Type::Struct(_) => "script nominal",
+			Type::Host(_) => "enrolled opaque value in a checked execution session",
 			Type::Range
 			| Type::RangeFrom
 			| Type::RangeFull
@@ -801,7 +811,7 @@ fn synchronous_and_byte_boundaries() -> Result<Json> {
 	>;
 	let _: PrepareEntry = Executor::prepare;
 	Ok(
-		json!({"Bytes":"no Root type; HTTP input envelope cannot be imported","executor_api":"synchronous complete invoke and exclusive resumable sliced invocation; async remains legacy"}),
+		json!({"Bytes":"no Root type; HTTP input envelope cannot be imported","host_values":"session Store owns runtime::Value, the legacy Any object; replace its native ownership/borrow and host-handler ABI before removing the legacy runtime","executor_api":"synchronous complete invoke and exclusive resumable sliced invocation; async remains legacy"}),
 	)
 }
 
@@ -836,7 +846,7 @@ fn host_refusal_reasons_match_registration_policy() {
 					policy.path
 				)
 			}
-			Class::Opaque => {} // Native receivers are outside the stock free-function table.
+			Class::HostValue => {} // Native receivers are outside the stock free-function table.
 		}
 	}
 }
@@ -861,10 +871,8 @@ fn complete_inventory_of_bound_sources() {
 pub(crate) fn session_parity_hosts(remove: bool) -> Result<Json> {
 	let mut rows = Vec::new();
 	for p in host_policy() {
-		if p.class == Class::Opaque {
-			rows.push(
-				json!({"function":p.path,"class":"Not classified","reason":"receiver","input":null}),
-			);
+		if p.class == Class::HostValue {
+			rows.push(crate::session::parity::observe_host_value(p.path)?);
 			continue;
 		}
 		let input = format!("{}({})", p.path, p.args);

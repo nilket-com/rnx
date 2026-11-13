@@ -82,6 +82,8 @@ pub enum Type {
 	RangeToInclusive,
 	/// An exclusive upper bound (`..end`).
 	RangeTo,
+	/// An enrolled native object. Its fields are never visible to the engine.
+	Host(Nominal),
 }
 
 /// The executor's slot value. A `Heap` variant can only be produced by a

@@ -19,6 +19,40 @@ pub struct Formatter {
 }
 
 impl Formatter {
+	#[cfg(feature = "execution")]
+	pub(crate) fn bounded(
+		limit: usize,
+		f: impl FnOnce(&mut Self) -> Result<(), super::VmError>,
+	) -> (Result<(), super::VmError>, String, bool) {
+		struct Limited {
+			text: String,
+			limit: usize,
+			exceeded: bool,
+		}
+		impl TryWrite for Limited {
+			fn try_write_str(&mut self, text: &str) -> alloc::Result<()> {
+				if text.len() > self.limit.saturating_sub(self.text.len()) {
+					self.exceeded = true;
+					return Err(alloc::Error::CapacityOverflow);
+				}
+				self.text.try_push_str(text)
+			}
+		}
+		let mut writer = Limited {
+			text: String::new(),
+			limit,
+			exceeded: false,
+		};
+		let result = {
+			// Same scoped writer lifetime as format_with; no formatter escapes.
+			let mut formatter = Self {
+				out: NonNull::from(&mut writer),
+				buf: String::new(),
+			};
+			f(&mut formatter)
+		};
+		(result, writer.text, writer.exceeded)
+	}
 	/// Format onto the given trywrite.
 	pub(crate) fn format_with<E>(
 		out: &mut String,

@@ -832,6 +832,7 @@ impl Store {
 				sink.push(c.encode_utf8(&mut bytes))?;
 			}
 			Value::Heap(handle) => match self.payload(handle)? {
+				Payload::Host { .. } => return Err(self.no_display(value)),
 				Payload::String(text) if debug => {
 					sink.formatted(format_args!("{:?}", text.as_str()))?
 				}

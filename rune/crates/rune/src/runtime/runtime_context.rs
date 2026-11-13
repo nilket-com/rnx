@@ -18,6 +18,8 @@ use super::FunctionHandler;
 #[derive(Default, TryClone)]
 pub struct RuntimeContext {
 	#[cfg(feature = "execution")]
+	pub(crate) opaque: crate::function::host::opaque::State,
+	#[cfg(feature = "execution")]
 	pub(crate) execution_epoch: Option<crate::experimental_core::provenance::Epoch>,
 	/// Registered native function handlers.
 	functions: hash::Map<FunctionHandler>,
@@ -34,6 +36,20 @@ pub struct RuntimeContext {
 assert_impl!(RuntimeContext: Send + Sync);
 
 impl RuntimeContext {
+	#[cfg(feature = "execution")]
+	pub(crate) fn opaque_descriptor(
+		&self,
+		hash: Hash,
+	) -> Option<crate::sync::Arc<crate::function::host::opaque::Descriptor>> {
+		let registered = self.opaque.types.get(&hash)?;
+		let effective = self.function(&Hash::associated_function(
+			hash,
+			&super::Protocol::DISPLAY_FMT,
+		))?;
+		effective
+			.same_allocation(&registered.display_handler)
+			.then(|| registered.descriptor.clone())
+	}
 	pub(crate) fn new(
 		functions: hash::Map<FunctionHandler>,
 		constants: hash::Map<ConstValueBuf>,
@@ -47,6 +63,8 @@ impl RuntimeContext {
 		>,
 	) -> Self {
 		Self {
+			#[cfg(feature = "execution")]
+			opaque: Default::default(),
 			#[cfg(feature = "execution")]
 			execution_epoch,
 			functions,

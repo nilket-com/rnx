@@ -73,6 +73,30 @@ pub enum ErrorKind {
 /// never parses prose or guesses a category from an error message.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Refusal {
+	/// Native objects are admitted only through the checked session compiler.
+	OpaqueEntry,
+	/// Debug formatting is not enrolled for a host value.
+	OpaqueDebug,
+	/// The bounded opaque-use proof exhausted its work or node limit.
+	OpaqueProofLimit,
+	/// A session wrapper or restored root does not match its checked schema.
+	OpaqueEnvelope,
+	/// An opaque factory or method is taken as an indirect function value.
+	OpaqueIngress,
+	/// The receiver is not proven to have one enrolled native identity.
+	OpaqueReceiver,
+	/// An opaque value is used in a structural pattern.
+	OpaquePattern,
+	/// An opaque value reaches an unsupported call boundary.
+	OpaqueArgument,
+	/// An unsupported operation consumes a possibly opaque value.
+	OpaqueOperation,
+	/// A closure captures a possibly opaque binding.
+	OpaqueCapture,
+	/// A user container would hide an opaque value.
+	OpaqueContainer,
+	/// A user function returns a possibly opaque value.
+	OpaqueReturn,
 	/// A call with the wrong number of arguments.
 	Arity,
 	/// An assignment target outside the subset.
@@ -172,6 +196,18 @@ impl Refusal {
 	/// Stable category names, including the reviewed batch E vocabulary.
 	pub const fn name(self) -> &'static str {
 		match self {
+			Self::OpaqueDebug => "OpaqueDebug",
+			Self::OpaqueEntry => "OpaqueEntry",
+			Self::OpaqueProofLimit => "OpaqueProofLimit",
+			Self::OpaqueEnvelope => "OpaqueEnvelope",
+			Self::OpaqueIngress => "OpaqueIngress",
+			Self::OpaqueReceiver => "OpaqueReceiver",
+			Self::OpaquePattern => "OpaquePattern",
+			Self::OpaqueArgument => "OpaqueArgument",
+			Self::OpaqueOperation => "OpaqueOperation",
+			Self::OpaqueCapture => "OpaqueCapture",
+			Self::OpaqueContainer => "OpaqueContainer",
+			Self::OpaqueReturn => "OpaqueReturn",
 			Self::Arity => "Arity",
 			Self::Assignment => "Assignment",
 			Self::AsyncBlock => "AsyncBlock",

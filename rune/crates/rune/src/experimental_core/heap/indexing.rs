@@ -37,6 +37,7 @@ fn unsupported(value: Value) -> Error {
 }
 
 impl Store {
+	#[inline(always)]
 	fn index_tag(&self, value: Value) -> Result<Option<Type>> {
 		Ok(match value {
 			Value::Heap(h) => Some(self.entry(h)?.tag()?),

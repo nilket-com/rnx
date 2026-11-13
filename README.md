@@ -87,9 +87,14 @@ are reported as errors.
 Execution sessions refuse async/await/select and unsupported frontend forms
 before effects, without replay or migration to legacy. `map(f)` with an
 unknown-arity retained closure is still unsupported. `:dep` and `:depv` restart on the selected engine with an empty session;
-reopen commands preserve that choice. Installing a native adapter does not admit
-its native values in an execution session: values requiring presenters remain
-refused by compile-time admission, before invoking their host functions. Inspection, history, numbering, memory ceilings and reset remain available.
+reopen commands preserve that choice. Explicitly enrolled host values can be
+kept in bindings, passed to read-only methods without extra arguments, and shown
+through bounded display callbacks and presenters. The `interchange::Dense`
+surface is verified in test-owned contexts; no test factory is shipped, and
+adapter admission remains outside this cut. Cloning, equality, user containers,
+captures, script arguments/returns, mutable or owned receivers, and debug
+formatting of these host values are refused before effects. Inspection, history,
+numbering, memory ceilings and reset remain available.
 Interrupts are checked at most every 1,024 fresh-engine work units in pure loops;
 host calls have their own cancellation contract. Budget diagnostics match legacy,
 but exhaustion points need not: the engines count different work.

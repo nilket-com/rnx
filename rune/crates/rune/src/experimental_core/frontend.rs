@@ -138,9 +138,11 @@ impl Program {
 	}
 }
 
+pub(crate) mod opaque;
 pub(crate) mod receiver_proofs;
 
 pub(crate) struct Collector {
+	opaque_session: Option<opaque::Envelope>,
 	revision: u64,
 	entries: Vec<(Hash, Option<Function>, Option<Location>)>,
 	transaction: CompileTransaction,
@@ -294,6 +296,18 @@ impl Collector {
 		refused_functions: &[(Hash, Refusal)],
 	) -> Result<()> {
 		for expr in exprs.expressions() {
+			if self.opaque_session.is_none()
+				&& matches!(expr.kind, crate::hir::ExprKind::Type(ty) if context.opaque.types.contains_key(&ty.into_hash()))
+			{
+				let error = Error::refused(Refusal::OpaqueEntry).at(Location {
+					source,
+					revision: self.revision,
+					start: expr.span.start.0,
+					end: expr.span.end.0,
+				});
+				self.record_failure(error);
+				return Err(error);
+			}
 			let used = match expr.kind {
 				crate::hir::ExprKind::Fn(hash) => Some(hash),
 				crate::hir::ExprKind::Call(call) => match call.call {
@@ -303,6 +317,20 @@ impl Collector {
 				_ => None,
 			};
 			if let Some(hash) = used {
+				if self.opaque_session.is_none()
+					&& (context.opaque.factories.contains_key(&hash)
+						|| context.opaque.methods.contains_key(&hash)
+						|| context.opaque.types.contains_key(&hash))
+				{
+					let error = Error::refused(Refusal::OpaqueEntry).at(Location {
+						source,
+						revision: self.revision,
+						start: expr.span.start.0,
+						end: expr.span.end.0,
+					});
+					self.record_failure(error);
+					return Err(error);
+				}
 				self.source_uses.try_push(hash)?;
 			}
 		}
@@ -330,6 +358,30 @@ impl Collector {
 			return Err(Error::new(ErrorKind::InvalidCode, "duplicate function"));
 		}
 
+		let opaque = match self
+			.opaque_session
+			.as_ref()
+			.map(|contract| {
+				opaque::analyze(
+					exprs,
+					item,
+					context,
+					Some(contract),
+					hash == Hash::type_hash(["main"]),
+					captures,
+				)
+			})
+			.transpose()
+		{
+			Ok(proof) => proof,
+			Err(mut error) => {
+				let at = error.location.get_or_insert(function_at);
+				at.source = source;
+				at.revision = self.revision;
+				self.record_failure(error);
+				return Err(error);
+			}
+		};
 		let revision = self.revision;
 		let entries = &mut self.entries;
 		let sort_helper = &mut self.sort_helper;
@@ -431,6 +483,7 @@ impl Collector {
 			&self_proof,
 			&mut self.proofs,
 			hash,
+			opaque.as_ref(),
 		);
 		let function = match result {
 			Ok(function) => function,
@@ -554,6 +607,17 @@ pub fn compile(
 	diagnostics: &mut Diagnostics,
 	revision: u64,
 ) -> Result<Program> {
+	compile_inner(sources, context, diagnostics, revision, None)
+}
+
+// The session entry will be exposed only through a checked ProgramDomain envelope.
+pub(crate) fn compile_inner(
+	sources: &mut Sources,
+	context: &Context,
+	diagnostics: &mut Diagnostics,
+	revision: u64,
+	opaque_session: Option<opaque::Envelope>,
+) -> Result<Program> {
 	// Preflight the complete input before proportional source copies.
 	let mut bytes = 0usize;
 	let mut count = 0usize;
@@ -586,6 +650,7 @@ pub fn compile(
 	}
 
 	let mut collector = Collector {
+		opaque_session,
 		revision,
 		entries: Vec::new(),
 		transaction: CompileTransaction::default(),

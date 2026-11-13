@@ -93,8 +93,10 @@ pub(crate) fn function(
 	self_proof: &core::cell::Cell<Option<Location>>,
 	proofs: &mut super::frontend::receiver_proofs::Proofs,
 	body_hash: Hash,
+	opaque: Option<&super::frontend::opaque::Proof>,
 ) -> Result<Function> {
 	let mut cx = Lower {
+		opaque,
 		self_binding: self_receiver.and_then(|receiver| {
 			self_receiver::binding(exprs, item).map(|binding| (binding, receiver))
 		}),
@@ -194,6 +196,7 @@ struct Loop {
 }
 
 struct Lower<'a, 'hir> {
+	opaque: Option<&'a super::frontend::opaque::Proof>,
 	proofs: &'a mut super::frontend::receiver_proofs::Proofs,
 	body_hash: Hash,
 	self_binding: Option<(hir::Variable, Hash)>,
@@ -1956,7 +1959,35 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		}
 
 		// Preserve argument effects: render only after all operands ran.
-		let values = self.operands(&ids)?;
+		let mut values = self.operands(&ids)?;
+		// Native display runs once per opaque operand, after all operand effects,
+		// through its enrolled shared-receiver bridge. The template sees String.
+		for (i, id) in ids.iter().enumerate() {
+			if let Some(ty) = self.opaque.and_then(|proof| proof.exact(*id)) {
+				let key = crate::function::host::opaque::display_hash(ty);
+				let binding = self
+					.context
+					.host(key)
+					.ok_or_else(|| self.refused(span, Refusal::OpaqueReceiver))?;
+				let function = self
+					.transaction
+					.host(binding)
+					.map_err(|e| e.at(self.location(span)))?;
+				let output = self.slot()?;
+				self.raise(output);
+				let (args_start, args_len) = self.function.arguments(&[values[i]])?;
+				self.emit(
+					Op::Call {
+						out: output,
+						function,
+						args_start,
+						args_len,
+					},
+					span,
+				)?;
+				values[i] = output;
+			}
+		}
 		let mut descriptors = Vec::try_with_capacity(ids.len() * 2)?;
 
 		for (value, spec) in values.iter().zip(descriptors_spec.iter()) {
@@ -2625,6 +2656,29 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		out: u32,
 		span: Span,
 	) -> Result<()> {
+		if let Some(receiver) = self.opaque.and_then(|proof| proof.exact(target)) {
+			let key = Hash::associated_function(receiver, hash);
+			let binding = self
+				.context
+				.host(key)
+				.ok_or_else(|| self.refused(span, Refusal::OpaqueReceiver))?;
+			let id = self
+				.transaction
+				.host(binding)
+				.map_err(|e| e.at(self.location(span)))?;
+			let value = self.operand(target)?;
+			let (args_start, args_len) = self.function.arguments(&[value])?;
+			self.emit(
+				Op::Call {
+					out,
+					function: id,
+					args_start,
+					args_len,
+				},
+				span,
+			)?;
+			return Ok(());
+		}
 		if let Some(method) = self.static_method(target, hash, name_hash) {
 			return self.call_static_method(call, target, method, out, span);
 		}
