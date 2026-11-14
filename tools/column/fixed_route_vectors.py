@@ -7,7 +7,7 @@ root=Path(__file__).resolve().parents[2];sys.path[:0]=[str(root/'tools/column'),
 from child_result import atomic_json
 from old_path_programs import KERNELS,fixture
 from ir_pool import capture_environment
-from ir_resources import resources
+from ir_resources import resources,fixed_budget
 import callgrind,ir_accounting
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--out',type=Path,required=True)
@@ -29,7 +29,7 @@ try:
   a=[s.split()[0] for s in dem if s.endswith(' <rune::experimental_core::execute::PreparedInvocation>::invoke')];assert len(a)==1
   names=[s.split()[-1] for s in raw if s.split()[0]==a[0]];assert len(names)==1
   entries[role]=names[0]
- cpus,available,headroom=resources();workers=min(4,len(cpus),max(0,(min(available,headroom)-2*1024**3)//(2*1024**3)));assert workers>0
+ observation=resources();workers=fixed_budget(observation);available=observation['mem_available_bytes'];headroom=observation['ancestor_headroom_bytes']
  atomic_json(out/'MANIFEST.json',{'binaries':binaries,'entries':entries,'workers':workers,'mem_available':available,'cgroup_headroom':headroom,'per_worker_admission':2*1024**3,'environment':capture_environment(),'sizes':[1,5],'kernels':KERNELS,'policies':['off','on']})
  def job(spec):
   kind,policy,n,role=spec;d=out/f'{kind}-{policy}-{n}-{role}';d.mkdir();r={'status':'FAIL','kind':kind,'policy':policy,'n':n,'role':role}
@@ -69,7 +69,9 @@ try:
    for role in binaries:assert index[k,p,5,role]['accounting']['total_Ir']>index[k,p,1,role]['accounting']['total_Ir']
    comparisons.append({'kind':k,'policy':p,'delta_n1':deltas[0],'delta_n5':deltas[1],'extra_growth':{key:deltas[1][key]-deltas[0][key] for key in deltas[0]}})
  result.update(status='FAIL' if vector_differences and not args.capture_only else 'PASS',comparisons=comparisons,vector_differences=vector_differences)
-except Exception:result['error']=traceback.format_exc()
+except Exception as error:
+ result['error']=traceback.format_exc()
+ if hasattr(error,'numbers'):result['admission']=error.numbers
 finally:
  atomic_json(out/'RESULT.json',result)
  print(result['status'],out/'RESULT.json',flush=True)

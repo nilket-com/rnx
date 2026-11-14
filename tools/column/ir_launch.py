@@ -26,8 +26,9 @@ def main():
 	# The new service lives in app.slice, which may differ from this process.
 	group = subprocess.check_output(["systemctl", "--user", "show", "app.slice", "--property=ControlGroup", "--value"], text=True).strip()
 	assert group.startswith("/"), "cannot locate destination slice"
-	cpus, available, headroom = resources(group)
-	limits = launch_budget(cpus, available, headroom, args.peak_bytes, 2 * 1024**3)
+	observation = resources(group)
+	limits = launch_budget(observation['cpu_ids'], observation['mem_available_bytes'],
+		observation['ancestor_headroom_bytes'], args.peak_bytes, 2 * 1024**3, observation=observation)
 	assert limits["workers"] >= 2, "two workers required for determinism control"
 	limits.update(peak_evidence=args.peak_evidence, destination_cgroup=group)
 	args.manifest.parent.mkdir(parents=True, exist_ok=True)

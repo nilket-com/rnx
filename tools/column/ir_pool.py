@@ -17,7 +17,7 @@ import traceback
 import ir_accounting
 from cli_symbols import symbols
 
-from ir_resources import compare_determinism, launch_budget, resources
+from ir_resources import compare_determinism, observed_budget, resources
 
 if not __debug__:
 	raise SystemExit("requires assertions")
@@ -208,8 +208,7 @@ def main():
 		probe = subprocess.check_output(measured_command([sys.executable, "-B", "-c", "from pathlib import Path; print(Path('/proc/self/personality').read_text().strip())"], identity), env=capture_environment(), text=True).strip()
 		assert int(probe, 16) & 0x40000, "ADDR_NO_RANDOMIZE was not set"
 		limits = json.loads(args.resources.read_text())
-		cpus, available, headroom = resources()
-		workers = min(limits["workers"], launch_budget(cpus, available, headroom, limits["measured_case_peak_bytes"], 0)["workers"])
+		workers = min(limits["workers"], observed_budget(resources(), limits["measured_case_peak_bytes"], 0)["workers"])
 		assert workers >= 2, "parallel determinism control requires two admitted workers"
 		manifest = {"identity": identity, "mode": args.mode, "resources": limits, "effective_workers": workers}
 		if (o / "MANIFEST.json").exists():
@@ -251,6 +250,7 @@ def main():
 			result["status"] = result["acceptance"]["status"]
 	except BaseException as error:
 		result.update(status="FAIL", error=repr(error), traceback=traceback.format_exc())
+		if hasattr(error, 'numbers'): result['admission'] = error.numbers
 	finally:
 		child_result.publish(o / "RESULT.json", result)
 		n = o / "NOTICE.txt"; n.write_text(f"rnx0206 parallel Ir {args.mode} EXIT {result['status']}. Receipt: {o / 'RESULT.json'}")

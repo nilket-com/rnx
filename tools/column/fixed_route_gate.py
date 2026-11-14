@@ -14,6 +14,7 @@ from final_evidence import assigned_root
 import child_result as child
 import drift_band as band
 from cross_program_gate import stage
+from failure_detail import copy_bundle, StageFailure
 from paired_build import build_environment, BUILD_KEYS, BUILD_PREFIXES
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -198,8 +199,10 @@ def main():
 				r.update(band.score(verified(baseline),verified(changed),anchor,policy),
 					baseline=baseline,candidate=changed,anchor=str(retained/'ANCHOR-EVIDENCE.json'))
 		if child.source(ROOT) != source or child.head(ROOT) != candidate: raise ValueError('source changed during gate')
-	except Exception:
+	except Exception as error:
 		r.update(status='FAIL', error=traceback.format_exc())
+		if isinstance(error, StageFailure):
+			r['failure'] = copy_bundle(retained, error.failure, roots=[out]) if out != retained else error.failure
 	finally:
 		if out != retained:
 			# Keep semantic receipts/logs, never the source exports or raw vector payload.

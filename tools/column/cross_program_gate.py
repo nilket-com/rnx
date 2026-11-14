@@ -6,6 +6,7 @@ import subprocess
 import sys
 import traceback
 import child_result as receipts
+from failure_detail import retain, StageFailure
 
 ROOT = Path(__file__).resolve().parents[2]
 BASELINE = '2ed1b182e1464c5abae4ce4042774fa41e8956cc'
@@ -13,16 +14,25 @@ BASELINE = '2ed1b182e1464c5abae4ce4042774fa41e8956cc'
 
 def stage(out, name, command, receipt):
 	log = out / (name + '.log')
-	with log.open('x') as stream:
-		job = subprocess.run(command, cwd=ROOT, stdout=stream,
-			stderr=subprocess.STDOUT, timeout=28800)
-	value = json.loads(receipt.read_text())
-	row = dict(exit=job.returncode, command=list(map(str, command)),
-		receipt=str(receipt), sha256=receipts.digest(receipt),
-		log_sha256=receipts.digest(log), status=value.get('status'))
-	receipts.atomic_json(out / (name + '-stage.json'), row)
-	if job.returncode != 0 or value.get('status') != 'PASS':
-		raise RuntimeError(name + ' failed: STOP; no later gate launched')
+	job = value = None
+	try:
+		with log.open('x') as stream:
+			job = subprocess.run(command, cwd=ROOT, stdout=stream,
+				stderr=subprocess.STDOUT, timeout=28800)
+		value = json.loads(receipt.read_text())
+		row = dict(exit=job.returncode, command=list(map(str, command)),
+			receipt=str(receipt), sha256=receipts.digest(receipt),
+			log_sha256=receipts.digest(log), status=value.get('status'))
+		receipts.atomic_json(out / (name + '-stage.json'), row)
+		if job.returncode != 0 or value.get('status') != 'PASS':
+			raise RuntimeError('child failed: ' + str(value.get('error', value.get('status'))))
+	except Exception as error:
+		wrapper = out/(name+'-stage.json')
+		receipts.atomic_json(wrapper, dict(status='FAIL', exit=job.returncode if job else None,
+			error=str(error), error_type=type(error).__name__))
+		failure = retain(out, name, receipt=receipt if isinstance(value, dict) else wrapper,
+			logs=[log], roots=[out], error=str(error))
+		raise StageFailure(name, failure) from error
 	return value
 
 
@@ -50,8 +60,9 @@ def main():
 			'--valgrind-root', str(a.valgrind_root.resolve())], out/'VECTORS/RESULT.json')
 		assert receipts.head(ROOT) == r['candidate'] and receipts.source(ROOT) == r['source'], 'source changed'
 		r['status'] = 'PASS'
-	except Exception:
+	except Exception as error:
 		r['error'] = traceback.format_exc()
+		if isinstance(error, StageFailure): r['failure'] = error.failure
 	finally:
 		receipts.publish(out/'RESULT.json', r)
 		print(r['status'], out/'RESULT.json', flush=True)

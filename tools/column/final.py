@@ -16,16 +16,13 @@ import child_result as child
 import gate_policy as gate
 from final_evidence import Owners, compact, recover, revalidate, abandon_diagnostics
 from stage_outputs import finish_stage
+from failure_detail import copy_bundle, retain, value as failure_value, reason, sanitize, bounded, log_excerpt, ERROR_CAP, FINAL_CAP
 
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def redact(text, environment):
-	# Streams may echo any inherited variable, not just the declared recipe set.
-	values = sorted({str(v) for v in environment.values() if v}, key=len, reverse=True)
-	for value in values:
-		text = text.replace(value, '<redacted>')
-	return text
+# General diagnostics and focused failure bundles have one value/dump rule.
+redact = sanitize
 
 
 def diagnostics(out, entries, error, environment):
@@ -42,13 +39,9 @@ def diagnostics(out, entries, error, environment):
 				break
 			size = p.stat().st_size
 			take = min(stage_budget, budget, 32768)
-			with p.open('rb') as stream:
-				data = stream.read(take//2)
-				if size > take//2:
-					stream.seek(max(take//2, size-take//2))
-					data += stream.read(take//2)
+			data, truncated = log_excerpt(p, take)
 			row = dict(stage=stage, name=redact(str(p),environment), bytes=size,
-				sha256=child.digest(p), truncated=size>len(data),
+				sha256=child.digest(p), truncated=truncated,
 				text=redact(data.decode('utf-8','replace'),environment))
 			cost = len(json.dumps(row).encode())
 			if cost > min(stage_budget, budget):
@@ -122,7 +115,34 @@ def run_stages(root, out, selection, owner, environment, evidence, rows):
 		# Repeat the clean-tree and pinned HEAD/selection check after EVERY stage.
 		gate.check_selection(selection,root,final=True)
 		if done.returncode:
-			raise RuntimeError('stage failed: '+name)
+			# The bound controller receipt identifies a producer's semantic receipt;
+			# copy its cause while invocation-owned bulk still exists.
+			failure = None
+			stage_error = 'child failed'
+			try:
+				roots = [out] + [Path(entry['path']) for entry in owner.row['roots']]
+				validation = failure_value(done.validation['path'], roots)
+				producer = Path(done.validation['path']).parent/'CHILD.json'
+				semantic = failure_value(producer, roots)['receipt'] if producer.is_file() else done.validation['path']
+				cause = failure_value(semantic, roots)
+				stage_error = reason(cause)
+				if cause.get('failure'):
+					failure = copy_bundle(out, cause['failure'], roots=roots, environment=environment)
+				else:
+					failure = retain(out, name, receipt=semantic, logs=[out/(name+'.log')], roots=roots,
+						environment=environment, error=cause.get('error', validation.get('error', 'child failed')))
+				if sum(p.stat().st_size for p in (out/'failure').iterdir()) + (out/'FAILURE.json').stat().st_size > FINAL_CAP:
+					raise ValueError('final failure diagnostics exceed bound')
+			except Exception as problem:
+				# Diagnostics cannot replace the original failure or prevent release.
+				row['failure_retention_error'] = type(problem).__name__
+				if not (out/'failure').exists():
+					try:
+						failure = retain(out, name, receipt=done.validation['path'], logs=[out/(name+'.log')],
+							roots=roots, environment=environment, error=stage_error)
+					except Exception: pass  # The original stage error remains the verdict.
+			if failure: row['failure'] = failure
+			raise RuntimeError('stage failed: '+name + '; ' + (failure['error'] if failure else bounded(sanitize(str(stage_error), environment), ERROR_CAP)[0]))
 
 
 def terminal(out, owner, selection, evidence, tools, acceptance, environment):
@@ -205,6 +225,9 @@ def run(root, out, names=None, remote_context=None, fresh=False, scope=None):
 		previous = {sig:signal.signal(sig,signal.SIG_IGN) for sig in (signal.SIGTERM,signal.SIGINT)}
 		try:
 			acceptance.update(checks=rows,seconds=time.monotonic()-started)
+			if rows and rows[-1]['exit']:
+				acceptance['failed_stage'] = rows[-1]['name']
+				if rows[-1].get('failure'): acceptance['failure'] = rows[-1]['failure']
 			release = terminal(out,owner,selection,evidence,tools,acceptance,environment)
 			r = dict(status='PASS' if acceptance['status']==release['status']=='PASS' else 'FAIL',
 				candidate=acceptance['candidate'],seconds=time.monotonic()-started,
@@ -216,6 +239,9 @@ def run(root, out, names=None, remote_context=None, fresh=False, scope=None):
 				publication_eligible=gate.publication_eligible(scope) and acceptance['status']==release['status']=='PASS',
 				free_bytes_before=free_before,free_bytes_after=shutil.disk_usage(root).free,
 				records={n:child.digest(out/(n+'.json')) for n in ('ACCEPTANCE','MANIFEST','RELEASE') if (out/(n+'.json')).exists()})
+			if rows and rows[-1]['exit']:
+				r['failed_stage'] = rows[-1]['name']
+				if rows[-1].get('failure'): r['failure'] = rows[-1]['failure']
 			if owner and release['status']=='PASS':
 				try: owner.retire()
 				except Exception: r.update(status='FAIL',complete_final=False,publication_eligible=False,retirement_error=traceback.format_exc())

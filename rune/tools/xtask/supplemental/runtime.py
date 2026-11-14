@@ -7,22 +7,11 @@ import re
 import signal
 import subprocess
 import time
+from memory_resources import observe
 
 
 def resources():
-	available = next(int(s.split()[1]) * 1024 for s in Path('/proc/meminfo').read_text().splitlines() if s.startswith('MemAvailable:'))
-	group = next(s.split(':', 2)[2] for s in Path('/proc/self/cgroup').read_text().splitlines() if s.startswith('0::'))
-	root = Path('/sys/fs/cgroup')
-	path = root / group.lstrip('/')
-	headroom = available
-	while path.is_relative_to(root):
-		limit = path / 'memory.max'
-		if limit.exists() and limit.read_text().strip() != 'max':
-			headroom = min(headroom, max(0, int(limit.read_text()) - int((path / 'memory.current').read_text())))
-		if path == root:
-			break
-		path = path.parent
-	return len(os.sched_getaffinity(0)), available, headroom
+	return observe()
 
 
 def execute(command, directory, env, cwd, timeout, label='process'):

@@ -1,6 +1,6 @@
 # ADR 0271: a failed gate keeps its cause, and admission counts real memory
 
-Status: Proposed
+Status: Accepted
 
 Base: published d75960167a2f4c49b77fc48481583af41f87b0db (ADR 0270).
 

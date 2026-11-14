@@ -40,7 +40,7 @@ def run(root, package, inventory, cache_root, workers=None):
 	recipe = description(root, inputs, inventory['toolchain'], env['MIRIFLAGS'], inventory['features'],
 		dict(before['tools'], backend=before['runner'], runner=child.digest(__file__), cache=child.digest(Path(__file__).with_name('miri_cache.py')), cleanup=child.digest(Path(__file__).with_name('owned_build.py'))), child.environment(env), package)
 	cache = Cache(cache_root, recipe)
-	limits = backend.admit(*backend.resources(), 4*1024**3, requested=workers or 6)
+	limits = backend.observed_admission(backend.resources(), 4*1024**3, requested=workers if workers is not None else 6)
 	prepare = lambda path: backend.preparation(path, root, m, env, 'selected')
 	prepared = cache.stage('prepare', '', prepare)
 	jobs = cache.order(backend.selection(m, {'selected': prepared}))
@@ -75,7 +75,9 @@ def main():
 			if not a.reason: raise ValueError('invalidation reason required')
 			r['invalidated'] = str(Cache(a.cache or a.root/'target/miri-exact-cache', {}).invalidate(a.invalidate_key, a.reason))
 		r.update(run(a.root, a.package, json.loads(a.inventory.read_text()), a.cache or a.root/'target/miri-exact-cache', a.workers), status='PASS')
-	except Exception: r['error'] = traceback.format_exc()
+	except Exception as error:
+		r['error'] = traceback.format_exc()
+		if hasattr(error, 'numbers'): r['admission'] = error.numbers
 	finally:
 		path = a.out/('INVOCATION-'+uuid.uuid4().hex+'.json'); child.publish(path, r)
 		print(r['status'], path, flush=True)

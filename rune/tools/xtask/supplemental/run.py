@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import traceback
 
-from admission import admit
+from admission import observed_admission
 from partitions import validate
 from receipts import Run, atomic_json, digest
 from runtime import check_tests, execute, overlap, resources, traces
@@ -209,7 +209,7 @@ def main():
 	if args.launch and os.environ.get(child_result.CONTEXT):
 		parser.error("bound validation must wait for execution; omit --launch")
 	if args.launch:
-		limits = admit(*resources(), manifest['measured_peak_rss_bytes'], args.workers)
+		limits = observed_admission(resources(), manifest['measured_peak_rss_bytes'], args.workers)
 		command = ['systemd-run', '--user', '--unit=' + args.unit,
 			'--property=MemoryMax=' + str(limits['memory_max_bytes']), '--property=MemorySwapMax=0',
 			'--property=OOMPolicy=kill', '--property=KillMode=control-group', '--working-directory=' + str(root)]
@@ -222,7 +222,7 @@ def main():
 	try:
 		env = environment()
 		identity = source_identity(root, manifest, env, args.scope, args.require_overlap)
-		limits = admit(*resources(), manifest['measured_peak_rss_bytes'], args.workers)
+		limits = observed_admission(resources(), manifest['measured_peak_rss_bytes'], args.workers)
 		# Direct invocation must already be inside a bounded service.
 		group = next(s.split(':', 2)[2] for s in Path('/proc/self/cgroup').read_text().splitlines() if s.startswith('0::'))
 		if (Path('/sys/fs/cgroup') / group.lstrip('/') / 'memory.max').read_text().strip() == 'max':
@@ -239,6 +239,7 @@ def main():
 			result['status'] = 'PASS'
 	except Exception as error:
 		result.update(error=repr(error), traceback=traceback.format_exc())
+		if hasattr(error, 'numbers'): result['admission'] = error.numbers
 	finally:
 		directory.mkdir(parents=True, exist_ok=True)
 		# Invocation receipts never overwrite earlier failures or interrupted work.
