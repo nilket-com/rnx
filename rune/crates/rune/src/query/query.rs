@@ -58,6 +58,8 @@ pub(crate) struct QueryInner<'arena> {
 	#[cfg(feature = "execution")]
 	pub(crate) collecting: bool,
 	#[cfg(feature = "execution")]
+	pub(crate) async_functions: HashSet<Hash>,
+	#[cfg(feature = "execution")]
 	pub(crate) constant_work: crate::experimental_core::constants::Work,
 	/// Monotonic script-associated numeric-name collision mask, set while indexing.
 	#[cfg(feature = "execution")]

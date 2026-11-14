@@ -62,6 +62,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			E::Block(_)
 			| E::Lit(_)
 			| E::Call(_)
+			| E::Await(_)
 			| E::Object(_)
 			| E::Tuple(_)
 			| E::Vec(_)

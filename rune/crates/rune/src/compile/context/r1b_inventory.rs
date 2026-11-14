@@ -632,7 +632,23 @@ fn uncertain_calls_and_async_entries_refuse_before_host_effects() {
 		.build()
 		.unwrap();
 	context.install(module).unwrap();
+	assert_eq!(
+		free_policy("::std::future::unreviewed"),
+		Verdict::Refuse(Refusal::Native)
+	);
 	for (source, expected) in [
+		(
+			"pub fn main(){inventory::first();::std::future::join(())}",
+			Refusal::Native,
+		),
+		(
+			"pub fn main(){inventory::first();let f=::std::future::join;f}",
+			Refusal::Native,
+		),
+		(
+			"pub async fn main(){inventory::first();::std::future::join(()).await}",
+			Refusal::AsyncFunction,
+		),
 		(
 			"pub fn main(){inventory::first();inventory::uncertified()}",
 			Refusal::Native,

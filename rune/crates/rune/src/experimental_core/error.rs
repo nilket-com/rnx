@@ -107,6 +107,10 @@ pub enum Refusal {
 	AsyncFunction,
 	/// An `.await` expression.
 	Await,
+	/// An async host call must be directly awaited; no future Value is admitted.
+	AwaitRequired,
+	/// A future-producing function is taken as a Value.
+	FutureValue,
 	/// A byte-string literal.
 	ByteStr,
 	/// A call of an expression that is not a named function.
@@ -213,6 +217,8 @@ impl Refusal {
 			Self::AsyncBlock => "AsyncBlock",
 			Self::AsyncFunction => "AsyncFunction",
 			Self::Await => "Await",
+			Self::AwaitRequired => "AwaitRequired",
+			Self::FutureValue => "FutureValue",
 			Self::ByteStr => "ByteStr",
 			Self::Call => "Call",
 			Self::CallClosure => "CallClosure",

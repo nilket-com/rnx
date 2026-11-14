@@ -211,7 +211,7 @@ id	mode	reason	fixture	clock
 0209	execute			
 0210	admission-only	main-requires-arguments		
 0211	admission-only	stock-fails		
-0212	admission-only	fresh-refuses-Await		
+0212	admission-only	fresh-refuses-AsyncFunction		
 0213	execute			
 allow-00	execute			
 allow-01	execute			

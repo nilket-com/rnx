@@ -38,6 +38,9 @@
 //! nested executions. A native call may overrun the soft slice, but never the
 //! total. Errors terminate execution without retry. Cancellation is checked
 //! between slices; a single native call can delay it for the remaining total.
+mod host_wait;
+pub(crate) use host_wait::{host_wait_interrupted, result_value, with_native_wait};
+
 use rune::Vm;
 use rune::runtime::{Value, VmError, VmOutcome, budget};
 use std::cell::Cell;

@@ -152,7 +152,7 @@ def run(binary, engine, mode, scratch=False):
                 until(b'> ')
                 send('async {7}.await')
                 output = until(b'> ')
-                assert (b'async input is not available' in output) == (engine == 'execution'), output
+                assert (b'an async block is not available' in output) == (engine == 'execution'), output
             else:
                 assert not (root/'argv.json').exists()
                 send('alias.push(2);a.len()+c()')

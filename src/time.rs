@@ -311,7 +311,12 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	module.host_function("parse", parse)?;
 	module.host_function_with_output("parts", parts, crate::host::outputs::PARTS)?;
 	module.function("from_parts", from_parts).build()?;
-	module.function("sleep", sleep).build()?;
+	module.host_function_await(
+		"sleep",
+		sleep,
+		|ms: i64| crate::execute::result_value(crate::execute::with_native_wait(sleep(ms))?),
+		rune::host::OutputCertificate::JSON_RESULT,
+	)?;
 	context.install(module)?;
 	Ok([
 		("now_ms","now_ms() -> i64: wall-clock milliseconds since Unix epoch, floored; not an elapsed-time clock"),

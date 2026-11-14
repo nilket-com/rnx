@@ -103,52 +103,159 @@ impl Request {
 				.borrow_ref::<Object>()
 				.map_err(|_| "options must be an object")?;
 			for (key, value) in object.iter() {
-				match key.as_str() {
-					"timeout_ms" => {
-						request.timeout = number(value).map_err(|e| format!("timeout_ms: {e}"))?;
-						if !(1..=90_000).contains(&request.timeout) {
-							return Err("the deadline must be between 1 and 90000 ms".into());
-						}
-					}
-					"body_limit" => {
-						let limit = number(value).map_err(|e| format!("body_limit: {e}"))?;
-						if !(1..=MAX_LIMIT as u64).contains(&limit) {
-							return Err("body_limit must be between 1 and 67108864 bytes".into());
-						}
-						request.limit = limit as usize;
-					}
-					"body" => {
-						request.body = if let Ok(s) = value.borrow_string_ref() {
-							s.as_bytes().to_vec()
-						} else {
-							value
-								.borrow_ref::<Bytes>()
-								.map_err(|_| "body must be String or Bytes")?
-								.as_slice()
-								.to_vec()
-						};
-					}
-					"headers" => {
-						let headers = value
-							.borrow_ref::<Object>()
-							.map_err(|_| "headers must be an object")?;
-						for (name, value) in headers.iter() {
-							let parsed = HeaderName::from_bytes(name.as_bytes())
-								.map_err(|_| format!("invalid header name {name:?}"))?;
-							let text = string(value)
-								.map_err(|_| format!("header {name:?} must be a String"))?;
-							let value = HeaderValue::from_str(&text)
-								.map_err(|_| format!("invalid value for header {name:?}"))?;
-							if request.headers.contains_key(&parsed) {
-								return Err(format!("duplicate case-insensitive header {name:?}"));
-							}
-							request.headers.insert(parsed, value);
-						}
-					}
-					_ => return Err(format!("unknown option {key:?}")),
+				request.option(key.as_str(), OptionValue::Legacy(value))?;
+			}
+		}
+		Ok(request)
+	}
+}
+
+// A bounded view over the legacy object or the existing owned input packet.
+// Only fields the request parser reads are interpreted; no second tree is built.
+#[derive(Clone, Copy)]
+enum OptionValue<'a> {
+	Legacy(&'a Value),
+	Owned(&'a rune::host::OwnedTreeInput, usize),
+}
+enum FieldsError {
+	NotObject,
+	Invalid(&'static str),
+	Handler(String),
+}
+impl FieldsError {
+	fn message(self, not_object: &str) -> String {
+		match self {
+			Self::NotObject => not_object.to_owned(),
+			Self::Invalid(message) => message.to_owned(),
+			Self::Handler(message) => message,
+		}
+	}
+}
+impl<'a> OptionValue<'a> {
+	fn string(self) -> Result<String, String> {
+		match self {
+			Self::Legacy(v) => string(v),
+			Self::Owned(tree, id) => match tree.node(id).map(|n| n.kind()) {
+				Some(rune::host::TreeKind::String(s)) => Ok(s.as_str().to_owned()),
+				Some(rune::host::TreeKind::Scalar(v)) => string(v),
+				_ => Err("expected a String".into()),
+			},
+		}
+	}
+	fn number(self) -> Result<u64, String> {
+		match self {
+			Self::Legacy(v) => number(v),
+			Self::Owned(tree, id) => match tree.node(id).map(|n| n.kind()) {
+				Some(rune::host::TreeKind::Scalar(v)) => number(v),
+				_ => Err("expected a non-negative integer".into()),
+			},
+		}
+	}
+	fn body(self) -> Result<Vec<u8>, String> {
+		if let Ok(text) = self.string() {
+			return Ok(text.into_bytes());
+		}
+		if let Self::Legacy(v) = self {
+			return v
+				.borrow_ref::<Bytes>()
+				.map(|v| v.as_slice().to_vec())
+				.map_err(|_| "body must be String or Bytes".into());
+		}
+		Err("body must be String or Bytes".into())
+	}
+	fn fields(
+		self,
+		mut each: impl FnMut(&str, OptionValue<'_>) -> Result<(), String>,
+	) -> Result<(), FieldsError> {
+		match self {
+			Self::Legacy(v) => {
+				let object = v
+					.borrow_ref::<Object>()
+					.map_err(|_| FieldsError::NotObject)?;
+				for (key, value) in object.iter() {
+					each(key.as_str(), OptionValue::Legacy(value)).map_err(FieldsError::Handler)?;
+				}
+			}
+			Self::Owned(tree, mut id) => {
+				let mut node = tree
+					.node(id)
+					.ok_or(FieldsError::Invalid("invalid owned request options"))?;
+				if !matches!(node.kind(), rune::host::TreeKind::Object) {
+					return Err(FieldsError::NotObject);
+				}
+				// The parser only traverses options -> headers. At this depth a
+				// back-edge can name only the root options object. Reuse its
+				// preserved fields rather than inventing a cycle/type error.
+				if node.cycle() {
+					id = 0;
+					node = tree
+						.node(id)
+						.ok_or(FieldsError::Invalid("invalid owned request options"))?;
+				}
+				for n in 0..node.len() {
+					let (Some(key), child) = node
+						.child(n)
+						.ok_or(FieldsError::Invalid("owned request options frontier"))?
+					else {
+						return Err(FieldsError::Invalid("invalid owned request key"));
+					};
+					each(key, Self::Owned(tree, child)).map_err(FieldsError::Handler)?;
 				}
 			}
 		}
+		Ok(())
+	}
+}
+impl Request {
+	fn option(&mut self, key: &str, value: OptionValue<'_>) -> Result<(), String> {
+		match key {
+			"timeout_ms" => {
+				self.timeout = value.number().map_err(|e| format!("timeout_ms: {e}"))?;
+				if !(1..=90_000).contains(&self.timeout) {
+					return Err("the deadline must be between 1 and 90000 ms".into());
+				}
+			}
+			"body_limit" => {
+				let limit = value.number().map_err(|e| format!("body_limit: {e}"))?;
+				if !(1..=MAX_LIMIT as u64).contains(&limit) {
+					return Err("body_limit must be between 1 and 67108864 bytes".into());
+				}
+				self.limit = limit as usize;
+			}
+			"body" => self.body = value.body()?,
+			"headers" => value
+				.fields(|name, value| {
+					let parsed = HeaderName::from_bytes(name.as_bytes())
+						.map_err(|_| format!("invalid header name {name:?}"))?;
+					let text = value
+						.string()
+						.map_err(|_| format!("header {name:?} must be a String"))?;
+					let value = HeaderValue::from_str(&text)
+						.map_err(|_| format!("invalid value for header {name:?}"))?;
+					if self.headers.contains_key(&parsed) {
+						return Err(format!("duplicate case-insensitive header {name:?}"));
+					}
+					self.headers.insert(parsed, value);
+					Ok(())
+				})
+				.map_err(|e| e.message("headers must be an object"))?,
+			_ => return Err(format!("unknown option {key:?}")),
+		}
+		Ok(())
+	}
+	fn parse_owned(
+		method: &str,
+		url: &str,
+		options: &rune::host::OwnedTreeInput,
+	) -> Result<Self, String> {
+		let mut request = Self::parse(method, url, None)?;
+		let value = match options.leaf() {
+			Some(v) => OptionValue::Legacy(v),
+			None => OptionValue::Owned(options, 0),
+		};
+		value
+			.fields(|key, value| request.option(key, value))
+			.map_err(|e| e.message("options must be an object"))?;
 		Ok(request)
 	}
 }
@@ -317,55 +424,125 @@ pub fn install(
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = Module::with_crate("http")?;
 	let mut registered = Vec::new();
-	macro_rules! simple {
-		($name:literal, $bytes:expr) => {{
-			let state = state.clone();
-			let scope = scope.clone();
-			module
-				.function($name, move |url: &str| {
-					let url = url.to_owned();
-					let request = Request::parse("GET", &url, None);
-					let state = state.clone();
-					scope.track(async move { state.request(url, request, $bytes).await })
-				})
-				.build()?;
-			registered.push(crate::host::HostFunction {
-				path: concat!("http::", $name).into(),
-				doc: concat!($name, "(url).await -> Result<object>: bounded HTTP GET"),
-			});
-		}};
+	{
+		let legacy_state = state.clone();
+		let legacy_scope = scope.clone();
+		let fresh_state = state.clone();
+		let fresh_scope = scope.clone();
+		module.host_function_await(
+			"get",
+			move |url: &str| {
+				let url = url.to_owned();
+				let request = Request::parse("GET", &url, None);
+				let state = legacy_state.clone();
+				legacy_scope.track(async move { state.request(url, request, false).await })
+			},
+			move |url: &str| {
+				let url = url.to_owned();
+				let request = Request::parse("GET", &url, None);
+				let state = fresh_state.clone();
+				let future =
+					fresh_scope.track(async move { state.request(url, request, false).await });
+				crate::execute::result_value(crate::execute::with_native_wait(future)?)
+			},
+			rune::host::OutputCertificate::JSON_RESULT,
+		)?;
 	}
-	macro_rules! request {
-		($name:literal, $bytes:expr) => {{
-			let state = state.clone();
-			let scope = scope.clone();
-			module
-				.function($name, move |method: &str, url: &str, options: Value| {
+	{
+		let legacy_state = state.clone();
+		let legacy_scope = scope.clone();
+		let fresh_state = state.clone();
+		let fresh_scope = scope.clone();
+		module.host_function_await(
+			"request",
+			move |method: &str, url: &str, options: Value| {
+				let url = url.to_owned();
+				let request = Request::parse(method, &url, Some(options));
+				let state = legacy_state.clone();
+				legacy_scope.track(async move { state.request(url, request, false).await })
+			},
+			move |method: &str, url: &str, options: rune::host::OwnedTreeInput| {
+				let url = url.to_owned();
+				let request = Request::parse_owned(method, &url, &options);
+				let state = fresh_state.clone();
+				drop(options);
+				let future =
+					fresh_scope.track(async move { state.request(url, request, false).await });
+				crate::execute::result_value(crate::execute::with_native_wait(future)?)
+			},
+			rune::host::OutputCertificate::JSON_RESULT,
+		)?;
+	}
+	{
+		let state = state.clone();
+		let scope = scope.clone();
+		module
+			.function("get_bytes", move |url: &str| {
+				let url = url.to_owned();
+				let request = Request::parse("GET", &url, None);
+				let state = state.clone();
+				scope.track(async move { state.request(url, request, true).await })
+			})
+			.build()?;
+	}
+	{
+		let state = state.clone();
+		let scope = scope.clone();
+		module
+			.function(
+				"request_bytes",
+				move |method: &str, url: &str, options: Value| {
 					let url = url.to_owned();
 					let request = Request::parse(method, &url, Some(options));
 					let state = state.clone();
-					scope.track(async move { state.request(url, request, $bytes).await })
-				})
-				.build()?;
-			registered.push(crate::host::HostFunction {
-				path: concat!("http::", $name).into(),
-				doc: concat!(
-					$name,
-					"(method, url, options).await -> Result<object>: bounded HTTP request"
-				),
-			});
-		}};
+					scope.track(async move { state.request(url, request, true).await })
+				},
+			)
+			.build()?;
 	}
-	simple!("get", false);
-	simple!("get_bytes", true);
-	request!("request", false);
-	request!("request_bytes", true);
+	for (name, doc) in [
+		("get", "get(url).await -> Result<object>: bounded HTTP GET"),
+		(
+			"get_bytes",
+			"get_bytes(url).await -> Result<object>: bounded HTTP GET",
+		),
+		(
+			"request",
+			"request(method, url, options).await -> Result<object>: bounded HTTP request",
+		),
+		(
+			"request_bytes",
+			"request_bytes(method, url, options).await -> Result<object>: bounded HTTP request",
+		),
+	] {
+		registered.push(crate::host::HostFunction {
+			path: format!("http::{name}"),
+			doc,
+		});
+	}
 	context.install(module)?;
 	Ok(registered)
 }
 
 #[cfg(test)]
 mod tests {
+	#[test]
+	fn request_parser_accepts_a_body_larger_than_a_small_embedding_snapshot_budget() {
+		let mut options = rune::runtime::Object::new();
+		options
+			.insert(
+				rune::alloc::String::try_from("body").unwrap(),
+				rune::to_value("x".repeat(16000)).unwrap(),
+			)
+			.unwrap();
+		let request = super::Request::parse(
+			"POST",
+			"http://127.0.0.1/",
+			Some(rune::to_value(options).unwrap()),
+		)
+		.unwrap();
+		assert_eq!(request.body.len(), 16000);
+	}
 	#[test]
 	fn the_module_registers_exactly_four_functions_and_no_json_reader() {
 		let mut context = rune::Context::with_default_modules().unwrap();

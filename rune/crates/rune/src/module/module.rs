@@ -349,6 +349,7 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			await_only: false,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {
 				signature,
@@ -406,10 +407,81 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			await_only: false,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {
 				signature,
 				certificate: None,
+			},
+		});
+		self.function_inner(data, Docs::EMPTY, None)
+	}
+
+	/// Enroll a session-only direct awaited host call, preserving its legacy future.
+	/// The adapter drives owned native work without callbacks or script reentry.
+	/// Ordinary calls and future values are refused by the execution compiler.
+	/// No invocation runtime is captured: the session supplies its own scoped driver.
+	///
+	/// ```
+	/// # use rune::{Module, Value, VmError};
+	/// # fn main() -> Result<(), rune::ContextError> {
+	/// let mut m = Module::new();
+	/// m.host_function_await("f", |n: i64| async move { n },
+	///     |n: i64| Ok::<_, VmError>(Value::from(n)),
+	///     rune::host::OutputCertificate {
+	///         nodes: &[rune::host::OutputShape::Scalar(rune::host::HostType::I64)],
+	///         root: 0,
+	///     })?;
+	/// # Ok(()) }
+	/// ```
+	///
+	/// The original function must really be asynchronous, independently of its docs.
+	/// ```compile_fail
+	/// # use rune::{Module, Value, VmError};
+	/// # let mut m = Module::new();
+	/// m.host_function_await("f", |n: i64| n,
+	///     |n: i64| Ok::<_, VmError>(Value::from(n)), rune::host::OutputCertificate::JSON_RESULT);
+	/// ```
+	/// The adapter must return a terminal result, never another future.
+	/// ```compile_fail
+	/// # use rune::{Module, Value, VmError};
+	/// # let mut m = Module::new();
+	/// m.host_function_await("f", |n: i64| async move { n },
+	///     |n: i64| async move { Ok::<_, VmError>(Value::from(n)) }, rune::host::OutputCertificate::JSON_RESULT);
+	/// ```
+	/// The input set is closed; an arbitrary dynamic value is not a waiting input.
+	/// ```compile_fail
+	/// # use rune::{Module, Value, VmError};
+	/// # let mut m = Module::new();
+	/// m.host_function_await("f", |n: Value| async move { n },
+	///     |n: Value| Ok::<_, VmError>(n), rune::host::OutputCertificate::JSON_RESULT);
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn host_function_await<N, F, A, G, B>(
+		&mut self,
+		name: N,
+		legacy: F,
+		adapter: G,
+		certificate: crate::function::host::OutputCertificate,
+	) -> Result<ItemFnMut<'_>, ContextError>
+	where
+		N: IntoComponent,
+		F: Function<A, crate::function::Async, Return: MaybeTypeOf>,
+		A: FunctionArgs,
+		G: crate::function::host::AwaitHostFunction<B>,
+		B: FunctionArgs,
+	{
+		let mut data = FunctionData::new::<N, F, A, crate::function::Async>(name, legacy)?;
+		let signature = G::await_signature();
+		let handler = crate::runtime::FunctionHandler::new(move |stack, addr, args, output| {
+			adapter.call(stack, addr, args, output)
+		})?;
+		data.alternate_host = Some(crate::function::host::AlternateHost {
+			await_only: true,
+			handler,
+			enrollment: crate::function::host::HostEnrollment {
+				signature,
+				certificate: Some(certificate),
 			},
 		});
 		self.function_inner(data, Docs::EMPTY, None)
@@ -1514,6 +1586,8 @@ impl Module {
 			common: ModuleItemCommon { docs, deprecated },
 			kind: ModuleItemKind::Function(ModuleFunction {
 				#[cfg(feature = "execution")]
+				asynchronous: data.asynchronous,
+				#[cfg(feature = "execution")]
 				format_default: None,
 				handler: data.handler,
 				#[cfg(feature = "execution")]
@@ -1572,6 +1646,8 @@ impl Module {
 			name: data.associated.name,
 			common: ModuleItemCommon { docs, deprecated },
 			kind: ModuleAssociatedKind::Function(ModuleFunction {
+				#[cfg(feature = "execution")]
+				asynchronous: false,
 				#[cfg(feature = "execution")]
 				format_default: None,
 				#[cfg(feature = "execution")]

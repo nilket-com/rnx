@@ -372,6 +372,22 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 							}
 						}
 					}
+					if matches!(f.call, crate::runtime::Call::Async)
+						&& !collector.allows_async_main(hash)
+					{
+						let operation = crate::experimental_core::error::Refusal::AsyncFunction;
+						collector.record_failure(
+							crate::experimental_core::error::Error::refused(operation).at(
+								crate::experimental_core::error::Location {
+									source: location.source_id.into_index() as u32,
+									revision: collector.revision(),
+									start: span.span().start.0,
+									end: span.span().end.0,
+								},
+							),
+						);
+						return Err(compile::Error::msg(span, operation.name()));
+					}
 					// Preserve the first named expression refusal (e.g. Yield),
 					// before classifying a whole non-immediate function.
 					collector.checkpoint_diagnostics(self.q.diagnostics, hash, None);
@@ -431,7 +447,10 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 							}
 						}
 					}
-					if !matches!(f.call, crate::runtime::Call::Immediate) {
+					if !matches!(f.call, crate::runtime::Call::Immediate)
+						&& !(matches!(f.call, crate::runtime::Call::Async)
+							&& collector.allows_async_main(hash))
+					{
 						let operation = if matches!(f.call, crate::runtime::Call::Async) {
 							crate::experimental_core::error::Refusal::AsyncFunction
 						} else {

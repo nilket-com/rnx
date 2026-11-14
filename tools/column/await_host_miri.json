@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "function::host::awaiting::tests::only_a_direct_host_wait_in_a_checked_entry_executes_once_across_slices",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "function::host::awaiting::tests::bare_future_value_and_non_session_await_refuse_without_effects",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "function::host::awaiting::tests::terminal_adapter_error_releases_call_owned_input_once",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "function::host::awaiting::tests::prefixed_owned_options_are_snapshotted_and_released_through_the_existing_abi",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "compile::context::awaiting_tests::awaited_alternate_is_bound_to_installed_original_and_keeps_abi",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "compile::context::awaiting_tests::a_doc_flag_or_failed_install_cannot_publish_await_permission",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "compile::context::awaiting_tests::an_invalid_wait_output_certificate_does_not_enroll_the_adapter",
+      "ignored": false,
+      "timeout_seconds": 1800
+    }
+  ]
+}

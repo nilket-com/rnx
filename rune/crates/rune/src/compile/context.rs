@@ -284,6 +284,8 @@ impl TraitContext<'_> {
 	) -> Result<(), ContextError> {
 		let function = ModuleFunction {
 			#[cfg(feature = "execution")]
+			asynchronous: false,
+			#[cfg(feature = "execution")]
 			format_default: None,
 			#[cfg(feature = "execution")]
 			host: None,
@@ -398,6 +400,8 @@ pub struct Context {
 	hosts: hash::Map<crate::function::host::HostBinding>,
 	#[cfg(feature = "execution")]
 	alternate_hosts: hash::Map<crate::function::host::InstalledAlternate>,
+	#[cfg(feature = "execution")]
+	async_hosts: hash::Map<FunctionHandler>,
 	#[cfg(feature = "execution")]
 	format: crate::function::formatting::State,
 	/// Registered deprecation mesages for native functions.
@@ -762,11 +766,15 @@ impl Context {
 		#[cfg(feature = "execution")]
 		prepared_opaque.validate()?;
 		#[cfg(feature = "execution")]
-		let (prepared_hosts, prepared_alternates) = {
+		let (prepared_hosts, prepared_alternates, prepared_async) = {
 			let mut hosts = self.hosts.try_clone()?;
 			let mut alternates = self.alternate_hosts.try_clone()?;
+			let mut asynchronous = self.async_hosts.try_clone()?;
 			for item in &module.items {
 				if let rune::module::ModuleItemKind::Function(function) = &item.kind {
+					if function.asynchronous {
+						asynchronous.try_insert(item.hash, function.handler.clone())?;
+					}
 					if let Some(alternate) = function
 						.alternate_host
 						.as_ref()
@@ -775,6 +783,7 @@ impl Context {
 						alternates.try_insert(
 							item.hash,
 							crate::function::host::InstalledAlternate {
+								await_only: alternate.await_only,
 								original: function.handler.clone(),
 								binding: crate::function::host::HostBinding {
 									hash: item.hash,
@@ -818,7 +827,7 @@ impl Context {
 					}
 				}
 			}
-			(hosts, alternates)
+			(hosts, alternates, asynchronous)
 		};
 		tracing::trace!("module");
 		self.install_module(module)?;
@@ -960,6 +969,7 @@ impl Context {
 			self.opaque = prepared_opaque;
 			self.hosts = prepared_hosts;
 			self.alternate_hosts = prepared_alternates;
+			self.async_hosts = prepared_async;
 			self.numeric.finish_module(numeric_pending);
 			self.iter.finish_module(iter_pending);
 			self.text.finish_module(text_pending);
@@ -1070,6 +1080,26 @@ impl Context {
 		let binding = self.hosts.get(&hash)?;
 		let handler = self.functions.get(&hash)?;
 		binding.handler.same_allocation(handler).then_some(binding)
+	}
+
+	#[cfg(feature = "execution")]
+	pub(crate) fn host_is_wait_adapter(&self, hash: Hash) -> bool {
+		self.alternate_hosts.get(&hash).is_some_and(|a| {
+			a.await_only
+				&& self
+					.functions
+					.get(&hash)
+					.is_some_and(|f| a.original.same_allocation(f))
+		})
+	}
+
+	#[cfg(feature = "execution")]
+	pub(crate) fn host_requires_await(&self, hash: Hash) -> bool {
+		self.async_hosts.get(&hash).is_some_and(|original| {
+			self.functions
+				.get(&hash)
+				.is_some_and(|f| original.same_allocation(f))
+		})
 	}
 
 	// Unit-test-only synthetic certificate for raw VM error controls. Never exported.
@@ -2459,3 +2489,6 @@ fn default_associated_functions_have_no_implicit_host_enrollment() {
 		"default associated-function control was vacuous"
 	);
 }
+
+#[cfg(all(test, feature = "execution"))]
+mod awaiting_tests;

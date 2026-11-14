@@ -140,7 +140,7 @@ const ROWS: &[Row] = &[
 	Row {
 		input: "a.push(2); async {1}.await",
 		class: Class::Policy {
-			execution: "refused: async input is not available in an execution session; start `rnx repl` without --engine=execution (input 3, line 1, column 21)",
+			execution: "refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 3, line 1, column 12)",
 		},
 	},
 	Row {

@@ -53,6 +53,8 @@ pub struct FunctionData {
 	#[cfg(feature = "execution")]
 	pub(crate) host: Option<crate::function::host::HostEnrollment>,
 	#[cfg(feature = "execution")]
+	pub(crate) asynchronous: bool,
+	#[cfg(feature = "execution")]
 	pub(crate) alternate_host: Option<crate::function::host::AlternateHost>,
 	#[cfg(feature = "doc")]
 	pub(crate) is_async: bool,
@@ -71,6 +73,8 @@ impl FunctionData {
 			handler,
 			#[cfg(feature = "execution")]
 			host: None,
+			#[cfg(feature = "execution")]
+			asynchronous: false,
 			#[cfg(feature = "execution")]
 			alternate_host: None,
 			#[cfg(feature = "doc")]
@@ -99,6 +103,8 @@ impl FunctionData {
 			})?,
 			#[cfg(feature = "execution")]
 			host: None,
+			#[cfg(feature = "execution")]
+			asynchronous: K::IS_ASYNC,
 			#[cfg(feature = "execution")]
 			alternate_host: None,
 			#[cfg(feature = "doc")]

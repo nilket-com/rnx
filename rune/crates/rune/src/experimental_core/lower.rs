@@ -25,6 +25,10 @@ mod vec_resize;
 #[derive(Clone, Copy)]
 pub(crate) enum Resolve {
 	Script(Hash),
+	AsyncHost {
+		hash: Hash,
+		refusal: Refusal,
+	},
 	Constructor {
 		hash: Hash,
 		tag: Type,
@@ -94,8 +98,10 @@ pub(crate) fn function(
 	proofs: &mut super::frontend::receiver_proofs::Proofs,
 	body_hash: Hash,
 	opaque: Option<&super::frontend::opaque::Proof>,
+	allow_host_await: bool,
 ) -> Result<Function> {
 	let mut cx = Lower {
+		allow_host_await,
 		opaque,
 		self_binding: self_receiver.and_then(|receiver| {
 			self_receiver::binding(exprs, item).map(|binding| (binding, receiver))
@@ -196,6 +202,7 @@ struct Loop {
 }
 
 struct Lower<'a, 'hir> {
+	allow_host_await: bool,
 	opaque: Option<&'a super::frontend::opaque::Proof>,
 	proofs: &'a mut super::frontend::receiver_proofs::Proofs,
 	body_hash: Hash,
@@ -1301,7 +1308,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			E::Match(hir) => self.pattern_match(hir, Some(out), span),
 			E::AsyncBlock(_) => Err(self.refused(span, Refusal::AsyncBlock)),
 			E::Yield(_) => Err(self.refused(span, Refusal::Yield)),
-			E::Await(_) => Err(self.refused(span, Refusal::Await)),
+			E::Await(value) => self.await_host(value, out, span),
 			E::Select(_) => Err(self.refused(span, Refusal::Select)),
 			E::CallClosure(_) => self.inner_call_closure(&expr, out),
 
@@ -1629,6 +1636,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		let E::Fn(hash) = expr.kind else {
 			return Err(Error::new(ErrorKind::InvalidCode, "lowering arm"));
 		};
+		if self.context.host_is_wait_adapter(hash) {
+			return self.refuse_async_host(hash, Refusal::FutureValue, expr.span);
+		}
 		let at = self.location(span);
 		let resolve = match self.constants.struct_shape(hash) {
 			Some(shape) => match shape.fields {
@@ -2243,9 +2253,79 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		Ok(())
 	}
 
+	// Error-only state must not enlarge every ordinary recursive call frame.
+	#[cold]
+	#[inline(never)]
+	fn refuse_async_host(&mut self, hash: Hash, refusal: Refusal, span: Span) -> Result<()> {
+		let at = self.location(span);
+		(self.resolve)(Resolve::AsyncHost { hash, refusal }, at)?;
+		Err(self.refused(span, refusal))
+	}
+
+	#[inline(never)]
+	fn await_host(&mut self, value: hir::ExprId, out: u32, span: Span) -> Result<()> {
+		if !self.allow_host_await {
+			return Err(self.refused(span, Refusal::Await));
+		}
+		let mut expr = self.exprs.get(value);
+		while let hir::ExprKind::Group(inner) = expr.kind {
+			expr = self.exprs.get(inner);
+		}
+		if matches!(expr.kind, hir::ExprKind::AsyncBlock(_)) {
+			return Err(self.refused(span, Refusal::AsyncBlock));
+		}
+		if matches!(expr.kind, hir::ExprKind::Select(_)) {
+			return Err(self.refused(span, Refusal::Select));
+		}
+		let hir::ExprKind::Call(call) = expr.kind else {
+			return Err(self.refused(span, Refusal::Await));
+		};
+		let hir::Call::Meta { hash } = call.call else {
+			return Err(self.refused(span, Refusal::Await));
+		};
+		if self.constants.async_functions.contains(&hash) {
+			return Err(self.refused(span, Refusal::AsyncFunction));
+		}
+		if !self.context.host_requires_await(hash) {
+			return Err(self.refused(span, Refusal::Await));
+		}
+		if !self.context.host_is_wait_adapter(hash) {
+			// Preserve the named unenrolled-host diagnostic; this can never execute.
+			let at = self.location(expr.span);
+			(self.resolve)(Resolve::Script(hash), at)?;
+			return Err(self.refused(span, Refusal::Await));
+		}
+		let binding = self
+			.context
+			.host(hash)
+			.ok_or_else(|| self.refused(span, Refusal::Native))?;
+		if call.args.len() != usize::from(binding.signature.arity) {
+			return Err(self.refused(span, Refusal::Arity));
+		}
+		let id = self
+			.transaction
+			.host(binding)
+			.map_err(|e| e.at(self.location(span)))?;
+		let args = self.operands(call.args)?;
+		let (args_start, args_len) = self.function.arguments(&args)?;
+		self.emit(
+			Op::Call {
+				out,
+				function: id,
+				args_start,
+				args_len,
+			},
+			span,
+		)?;
+		Ok(())
+	}
+
 	#[inline(never)]
 	fn call(&mut self, call: &hir::ExprCall<'_>, out: u32, span: Span) -> Result<()> {
 		if let hir::Call::Meta { hash } = call.call {
+			if self.context.host_is_wait_adapter(hash) {
+				return self.refuse_async_host(hash, Refusal::AwaitRequired, span);
+			}
 			if ordering_constructor(hash).is_some() {
 				return self.call_ordering_constructor(hash, call, out, span);
 			}

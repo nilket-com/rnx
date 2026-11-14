@@ -211,7 +211,7 @@ id	class
 0209	both-admit
 0210	both-admit
 0211	stock-fails
-0212	fresh-refuses-Await
+0212	fresh-refuses-AsyncFunction
 0213	both-admit
 allow-00	both-admit
 allow-01	both-admit

@@ -45,6 +45,15 @@ impl Error {
 		}
 	}
 
+	/// Resolved async host and whether it was taken as a value rather than called.
+	pub fn async_host_refusal(&self) -> Option<(&crate::Item, bool)> {
+		match &*self.kind {
+			#[cfg(feature = "execution")]
+			ErrorKind::AsyncHostRefusal { item, as_value } => Some((item.as_ref(), *as_value)),
+			_ => None,
+		}
+	}
+
 	/// Whether this diagnostic identifies an async construct in a forbidden context.
 	pub fn requires_async_context(&self) -> bool {
 		matches!(
@@ -272,6 +281,11 @@ impl Error {
 #[derive(Debug)]
 #[non_exhaustive]
 pub(crate) enum ErrorKind {
+	#[cfg(feature = "execution")]
+	AsyncHostRefusal {
+		item: crate::ItemBuf,
+		as_value: bool,
+	},
 	#[cfg(feature = "execution")]
 	ExecutionRefusal {
 		construct: &'static str,
@@ -716,6 +730,10 @@ impl fmt::Display for ErrorKind {
 		match self {
 			#[cfg(feature = "execution")]
 			ErrorKind::ExecutionRefusal { construct } => write!(f, "execution core refuses {construct}")?,
+			#[cfg(feature = "execution")]
+			ErrorKind::AsyncHostRefusal { item, as_value: false } => write!(f, "{item} is asynchronous; await its call as {item}(...).await")?,
+			#[cfg(feature = "execution")]
+			ErrorKind::AsyncHostRefusal { item, as_value: true } => write!(f, "{item} is asynchronous; futures as values are not available; await its call as {item}(...).await")?,
 			#[cfg(feature = "execution")]
 			ErrorKind::HostNotEnrolled { item } => write!(f, "uncertified host call {item}")?,
 			ErrorKind::Custom { error } => {

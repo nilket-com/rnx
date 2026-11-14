@@ -51,7 +51,7 @@ def main():
             km.restart_kernel(now=True)
             client=km.client();client.start_channels();client.wait_for_ready(timeout=20)
             reply,_=execute('async {7}.await')
-            assert reply['status']=='error' and 'async input is not available' in str(reply), reply
+            assert reply['status']=='error' and 'an async block is not available' in str(reply), reply
             reply,_=execute('keep')
             assert reply['status']=='error', reply
             reply,_=execute('9')

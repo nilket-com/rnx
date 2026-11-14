@@ -1490,7 +1490,7 @@
       "src/json.rs": "5a79520bd5329b4a34dff79582e40f315dd8c0acca343f8aaa9b9f85d4d137ae",
       "src/path.rs": "c43463be50ac5f9292f72588d9db2508571c0cc8e3c4c3f2b93ba2661fe37051",
       "src/text.rs": "07d3fa43908ab4c1ee8c1022f469334aeb8f08db038b3a4a795c5c6d5105367c",
-      "src/time.rs": "de3dd41e28066939808025ce1f5a062d93417cca0e1926328aee092b4eb8e092",
+      "src/time.rs": "7eabed540b5dc5504519c1785902ada353b3568b31f2aaf88207c64d82b6c8fc",
       "src/web.rs": "d366c1b3eb64b556a79ca760c4fdcabda63a347224615fb09708cb95ed91ec66"
     },
     "install_core": {

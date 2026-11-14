@@ -630,6 +630,13 @@ impl<'a> Processor<'a> {
 			)?;
 			return Ok(());
 		};
+		#[cfg(feature = "execution")]
+		if idx.q.inner.collecting && matches!(call, crate::runtime::Call::Async) {
+			idx.q
+				.inner
+				.async_functions
+				.try_insert(idx.q.pool.item_type_hash(item_meta.item))?;
+		}
 
 		if let (Some(span), Some(_nested_span)) = (attrs.test, nested_item) {
 			idx.error(Error::new(

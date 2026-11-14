@@ -76,7 +76,7 @@ cargo run --locked -- eval 'let x = 4; x + 3'
 cargo run --locked -- repl
 ```
 
-`rnx repl --engine=execution` opts into synchronous persistent sessions on the
+`rnx repl --engine=execution` opts into persistent sessions on the
 new engine. Bindings, aliases, closures and declarations survive between inputs;
 `:reset` clears them while keeping this engine choice. The default, `auto` and
 `legacy` sessions still use the legacy engine. The execution spelling is
@@ -84,7 +84,14 @@ REPL-only; file and one-shot eval routing are unchanged. REPL arguments are now
 validated: unknown options or trailing arguments that were previously ignored
 are reported as errors.
 
-Execution sessions refuse async/await/select and unsupported frontend forms
+Execution sessions support direct `time::sleep(...).await`, `http::get(...).await`
+and `http::request(...).await` in the input, including blocks and loops. Pending
+calls are interruptible. Futures as values, user async functions and blocks,
+`select`, bytes, and unsupported frontend forms remain refused. Ordinary
+functions keep the legacy restriction on `.await`. An async host call must be
+awaited directly; binding its future or taking its function value is refused.
+Request options are snapshotted in full: a moved value inside them is an access
+error at the call, including in a field the parser would ignore. Unsupported forms are refused
 before effects, without replay or migration to legacy. `map(f)` with an
 unknown-arity retained closure is still unsupported. `:dep` and `:depv` restart on the selected engine with an empty session;
 reopen commands preserve that choice. Explicitly enrolled host values can be
@@ -587,9 +594,11 @@ can represent those values with `%Y` and `%:z`. It uses Jiff's fallible
 formatter: invalid directives are catchable errors. Its precision follows
 the pattern (`%.3f` for milliseconds), with no fixed precision promise.
 
-Sleep accepts 0–68719476735 milliseconds. It is inert until awaited, and
-awaiting at the prompt promotes the input to the async driver. Pending sleep
-is interruptible; this does not change the driver's CPU-loop limitation.
+Sleep accepts 0–68719476735 milliseconds. In a legacy session it is inert
+until awaited, and awaiting promotes the input to the async driver; pending
+sleep is interruptible while that driver keeps its existing CPU-loop limitation.
+Execution sessions require a direct `time::sleep(...).await`; pending waits
+and CPU loops between them are interruptible.
 
 ## Environment and script arguments
 
@@ -970,7 +979,8 @@ fallible intermediate calls. Nested `Ok(Ok(response))` is refused.
 
 Historical probe data and measurement provenance: see [Archived data](ARCHIVED-DATA.md).
 
-The Jupyter kernel also has a synchronous execution opt-in:
+The Jupyter kernel also has an execution opt-in:
 `rnx-jupyter install --rnx /absolute/path/to/rnx --engine=execution` installs a
-separate `rnx-execution` kernel. Its engine survives restart; async and native
+separate `rnx-execution` kernel. Its engine survives restart and supports the
+same direct host waits as the execution REPL. General async forms and native
 presenters remain unavailable. See [Jupyter](jupyter/README.md).

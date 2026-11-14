@@ -1,4 +1,4 @@
-//! Persistent synchronous session. No legacy values cross this boundary.
+//! Persistent execution session. No legacy values cross this boundary.
 use super::*;
 use rune::experimental_core::{
 	domain::{CrossOutcome, DomainRoot, ProgramDomain},
@@ -34,6 +34,8 @@ pub(crate) struct DomainSession {
 	cleanup_notes: Vec<String>,
 	#[cfg(test)]
 	collect_fail_after: Option<usize>,
+	#[cfg(test)]
+	last_compile_times: Vec<std::time::Duration>,
 }
 fn fault(e: impl std::fmt::Display) -> Failure {
 	Failure::Runtime {
@@ -66,6 +68,8 @@ impl DomainSession {
 			cleanup_notes: Vec::new(),
 			#[cfg(test)]
 			collect_fail_after: None,
+			#[cfg(test)]
+			last_compile_times: Vec::new(),
 		})
 	}
 	pub(crate) fn with_presenters(mut self, presenters: crate::present::Presenters) -> Self {
@@ -422,7 +426,7 @@ impl DomainSession {
 			},
 			|message, i, o| self.refused_at(message, i, o),
 		)?;
-		let generated = p.generate(false);
+		let mut generated = p.generate(false);
 		self.last_generated = generated.text.clone();
 		if crate::engine::requires_loader(&generated.text) {
 			return Err(Failure::Refused(
@@ -440,14 +444,51 @@ impl DomainSession {
 			.filter_map(|n| self.state.get(n).map(|v| (n.as_str(), v)))
 			.collect();
 		let delta_names: Vec<_> = p.delta_names.iter().map(String::as_str).collect();
-		let key = match self.domain.compile_session(
+		#[cfg(test)]
+		{
+			self.last_compile_times.clear();
+		}
+		#[cfg(test)]
+		let first_started = std::time::Instant::now();
+		let mut compiled = self.domain.compile_session(
 			&self.context,
 			&mut sources,
 			&mut diagnostics,
 			number as u64,
 			&referenced,
 			&delta_names,
-		) {
+		);
+		#[cfg(test)]
+		self.last_compile_times.push(first_started.elapsed());
+		let awaits = compiled.is_err()
+			&& diagnostics.diagnostics().iter().any(|d| match d {
+				rune::diagnostics::Diagnostic::Fatal(f) => f
+					.as_compile_error()
+					.is_some_and(|e| e.requires_async_context()),
+				_ => false,
+			});
+		if awaits {
+			generated = p.generate(true);
+			self.last_generated = generated.text.clone();
+			sources = Sources::new();
+			sources
+				.insert(Source::memory(&generated.text).map_err(|e| fault(e.to_string()))?)
+				.map_err(|e| fault(e.to_string()))?;
+			diagnostics = rune::Diagnostics::new();
+			#[cfg(test)]
+			let second_started = std::time::Instant::now();
+			compiled = self.domain.compile_session(
+				&self.context,
+				&mut sources,
+				&mut diagnostics,
+				number as u64,
+				&referenced,
+				&delta_names,
+			);
+			#[cfg(test)]
+			self.last_compile_times.push(second_started.elapsed());
+		}
+		let key = match compiled {
 			Ok(k) => k,
 			Err(e) => {
 				use rune::experimental_core::error::Refusal;
@@ -464,6 +505,28 @@ impl DomainSession {
 				let at = at
 					.and_then(|at| generated.map.locate(at))
 					.unwrap_or((number, 0));
+				if let Some((host, as_value)) =
+					diagnostics.diagnostics().iter().find_map(|d| match d {
+						rune::diagnostics::Diagnostic::Fatal(f) => {
+							f.as_compile_error().and_then(|e| e.async_host_refusal())
+						}
+						_ => None,
+					}) {
+					let host = host.to_string();
+					let host = host.trim_start_matches("::");
+					let reason = if as_value {
+						"; futures as values are not available"
+					} else {
+						""
+					};
+					return Err(self.refused_at(
+						&format!(
+							"{host} is asynchronous{reason}; await its call as {host}(...).await"
+						),
+						at.0,
+						at.1,
+					));
+				}
 				if let Some(construct) = diagnostics.diagnostics().iter().find_map(|d| match d {
 					rune::diagnostics::Diagnostic::Fatal(f) => {
 						f.as_compile_error().and_then(|e| e.execution_refusal())
@@ -478,47 +541,29 @@ impl DomainSession {
 						at.1,
 					));
 				}
-				if let Some(refusal) = e.refusal {
-					if matches!(
-						refusal,
-						Refusal::AsyncBlock
-							| Refusal::AsyncFunction
-							| Refusal::Await | Refusal::Select
-					) {
-						return Err(self.unsupported("async input", at));
-					}
-					if refusal != Refusal::FrontendDiagnostic {
-						if refusal == Refusal::Native {
-							let host = diagnostics.diagnostics().iter().find_map(|d| match d {
-								rune::diagnostics::Diagnostic::Fatal(f) => f
-									.as_compile_error()
-									.filter(|c| {
-										e.location.is_some_and(|l| {
-											c.span().range().start == l.start as usize
-										})
-									})
-									.and_then(|c| c.unenrolled_host()),
-								_ => None,
-							});
-							if let Some(host) = host {
-								let name = host.to_string();
-								let name = name.trim_start_matches("::");
-								return Err(self.refused_at(&format!("{name} needs {}, not yet available in an execution session; start `rnx repl` without --engine=execution", host_wait_reason(name)), at.0, at.1));
-							}
+				if let Some(refusal) = e.refusal
+					&& refusal != Refusal::FrontendDiagnostic
+				{
+					if refusal == Refusal::Native {
+						let host = diagnostics.diagnostics().iter().find_map(|d| match d {
+							rune::diagnostics::Diagnostic::Fatal(f) => f
+								.as_compile_error()
+								.filter(|c| {
+									e.location
+										.is_some_and(|l| c.span().range().start == l.start as usize)
+								})
+								.and_then(|c| c.unenrolled_host()),
+							_ => None,
+						});
+						if let Some(host) = host {
+							let name = host.to_string();
+							let name = name.trim_start_matches("::");
+							return Err(self.refused_at(&format!("{name} needs {}, not yet available in an execution session; start `rnx repl` without --engine=execution", host_wait_reason(name)), at.0, at.1));
 						}
-						return Err(self.unsupported(refused_construct(refusal), at));
 					}
+					return Err(self.unsupported(refused_construct(refusal), at));
 				}
-				// Wrapper compilation only establishes legacy admission, not async use.
-				// Use the compiler's structured category, never diagnostic prose.
-				if diagnostics.diagnostics().iter().any(|d| match d {
-					rune::diagnostics::Diagnostic::Fatal(f) => f
-						.as_compile_error()
-						.is_some_and(|e| e.requires_async_context()),
-					_ => false,
-				}) {
-					return Err(self.unsupported("async input", at));
-				}
+
 				let origin = first
 					.as_ref()
 					.and_then(|(_, o)| generated.map.locate(*o))
@@ -547,43 +592,27 @@ impl DomainSession {
 				.entry(&key, rune::Hash::type_hash(["main"]))
 				.map_err(|e| fault(format!("{e:?}")))?;
 			self.lifecycle.begin().map_err(fault)?;
-			let output = {
-				let mut invocation = self
-					.domain
-					.start(&key, entry, &[&restored], self.budget)
-					.map_err(|e| fault(format!("{e:?}")))?;
-				// At most 1024 fresh work units between interrupt checks in a pure loop.
-				// Host calls have their own cancellation contract; no wall-time promise.
-				loop {
-					if interrupted() {
-						let _failure = invocation.cancel();
-						break Err(Failure::Interrupted);
-					}
-					match invocation.resume(core::num::NonZeroUsize::new(1024).unwrap()) {
-						CrossOutcome::Limited => {}
-						CrossOutcome::Complete(root) => break Ok(root),
-						CrossOutcome::Failed(f) => {
-							if matches!(
-								f.failure.error.kind,
-								rune::experimental_core::error::ErrorKind::FuelExhausted
-							) {
-								break Err(Failure::Budget(self.budget));
-							}
-							let at = f.failure.error.location;
-							let origin = at
-								.and_then(|loc| {
-									self.maps
-										.get(&loc.revision)
-										.and_then(|m| m.locate(loc.start as usize))
-								})
-								.and_then(|(i, o)| origin_in(&self.inputs, &self.numberings, i, o));
-							let message =
-								frames::render(&f, &self.maps, &self.inputs, &self.numberings);
-							break Err(Failure::Runtime { message, origin });
-						}
-					}
-				}
-			}?;
+			let mut run = || {
+				awaiting::run(
+					&mut self.domain,
+					&key,
+					entry,
+					&restored,
+					self.budget,
+					interrupted,
+					awaiting::Locations {
+						maps: &self.maps,
+						inputs: &self.inputs,
+						numberings: &self.numberings,
+						awaits,
+					},
+				)
+			};
+			let output = if awaits {
+				self.runtime.with_host_wait(run).map_err(fault)??
+			} else {
+				run()?
+			};
 			let delta = self
 				.domain
 				.get(&output, 0)
@@ -646,7 +675,14 @@ fn refused_construct(refusal: rune::experimental_core::error::Refusal) -> &'stat
 		OpaqueCapture => "a closure capturing a host value",
 		OpaqueContainer => "a host value in a user container",
 		OpaqueReturn => "a host value returned from a script function",
-		AsyncBlock | AsyncFunction | Await | Select => "async input",
+		AsyncBlock => "an async block",
+		AsyncFunction => "an async function",
+		Await => "awaiting a future value or non-async host call",
+		AwaitRequired => {
+			"an asynchronous host call without .await; await its call as f(args).await"
+		}
+		FutureValue => "a future as a value",
+		Select => "select",
 		Arity | CallClosure => "a call with unsupported or unknown closure arity",
 		Assignment => "this assignment target",
 		ByteStr => "byte-string literals",
@@ -759,7 +795,13 @@ mod tests {
 			Entry,
 		] {
 			assert_eq!(
-				refused_construct(refusal) == "async input",
+				matches!(
+					refused_construct(refusal),
+					"an async block"
+						| "an async function"
+						| "awaiting a future value or non-async host call"
+						| "select"
+				),
 				matches!(refusal, AsyncBlock | AsyncFunction | Await | Select),
 				"{refusal:?}"
 			);
@@ -937,7 +979,10 @@ mod tests {
 			let Err(Failure::Refused(message)) = s.eval(source) else {
 				panic!("expected async refusal: {source}");
 			};
-			assert!(message.contains("async input"), "{source}: {message}");
+			assert!(
+				message.contains("an async block") || message.contains("an async function"),
+				"{source}: {message}"
+			);
 		}
 		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 		assert_eq!(
@@ -1202,16 +1247,13 @@ mod tests {
 #[cfg(test)]
 pub(super) mod transcripts;
 
+mod awaiting;
 mod frames;
 
 /// Small admission-work grouping shared by the pinned inventory.
 pub(crate) fn host_wait_reason(name: &str) -> &'static str {
 	match name {
-		"time::sleep"
-		| "http::get"
-		| "http::get_bytes"
-		| "http::request"
-		| "http::request_bytes" => "async",
+		"http::get_bytes" | "http::request_bytes" => "bytes",
 		"fs::read_bytes" => "bytes",
 		"time::from_parts" => "borrowed object input",
 		"process::run" => "argument-vector and options-object input",

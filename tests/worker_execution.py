@@ -51,7 +51,8 @@ def run():
                     assert new['failure']['diagnostic'].replace(frames,'',1)==old['failure']['diagnostic'],(old,new)
             else:
                 assert old['failure'] is None and old['plain']=='1',old
-                assert 'async input is not available' in new['failure']['diagnostic'],new
+                assert new['failure']['category']=='refused',new
+                assert new['failure']['diagnostic']=='refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 7, line 1, column 11)',new
                 assert workers[0].execute('a.len()')[0]['text_plain']=='3'
                 assert workers[1].execute('a.len()')[0]['text_plain']=='2'
             print(name,policy,'PASS')

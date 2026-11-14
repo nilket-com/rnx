@@ -1,4 +1,5 @@
 //! ADR0246: source-derived session coverage, confined to tests.
+pub(crate) mod awaiting;
 pub(crate) mod clocks;
 mod conditionals;
 mod constant_loops;
@@ -519,12 +520,35 @@ fn classify(
 		return ("Equal", None, false);
 	}
 	if b["outcome"] == "refused" && a["outcome"] == "ok" {
+		if a["value"] == "<::std::future::Future>"
+			&& ["time::sleep", "http::get", "http::request"]
+				.iter()
+				.any(|path| {
+					b["message"].as_str().is_some_and(|s| {
+						s.starts_with(&format!(
+							"refused: {path} is asynchronous; await its call as {path}(...).await (input "
+						))
+					})
+				}) {
+			return (
+				"Intentional difference",
+				Some("direct-host-await-required"),
+				false,
+			);
+		}
 		return ("Refused at admission", None, false);
 	}
 	if a["outcome"] == "ok" && b["outcome"] == "ok" {
 		return ("Different result", None, false);
 	}
 	if a["outcome"] == "ok" {
+		if awaiting::reviewed_moved_pair(a, b) {
+			return (
+				"Intentional difference",
+				Some("snapshot-moved-argument"),
+				false,
+			);
+		}
 		if MOVED_JSON_CASES.iter().any(|(_, value, column)| {
 			let (old, new) = moved_json_pair(value, *column);
 			*a == old && *b == new
@@ -551,6 +575,36 @@ fn classify(
 		}
 	}
 	("Unreviewed wording", None, false)
+}
+
+#[test]
+fn inert_future_refusal_rule_is_confined_to_its_legacy_value_and_remedy() {
+	let before = serde_json::json!({"outcome":"ok","value":"<::std::future::Future>"});
+	let after = serde_json::json!({"outcome":"refused","message":"refused: time::sleep is asynchronous; await its call as time::sleep(...).await (input 1, line 1, column 1)"});
+	assert_eq!(
+		classify(&before, &after),
+		(
+			"Intentional difference",
+			Some("direct-host-await-required"),
+			false
+		)
+	);
+	for path in [
+		"http::get_bytes",
+		"http::request_bytes",
+		"std::future::join",
+	] {
+		let unreviewed = serde_json::json!({"outcome":"refused","message":format!("refused: {path} is asynchronous; await its call as {path}(...).await (input 1, line 1, column 1)")});
+		assert_ne!(classify(&before, &unreviewed).0, "Intentional difference");
+	}
+	let mut other = before.clone();
+	other["value"] = "7".into();
+	assert_eq!(classify(&other, &after).0, "Refused at admission");
+	for key in ["outcome", "message"] {
+		let mut other = after.clone();
+		other[key] = "different".into();
+		assert_ne!(classify(&before, &other).0, "Intentional difference");
+	}
 }
 #[test]
 fn notebook_probe() {
@@ -899,6 +953,7 @@ fn pinned_classification() {
 	let notebooks = notebook_reports();
 	let constants = constant_report();
 	let moved_json = moved_json_report();
+	let request_options = awaiting::options_report();
 	let conditionals = conditionals::report();
 	let loop_controls = loop_control::report();
 	let mut probes = Vec::new();
@@ -915,12 +970,13 @@ fn pinned_classification() {
 	all.extend(hosts["rows"].as_array().unwrap().iter().cloned());
 	all.extend(probes.iter().cloned());
 	all.extend(moved_json.as_array().unwrap().iter().cloned());
+	all.extend(request_options.as_array().unwrap().iter().cloned());
 	all.extend(conditionals.as_array().unwrap().iter().cloned());
 	all.extend(loop_controls.as_array().unwrap().iter().cloned());
 	for book in notebooks.as_array().unwrap() {
 		all.extend(book["report"]["rows"].as_array().unwrap().iter().cloned());
 	}
-	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"loop_control_probes":loop_controls,"moved_json":moved_json,"summary":summary(&all)});
+	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"loop_control_probes":loop_controls,"moved_json":moved_json,"request_options":request_options,"summary":summary(&all)});
 	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
 		std::fs::write(path, serialize_table(&report).into_bytes()).unwrap();
 	}

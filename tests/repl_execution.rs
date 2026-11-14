@@ -57,10 +57,16 @@ fn default_stays_legacy_and_execution_session_is_sticky_across_reset() {
 	assert!(actual.status.success());
 	assert_eq!(out, "0\n1\n1\nsession reset\n");
 	assert!(err.contains(":dep requires a terminal"), "{err}");
+	let refusals: Vec<_> = err
+		.lines()
+		.filter(|line| line.starts_with("refused:"))
+		.collect();
 	assert_eq!(
-		err.matches("async input is not available").count(),
-		2,
-		"{err}"
+		refusals,
+		[
+			"refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 2, line 1, column 11)",
+			"refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 1, line 1, column 1)",
+		]
 	);
 }
 #[test]

@@ -274,6 +274,7 @@ impl<'ast> Visit<'ast> for Scan {
 			"host_function_with_output",
 			"host_function_string_input",
 			"host_function_tree_input",
+			"host_function_await",
 			"field_function",
 			"index_function",
 		]
@@ -309,6 +310,7 @@ impl<'ast> Visit<'ast> for Scan {
 				"host_function_with_output" => "dynamic-output",
 				"host_function_string_input" => "string-input",
 				"host_function_tree_input" => "tree-input",
+				"host_function_await" => "awaited",
 				_ => "undeclared",
 			};
 			self.registration(name, class, n.to_token_stream().to_string());
@@ -370,6 +372,7 @@ impl<'ast> Visit<'ast> for Scan {
 					"host_function_with_output",
 					"host_function_string_input",
 					"host_function_tree_input",
+					"host_function_await",
 					"field_function",
 					"index_function",
 				]
@@ -380,6 +383,7 @@ impl<'ast> Visit<'ast> for Scan {
 						"host_function_with_output" => "dynamic-output",
 						"host_function_string_input" => "string-input",
 						"host_function_tree_input" => "tree-input",
+						"host_function_await" => "awaited",
 						_ => "undeclared",
 					};
 					self.templates.push(Registration {

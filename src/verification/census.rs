@@ -114,6 +114,7 @@ fn admission_policy(text: &str) -> CensusResult<std::collections::BTreeMap<&str,
 					| "stock-fails" | "fresh-refuses-Native"
 					| "fresh-refuses-Method"
 					| "fresh-refuses-Await"
+					| "fresh-refuses-AsyncFunction"
 			) || rows.insert(id, class).is_some()
 		{
 			return Err("invalid or duplicate census admission".into());
@@ -135,6 +136,7 @@ fn observed_admission(actual: &Value) -> CensusResult<&'static str> {
 			Some("Native") => Ok("fresh-refuses-Native"),
 			Some("Method") => Ok("fresh-refuses-Method"),
 			Some("Await") => Ok("fresh-refuses-Await"),
+			Some("AsyncFunction") => Ok("fresh-refuses-AsyncFunction"),
 			_ => Err("unexpected fresh refusal class".into()),
 		},
 		_ => Err("invalid census admission observation".into()),
@@ -627,6 +629,32 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 
 /// Plain checks are called by the harness-free controller, not only libtest.
 pub(super) fn self_check() -> CensusResult<Value> {
+	// Check the closed class and both companion tables before launching live cases.
+	let admissions = admission_policy(ADMISSIONS)?;
+	if observed_admission(&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"AsyncFunction"}}))?
+		!= "fresh-refuses-AsyncFunction"
+		|| observed_admission(&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"UnreviewedAsyncFunction"}})).is_ok()
+		|| admission_policy("id\tclass\nx\tfresh-refuses-UnreviewedAsyncFunction\n").is_ok()
+	{
+		return Err("closed async admission class self-check failed".into());
+	}
+	for line in include_str!("../../tools/verify/fixtures/census/execution.tsv")
+		.lines()
+		.skip(1)
+	{
+		let fields: Vec<_> = line.split('\t').collect();
+		let [id, mode, reason, _, _]: [&str; 5] = fields
+			.try_into()
+			.map_err(|_| "invalid execution companion row")?;
+		let class = admissions
+			.get(id)
+			.ok_or("missing admission companion row")?;
+		if (mode == "execute" && *class != "both-admit")
+			|| (mode == "admission-only" && *class != "both-admit" && reason != *class)
+		{
+			return Err("census admission/execution companion mismatch".into());
+		}
+	}
 	let v = json!({"rnx":[{"case":{"origins":[{"origin":"z","cohort":"x"}],"source_bytes":0,"compiled_sha256":"a","path":"logical","id":"i"},"doc":"±😀"}]});
 	let encoded = String::from_utf8(canonical(&v)?)?;
 	if !encoded.contains("\\u00b1\\ud83d\\ude00")
@@ -695,6 +723,17 @@ mod tests {
 		assert_eq!(policy["0007"], "fresh-refuses-Native");
 		assert!(admission_policy("id\tclass\nx\tboth-admit\nx\tstock-fails\n").is_err());
 		assert!(admission_policy("id\tclass\nx\tunknown\n").is_err());
+		assert_eq!(policy["0212"], "fresh-refuses-AsyncFunction");
+		assert_eq!(
+			observed_admission(
+				&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"AsyncFunction"}})
+			)
+			.unwrap(),
+			"fresh-refuses-AsyncFunction"
+		);
+		assert!(observed_admission(&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"UnreviewedAsyncFunction"}})).is_err());
+		assert!(admission_policy("id\tclass\nx\tfresh-refuses-UnreviewedAsyncFunction\n").is_err());
+
 		assert_eq!(
 			observed_admission(
 				&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"Method"}})

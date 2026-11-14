@@ -19,6 +19,8 @@ enum Class {
 	DynamicOutput,
 	StringInput,
 	TreeInput,
+	Awaited,
+	AsyncBytes,
 	Undeclared,
 	HostValue,
 }
@@ -187,9 +189,9 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"time::sleep",
 		"0",
-		Class::Undeclared,
+		Class::Awaited,
 		"i64",
-		"future: no new polling boundary",
+		"direct host wait on the session runtime",
 	);
 	add(
 		"text::split_max",
@@ -227,18 +229,32 @@ fn host_policy() -> Vec<HostPolicy> {
 		"certified owned object result",
 	);
 	add(
-		"http::get http::get_bytes",
+		"http::get",
 		"\"\"",
-		Class::Undeclared,
+		Class::Awaited,
 		"&str",
 		"tracked future",
 	);
 	add(
-		"http::request http::request_bytes",
+		"http::request",
 		"\"GET\",\"\",#{}",
-		Class::Undeclared,
+		Class::Awaited,
 		"Value options",
 		"tracked future",
+	);
+	add(
+		"http::get_bytes",
+		"\"\"",
+		Class::AsyncBytes,
+		"&str",
+		"bytes output remains unavailable",
+	);
+	add(
+		"http::request_bytes",
+		"\"GET\",\"\",#{}",
+		Class::AsyncBytes,
+		"Value options",
+		"bytes output remains unavailable",
 	);
 	add(
 		"interchange::Dense::shape interchange::Dense::names interchange::Dense::dtype",
@@ -360,6 +376,8 @@ fn host_inventory(root: &Path) -> Result<Json> {
 			Class::DynamicOutput => "dynamic-output",
 			Class::StringInput => "string-input",
 			Class::TreeInput => "tree-input",
+			Class::Awaited => "awaited",
+			Class::AsyncBytes => "undeclared",
 			Class::Undeclared => "undeclared",
 			Class::HostValue => "host-value",
 		};
@@ -396,6 +414,40 @@ fn host_inventory(root: &Path) -> Result<Json> {
 				Class::Typed | Class::DynamicOutput | Class::StringInput | Class::TreeInput => {
 					assert!(observed.is_ok(), "{}: {:?}", p.path, observed.err());
 					"conditional-admission"
+				}
+				Class::Awaited | Class::AsyncBytes => {
+					assert_eq!(
+						observed.err().and_then(|e| e.refusal),
+						Some(if p.class == Class::Awaited {
+							Refusal::AwaitRequired
+						} else {
+							Refusal::Native
+						}),
+						"{}",
+						p.path
+					);
+					let mut domain = rune::experimental_core::domain::ProgramDomain::new(
+						Default::default(),
+						Default::default(),
+						c.execution_runtime()?,
+					)
+					.map_err(|e| format!("{e:?}"))?;
+					let mut src = sources(&format!(
+						"pub async fn main(s){{let r={}({}).await;(#{{}},r)}}",
+						p.path, p.args
+					));
+					let result =
+						domain.compile_session(&c, &mut src, &mut Diagnostics::new(), 1, &[], &[]);
+					if p.class == Class::Awaited {
+						assert!(result.is_ok(), "{}: {:?}", p.path, result.err());
+					} else {
+						assert_eq!(result.err().and_then(|e| e.refusal), Some(Refusal::Native));
+					}
+					if p.class == Class::Awaited {
+						"direct-await-only; bare call requires await"
+					} else {
+						"compile-refusal:Native"
+					}
 				}
 				Class::Undeclared => {
 					assert_eq!(
@@ -834,12 +886,16 @@ fn host_refusal_reasons_match_registration_policy() {
 	for policy in host_policy() {
 		let reason = crate::session::domain_session::host_wait_reason(policy.path);
 		match policy.class {
-			Class::Undeclared => assert_ne!(
+			Class::Undeclared | Class::AsyncBytes => assert_ne!(
 				reason, "host enrollment",
 				"missing specific refusal reason: {}",
 				policy.path
 			),
-			Class::Typed | Class::DynamicOutput | Class::StringInput | Class::TreeInput => {
+			Class::Typed
+			| Class::DynamicOutput
+			| Class::StringInput
+			| Class::TreeInput
+			| Class::Awaited => {
 				assert_eq!(
 					reason, "host enrollment",
 					"enrolled function still has a refusal reason: {}",
@@ -873,6 +929,14 @@ pub(crate) fn session_parity_hosts(remove: bool) -> Result<Json> {
 	for p in host_policy() {
 		if p.class == Class::HostValue {
 			rows.push(crate::session::parity::observe_host_value(p.path)?);
+			continue;
+		}
+		if matches!(p.class, Class::Awaited | Class::AsyncBytes) {
+			rows.extend(crate::session::parity::awaiting::host(
+				p.path,
+				p.args,
+				p.class == Class::AsyncBytes,
+			)?);
 			continue;
 		}
 		let input = format!("{}({})", p.path, p.args);

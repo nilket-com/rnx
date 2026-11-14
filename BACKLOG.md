@@ -20,10 +20,20 @@
   can still require a full walk. Investigate reachability metadata separately,
   without weakening ownership, cycle handling or idle release guarantees.
 
-- ADR 0269, from the ADR 0268 measurement: an input referencing a held 5M-integer
-  vector still spends about 140 ms in two formatting-admission traversals
-  (unoptimized engine-dev), even though collection makes no graph walk.
-  ProgramDomain::start and start_cross both prepare the entry. Investigate
-  removing redundant admission / proving unchanged formatting authority,
-  preserving all entry validation and fixed-route protections; no such
-  admission or executor edit is included in 0268.
+- ADR 0269 residual: once a Store has attempted a nominal type denied by an
+  incoming formatting certificate, later admissions use the exact argument
+  walk even after that value dies. Session compilation refuses known
+  construction of such a type; at the public embedding boundary the measured
+  5M-integer preparation still takes about 71 ms in engine-dev after the
+  denied type is discarded. Investigate a narrower proof without weakening
+  admission, ownership, allocation failure or fixed-route protection.
+
+- ADR 0270: await inside user functions belongs with the async-function and
+  future-value contract. Ordinary functions currently retain legacy's
+  `.await`-outside-async diagnostic; direct waits cover the input expression.
+
+- ADR 0270 follow-up: selective inspection of host object inputs, alongside
+  `time::from_parts`, `process::run` and `web::response`. Snapshot inputs read
+  their entire reachable value; moved descendants are access errors at the
+  call even when a handler would skip a field. Preserve the named access error
+  and pre-effect behavior when designing a selective inspection contract.

@@ -39,8 +39,10 @@ host_types!(
 	OwnedTreeInput,
 	OpaqueShared
 );
+pub(crate) mod awaiting;
 pub(crate) mod opaque;
 pub(crate) mod owned_tree;
+pub use awaiting::AwaitHostFunction;
 pub use owned_tree::{OwnedTreeInput, TreeKind, TreeNode};
 /// Closed scalar/optional/result shapes and two concrete dynamic output certificates.
 #[doc(hidden)]
@@ -523,6 +525,7 @@ where
 pub(crate) struct AlternateHost {
 	pub handler: FunctionHandler,
 	pub enrollment: HostEnrollment,
+	pub await_only: bool,
 }
 impl TryClone for AlternateHost {
 	fn try_clone(&self) -> crate::alloc::Result<Self> {
@@ -533,6 +536,7 @@ impl TryClone for AlternateHost {
 pub(crate) struct InstalledAlternate {
 	pub original: FunctionHandler,
 	pub binding: HostBinding,
+	pub await_only: bool,
 }
 impl TryClone for InstalledAlternate {
 	fn try_clone(&self) -> crate::alloc::Result<Self> {
