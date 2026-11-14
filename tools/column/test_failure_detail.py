@@ -179,7 +179,7 @@ class FailureControls(unittest.TestCase):
 		self.assertFalse(result['publication_eligible']); self.assertFalse(result['complete_final'])
 		self.assertFalse(list((root/'target/routing-cli').iterdir()))
 		self.assertTrue((out/'FAILURE.json').is_file(),'failure evidence was released')
-		self.assertIn('THE ACTUAL CHILD CAUSE',result['error'])
+		self.assertEqual('THE ACTUAL CHILD CAUSE',result['error'])
 		acceptance = json.loads((out/'ACCEPTANCE.json').read_text()); self.assertEqual(acceptance['failed_stage'],'broken')
 		text = ''.join(p.read_text() for p in (out/'failure').iterdir())
 		self.assertIn('THE FAILING CHILD LOG',text)
@@ -189,6 +189,82 @@ class FailureControls(unittest.TestCase):
 	def test_nested_failure_survives_release(self): self.exercise_release(True)
 	def test_dropped_retention_mutation_is_detected(self):
 		with self.assertRaisesRegex(AssertionError,'failure evidence was released'): self.exercise_release(True,drop_retention=True)
+
+	def real_failure_after_release(self, producer=False, *, tail_only=False):
+		from final_evidence import Owners
+		# The real producer binds its receipt against this throwaway checkout.
+		subprocess.run(['git','init','-q',str(self.root)],check=True)
+		(self.root/'.gitignore').write_text('*\n')
+		out = self.root/('final-cross' if producer else 'final-test')
+		owner = Owners(self.root/'owners',out); self.addCleanup(owner.close)
+		bulk = owner.assign(self.root,'payload')
+		secret = 'PLANTED_MIDDLE_CAUSE_SECRET_0276'
+		script = self.root/'fixture.py'
+		if producer:
+			script.write_text('import os,sys\nfrom pathlib import Path\nsys.path.insert(0,'+repr(str(child.ROOT/'tools/column'))+')\nimport child_result as c\np=Path(sys.argv[-1])\n(p/"controller.stderr").write_text("cross verification: census fixture identity mismatch: src/time.rs\\n"+os.environ["RNX_FIXTURE_SECRET"]+"\\n")\nc.publish(p/"RESULT.json",{"status":"FAIL"})\nraise SystemExit(1)\n')
+		else:
+			section = '---- middle_failure stdout ----\n\nthread "middle_failure" panicked at src/fixture.rs:12:3:\nassertion failed '
+			script.write_text('import os,sys\nprint("before\\n"*30000)\nprint('+repr(section)+'+os.environ["RNX_FIXTURE_SECRET"]+"\\n\\nfailures:\\n    middle_failure\\n")\nprint("after\\n"*30000)\nraise SystemExit(1)\n')
+		command = [sys.executable,str(script)] + (['--out',str(bulk)] if producer else [])
+		with patch.object(child,'PRODUCERS',{'fixture.py'} if producer else set()), patch.object(child,'LEAVES',{'fixture.py'} if not producer else set()), (bulk/'stage.log').open('w') as log:
+			if tail_only:
+				with patch.object(detail,'cause_excerpt',side_effect=detail.log_excerpt):
+					result = child.run(command,cwd=self.root,root=self.root,env=dict(os.environ,RNX_FIXTURE_SECRET=secret),stdout=log,stderr=subprocess.STDOUT,directory=out/'attempt')
+			else:
+				result = child.run(command,cwd=self.root,root=self.root,env=dict(os.environ,RNX_FIXTURE_SECRET=secret),stdout=log,stderr=subprocess.STDOUT,directory=out/'attempt')
+		row = json.loads(Path(result.validation['path']).read_text())
+		self.assertEqual(row['status'],'FAIL'); self.assertNotEqual(result.returncode,0)
+		self.assertEqual(owner.release()['status'],'PASS'); self.assertFalse(bulk.exists())
+		failure = json.loads(Path(row['failure']['path']).read_text())
+		expected = 'cross verification: census fixture identity mismatch: src/time.rs' if producer else 'thread "middle_failure" panicked at src/fixture.rs:12:3:'
+		self.assertEqual(failure['error'],expected)
+		self.assertEqual(row['error'],expected)
+		text = ''.join(p.read_text()for p in (out/'attempt'/'failure').iterdir())
+		self.assertIn(expected,text); self.assertNotIn(secret,text)
+		self.assertLessEqual(sum(p.stat().st_size for p in (out/'attempt'/'failure').iterdir())+Path(row['failure']['path']).stat().st_size,detail.BUNDLE_CAP)
+
+	def test_real_middle_test_cause_survives_common_runner_and_release(self):
+		self.real_failure_after_release()
+
+	def test_real_cross_cause_survives_common_runner_and_release(self):
+		self.real_failure_after_release(True)
+
+	def test_tail_only_mutation_is_detected(self):
+		with self.assertRaises(AssertionError): self.real_failure_after_release(tail_only=True)
+
+	def test_failing_case_projection_and_declared_diagnostics(self):
+		source = self.root/'source'; source.mkdir(); out = self.root/'out';out.mkdir()
+		child.atomic_json(source/'RESULT.json',dict(status='FAIL',failed_cases=[dict(id='case-7',message='comparison differs',command=['PRIVATE'],B1=999)]))
+		r = detail.retain(out,'compare',receipt=source/'RESULT.json',roots=[source],environment={})
+		self.assertEqual(r['error'],'case-7: comparison differs')
+		text=''.join(p.read_text()for p in (out/'failure').iterdir())
+		self.assertIn('case-7',text);self.assertNotIn('PRIVATE',text);self.assertNotIn('B1',text)
+		other = self.root/'other';other.mkdir()
+		(source/'named.stderr').write_text('error: explicitly declared cause\n')
+		child.atomic_json(source/'RESULT.json',dict(status='FAIL',diagnostic_files=['named.stderr']))
+		r=detail.retain(other,'compare',receipt=source/'RESULT.json',roots=[source],environment={})
+		self.assertEqual(r['error'],'error: explicitly declared cause')
+
+	def test_nested_test_report_does_not_hide_the_inner_assertion(self):
+		log=self.root/'nested.log'
+		log.write_text('early\n'*20000+
+			'---- outer stdout ----\nthread outer panicked at outer:1:\n'+
+			'running 1 test\nfailures:\nfailures:\n    inner\n'+
+			'test result: FAILED. 0 passed; 1 failed\n'+
+			'thread inner panicked at inner:2:\nassertion failed: concrete nested cause\n'+
+			'error: test failed, to rerun pass --lib\n'+'late\n'*20000)
+		data,_=detail.cause_excerpt(log)
+		self.assertIn(b'assertion failed: concrete nested cause',data)
+		self.assertLessEqual(len(data),detail.FILE_CAP)
+
+	def test_named_sections_precede_tail_and_oversized_lines_are_not_split(self):
+		log=self.root/'large.log'
+		log.write_text('early\n'*20000+'---- first stdout ----\nthread first panicked at fixture:1:\n'+('x'*100000)+'\nfailures:\nfirst\n---- second stdout ----\nthread second panicked at fixture:2:\nfailures:\nsecond\n'+'late\n'*20000)
+		data,truncated=detail.cause_excerpt(log)
+		self.assertTrue(truncated);self.assertLessEqual(len(data),detail.FILE_CAP)
+		self.assertTrue(data.startswith(b'---- first stdout ----'))
+		self.assertIn(b'---- second stdout ----',data)
+		self.assertNotIn(b'x'*100,data)
 
 
 if __name__ == '__main__': unittest.main()

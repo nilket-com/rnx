@@ -8,22 +8,22 @@ use rune_hegel_tests::eval_result;
 /// integer formatting (the runtime formats integers through `itoa`).
 #[test]
 fn template_int_formatting_matches_rust() {
-    let context = Context::with_default_modules().expect("failed to build context");
+	let context = Context::with_default_modules().expect("failed to build context");
 
-    hegel::Hegel::new(|tc| {
-        let n: i64 = tc.draw(hegel::one_of!(
-            generators::integers::<i64>(),
-            generators::sampled_from(vec![i64::MIN, -1, 0, 1, i64::MAX]),
-        ));
+	hegel::Hegel::new(|tc| {
+		let n: i64 = tc.draw(hegel::one_of!(
+			generators::integers::<i64>(),
+			generators::sampled_from(vec![i64::MIN, -1, 0, 1, i64::MAX]),
+		));
 
-        let src = format!("`${{{n}}}`");
+		let src = format!("`${{{n}}}`");
 
-        match eval_result::<String>(&context, &src) {
-            Ok(out) => assert_eq!(out, n.to_string(), "source: {src}"),
-            Err(error) => panic!("failed to evaluate template {src}: {error:?}"),
-        }
-    })
-    .run();
+		match eval_result::<String>(&context, &src) {
+			Ok(out) => assert_eq!(out, n.to_string(), "source: {src}"),
+			Err(error) => panic!("failed to evaluate template {src}: {error:?}"),
+		}
+	})
+	.run();
 }
 
 /// Property: a VM running a script that never terminates on its own is always
@@ -31,10 +31,10 @@ fn template_int_formatting_matches_rust() {
 /// than hanging or panicking, for any budget and any of the loop shapes below.
 #[test]
 fn budget_halts_infinite_loops() {
-    let context = Context::with_default_modules().expect("failed to build context");
-    let runtime = Arc::try_new(context.runtime().expect("runtime")).expect("runtime arc");
+	let context = Context::with_default_modules().expect("failed to build context");
+	let runtime = Arc::try_new(context.runtime().expect("runtime")).expect("runtime arc");
 
-    hegel::Hegel::new(|tc| {
+	hegel::Hegel::new(|tc| {
         let budget_size = tc.draw(hegel::one_of!(
             generators::integers::<usize>().min_value(1).max_value(100),
             generators::integers::<usize>().min_value(1).max_value(100_000),

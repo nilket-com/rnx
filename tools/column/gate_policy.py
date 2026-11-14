@@ -7,6 +7,7 @@ import subprocess
 
 import child_result as child
 import required_stages
+from package_gates import FORMATS, LINTS
 
 ROOT = Path(__file__).resolve().parents[2]
 EXACT = {'Cargo.toml', 'Cargo.lock', 'rune/Cargo.toml', 'rune/Cargo.lock', 'tools/verify.py'}
@@ -33,15 +34,21 @@ def record(root, candidate='HEAD'):
 	# No rename folding: both removed and added names participate in the rule.
 	paths = [p.decode('utf-8', 'surrogateescape') for p in git(root, 'diff', '--no-renames', '--name-only', '-z', baseline, candidate).split(b'\0') if p]
 	return {'candidate': candidate, 'baseline': baseline, 'plan': plan, 'record': match[2],
-		'phase': match[1], 'paths': paths, 'required': required(paths, [required_stages.graph(root, r) for r in (baseline, candidate)] if required_stages.graph_change(paths) else None)}
+		'phase': match[1], 'paths': paths, 'required': required(paths, [required_stages.graph(root, r) for r in (baseline, candidate)] if required_stages.graph_change(paths) else None, manifests=package_manifests(root, (baseline, candidate)))}
 
 
-def required(paths, graphs=None):
-	return required_stages.required(paths, graphs)
+def package_manifests(root, revisions):
+	return sorted({'Cargo.toml'} | {p.decode('utf-8', 'surrogateescape') for revision in revisions
+		for p in git(root, 'ls-tree', '-r', '--name-only', '-z', revision).split(b'\0')
+		if (p == b'Cargo.toml' or p.endswith(b'/Cargo.toml')) and not p.startswith(b'probes/')})
+
+
+def required(paths, graphs=None, manifests=None):
+	return required_stages.required(paths, graphs, manifests)
 
 
 def policy_digest():
-	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'required_stages.py', 'suite_stage.py', 'child_result.py', 'accept.py')})
+	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'required_stages.py', 'package_gates.py', 'suite_stage.py', 'child_result.py', 'accept.py')})
 
 
 def close_prerequisites(commands, selected, prerequisites):
@@ -112,7 +119,7 @@ def finalize(manifest, evidence, root=ROOT):
 			raise ValueError('stage candidate differs: ' + name)
 		if row['command'] != command or row['context']['command'] != command:
 			raise ValueError('stage command differs: ' + name)
-		if name in {'polars-inventories', 'cross', 'fixed-route', 'rune-suite', 'rune-clippy', 'project-suite', 'project-clippy'} or name.startswith(('suite-adapter-', 'clippy-adapter-', 'package-')):
+		if name in FORMATS or name in LINTS or name in {'polars-inventories', 'cross', 'fixed-route', 'rune-suite', 'rune-clippy', 'project-suite', 'project-clippy'} or name.startswith(('suite-adapter-', 'clippy-adapter-', 'package-')):
 			if row['context']['kind'] != 'producer': raise ValueError('stage requires producer receipt: ' + name)
 		if name == 'cross' and row['context']['kind'] != 'producer':
 			raise ValueError('cross requires its own producer receipt')

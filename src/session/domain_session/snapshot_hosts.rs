@@ -302,6 +302,16 @@ fn isolated_interrupt() {
 						.unwrap()
 						.success()
 				);
+				// kill's exit only establishes signal submission. Establish delivery
+				// before testing an interrupt between completion and return.
+				let deadline = Instant::now() + Duration::from_secs(3);
+				while !crate::host::interrupted() {
+					assert!(
+						Instant::now() < deadline,
+						"late interrupt was not delivered"
+					);
+					std::thread::sleep(Duration::from_millis(1));
+				}
 				crate::process::finish_execution(completed)
 			},
 			rune::host::OutputCertificate::JSON_RESULT,
@@ -309,10 +319,8 @@ fn isolated_interrupt() {
 		.unwrap();
 	context.install(module).unwrap();
 	let mut late = DomainSession::new(context, DEFAULT_CEILING).unwrap();
-	assert!(matches!(
-		late.eval("let unpublished=1;late()"),
-		Err(Failure::Interrupted)
-	));
+	let result = late.eval("let unpublished=1;late()");
+	assert!(matches!(result, Err(Failure::Interrupted)), "{result:?}");
 	assert!(late.eval("unpublished").is_err());
 	assert_eq!(
 		late.eval_rendered("9", &crate::format::Limits::default())

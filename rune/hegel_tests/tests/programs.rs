@@ -18,49 +18,49 @@ use rune_hegel_tests::{eval_result, program, render_source, run_reference, Outco
 /// and leaves the same behind in its variables.
 #[test]
 fn programs_evaluate_as_the_reference_does() {
-    let context = Context::with_default_modules().expect("failed to build context");
+	let context = Context::with_default_modules().expect("failed to build context");
 
-    hegel::Hegel::new(|tc| {
-        let depth = tc.draw(generators::integers::<u32>().min_value(1).max_value(3));
-        let boolean = tc.draw(generators::booleans());
-        let p = tc.draw(program(depth, boolean));
+	hegel::Hegel::new(|tc| {
+		let depth = tc.draw(generators::integers::<u32>().min_value(1).max_value(3));
+		let boolean = tc.draw(generators::booleans());
+		let p = tc.draw(program(depth, boolean));
 
-        // A program which overflows is an error rather than a value, and which
-        // error the machine reports is not what is being compared here.
-        let mut vars = Vars::default();
-        let Ok(expected) = run_reference(&p, &mut vars) else {
-            tc.assume(false);
-            return;
-        };
+		// A program which overflows is an error rather than a value, and which
+		// error the machine reports is not what is being compared here.
+		let mut vars = Vars::default();
+		let Ok(expected) = run_reference(&p, &mut vars) else {
+			tc.assume(false);
+			return;
+		};
 
-        let source = render_source(&p);
+		let source = render_source(&p);
 
-        let (ints, bools) = match expected {
-            Outcome::Int(expected) => {
-                let (actual, ints, bools) = evaluate::<i64>(&context, &source);
-                assert_eq!(actual, expected, "source: {source}");
-                (ints, bools)
-            }
-            Outcome::Bool(expected) => {
-                let (actual, ints, bools) = evaluate::<bool>(&context, &source);
-                assert_eq!(actual, expected, "source: {source}");
-                (ints, bools)
-            }
-        };
+		let (ints, bools) = match expected {
+			Outcome::Int(expected) => {
+				let (actual, ints, bools) = evaluate::<i64>(&context, &source);
+				assert_eq!(actual, expected, "source: {source}");
+				(ints, bools)
+			}
+			Outcome::Bool(expected) => {
+				let (actual, ints, bools) = evaluate::<bool>(&context, &source);
+				assert_eq!(actual, expected, "source: {source}");
+				(ints, bools)
+			}
+		};
 
-        assert_eq!(ints, vars.ints(), "variables differ\nsource: {source}");
-        assert_eq!(bools, vars.bools(), "variables differ\nsource: {source}");
-    })
-    .settings(hegel::Settings::new().test_cases(1000))
-    .run();
+		assert_eq!(ints, vars.ints(), "variables differ\nsource: {source}");
+		assert_eq!(bools, vars.bools(), "variables differ\nsource: {source}");
+	})
+	.settings(hegel::Settings::new().test_cases(1000))
+	.run();
 }
 
 fn evaluate<T>(context: &Context, source: &str) -> (T, Vec<i64>, Vec<bool>)
 where
-    T: rune::runtime::FromValue,
+	T: rune::runtime::FromValue,
 {
-    match eval_result::<(T, Vec<i64>, Vec<bool>)>(context, source) {
-        Ok(value) => value,
-        Err(error) => panic!("failed to evaluate: {error:?}\nsource: {source}"),
-    }
+	match eval_result::<(T, Vec<i64>, Vec<bool>)>(context, source) {
+		Ok(value) => value,
+		Err(error) => panic!("failed to evaluate: {error:?}\nsource: {source}"),
+	}
 }

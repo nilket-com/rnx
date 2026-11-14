@@ -126,8 +126,8 @@ def run_stages(root, out, selection, owner, environment, evidence, rows):
 				semantic = failure_value(producer, roots)['receipt'] if producer.is_file() else done.validation['path']
 				cause = failure_value(semantic, roots)
 				stage_error = reason(cause)
-				if cause.get('failure'):
-					failure = copy_bundle(out, cause['failure'], roots=roots, environment=environment)
+				if validation.get('failure') or cause.get('failure'):
+					failure = copy_bundle(out, validation.get('failure') or cause['failure'], roots=roots, environment=environment)
 				else:
 					failure = retain(out, name, receipt=semantic, logs=[out/(name+'.log')], roots=roots,
 						environment=environment, error=cause.get('error', validation.get('error', 'child failed')))
@@ -219,7 +219,7 @@ def run(root, out, names=None, remote_context=None, fresh=False, scope=None):
 		run_stages(root,out,selection,owner,environment,evidence,rows)
 		acceptance.update(status='PASS',finalization=gate.finalize(selection,evidence,root),recovered=recovered)
 	except BaseException:
-		acceptance['error'] = traceback.format_exc()
+		acceptance['error'] = rows[-1]['failure']['error'] if rows and rows[-1].get('failure') else traceback.format_exc()
 	finally:
 		# No second ordinary signal may interrupt the terminal drain/release sequence.
 		previous = {sig:signal.signal(sig,signal.SIG_IGN) for sig in (signal.SIGTERM,signal.SIGINT)}

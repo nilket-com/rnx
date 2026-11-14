@@ -10,6 +10,7 @@ mod constant_structure;
 pub(crate) mod external;
 mod loop_control;
 mod snapshot_inputs;
+mod storage;
 mod witnesses;
 
 use quote::ToTokens;
@@ -954,17 +955,19 @@ fn serialize_table(value: &serde_json::Value) -> String {
 			_ => serde_json::to_string(value).unwrap(),
 		}
 	}
-	format!("{}\n", render(value, 0, false))
+	let stored = storage::encode(value).expect("invalid expanded parity table");
+	format!("{}\n", render(&stored, 0, false))
 }
 
 #[test]
 fn serializer_preserves_row_diffs() {
-	let pin: serde_json::Value =
+	let stored: serde_json::Value =
 		serde_json::from_str(include_str!("../../tests/fixtures/session_parity.json")).unwrap();
+	let pin = storage::expand(&stored).unwrap();
 	let before = serialize_table(&pin);
 	assert_eq!(
 		serde_json::from_str::<serde_json::Value>(&before).unwrap(),
-		pin
+		stored
 	);
 	assert!(before.len() <= 163840);
 	let mut changed = pin.clone();
@@ -1036,6 +1039,7 @@ fn pinned_classification() {
 	let expected: serde_json::Value =
 		serde_json::from_slice(&std::fs::read(&pin).expect("classification not pinned yet"))
 			.unwrap();
+	let expected = storage::expand(&expected).expect("invalid pinned observation pairs");
 	assert_eq!(report, expected, "session parity pin changed");
 	assert_eq!(
 		std::fs::read_to_string(pin).unwrap(),
@@ -1058,6 +1062,7 @@ fn removing_host_enrollment_changes_only_its_witness() {
 	assert_eq!(deltas[0].1["class"], "Refused for a host function");
 	let pinned: serde_json::Value =
 		serde_json::from_str(include_str!("../../tests/fixtures/session_parity.json")).unwrap();
+	let pinned = storage::expand(&pinned).unwrap();
 	assert_ne!(pinned["hosts"]["rows"], changed);
 	let mut moved = pinned.clone();
 	moved["hosts"]["rows"][0]["class"] = "Different result".into();

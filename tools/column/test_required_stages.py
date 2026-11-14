@@ -30,8 +30,52 @@ class Coverage(unittest.TestCase):
 		nodes = {p: [] for p in PACKAGE_CHECKS}
 		selected = required(['Cargo.toml'], [nodes, nodes])
 		self.assertTrue({name for name, _ in PACKAGE_CHECKS.values()} <= set(selected))
-		with self.assertRaisesRegex(ValueError, 'affected package needs a registered suite'):
+		with self.assertRaisesRegex(ValueError, 'package unregistered/Cargo.toml: declare'):
 			required(['Cargo.toml'], [{'unregistered/Cargo.toml': []}])
+
+	def test_every_registered_package_source_has_format_and_lint(self):
+		from package_gates import PACKAGES, quality
+		for manifest in list(PACKAGES) + ['rune/crates/rune/Cargo.toml', 'rune/crates/rune-alloc/Cargo.toml']:
+			path = str(__import__('pathlib').Path(manifest).parent/'src/lib.rs')
+			for source in (path, path.replace('src/lib.rs','tests/control.rs'), path.replace('src/lib.rs','build.rs')):
+				with self.subTest(manifest=manifest, source=source):
+					stages = required([source], manifests=list(PACKAGES) + [manifest])
+					tests, formatting, lint = quality(manifest)
+					self.assertTrue(set((*tests, formatting, lint)) <= set(stages))
+
+	def test_longest_owner_and_unregistered_source_fail_closed(self):
+		manifests = ['Cargo.toml','rune/tools/xtask/Cargo.toml','rune/tools/xtask/measure/harness/Cargo.toml','ci/execute_guard/Cargo.toml']
+		for path, package in [('rune/tools/xtask/src/main.rs','rune/tools/xtask/Cargo.toml'),
+			('rune/tools/xtask/measure/harness/src/main.rs','rune/tools/xtask/measure/harness/Cargo.toml'),
+			('ci/execute_guard/src/main.rs','ci/execute_guard/Cargo.toml')]:
+			with self.subTest(path=path), self.assertRaisesRegex(ValueError, package+': declare.*format and lint'):
+				required([path], manifests=manifests)
+
+	def test_documentation_does_not_gain_quality_stages(self):
+		self.assertEqual(required(['README.md','plans/adr/example.md']), ['commit-discipline','controller-controls'])
+		stages = required(['rune/crates/rune/README.md'])
+		self.assertNotIn('format',stages)
+		self.assertIn('rune-clippy',stages)  # Existing conservative selection stays.
+		self.assertEqual(required(['ci/execute_guard/README.md'],manifests=['Cargo.toml','ci/execute_guard/Cargo.toml']), ['commit-discipline','controller-controls'])
+
+	def test_graph_selection_is_closed_under_quality_and_removed_owner(self):
+		from package_gates import PACKAGES, quality
+		for manifest in PACKAGES:
+			selected = set(required([manifest],[{manifest:[]},{}]))
+			tests, formatting, lint = quality(manifest)
+			self.assertTrue(set((*tests,formatting,lint)) <= selected)
+		with self.assertRaisesRegex(ValueError,'ci/execute_guard/Cargo.toml: declare'):
+			required(['ci/execute_guard/Cargo.toml'],[{'ci/execute_guard/Cargo.toml':[]},{}])
+
+	def test_new_quality_commands_are_canonical_and_formats_precede_compilation(self):
+		import accept
+		from pathlib import Path
+		from package_gates import FORMATS, LINTS
+		commands = accept.commands(Path('output'))
+		names = [name for name,_ in commands]
+		self.assertTrue(set(FORMATS)|set(LINTS) <= set(names))
+		self.assertTrue(all(names.index(n)<names.index('clippy') for n in FORMATS))
+		self.assertTrue(all(accept.BULK_ROOTS[n]==('baseline',) for n in LINTS))
 
 
 if __name__=='__main__':unittest.main()

@@ -1,6 +1,6 @@
 # ADR 0276: gate gaps found by recent records
 
-Status: Proposed
+Status: Accepted
 
 Base: published 4d1cf05ede73244621d57caf2fa2d2773d1d60fb (ADR 0275).
 
@@ -51,8 +51,10 @@ when they are equal.
    per line stays. The cap changes only if the measurement shows the
    representation cannot give at least a doubling of row headroom,
    and then to a stated number with its reason. Every row's class and
-   observations after the change equal those before, shown by a
-   committed comparison, not by inspection.
+   observations after the change equal those before. The migration is
+   compared independently before signing; committed controls expand
+   and re-encode the current table exactly, without a test tied to a
+   historical Git revision.
 
 ## Constraints
 
@@ -80,3 +82,31 @@ when they are equal.
 ## Out of scope
 
 What the parity table measures, and retention of passing evidence.
+
+## Results
+
+Implemented with declared package quality recipes, cause-first failure
+bundles and parity storage schema 1. Product runtime code, gate bands,
+performance policy, inventories and byte limits are unchanged.
+
+The pin shrank from 163,452 to 134,654 bytes under the same 163,840-byte
+cap. Free space grew from 388 to 29,186 bytes; this is free headroom,
+not a doubling of total row capacity. Independent migration comparison
+preserved every value. `Equal` requires one shared observation;
+`Equal by property` can preserve a differing pair. Current-table round
+trip, opaque payloads, malformed pairs and existing row mutations are
+committed controls.
+
+The new Hegel format recipe exposed existing formatting drift in that
+independent test workspace; its exact formatter was applied. One
+published test's synthetic late-interrupt control assumed that the
+signal sender exiting meant the signal handler had run. It now waits
+with a hard deadline for delivery before checking the completed result
+once. Interruption, unpublished-binding and recovery assertions remain.
+Neighboring controls already await diagnostics or inject interruption
+directly. All of these repairs are confined to test code.
+
+Before signing, the complete native format/lint recipe run and full
+root tests passed. Failure controls cover released middle-log test
+panics, cross diagnostics, nested runner output, named failing cases,
+sanitization, path boundaries, caps and a tail-only mutation.

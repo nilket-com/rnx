@@ -80,8 +80,68 @@ def log_excerpt(path, cap=FILE_CAP):
 	return head+marker+tail, True
 
 
+# Bounded diagnostic sources, never arbitrary siblings or a payload tree walk.
+DIAGNOSTIC_SIBLINGS = ('controller.stderr', 'host-check.stderr', 'child.log', 'direct.stderr')
+TEST_SECTION = re.compile(rb'^---- .+ (?:stdout|stderr) ----\s*$')
+CAUSE = re.compile(r"^(?:cross verification:|error(?:\[[^]\n]+\])?:|thread .+ panicked|(?:AssertionError|ValueError|RuntimeError|OSError|TypeError):)")
+
+
+def cause_line(text):
+	return next((line.strip() for line in text.splitlines() if CAUSE.match(line.strip())), None)
+
+
+def cause_excerpt(path, cap=FILE_CAP):
+	"""Keep named libtest failure sections ahead of the bounded ordinary excerpt."""
+	selected = bytearray(); active = False; cut = False; limit = cap//2
+	with path.open('rb') as stream:
+		while True:
+			line = stream.readline(FILE_CAP+1)
+			if not line: break
+			if len(line) > FILE_CAP and not line.endswith(b'\n'):
+				while line and not line.endswith(b'\n'): line = stream.readline(FILE_CAP+1)
+				if active: cut = True
+				continue  # Never retain a fragment of an oversized secret-bearing line.
+			if TEST_SECTION.match(line): active = True
+			# A failing test can print a nested libtest report. Its failures:/
+			# test-result lines are part of the outer test's output, not an end.
+			elif line.startswith((b'     Running ', b'   Doc-tests ', b'error: test failed')): active = False
+			if active:
+				if len(selected)+len(line) <= limit: selected.extend(line)
+				else: cut = True
+	if not selected: return log_excerpt(path, cap)
+	marker = b'\n<log excerpt after failing test sections>\n'
+	if cut: selected.extend(b'\n<failure sections truncated>\n')
+	raw, excerpt_cut = log_excerpt(path, max(256, cap-len(selected)-len(marker)))
+	return bytes(selected)+marker+raw, cut or excerpt_cut
+
+
+def diagnostic_lines(row):
+	"""Only reviewed diagnostic fields: no measurement vectors or invocations."""
+	lines = []
+	for key in ('diagnostics', 'failed_cases', 'failures', 'causes'):
+		items = row.get(key, [])
+		if isinstance(items, (str, dict)): items = [items]
+		if not isinstance(items, list): continue
+		for item in items[:16]:
+			if isinstance(item, str): lines.append(item)
+			elif isinstance(item, dict):
+				identity = next((str(item[k]) for k in ('id', 'case', 'name', 'stage') if isinstance(item.get(k), (str, int))), '')
+				message = next((str(item[k]) for k in ('error', 'message', 'diagnostic', 'reason') if isinstance(item.get(k), str)), '')
+				if identity or message: lines.append((identity+': '+message).strip(': '))
+	return lines[:16]
+
+
+def generic(message):
+	return message in {'stage failed', 'child failed', 'producer returned FAIL without an error message'} or any(
+		part in message for part in ('child exit is nonzero', 'Traceback (most recent call last)', 'CalledProcessError('))
+
+
 def reason(row):
-	if row.get('error'): return str(row['error'])
+	text = str(row.get('error', ''))
+	if text and not generic(text): return cause_line(text) or text
+	lines = diagnostic_lines(row)
+	if lines: return '\n'.join(lines)
+	if text: return cause_line(text) or text
 	# Retain failed rule identities/booleans, never the measurement vectors.
 	failed = []
 	for section in ('per_record', 'cumulative'):
@@ -97,6 +157,8 @@ def projection(row, environment):
 		if key in row and isinstance(row[key], (str, int, bool, type(None)))}
 	if row.get('status') == 'FAIL' or 'error' in row:
 		result['error'], result['error_truncated'] = bounded(sanitize(reason(row), environment), ERROR_CAP)
+	lines = diagnostic_lines(row)
+	if lines: result['causes'] = [bounded(sanitize(line, environment), 1024)[0] for line in lines]
 	# Only the numeric admission fields and binding label are diagnostic data.
 	if isinstance(row.get('admission'), dict):
 		result['admission'] = {k: v for k, v in row['admission'].items() if
@@ -127,7 +189,7 @@ class Bundle:
 			data = (json.dumps(projection(value(path, roots), self.environment), sort_keys=True, indent=2)+'\n').encode()
 			cut = False
 		else:
-			raw, cut = log_excerpt(path)
+			raw, cut = cause_excerpt(path)
 			data = sanitize(raw.decode('utf-8', 'replace'), self.environment).encode()
 		cap = min(FILE_CAP, self.remaining)
 		if kind == 'receipt' and len(data) > cap:
@@ -144,6 +206,7 @@ class Bundle:
 		self.row['files'].append(dict(path='failure/'+name, kind=kind, bytes=len(data), sha256=digest(dest),
 			source_name=bounded(sanitize(path.name, self.environment), 256)[0],
 			source_bytes=path.stat().st_size, source_sha256=digest(path), truncated=cut, projected=kind=='receipt'))
+		return data.decode('utf-8')
 
 	def finish(self):
 		self.row['omitted'] = self.row['omitted'][:16]
@@ -173,17 +236,27 @@ def retain(out, stage, *, receipt=None, logs=(), roots, environment=None, error=
 			if row.get('status') == 'FAIL' or row.get('error'):
 				bundle.row['error'], bundle.row['error_truncated'] = bounded(sanitize(reason(row), environment), ERROR_CAP)
 			bundle.add(leaf, 'receipt', roots)
-			for name in ('child.log', 'direct.stderr'):
-				p = leaf.parent/name
-				if p.is_file(): bundle.add(p, 'log', roots)
+			references = []
+			declared = row.get('diagnostic_files', [])
+			if isinstance(declared, list):
+				for name in declared[:16]:
+					if isinstance(name, str): references.append(leaf.parent/name)
+			references.extend(leaf.parent/name for name in DIAGNOSTIC_SIBLINGS)
+			for p in dict.fromkeys(references):
+				if p.is_file():
+					text = bundle.add(p, 'log', roots)
+					cause = cause_line(text or '')
+					if cause and generic(bundle.row['error']): bundle.row.update(error=cause, error_truncated=False)
 			if leaf != Path(receipt): bundle.add(receipt, 'receipt', roots)
 	except Exception as problem:
 		bundle.row['omitted'].append(bounded(sanitize(str(problem), environment), 1024)[0])
 	for p in logs:
 		try:
 			if Path(p).is_file():
-				bundle.add(p, 'log', roots)
-				if receipt is None or not Path(receipt).is_file() or 'child exit is nonzero' in bundle.row['error']:
+				text = bundle.add(p, 'log', roots)
+				cause = cause_line(text or '')
+				if cause and generic(bundle.row['error']): bundle.row.update(error=cause, error_truncated=False)
+				if not cause and (receipt is None or not Path(receipt).is_file() or 'child exit is nonzero' in bundle.row['error']):
 					raw, _ = log_excerpt(checked(p, roots))
 					tail = sanitize(raw.decode('utf-8', 'replace'), environment)[-8192:]
 					bundle.row['error'], cut = bounded(bundle.row['error']+'\nchild log:\n'+tail, ERROR_CAP)

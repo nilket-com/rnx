@@ -4,14 +4,14 @@ from pathlib import Path
 import subprocess
 import tarfile
 import tempfile
-from suite_stage import PACKAGE_CHECKS
+from package_gates import PACKAGE_CHECKS, PACKAGES, quality, source_owner
 
 
 def graph_change(paths):
 	return any(Path(p).name in {'Cargo.toml', 'Cargo.lock'} for p in paths)
 
 
-def direct(paths):
+def direct(paths, manifests=None):
 	stages = {'commit-discipline', 'controller-controls'}
 	for p in paths:
 		if p.startswith(('src/', 'tests/')): stages.update(('root-tests', 'inventory', 'cross'))
@@ -20,11 +20,18 @@ def direct(paths):
 			if '/src/' in p: stages.add('fixed-route')
 		if p.startswith('adapters/'):
 			name = p.split('/')[1]
-			if name not in {'candle', 'polars', 'postgres'}: raise ValueError('unregistered adapter: ' + name)
+			if name not in {'candle', 'polars', 'postgres'}: quality(f'adapters/{name}/Cargo.toml')
 			stages.update(('suite-adapter-' + name, 'clippy-adapter-' + name))
 		if p.startswith('jupyter/'): stages.update(('jupyter-format', 'jupyter-clippy', 'jupyter-tests', 'jupyter-kernel'))
 		if p.startswith('tools/project/'): stages.update(('project-suite', 'project-clippy', 'cross'))
 		if p.startswith('tools/verify/') or p == 'tools/verify.py': stages.add('cross')
+	if manifests is None:
+		manifests = list(PACKAGES) + [str(Path(*Path(p).parts[:3])/'Cargo.toml') for p in paths if p.startswith('rune/crates/') and len(Path(p).parts) > 3]
+	for p in paths:
+		owner = source_owner(p, manifests)
+		if owner:
+			tests, formatting, lint = quality(owner)
+			stages.update((*tests, formatting, lint))
 	return stages
 
 
@@ -74,12 +81,15 @@ def affected(paths, graphs):
 	return selected
 
 
-def required(paths, graphs=None):
-	stages = direct(paths)
+def required(paths, graphs=None, manifests=None):
+	if manifests is None and graphs is not None: manifests = sorted({m for g in graphs for m in g})
+	stages = direct(paths, manifests)
 	if not graph_change(paths): return sorted(stages)
 	stages.add('cross')
 	if graphs is None: raise ValueError('manifest/lock change requires before and after Cargo graphs')
 	for manifest in affected(paths, graphs):
+		tests, formatting, lint = quality(manifest)
+		stages.update((*tests, formatting, lint))
 		if manifest == 'Cargo.toml': stages.update(('root-tests', 'inventory'))
 		elif manifest.startswith('rune/crates/'):
 			stages.update(('rune-suite', 'rune-clippy', 'fixed-route'))

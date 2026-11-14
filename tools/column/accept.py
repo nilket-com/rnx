@@ -12,6 +12,7 @@ import time
 import traceback
 
 from stage_outputs import finish_stage
+from package_gates import FORMATS, LINTS
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFESTS = ["Cargo.toml", "tools/project/Cargo.toml", "adapters/candle/Cargo.toml",
@@ -40,6 +41,8 @@ BULK_ROOTS = {
 	'generated-projects': ('project',),
 	'cross': ('cross',),
 }
+
+BULK_ROOTS.update({name: ('baseline',) for name in LINTS})
 
 
 def commands(out, root=ROOT):
@@ -90,6 +93,12 @@ def commands(out, root=ROOT):
 	for name, _ in PACKAGE_CHECKS.values():
 		steps.append((name, ['python3', '-B', 'tools/column/suite_stage.py', '--stage', name, '--out', str(out/name)]))
 	steps.append(('fixed-route', ['python3', '-B', 'tools/column/fixed_route_gate.py', '--out', str(out/'fixed-route')]))
+	# All package format checks precede compilation/lint and test stages.
+	position = next(i for i, (name, _) in enumerate(steps) if name == 'pin-controls')
+	quality = lambda name: (name, ['python3', '-B', 'tools/column/suite_stage.py', '--stage', name, '--out', str(out/name)])
+	steps[position:position] = [quality(name) for name in FORMATS]
+	position = next(i for i, (name, _) in enumerate(steps) if name == 'inventory')
+	steps[position:position] = [quality(name) for name in LINTS]
 	assert len({name for name, _ in steps}) == len(steps)
 	return steps
 

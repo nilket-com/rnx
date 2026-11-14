@@ -224,6 +224,31 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 				row.update(status='FAIL', cleanup_error='owned build removal failed')
 				child = subprocess.CompletedProcess(command, child.returncode or 1)
 		row.update(seconds=time.monotonic()-started, cleanup_seconds=sum(e['seconds'] for e in cleanup), cleanup=cleanup)
+		if row['status'] == 'FAIL':
+			try:
+				from failure_detail import retain
+				logs = [Path(stream.name).absolute() for stream in (stdout, stderr) if stream is not None and isinstance(getattr(stream, 'name', None), str)]
+				if (directory/'discovery.log').exists(): logs.append((directory/'discovery.log').absolute())
+				roots = [directory.absolute()] + [p.parent for p in logs]
+				semantic = None
+				context = row.get('context', {})
+				if context.get('kind') == 'producer':
+					result_dir = Path(context['result_directory'])
+					roots.append(result_dir)
+					bound = directory/'CHILD.json'
+					if bound.is_file():
+						binding = json.loads(bound.read_text())
+						candidate = Path(binding['receipt'])
+						if candidate.parent != result_dir or digest(candidate) != binding['sha256']:
+							raise ValueError('failed producer diagnostic binding differs')
+						semantic = candidate
+				failure = retain(directory, directory.name, receipt=semantic, logs=logs, roots=roots,
+					environment=dict(os.environ if env is None else env), error=row.get('error', 'child failed'))
+				row.update(failure=failure, error=failure['error'])
+				artifacts[str(Path(failure['path']).resolve())] = failure['sha256']
+				for p in (directory/'failure').iterdir(): artifacts[str(p.resolve())] = digest(p)
+			except Exception as problem:
+				row['failure_retention_error'] = type(problem).__name__
 		row['artifacts'] = artifacts
 		atomic_json(directory / 'RESULT.json', row)
 	child.declared_output = row.get('declared_output')

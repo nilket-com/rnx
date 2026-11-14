@@ -131,7 +131,7 @@ class FinalOrderControls(unittest.TestCase):
 			self.assertEqual(r['checks'],[{'name':'stage','exit':int(fail_stage)}] if not interrupted else [])
 			self.assertEqual(r['status'],'FAIL' if fail_stage or fail_release or interrupted else 'PASS')
 			if not fail_release:self.assertFalse(list((root/'target/routing-cli').iterdir()))
-			if fail_stage:self.assertIn('stage failed',r['error'])
+			if fail_stage:self.assertEqual('producer returned FAIL without an error message',r['error'])
 			if interrupted:self.assertIn('KeyboardInterrupt',r['error'])
 			if not (fail_stage or interrupted):self.assertEqual(events,['validated','release'])
 			if fail_stage or interrupted:
