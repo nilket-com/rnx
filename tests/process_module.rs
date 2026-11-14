@@ -326,6 +326,22 @@ fn cancellation_during_a_child_call_reaches_both_facades() {
 	}
 }
 
+#[cfg(unix)]
+#[test]
+fn session_terminal_interrupt_never_escapes_into_a_one_shot_diagnostic() {
+	let output = Command::new("timeout")
+		.args(["--kill-after=2s", "90s", "python3", "-B"])
+		.arg(concat!(
+			env!("CARGO_MANIFEST_DIR"),
+			"/tests/process_interrupt.py"
+		))
+		.arg(env!("CARGO_BIN_EXE_rnx"))
+		.arg(fixture())
+		.output()
+		.unwrap();
+	assert!(output.status.success(), "{output:?}");
+}
+
 #[cfg(all(unix, feature = "test-support"))]
 #[test]
 fn cleanup_interrupt_and_late_delivery_error_cross_the_facade() {

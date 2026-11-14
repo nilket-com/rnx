@@ -6,6 +6,29 @@ thread_local! {
 	static RUNTIME: RefCell<Option<tokio::runtime::Runtime>> = const { RefCell::new(None) };
 	static POLLING: Cell<bool> = const { Cell::new(false) };
 	static CANCELLED: Cell<bool> = const { Cell::new(false) };
+	static SESSION_INVOCATION: Cell<bool> = const { Cell::new(false) };
+}
+
+struct SessionHostScope {
+	outer: bool,
+	interrupted: bool,
+	_thread: std::marker::PhantomData<std::rc::Rc<()>>,
+}
+impl Drop for SessionHostScope {
+	fn drop(&mut self) {
+		SESSION_INVOCATION.with(|active| active.set(self.outer));
+		CANCELLED.with(|flag| flag.set(self.outer && self.interrupted));
+	}
+}
+
+/// Only this session driver consumes a synchronous host's terminal marker.
+/// Nested invocations preserve the caller's state, including during unwind.
+pub(crate) fn session_host_scope() -> impl Drop {
+	SessionHostScope {
+		outer: SESSION_INVOCATION.with(|active| active.replace(true)),
+		interrupted: CANCELLED.with(|flag| flag.replace(false)),
+		_thread: std::marker::PhantomData,
+	}
 }
 
 struct Loan<'a>(&'a mut Option<tokio::runtime::Runtime>);
@@ -103,7 +126,20 @@ fn native_wait<F: Future>(
 // Structured invocation-local cancellation: a concurrent flag must not replace
 // an unrelated script error, and no diagnostic prose is interpreted.
 pub(crate) fn host_wait_interrupted() -> bool {
-	CANCELLED.with(Cell::get)
+	CANCELLED.with(|flag| flag.replace(false))
+}
+
+/// A synchronous host reports interruption only after it has reaped its child.
+/// The invocation consumes this marker once, without interpreting error text.
+pub(crate) fn interrupted_host_call() -> Option<VmError> {
+	host_call_interrupt(crate::host::interrupted())
+}
+fn host_call_interrupt(interrupted: bool) -> Option<VmError> {
+	if !interrupted || !SESSION_INVOCATION.with(Cell::get) {
+		return None;
+	}
+	CANCELLED.with(|flag| flag.set(true));
+	Some(failed("host call interrupted"))
 }
 
 /// Preserve a normal Rust Result as the script value; conversion failure is fatal.
@@ -118,6 +154,42 @@ mod tests {
 		Arc,
 		atomic::{AtomicUsize, Ordering},
 	};
+	#[test]
+	fn synchronous_terminal_marker_has_a_session_consumer_and_restores_on_unwind() {
+		assert!(!SESSION_INVOCATION.with(Cell::get));
+		assert!(host_call_interrupt(true).is_none());
+		assert!(!host_wait_interrupted());
+		// A stale marker outside an invocation cannot become this input's error.
+		CANCELLED.with(|flag| flag.set(true));
+		{
+			let _outer = session_host_scope();
+			assert!(!host_wait_interrupted());
+			assert!(host_call_interrupt(false).is_none());
+			assert!(host_call_interrupt(true).is_some());
+			{
+				let _inner = session_host_scope();
+				assert!(!host_wait_interrupted());
+				assert!(host_call_interrupt(true).is_some());
+				assert!(host_wait_interrupted());
+				assert!(!host_wait_interrupted());
+			}
+			assert!(host_wait_interrupted(), "outer marker lost to nested input");
+			assert!(!host_wait_interrupted());
+		}
+		assert!(host_call_interrupt(true).is_none());
+		assert!(!host_wait_interrupted());
+		assert!(
+			std::panic::catch_unwind(|| {
+				let _scope = session_host_scope();
+				assert!(host_call_interrupt(true).is_some());
+				panic!("native unwind");
+			})
+			.is_err()
+		);
+		assert!(!SESSION_INVOCATION.with(Cell::get));
+		assert!(host_call_interrupt(true).is_none());
+		assert!(!host_wait_interrupted());
+	}
 	#[test]
 	fn entered_context_permits_wait_and_drives_spawned_work() {
 		crate::host::clear_interrupt();

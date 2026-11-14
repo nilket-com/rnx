@@ -1,5 +1,6 @@
 //! Wall/elapsed clocks and a calendar; monotonic clocks share a process origin.
 use crate::host::HostFunction;
+use crate::host_input::{Fields, Input};
 use jiff::{
 	Timestamp, Zoned,
 	civil::DateTime,
@@ -236,24 +237,24 @@ fn parts(ms: i64, name: &str) -> Result<Value, String> {
 	rune::to_value(object).map_err(|e| format!("cannot build time parts: {e}"))
 }
 fn field(
-	object: &Object,
+	object: Fields<'_>,
 	name: &str,
 	default: Option<i64>,
 	min: i64,
 	max: i64,
 ) -> Result<i64, String> {
-	let n = match object.get(name) {
+	let n = object.field(name, |value| match value {
 		Some(value) => value
-			.as_integer::<i64>()
-			.map_err(|e| format!("time field {name:?} must be an integer: {e}"))?,
-		None => default.ok_or_else(|| format!("missing time field {name:?}"))?,
-	};
+			.integer::<i64>()
+			.map_err(|e| format!("time field {name:?} must be an integer: {e}")),
+		None => default.ok_or_else(|| format!("missing time field {name:?}")),
+	})?;
 	if !(min..=max).contains(&n) {
 		return Err(format!("time field {name:?} is {n}, outside {min}..={max}"));
 	}
 	Ok(n)
 }
-fn from_parts(object: &Object, name: &str) -> Result<i64, String> {
+fn from_parts_view(object: Fields<'_>, name: &str) -> Result<i64, String> {
 	let year = field(object, "year", None, -9999, 9999)? as i16;
 	let month = field(object, "month", None, 1, 12)? as i8;
 	let day = field(object, "day", None, 1, 31)? as i8;
@@ -271,7 +272,7 @@ fn from_parts(object: &Object, name: &str) -> Result<i64, String> {
 			"time reading {dt} in zone {name:?} is in a gap: nonexistent with any offset"
 		));
 	}
-	let result = if object.contains_key("offset_seconds") {
+	let result = if object.field("offset_seconds", |v| Ok(v.is_some()))? {
 		let off = field(object, "offset_seconds", None, -93599, 93599)? as i32;
 		OffsetConflict::Reject
 			.resolve(
@@ -292,6 +293,18 @@ fn from_parts(object: &Object, name: &str) -> Result<i64, String> {
 		.map(|z| milliseconds(z.timestamp()))
 		.map_err(|e| format!("cannot resolve time reading {dt} in zone {name:?}: {e}"))
 }
+fn from_parts(object: &Object, name: &str) -> Result<i64, String> {
+	from_parts_view(Fields::Legacy(object), name)
+}
+fn from_parts_execution(
+	object: rune::host::OwnedTreeInput,
+	name: &str,
+) -> Result<Result<i64, String>, rune::runtime::VmError> {
+	let input = Input::owned(&object);
+	input.require_object()?;
+	Ok(from_parts_view(Fields::Input(input), name))
+}
+
 async fn sleep(ms: i64) -> Result<(), String> {
 	if !(0..=MAX_SLEEP_MS).contains(&ms) {
 		return Err(format!(
@@ -310,7 +323,7 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	module.host_function("rfc3339", rfc3339)?;
 	module.host_function("parse", parse)?;
 	module.host_function_with_output("parts", parts, crate::host::outputs::PARTS)?;
-	module.function("from_parts", from_parts).build()?;
+	module.host_function_tree_inputs("from_parts", from_parts, from_parts_execution, None)?;
 	module.host_function_await(
 		"sleep",
 		sleep,

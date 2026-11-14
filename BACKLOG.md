@@ -32,8 +32,11 @@
   future-value contract. Ordinary functions currently retain legacy's
   `.await`-outside-async diagnostic; direct waits cover the input expression.
 
-- ADR 0270 follow-up: selective inspection of host object inputs, alongside
-  `time::from_parts`, `process::run` and `web::response`. Snapshot inputs read
-  their entire reachable value; moved descendants are access errors at the
-  call even when a handler would skip a field. Preserve the named access error
-  and pre-effect behavior when designing a selective inspection contract.
+- ADR 0270 follow-up: selective inspection of host object inputs. A snapshot
+  reads within the snapshotted tree (scalars, strings, vectors, tuples, objects,
+  Option) down to its depth/frontier bounds. Result, struct, enum, closure,
+  function and host values, and values beyond a bound, are unentered diagnostic
+  leaves. Moved values within the part read are access errors at the call,
+  including ignored fields; moved values hidden under a leaf are not inspected
+  and cannot be obtained by the handler. Preserve this boundary when designing
+  selective inspection.

@@ -4,7 +4,7 @@ use crate::session::{
 	Session,
 	domain_session::{DomainSession, transcripts::parity_observe},
 };
-fn contexts() -> crate::routing_inventory::Result<(DomainSession, Session)> {
+pub(super) fn contexts() -> crate::routing_inventory::Result<(DomainSession, Session)> {
 	fn make() -> crate::Result<(
 		rune::Context,
 		crate::http::State,
@@ -94,7 +94,7 @@ pub(super) fn options_report() -> serde_json::Value {
 		let (mut fresh, mut old) = contexts().unwrap();
 		let (legacy, domain) = parity_observe(&mut old, &mut fresh, input);
 		let (class, wording_rule, domain_worse) = classify(&legacy, &domain);
-		rows.push(serde_json::json!({"function":"http::request","construct":construct,"input":input,"legacy":legacy,"domain":domain,"class":class,"wording_rule":wording_rule,"domain_worse":domain_worse,"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection."}));
+		rows.push(serde_json::json!({"function":"http::request","construct":construct,"input":input,"legacy":legacy,"domain":domain,"class":class,"wording_rule":wording_rule,"domain_worse":domain_worse,"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves."}));
 		fresh.close().unwrap();
 		old.close().unwrap();
 	}

@@ -103,11 +103,18 @@ fn host_policy() -> Vec<HostPolicy> {
 		"Result<String,String>",
 	);
 	add(
-		"process::run process::run_bytes",
+		"process::run_bytes",
 		"\"\",[],#{}",
 		Class::Undeclared,
 		"Value args/options",
 		"undeclared dynamic output",
+	);
+	add(
+		"process::run",
+		"\"\",[],#{}",
+		Class::TreeInput,
+		"(&str, owned args, owned options)",
+		"certified owned process result",
 	);
 	add(
 		"process::exit",
@@ -132,8 +139,8 @@ fn host_policy() -> Vec<HostPolicy> {
 	);
 	add(
 		"web::response",
-		"200,#{},\"\",()",
-		Class::Undeclared,
+		"200,\"\",\"text/plain\",#{}",
+		Class::TreeInput,
 		"Value options/body",
 		"undeclared dynamic output",
 	);
@@ -182,7 +189,7 @@ fn host_policy() -> Vec<HostPolicy> {
 	add(
 		"time::from_parts",
 		"#{},\"\"",
-		Class::Undeclared,
+		Class::TreeInput,
 		"Object: outside typed input set",
 		"Result<i64,String>",
 	);

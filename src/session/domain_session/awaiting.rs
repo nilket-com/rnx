@@ -17,6 +17,7 @@ pub(super) fn run(
 	interrupted: &mut impl FnMut() -> bool,
 	locations: Locations<'_>,
 ) -> std::result::Result<DomainRoot, Failure> {
+	let _host_scope = crate::execute::session_host_scope();
 	let mut invocation = domain
 		.start(key, entry, &[restored], budget)
 		.map_err(|e| fault(format!("{e:?}")))?;

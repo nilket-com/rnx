@@ -19,11 +19,25 @@ pub enum TreeKind {
 #[doc(hidden)]
 pub struct TreeNode {
 	pub(crate) kind: TreeKind,
+	pub(crate) type_info: crate::runtime::TypeInfo,
 	pub(crate) edges: std::vec::Vec<(Option<String>, usize)>,
 	pub(crate) cycle: bool,
 	pub(crate) frontier: bool,
 }
 impl TreeNode {
+	/// Use the stock diagnostic formatter for a non-number packet node.
+	pub fn expected_number_error(&self) -> crate::alloc::Result<RuntimeError> {
+		use crate::alloc::clone::TryClone;
+		Ok(RuntimeError::new(
+			crate::runtime::VmErrorKind::ExpectedNumber {
+				actual: self.type_info.try_clone()?,
+			},
+		))
+	}
+	/// Structured diagnostic type identity, independent of Unsupported prose.
+	pub fn type_info(&self) -> &crate::runtime::TypeInfo {
+		&self.type_info
+	}
 	pub fn kind(&self) -> &TreeKind {
 		&self.kind
 	}

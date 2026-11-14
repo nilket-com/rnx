@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::execute::host_bridge::minimal_tests::owned_tree_routes_are_exclusive_and_output_marker_is_rejected",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::execute::host_bridge::minimal_tests::owned_tree_budget_and_panic_cleanup",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::heap::owned_input::tests::packet_survives_store_release_and_expands_aliases",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::heap::owned_input::tests::reservation_failure_and_peak_accounting",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::heap::owned_input::tests::expanded_aliases_exceed_the_input_store_bytes",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "function::host::mixed_tests::both_packets_are_live_and_release_after_output",
+      "ignored": false,
+      "timeout_seconds": 1200
+    },
+    {
+      "name": "function::host::mixed_tests::mixed_dynamic_output_requires_a_certificate_before_effects",
+      "ignored": false,
+      "timeout_seconds": 1200
+    },
+    {
+      "name": "function::host::mixed_tests::second_packet_overflow_runs_no_handler_and_unwinds_first_packet",
+      "ignored": false,
+      "timeout_seconds": 1200
+    },
+    {
+      "name": "function::host::mixed_tests::diagnostic_metadata_outlives_the_input_store",
+      "ignored": false,
+      "timeout_seconds": 1200
+    },
+    {
+      "name": "function::host::mixed_tests::unsupported_leaf_contains_no_payload_or_child",
+      "ignored": false,
+      "timeout_seconds": 1200
+    }
+  ]
+}

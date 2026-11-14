@@ -1,6 +1,6 @@
 # ADR 0275: host functions that take an object or a vector in an execution session
 
-Status: Proposed
+Status: Accepted
 
 Base: published 404fd15dd1bbcd2db204dce4060bfe35b5d59323 (ADR 0274).
 

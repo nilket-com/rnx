@@ -16,6 +16,8 @@ mod async_functions;
 mod collection_costs;
 #[cfg(test)]
 mod collection_tests;
+#[cfg(test)]
+mod snapshot_hosts;
 
 pub(crate) struct DomainSession {
 	context: Context,
@@ -526,10 +528,9 @@ impl DomainSession {
 					let error = f.as_compile_error()?;
 					let reason = if let Some(do_move) = error.async_block_value_refusal() {
 						remedy::async_block_value(do_move)
-					} else if let Some(binding) = error.retained_async_move_refusal() {
-						remedy::retained_async_move(binding)
 					} else {
-						return None;
+						let binding = error.retained_async_move_refusal()?;
+						remedy::retained_async_move(binding)
 					};
 					Some((error, reason))
 				}) {
@@ -1338,10 +1339,7 @@ pub(crate) fn host_wait_reason(name: &str) -> &'static str {
 	match name {
 		"http::get_bytes" | "http::request_bytes" => "bytes",
 		"fs::read_bytes" => "bytes",
-		"time::from_parts" => "borrowed object input",
-		"process::run" => "argument-vector and options-object input",
 		"process::run_bytes" => "argument-vector/options input and bytes output",
-		"web::response" => "dynamic body/headers and response output",
 		_ => "host enrollment",
 	}
 }

@@ -1,5 +1,6 @@
 //! Record 0044: launch settings over the existing host supervisor.
-use rune::runtime::{Object, Value};
+use crate::host_input::Input;
+use rune::runtime::Value;
 use rune::{Context, Module};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
@@ -37,10 +38,9 @@ impl Launch {
 	}
 }
 
-fn string(value: &Value, name: &str) -> Result<String> {
+fn string(value: Input<'_>, name: &str) -> Result<String> {
 	value
-		.borrow_string_ref()
-		.map(|s| s.to_string())
+		.string()
 		.map_err(|_| format!("{name} must be a string"))
 }
 
@@ -90,49 +90,45 @@ fn resolve(path: &Path, parent: &Path) -> PathBuf {
 }
 
 struct Request {
+	arguments: Vec<String>,
 	launch: Launch,
 	timeout: u64,
 	input: Option<Vec<u8>>,
 }
 
 impl Request {
-	fn parse(program: &str, args: &Value, options: Value) -> Result<Self> {
+	fn parse(program: &str, args: Input<'_>, options: Input<'_>) -> Result<Self> {
 		if program.is_empty() {
 			return Err("program is empty".into());
 		}
 		no_nul(program, "program")?;
-		let args = args
-			.borrow_ref::<rune::runtime::Vec>()
-			.map_err(|_| "args must be a vector of strings")?;
-		for (index, value) in args.iter().enumerate() {
+		let mut arguments = Vec::new();
+		args.vector("args must be a vector of strings", |index, value| {
 			let name = format!("argument {}", index + 1);
-			no_nul(&string(value, &name)?, &name)?;
-		}
-		let options = options
-			.borrow_ref::<Object>()
-			.map_err(|_| "options must be an object")?;
+			let text = string(value, &name)?;
+			no_nul(&text, &name)?;
+			arguments.push(text);
+			Ok(())
+		})?;
 		let mut timeout = 30_000;
 		let mut input = None;
 		let mut cwd = None;
 		let mut env = Vec::new();
 		let mut clear = false;
-		for (key, value) in options.iter() {
-			match key.as_str() {
+		options.object("options must be an object", |key, value| {
+			match key {
 				"timeout_ms" => {
-					timeout = rune::from_value::<u64>(value.clone())
+					timeout = value
+						.integer::<u64>()
 						.map_err(|_| "timeout_ms must be a non-negative integer")?;
 					if !(1..=90_000).contains(&timeout) {
 						return Err("the deadline must be between 1 and 90000 ms".into());
 					}
 				}
 				"input" => {
-					input = Some(if let Ok(text) = value.borrow_string_ref() {
-						text.as_bytes().to_vec()
-					} else if let Ok(bytes) = value.borrow_ref::<rune::runtime::Bytes>() {
-						bytes.as_slice().to_vec()
-					} else {
-						return Err("input must be a String or Bytes".into());
-					});
+					input = Some(
+						value.with_bytes("input must be a String or Bytes", |b| Ok(b.to_vec()))?,
+					);
 				}
 				"cwd" => {
 					let text = string(value, "cwd")?;
@@ -143,17 +139,13 @@ impl Request {
 					cwd = Some(PathBuf::from(text));
 				}
 				"env_clear" => {
-					clear = rune::from_value::<bool>(value.clone())
-						.map_err(|_| "env_clear must be a boolean")?;
+					clear = value.boolean().ok_or("env_clear must be a boolean")?;
 				}
 				"env" => {
-					let entries = value
-						.borrow_ref::<Object>()
-						.map_err(|_| "env must be an object")?;
 					// Command's own key comparison is authoritative, notably on
 					// Windows. This only builds settings; it never starts a child.
 					let mut keys = Command::new(program);
-					for (key, value) in entries.iter() {
+					value.object("env must be an object", |key, value| {
 						if key.is_empty() || key.contains(['=', '\0']) {
 							return Err(format!(
 								"environment variable {key:?}: name must be nonempty and contain neither '=' nor NUL"
@@ -166,13 +158,10 @@ impl Request {
 								"environment variable {key:?}: duplicate name under the platform's comparison"
 							));
 						}
-						let setting = if let Ok(text) = value.borrow_string_ref() {
+						let setting = if let Ok(text) = value.string() {
 							no_nul(&text, &format!("environment variable {key:?}: value"))?;
 							Some(text.to_string())
-						} else if value
-							.borrow_ref::<Option<Value>>()
-							.is_ok_and(|v| v.is_none())
-						{
+						} else if value.none() {
 							None
 						} else {
 							return Err(format!(
@@ -180,11 +169,13 @@ impl Request {
 							));
 						};
 						env.push((key.to_string(), setting));
-					}
+						Ok(())
+					})?;
 				}
 				_ => return Err(format!("unknown option {key:?}")),
 			}
-		}
+			Ok(())
+		})?;
 		let path = Path::new(program);
 		validate_path(path, "program")?;
 		if let Some(path) = &cwd {
@@ -200,6 +191,7 @@ impl Request {
 			PathBuf::new()
 		};
 		Ok(Self {
+			arguments,
 			launch: Launch {
 				program: if explicit {
 					resolve(path, &parent).into_os_string()
@@ -217,19 +209,58 @@ impl Request {
 }
 
 pub(crate) fn run(program: &str, args: Value, options: Value, bytes: bool) -> Result<Value> {
-	let request = Request::parse(program, &args, options)
+	let request = Request::parse(program, Input::Legacy(&args), Input::Legacy(&options))
 		.map_err(|e| format!("cannot run {program}: {e}"))?;
+	launch(program, request, bytes)
+}
+fn launch(program: &str, request: Request, bytes: bool) -> Result<Value> {
 	crate::host::configured_process(
 		program,
-		args,
+		&request.arguments,
 		request.timeout,
 		request.input,
 		&request.launch,
 		bytes,
 	)
 }
+fn run_execution(
+	program: &str,
+	args: rune::host::OwnedTreeInput,
+	options: rune::host::OwnedTreeInput,
+) -> std::result::Result<Result<Value>, rune::runtime::VmError> {
+	let request = Request::parse(program, Input::owned(&args), Input::owned(&options))
+		.map_err(|e| format!("cannot run {program}: {e}"));
+	// No packet or borrowed view lives across child spawn/wait/cleanup.
+	drop(args);
+	drop(options);
+	finish_execution(request.and_then(|request| launch(program, request, false)))
+}
+pub(crate) fn finish_execution(
+	result: Result<Value>,
+) -> std::result::Result<Result<Value>, rune::runtime::VmError> {
+	if let Some(error) = crate::execute::interrupted_host_call() {
+		return Err(error);
+	}
+	Ok(result)
+}
 
-macro_rules! contract { () => { "(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behaviour is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes." }; }
+const STRING_PROCESS: rune::host::OutputCertificate = {
+	use rune::host::{HostType as T, OutputShape as S};
+	rune::host::OutputCertificate {
+		nodes: &[
+			S::Scalar(T::Unit),
+			S::Scalar(T::I64),
+			S::Scalar(T::Bool),
+			S::Scalar(T::String),
+			S::Union(&[0, 1, 2, 3]),
+			S::Object(4),
+			S::Result(5, 3),
+		],
+		root: 6,
+	}
+};
+
+macro_rules! contract { () => { "(program, args, options) -> Result<#{code, stdout, stderr, timed_out, cancelled, truncated, cut_short, unreadable}>: synchronous supervised child; run returns strict UTF-8 stdout/stderr, run_bytes returns Bytes; options: timeout_ms (default 30000, 1..=90000), input (String or Bytes), cwd, env (String values set, None removes), env_clear (default false). Explicit relative program paths always resolve against rnx's directory, even without cwd; bare names use platform lookup, whose PATH-override behavior is platform-specific. The deadline starts after spawn. Check timed_out/cancelled before code, then truncated/cut_short/unreadable before trusting capture completeness. Killed children have no code on Unix and code 1 on Windows. Nonzero exit is Ok; launch/validation failures are Err. Input delivery does not certify consumption. No global environment or directory changes." }; }
 
 pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::HostFunction>> {
 	install_with_exit(context, crate::host::exit)
@@ -240,11 +271,12 @@ pub(crate) fn install_with_exit(
 	exit: fn(i64) -> Result<()>,
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = Module::with_crate("process")?;
-	module
-		.function("run", |program: &str, args: Value, options: Value| {
-			run(program, args, options, false)
-		})
-		.build()?;
+	module.host_function_tree_inputs(
+		"run",
+		|program: &str, args: Value, options: Value| run(program, args, options, false),
+		run_execution,
+		Some(STRING_PROCESS),
+	)?;
 	module
 		.function("run_bytes", |program: &str, args: Value, options: Value| {
 			run(program, args, options, true)

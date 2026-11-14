@@ -148,6 +148,93 @@ fn description(store: &Store, value: Value, budget: &mut Budget) -> Result<Strin
 	write.map_err(|_| description_limit())?;
 	budget.text(core::str::from_utf8(&text.bytes[..text.len]).map_err(|_| invalid())?)
 }
+
+fn nominal_info(
+	n: crate::experimental_core::value::Nominal,
+	budget: &mut Budget,
+) -> Result<runtime::TypeInfo> {
+	use crate::experimental_core::nominal;
+	if let Some(rtti) = nominal::variant_rtti(n) {
+		return Ok(runtime::TypeInfo::rtti(rtti));
+	}
+	let mut bytes = [0; 256];
+	let len = nominal::name_copy(n, &mut bytes).ok_or_else(invalid)?;
+	let name = core::str::from_utf8(&bytes[..len]).map_err(|_| invalid())?;
+	let hash = nominal::hash_copy(n).ok_or_else(invalid)?;
+	// Name, ItemBuf growth, RTTI and Arc allocation are bounded by this reserve.
+	budget.charge(2048)?;
+	let kind = match nominal::shape_copy(n).ok_or_else(invalid)? {
+		nominal::Shape::Tuple(_) => runtime::RttiKind::Tuple,
+		nominal::Shape::Empty | nominal::Shape::Named => runtime::RttiKind::Empty,
+	};
+	Ok(runtime::TypeInfo::rtti(crate::sync::Arc::try_new(
+		runtime::Rtti {
+			variant_index: 0,
+			kind,
+			hash: crate::Hash::new(hash),
+			variant_hash: crate::Hash::EMPTY,
+			item: crate::ItemBuf::with_item(name.trim_start_matches("::").split("::"))?,
+			fields: runtime::new_field_map(),
+		},
+	)?))
+}
+fn type_info(
+	name: crate::experimental_core::error::TypeName,
+	budget: &mut Budget,
+) -> Result<runtime::TypeInfo> {
+	use crate::experimental_core::error::TypeName;
+	use crate::runtime::{self as rt, TypeInfo};
+	Ok(match name {
+		TypeName::Chars => TypeInfo::named::<crate::modules::string::Chars>(),
+		TypeName::Skip => TypeInfo::named::<crate::modules::iter::Skip>(),
+		TypeName::Take => TypeInfo::named::<crate::modules::iter::Take>(),
+		TypeName::Unit | TypeName::Tuple => TypeInfo::any::<rt::OwnedTuple>(),
+		TypeName::Bool => TypeInfo::named::<bool>(),
+		TypeName::Function => TypeInfo::any::<rt::Function>(),
+		TypeName::Type => TypeInfo::named::<rt::Type>(),
+		TypeName::Struct(nominal) => return nominal_info(nominal, budget),
+		TypeName::Ordering => TypeInfo::named::<core::cmp::Ordering>(),
+		TypeName::I64 => TypeInfo::named::<i64>(),
+		TypeName::U64 => TypeInfo::named::<u64>(),
+		TypeName::F64 => TypeInfo::named::<f64>(),
+		TypeName::Char => TypeInfo::named::<char>(),
+		TypeName::String => TypeInfo::any::<crate::alloc::String>(),
+		TypeName::Vec => TypeInfo::any::<rt::Vec>(),
+		TypeName::Object => TypeInfo::any::<rt::Object>(),
+		TypeName::Option => TypeInfo::any::<Option<rt::Value>>(),
+		TypeName::Result => TypeInfo::any::<core::result::Result<rt::Value, rt::Value>>(),
+		TypeName::Range => TypeInfo::named::<rt::Range>(),
+		TypeName::VecIter => TypeInfo::named::<rt::slice::Iter>(),
+		TypeName::ObjectIter => TypeInfo::named::<rt::object::RuneIter>(),
+		TypeName::OptionIter => TypeInfo::named::<crate::modules::option::Iter>(),
+		TypeName::StringSplit => {
+			TypeInfo::named::<crate::modules::string::Split<crate::alloc::String>>()
+		}
+		TypeName::CharSplit => TypeInfo::named::<crate::modules::string::Split<char>>(),
+		TypeName::RangeIter => TypeInfo::named::<rt::range::RangeIter<i64>>(),
+		TypeName::UnsignedRangeIter => TypeInfo::named::<rt::range::RangeIter<u64>>(),
+		TypeName::CharRangeIter => TypeInfo::named::<rt::range::RangeIter<char>>(),
+		TypeName::RangeInclusiveIter => {
+			TypeInfo::named::<rt::range_inclusive::RangeInclusiveIter<i64>>()
+		}
+		TypeName::UnsignedRangeInclusiveIter => {
+			TypeInfo::named::<rt::range_inclusive::RangeInclusiveIter<u64>>()
+		}
+		TypeName::CharRangeInclusiveIter => {
+			TypeInfo::named::<rt::range_inclusive::RangeInclusiveIter<char>>()
+		}
+		TypeName::RangeFromIter => TypeInfo::named::<rt::range_from::RangeFromIter<i64>>(),
+		TypeName::UnsignedRangeFromIter => TypeInfo::named::<rt::range_from::RangeFromIter<u64>>(),
+		TypeName::CharRangeFromIter => TypeInfo::named::<rt::range_from::RangeFromIter<char>>(),
+
+		TypeName::RangeTo => TypeInfo::named::<rt::RangeTo>(),
+		TypeName::RangeToInclusive => TypeInfo::named::<rt::RangeToInclusive>(),
+		TypeName::RangeInclusive => TypeInfo::named::<rt::RangeInclusive>(),
+		TypeName::RangeFull => TypeInfo::named::<rt::RangeFull>(),
+		TypeName::RangeFrom => TypeInfo::named::<rt::RangeFrom>(),
+	})
+}
+
 fn node(
 	store: &Store,
 	value: Value,
@@ -209,6 +296,7 @@ fn node(
 	let traverse = if cycle || frontier { 0 } else { len };
 	Ok((
 		TreeNode {
+			type_info: type_info(store.diagnostic_type(value).ok_or_else(invalid)?, b)?,
 			kind,
 			edges: std::vec::Vec::new(),
 			cycle,

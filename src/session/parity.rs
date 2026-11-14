@@ -9,7 +9,9 @@ mod constant_patterns;
 mod constant_structure;
 pub(crate) mod external;
 mod loop_control;
+mod snapshot_inputs;
 mod witnesses;
+
 use quote::ToTokens;
 use serde::Serialize;
 use syn::{
@@ -575,7 +577,7 @@ fn classify(
 		return ("Different result", None, false);
 	}
 	if a["outcome"] == "ok" {
-		if awaiting::reviewed_moved_pair(a, b) {
+		if awaiting::reviewed_moved_pair(a, b) || snapshot_inputs::reviewed_moved_pair(a, b) {
 			return (
 				"Intentional difference",
 				Some("snapshot-moved-argument"),
@@ -919,11 +921,11 @@ fn summary(rows: &[serde_json::Value]) -> serde_json::Value {
 	serde_json::json!({"classes":classes,"work_groups":groups})
 }
 
-// Keep every classed observation on its own line, including notebook rows.
+// Keep every classed observation and extracted source event on its own line.
 // The summary is one line so a reclassification changes only those two lines.
 fn serialize_table(value: &serde_json::Value) -> String {
 	fn render(value: &serde_json::Value, depth: usize, compact: bool) -> String {
-		if compact || value.get("class").is_some() {
+		if compact || value.get("class").is_some() || value.get("action").is_some() {
 			return serde_json::to_string(value).unwrap();
 		}
 		let pad = "\t".repeat(depth);
@@ -997,6 +999,7 @@ fn pinned_classification() {
 	let constants = constant_report();
 	let moved_json = moved_json_report();
 	let request_options = awaiting::options_report();
+	let snapshot_inputs = snapshot_inputs::report();
 	let conditionals = conditionals::report();
 	let loop_controls = loop_control::report();
 	let script_awaits = async_functions::report();
@@ -1016,6 +1019,7 @@ fn pinned_classification() {
 	all.extend(probes.iter().cloned());
 	all.extend(moved_json.as_array().unwrap().iter().cloned());
 	all.extend(request_options.as_array().unwrap().iter().cloned());
+	all.extend(snapshot_inputs.as_array().unwrap().iter().cloned());
 	all.extend(conditionals.as_array().unwrap().iter().cloned());
 	all.extend(loop_controls.as_array().unwrap().iter().cloned());
 	all.extend(script_awaits.as_array().unwrap().iter().cloned());
@@ -1023,7 +1027,7 @@ fn pinned_classification() {
 	for book in notebooks.as_array().unwrap() {
 		all.extend(book["report"]["rows"].as_array().unwrap().iter().cloned());
 	}
-	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"loop_control_probes":loop_controls,"script_await_probes":script_awaits,"block_await_probes":block_awaits,"moved_json":moved_json,"request_options":request_options,"summary":summary(&all)});
+	let report = serde_json::json!({"ledger":ledger(),"literal_sessions":literals,"hosts":hosts,"notebooks":notebooks,"constant_probes":probes,"conditional_probes":conditionals,"loop_control_probes":loop_controls,"script_await_probes":script_awaits,"block_await_probes":block_awaits,"moved_json":moved_json,"request_options":request_options,"snapshot_inputs":snapshot_inputs,"summary":summary(&all)});
 	if let Some(path) = std::env::var_os("RNX_PARITY_REPORT") {
 		std::fs::write(path, serialize_table(&report).into_bytes()).unwrap();
 	}

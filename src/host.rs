@@ -323,7 +323,7 @@ fn held_after_prefix(_stream: &'static str, _before: usize, _after: usize) {}
 ///
 /// Record 0025's row for the delivery-failure gate: the injected failure is
 /// consulted only on the branch that observes the stop, and on Windows a write
-/// that is cancelled or finds a closed reader returns before that branch is
+/// that is canceled or finds a closed reader returns before that branch is
 /// ever reached. So the Unix fixture's escaped descendant is not what this
 /// needs replacing with — what it needs is the writer standing still at the
 /// one place the injection lives, while the call's cleanup runs behind it.
@@ -570,7 +570,7 @@ fn capture(
 				));
 			}
 			Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
-			// A read cancelled from outside — which is how Windows reaches one
+			// A read canceled from outside — which is how Windows reaches one
 			// blocked in the kernel — is this call's own doing, so the stream
 			// was cut short rather than unreadable.
 			Err(e) if aborted(&e) => {
@@ -593,22 +593,11 @@ fn capture(
 /// from even though it no longer outlives the call.
 fn run_child_with(
 	program: &str,
-	arguments: Value,
+	args: &[String],
 	timeout_ms: u64,
 	input: Option<Vec<u8>>,
 	launch: Option<&crate::process::Launch>,
 ) -> Result<Ran, String> {
-	let values = arguments
-		.borrow_ref::<rune::runtime::Vec>()
-		.map_err(|e| about("run", program, e))?;
-	let args: Vec<String> = values
-		.iter()
-		.map(|v| {
-			v.borrow_string_ref()
-				.map(|s| s.to_string())
-				.map_err(|e| about("run", program, e))
-		})
-		.collect::<Result<_, _>>()?;
 	if timeout_ms == 0 || timeout_ms > 90_000 {
 		return Err(about(
 			"run",
@@ -694,7 +683,7 @@ fn run_child_with(
 		worker
 	});
 	let mut timed_out = false;
-	let mut cancelled = false;
+	let mut canceled = false;
 	// Each pause asked for is a fraction of how long the child has already
 	// run, so the pauses are short while the child is young and grow to what
 	// this loop used for everything before. Doubling from a short start was
@@ -711,9 +700,9 @@ fn run_child_with(
 			Ok(None) => {}
 			Err(e) => break Err(about("run", program, e)),
 		}
-		cancelled = crate::platform::interrupted();
+		canceled = crate::platform::interrupted();
 		timed_out = Instant::now() >= deadline;
-		if timed_out || cancelled {
+		if timed_out || canceled {
 			group.end();
 			break child.wait().map_err(|e| about("run", program, e));
 		}
@@ -729,7 +718,7 @@ fn run_child_with(
 	// and record 0020 measured interruption latency in single milliseconds;
 	// spending a hundred of them collecting output nobody asked for would
 	// undo that. Anything unread is reported as `cut_short`.
-	let allowance = if cancelled {
+	let allowance = if canceled {
 		Duration::ZERO
 	} else {
 		cleanup_allowance()
@@ -816,11 +805,11 @@ fn run_child_with(
 	// interrupt. The wait loop stopped watching for one when it ended, so it
 	// is read again here: the readers stop on it themselves, and without this
 	// the call would report a capture cut short for no reason it could name.
-	let cancelled = cancelled || crate::platform::interrupted();
+	let canceled = canceled || crate::platform::interrupted();
 	Ok(Ran {
 		code: status.code(),
 		timed_out,
-		cancelled,
+		canceled,
 		out,
 		err,
 	})
@@ -924,7 +913,7 @@ fn deliver(
 				return DeliveryOutcome::ChildStoppedReading;
 			}
 			Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
-			// A write cancelled from outside is this call's own doing too:
+			// A write canceled from outside is this call's own doing too:
 			// abandoned, not failed.
 			Err(e) if aborted(&e) => return DeliveryOutcome::Abandoned,
 			Err(e) => return DeliveryOutcome::Failed(e.to_string()),
@@ -970,7 +959,7 @@ fn injected_delivery_failure() -> Option<String> {
 	None
 }
 
-/// Whether a failed write was cancelled rather than broken. Windows reaches a
+/// Whether a failed write was canceled rather than broken. Windows reaches a
 /// write blocked in the kernel by cancelling it from outside, and reports
 /// `ERROR_OPERATION_ABORTED`; on Unix nothing cancels a write, so nothing is
 /// aborted.
@@ -1005,7 +994,7 @@ enum DeliveryOutcome {
 struct Ran {
 	code: Option<i32>,
 	timed_out: bool,
-	cancelled: bool,
+	canceled: bool,
 	out: Captured,
 	err: Captured,
 }
@@ -1071,7 +1060,7 @@ fn text_reply(program: &str, ran: Ran, sibling: &str) -> Result<Value, String> {
 	let stderr = decode(program, "standard error", &ran.err, sibling)?;
 	crate::json::parse(
 		&serde_json::json!({
-			"code": ran.code, "timed_out": ran.timed_out, "cancelled": ran.cancelled,
+			"code": ran.code, "timed_out": ran.timed_out, "cancelled": ran.canceled,
 			"stdout": stdout, "stderr": stderr, "truncated": ran.truncated(),
 			"cut_short": ran.cut_short(), "unreadable": ran.unreadable(),
 		})
@@ -1082,7 +1071,7 @@ fn text_reply(program: &str, ran: Ran, sibling: &str) -> Result<Value, String> {
 /// The facade supplies launch settings; capture and cleanup stay in run_child_with.
 pub(crate) fn configured_process(
 	program: &str,
-	arguments: Value,
+	arguments: &[String],
 	timeout_ms: u64,
 	input: Option<Vec<u8>>,
 	launch: &crate::process::Launch,
@@ -1114,7 +1103,7 @@ fn bytes_reply(ran: Ran) -> Result<Value, String> {
 	};
 	put("code", code)?;
 	put("timed_out", rune::to_value(ran.timed_out).map_err(error)?)?;
-	put("cancelled", rune::to_value(ran.cancelled).map_err(error)?)?;
+	put("cancelled", rune::to_value(ran.canceled).map_err(error)?)?;
 	put("truncated", rune::to_value(ran.truncated()).map_err(error)?)?;
 	put("cut_short", rune::to_value(ran.cut_short()).map_err(error)?)?;
 	put(

@@ -49,6 +49,7 @@ mod format;
 mod fs;
 mod fs_platform;
 mod host;
+mod host_input;
 mod http;
 #[cfg(feature = "http-server")]
 mod http_server;

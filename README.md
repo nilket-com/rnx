@@ -98,8 +98,17 @@ frontend forms remain refused. Ordinary functions keep the legacy restriction
 on `.await`; awaiting an ordinary function is refused with advice to remove it.
 An async call must be awaited directly; binding its future or taking its
 function value is refused.
-Request options are snapshotted in full: a moved value inside them is an access
-error at the call, including in a field the parser would ignore. Unsupported forms are refused
+`process::run`, `time::from_parts`, and string forms of `web::response` accept
+object and vector inputs through bounded owned snapshots. The snapshotted tree
+contains scalars, strings, vectors, tuples, objects, and Option, down to the
+existing depth and frontier bounds. Result, struct, enum, closure, function,
+host values, and anything beyond a bound are diagnostic leaves that the handler
+cannot enter. A moved value within the snapshotted tree is an access error at
+the call, including in a field the handler would ignore; values hidden under
+leaves are not inspected. This rule also applies to `http::request` options.
+A process interrupt is terminal, reaps the child, and leaves the session usable;
+a timeout remains a normal result with `timed_out`. Bytes forms remain refused.
+Unsupported forms are refused
 before effects, without replay or migration to legacy. `map(f)` with an
 unknown-arity retained closure is still unsupported. `:dep` and `:depv` restart on the selected engine with an empty session;
 reopen commands preserve that choice. Explicitly enrolled host values can be

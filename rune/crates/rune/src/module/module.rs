@@ -417,6 +417,60 @@ impl Module {
 		self.function_inner(data, Docs::EMPTY, None)
 	}
 
+	/// Enroll one of the sealed mixed owned-tree input signatures.
+	/// Packets remain input-only; dynamic outputs require a certificate.
+	/// ```compile_fail,E0277
+	/// use rune::{Module, Value};
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = Module::new();
+	/// m.host_function_tree_inputs("bad", |_: Value| (),
+	///     |_: i64, _: OwnedTreeInput| (), None).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::{Module, Value};
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = Module::new();
+	/// m.host_function_tree_inputs("bad", |_: Value| (),
+	///     |tree: OwnedTreeInput, _: &str| tree, None);
+	/// ```
+	/// ```compile_fail,E0277
+	/// use rune::{Module, Value, VmError};
+	/// use rune::host::OwnedTreeInput;
+	/// let mut m = Module::new();
+	/// m.host_function_tree_inputs("nested", |_: Value| (),
+	///     |_: OwnedTreeInput, _: &str| -> Result<Result<bool, String>, VmError> { Ok(Ok(true)) }, None);
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn host_function_tree_inputs<N, F, A, G, B>(
+		&mut self,
+		name: N,
+		legacy: F,
+		adapter: G,
+		certificate: Option<crate::function::host::OutputCertificate>,
+	) -> Result<ItemFnMut<'_>, ContextError>
+	where
+		N: IntoComponent,
+		F: Function<A, crate::function::Plain, Return: MaybeTypeOf>,
+		A: FunctionArgs,
+		G: crate::function::host::MixedTreeInputFunction<B, Return: MaybeTypeOf>,
+		B: FunctionArgs,
+	{
+		let mut data = FunctionData::new::<N, F, A, crate::function::Plain>(name, legacy)?;
+		let signature = G::tree_signature();
+		let handler = crate::runtime::FunctionHandler::new(move |stack, addr, args, output| {
+			adapter.call(stack, addr, args, output)
+		})?;
+		data.alternate_host = Some(crate::function::host::AlternateHost {
+			await_only: false,
+			handler,
+			enrollment: crate::function::host::HostEnrollment {
+				signature,
+				certificate,
+			},
+		});
+		self.function_inner(data, Docs::EMPTY, None)
+	}
+
 	/// Enroll a session-only direct awaited host call, preserving its legacy future.
 	/// The adapter drives owned native work without callbacks or script reentry.
 	/// Ordinary calls and future values are refused by the execution compiler.
@@ -800,7 +854,7 @@ impl Module {
 				return Err(ContextError::InvalidConstValue {
 					item,
 					error: Box::try_new(error)?,
-				})
+				});
 			}
 		};
 

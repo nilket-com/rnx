@@ -1,5 +1,6 @@
 //! Pure, bounded web helpers. Inputs are borrowed; results own their payload.
 use crate::host::HostFunction;
+use crate::host_input::Input;
 use reqwest::header::HeaderName;
 use rune::{
 	Context, Module, Value,
@@ -232,35 +233,40 @@ fn header_error(key: &str, index: Option<usize>, error: &str) -> String {
 	let field = index.map_or(String::new(), |i| format!(" value {i}"));
 	format!("web::response header {shown:?}{field}: {error}")
 }
-fn values(v: &Value, mut visit: impl FnMut(&[u8]) -> Result<(), String>) -> Result<(), String> {
-	if v.borrow_string_ref().is_ok() || v.borrow_ref::<Bytes>().is_ok() {
-		return with_bytes(v, visit);
+fn values(v: Input<'_>, mut visit: impl FnMut(&[u8]) -> Result<(), String>) -> Result<(), String> {
+	if v.is_bytes() {
+		return v.with_bytes(STRING_OR_BYTES_ERROR, visit);
 	}
-	let list = v
-		.borrow_ref::<RuneVec>()
-		.map_err(|_| "web: header values want String, Bytes or a vector")?;
-	bounded(list.len(), HEADERS, "response header values")?;
-	for v in list.iter() {
-		with_bytes(v, &mut visit)?;
-	}
+	// Check length before inspecting any element, as on the stock path.
+	let len = v.vector_len("web: header values want String, Bytes or a vector")?;
+	bounded(len, HEADERS, "response header values")?;
+	v.vector(
+		"web: header values want String, Bytes or a vector",
+		|_, value| value.with_bytes(STRING_OR_BYTES_ERROR, &mut visit),
+	)?;
 	Ok(())
 }
 // Only the execution adapter narrows the body to a string. Both entries use
 // the same validation and constructor, and copy their result payload.
 enum ResponseBody<'a> {
 	Legacy(&'a Value),
+	Owned(Input<'a>),
 	Text(&'a str),
 }
 impl ResponseBody<'_> {
 	fn validate(&self, code: i64) -> Result<(), String> {
 		match self {
 			Self::Legacy(value) => with_bytes(value, |b| status(code, b.len())),
+			Self::Owned(value) => {
+				value.with_bytes(STRING_OR_BYTES_ERROR, |b| status(code, b.len()))
+			}
 			Self::Text(text) => status(code, text.len()),
 		}
 	}
 	fn copy(&self) -> Result<Value, String> {
 		match self {
 			Self::Legacy(value) => copy_payload(value),
+			Self::Owned(value) => value.copy_bytes(STRING_OR_BYTES_ERROR),
 			Self::Text(text) => rune::to_value((*text).to_owned()).map_err(fail),
 		}
 	}
@@ -276,28 +282,27 @@ fn response(
 		status_code,
 		ResponseBody::Legacy(&body),
 		content_type,
-		extra,
+		Input::Legacy(&extra),
 	)
 }
 fn response_body(
 	status_code: i64,
 	body: ResponseBody<'_>,
 	content_type: &str,
-	extra: Value,
+	extra: Input<'_>,
 ) -> Result<Value, String> {
 	body.validate(status_code)?;
 	bounded(content_type.len(), HEAD - 64, "response content type")?;
 	header_value(content_type.as_bytes())
 		.map_err(|e| format!("web::response content_type: {e}"))?;
-	let headers = extra
-		.borrow_ref::<Object>()
-		.map_err(|_| "web: response headers want an object")?;
-	bounded(headers.len() + 1, HEADERS, "response header names")?;
-	let mut names = Vec::with_capacity(headers.len());
+	let headers = extra;
+	let header_count = headers.object_len("web: response headers want an object")?;
+	bounded(header_count + 1, HEADERS, "response header names")?;
+	let mut names = Vec::with_capacity(header_count);
 	let mut count = 1usize;
 	let mut total = 64 + "content-type".len() + content_type.len() + 4;
 	bounded(total, HEAD, "response headers")?;
-	for (key, v) in headers.iter() {
+	headers.object("web: response headers want an object", |key, v| {
 		bounded(key.len(), HEAD - total, "response header name")
 			.map_err(|e| header_error(key, None, &e))?;
 		let name = header_name(key).map_err(|e| header_error(key, None, &e))?;
@@ -324,7 +329,8 @@ fn response_body(
 		})
 		.map_err(|e| header_error(key, Some(index), &e))?;
 		names.push(name);
-	}
+		Ok(())
+	})?;
 	let mut out_headers = Object::new();
 	let mut ct = RuneVec::new();
 	ct.push(rune::to_value(content_type.to_owned()).map_err(fail)?)
@@ -334,22 +340,26 @@ fn response_body(
 		"content-type",
 		rune::to_value(ct).map_err(fail)?,
 	)?;
-	for (key, v) in headers.iter() {
+	headers.object("web: response headers want an object", |key, v| {
 		let mut list = RuneVec::new();
-		if v.borrow_string_ref().is_ok() || v.borrow_ref::<Bytes>().is_ok() {
-			list.push(copy_payload(v)?).map_err(fail)?;
+		if v.is_bytes() {
+			list.push(v.copy_bytes(STRING_OR_BYTES_ERROR)?)
+				.map_err(fail)?;
 		} else {
-			let inputs = v.borrow_ref::<RuneVec>().map_err(fail)?;
-			for input in inputs.iter() {
-				list.push(copy_payload(input)?).map_err(fail)?;
-			}
+			v.vector(
+				"web: header values want String, Bytes or a vector",
+				|_, input| {
+					list.push(input.copy_bytes(STRING_OR_BYTES_ERROR)?)
+						.map_err(fail)
+				},
+			)?;
 		}
 		put(
 			&mut out_headers,
 			&key.to_ascii_lowercase(),
 			rune::to_value(list).map_err(fail)?,
-		)?;
-	}
+		)
+	})?;
 	let mut out = Object::new();
 	put(
 		&mut out,
@@ -393,7 +403,7 @@ fn simple_response_execution(
 		status,
 		ResponseBody::Text(text),
 		content_type,
-		rune::to_value(Object::new()).map_err(fail)?,
+		Input::Legacy(&rune::to_value(Object::new()).map_err(fail)?),
 	)
 }
 fn html_execution(status: i64, body: rune::host::StringOrRejected) -> Result<Value, String> {
@@ -401,6 +411,19 @@ fn html_execution(status: i64, body: rune::host::StringOrRejected) -> Result<Val
 }
 fn text_execution(status: i64, body: rune::host::StringOrRejected) -> Result<Value, String> {
 	simple_response_execution(status, body, TEXT_TYPE)
+}
+fn response_execution(
+	status: i64,
+	body: rune::host::OwnedTreeInput,
+	content_type: &str,
+	headers: rune::host::OwnedTreeInput,
+) -> Result<Value, String> {
+	response_body(
+		status,
+		ResponseBody::Owned(Input::owned(&body)),
+		content_type,
+		Input::owned(&headers),
+	)
 }
 const STRING_RESPONSE: rune::host::OutputCertificate = {
 	use rune::host::{HostType as T, OutputShape as S};
@@ -422,6 +445,10 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 	let mut module = Module::with_crate("web")?;
 	let mut registered = Vec::new();
 	macro_rules! register {
+		(tree_input $name:literal, $function:expr, $adapter:expr, $certificate:expr, $doc:literal) => {
+			module.host_function_tree_inputs($name, $function, $adapter, Some($certificate))?;
+			register!(@record $name, $doc);
+		};
 		(string_input $name:literal, $function:expr, $adapter:expr, $certificate:expr, $doc:literal) => {
 			module.host_function_string_input($name, $function, $adapter, Some($certificate))?;
 			register!(@record $name, $doc);
@@ -466,8 +493,8 @@ pub fn install(context: &mut Context) -> crate::Result<Vec<HostFunction>> {
 		"parse_form(String|Bytes) -> Result<Object>: URL-encoded form, + is space, first duplicate wins; empty pairs/names retained; invalid UTF-8 refused including duplicates; <=1 MiB, <=1024 raw pairs; borrowed"
 	);
 	register!(
-		"response",
-		response,
+		tree_input "response",
+		response, response_execution, STRING_RESPONSE,
 		"response(status, String|Bytes body, content_type, headers) -> Result<Object>: canonical response; scalar/vector String|Bytes headers; empty vectors accepted; lowercase names, duplicates/reserved names refused; 200..599; 204/304 empty; body <=1 MiB; <=64 names/values and 16 KiB headers; all inputs borrowed, output independent"
 	);
 	register!(

@@ -13,6 +13,7 @@ mod sealed {
 	pub trait Callable<A> {}
 	pub trait StringCallable<A> {}
 	pub trait TreeCallable<A> {}
+	pub trait MixedTreeCallable<A> {}
 }
 
 // One declaration also generates the exhaustive negative-control inventory.
@@ -312,6 +313,22 @@ impl<T: HostScalar> HostOutput for Result<T, crate::runtime::VmError> {
 	const SHAPE: HostOutputKind = HostOutputKind::Scalar(T::KIND);
 }
 
+// ADR0275: terminal conversion errors remain distinct from calendar Result errors.
+impl sealed::Output for Result<Result<i64, std::string::String>, crate::runtime::VmError> {}
+impl HostOutput for Result<Result<i64, std::string::String>, crate::runtime::VmError> {
+	const SHAPE: HostOutputKind = HostOutputKind::Result(HostType::I64, HostType::String);
+}
+
+impl sealed::Output
+	for Result<Result<crate::runtime::Value, std::string::String>, crate::runtime::VmError>
+{
+}
+impl HostOutput
+	for Result<Result<crate::runtime::Value, std::string::String>, crate::runtime::VmError>
+{
+	const SHAPE: HostOutputKind = HostOutputKind::ResultDynamicString;
+}
+
 // These concrete certificates deliberately do not implement HostScalar.
 impl sealed::Output for crate::runtime::Value {}
 impl HostOutput for crate::runtime::Value {
@@ -592,6 +609,62 @@ where
 	}
 }
 
+/// The three mixed-position signatures; the single-input API stays separate.
+#[doc(hidden)]
+pub trait MixedTreeInputFunction<A>: TreeInputFunction<A> + sealed::MixedTreeCallable<A> {}
+
+// ADR0275: only the three reviewed mixed positions, not a general HostArgument.
+macro_rules! mixed_tree_signature {
+	(($($arg:ty),*), ($($rust:ty),*), [$($kind:expr),*], $n:expr) => {
+		impl<F, R> sealed::MixedTreeCallable<($($arg,)*)> for F where
+			F: Fn($($rust),*) -> R + Function<($($arg,)*), Plain, Return = R>, R: HostOutput {}
+		impl<F, R> MixedTreeInputFunction<($($arg,)*)> for F where
+			F: Fn($($rust),*) -> R + Function<($($arg,)*), Plain, Return = R>, R: HostOutput {}
+		impl<F, R> sealed::TreeCallable<($($arg,)*)> for F where
+			F: Fn($($rust),*) -> R + Function<($($arg,)*), Plain, Return = R>, R: HostOutput {}
+		impl<F, R> TreeInputFunction<($($arg,)*)> for F where
+			F: Fn($($rust),*) -> R + Function<($($arg,)*), Plain, Return = R>, R: HostOutput
+		{
+			fn tree_signature() -> HostSignature {
+				HostSignature { arity: $n, arguments: [$($kind),*], output: R::SHAPE }
+			}
+		}
+	};
+}
+mixed_tree_signature!(
+	(Ref<str>, OwnedTreeInput, OwnedTreeInput),
+	(&str, OwnedTreeInput, OwnedTreeInput),
+	[
+		HostType::String,
+		HostType::OwnedTreeInput,
+		HostType::OwnedTreeInput,
+		HostType::Unit
+	],
+	3
+);
+mixed_tree_signature!(
+	(OwnedTreeInput, Ref<str>),
+	(OwnedTreeInput, &str),
+	[
+		HostType::OwnedTreeInput,
+		HostType::String,
+		HostType::Unit,
+		HostType::Unit
+	],
+	2
+);
+mixed_tree_signature!(
+	(i64, OwnedTreeInput, Ref<str>, OwnedTreeInput),
+	(i64, OwnedTreeInput, &str, OwnedTreeInput),
+	[
+		HostType::I64,
+		HostType::OwnedTreeInput,
+		HostType::String,
+		HostType::OwnedTreeInput
+	],
+	4
+);
+
 #[cfg(test)]
 mod string_input_controls {
 	use super::*;
@@ -641,3 +714,6 @@ mod string_input_controls {
 		assert!(c.host(Hash::type_hash(["y", "f"])).is_none());
 	}
 }
+
+#[cfg(test)]
+mod mixed_tests;

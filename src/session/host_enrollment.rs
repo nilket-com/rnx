@@ -1,6 +1,9 @@
 //! ADR0247: isolated executed witnesses; no ambient environment enters receipts.
 use serde_json::Value;
 const NAMES: &[&str] = &[
+	"process::run",
+	"time::from_parts",
+	"web::response",
 	"process::exit",
 	"fs::metadata",
 	"fs::read_dir",
@@ -73,6 +76,9 @@ fn child_witness() {
 		return;
 	};
 	let input = match name.as_str() {
+		"process::run" => "process::run(\"\",[],#{})",
+		"time::from_parts" => "time::from_parts(#{year:1970,month:1,day:1},\"UTC\")",
+		"web::response" => "web::response(200,\"body\",\"text/plain\",#{\"x\":[\"a\",\"b\"]})",
 		"web::escape_html" => r#"web::escape_html("<&é\u{0}>")"#,
 		"process::exit" => "process::exit(0)",
 		"fs::metadata" => {
@@ -134,9 +140,9 @@ fn enrolled_executed_witnesses() {
 fn resolved_refusals_preserve_aliases_and_first_cause() {
 	use super::domain_session::{DomainSession, transcripts::parity_new};
 	for source in [
-		"process::run(\"\",[],#{})",
-		"use process::run as save; save(\"\",[],#{})",
-		"use process::run; run(\"\",[],#{})",
+		"process::run_bytes(\"\",[],#{})",
+		"use process::run_bytes as save; save(\"\",[],#{})",
+		"use process::run_bytes; run(\"\",[],#{})",
 	] {
 		let mut session = DomainSession::for_frontend(
 			crate::routing_inventory::session_parity_context().unwrap(),
@@ -150,7 +156,9 @@ fn resolved_refusals_preserve_aliases_and_first_cause() {
 			assert!(text.contains("imports"), "first cause lost: {result}");
 		} else {
 			assert!(
-				text.contains("process::run needs argument-vector and options-object input"),
+				text.contains(
+					"process::run_bytes needs argument-vector/options input and bytes output"
+				),
 				"{result}"
 			);
 			assert!(text.contains("without --engine=execution"), "{result}");
@@ -174,9 +182,9 @@ impl Drop for Scratch {
 #[test]
 fn compiler_reports_resolved_host_for_imported_and_aliased_calls() {
 	for source in [
-		"pub fn main(){process::run(\"\",[],#{})}",
-		"use process::run as save; pub fn main(){save(\"\",[],#{})}",
-		"use process::run;pub fn main(){run(\"\",[],#{})}",
+		"pub fn main(){process::run_bytes(\"\",[],#{})}",
+		"use process::run_bytes as save; pub fn main(){save(\"\",[],#{})}",
+		"use process::run_bytes;pub fn main(){run_bytes(\"\",[],#{})}",
 	] {
 		let context = crate::routing_inventory::session_parity_context().unwrap();
 		let mut sources = rune::Sources::new();
@@ -202,7 +210,10 @@ fn compiler_reports_resolved_host_for_imported_and_aliased_calls() {
 				_ => None,
 			})
 			.expect("resolved host diagnostic");
-		assert_eq!(host.to_string().trim_start_matches("::"), "process::run");
+		assert_eq!(
+			host.to_string().trim_start_matches("::"),
+			"process::run_bytes"
+		);
 	}
 }
 

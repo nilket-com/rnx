@@ -6,7 +6,7 @@ id	mode	reason	fixture	clock
 0004	admission-only	stock-fails		
 0005	admission-only	stock-fails		
 0006	admission-only	stock-fails		
-0007	admission-only	fresh-refuses-Native		
+0007	admission-only	fresh-refuses-Method		
 0008	admission-only	stock-fails		
 0009	admission-only	stock-fails		
 0010	admission-only	stock-fails		
@@ -71,7 +71,7 @@ id	mode	reason	fixture	clock
 0069	admission-only	stock-fails		
 0070	admission-only	stock-fails		
 0071	admission-only	stock-fails		
-0072	admission-only	fresh-refuses-Native		
+0072	admission-only	fresh-refuses-Method		
 0073	admission-only	stock-fails		
 0074	admission-only	stock-fails		
 0075	admission-only	stock-fails		

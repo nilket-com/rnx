@@ -87,12 +87,12 @@
 			{"class":"Equal","domain":{"outcome":"ok","value":"Err(\"cannot resolve zone \\\"\\\": failed to find time zone `` in time zone database\")"},"domain_worse":false,"function":"time::rfc3339","input":"time::rfc3339(0,\"\")","legacy":{"outcome":"ok","value":"Err(\"cannot resolve zone \\\"\\\": failed to find time zone `` in time zone database\")"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"\"1\""},"domain_worse":false,"function":"text::group_digits","input":"text::group_digits(1)","legacy":{"outcome":"ok","value":"\"1\""},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok(\"{\\\"a\\\":[1,2],\\\"b\\\":\\\"x\\\"}\"), Err(\"cannot serialize a result at the value itself\"))"},"domain_worse":false,"function":"json::stringify","input":"(json::stringify(#{a:[1,2],b:Some(\"x\")}),json::stringify(Ok(1)))","legacy":{"outcome":"ok","value":"(Ok(\"{\\\"a\\\":[1,2],\\\"b\\\":\\\"x\\\"}\"), Err(\"cannot serialize a result at the value itself\"))"},"wording_rule":null},
-			{"class":"Refused for a host function","construct":"process::run","function":"process::run","input":"process::run(\"\",[],#{})","input_shape":"Value args/options","reason":"argument-vector and options-object input","work_group":"argument-vector and options-object input"},
 			{"class":"Refused for a host function","construct":"process::run_bytes","function":"process::run_bytes","input":"process::run_bytes(\"\",[],#{})","input_shape":"Value args/options","reason":"argument-vector/options input and bytes output","work_group":"argument-vector/options input and bytes output"},
+			{"class":"Equal","domain":{"outcome":"ok","value":"Err(\"cannot run : program is empty\")"},"domain_worse":false,"function":"process::run","input":"process::run(\"\",[],#{})","legacy":{"outcome":"ok","value":"Err(\"cannot run : program is empty\")"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"Err(\"cannot exit: this is a session, not a script; use :quit\")"},"domain_worse":false,"function":"process::exit","input":"process::exit(0)","legacy":{"outcome":"ok","value":"Err(\"cannot exit: this is a session, not a script; use :quit\")"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"\"&lt;&amp;é\\0&gt;\""},"domain_worse":false,"function":"web::escape_html","input":"web::escape_html(\"<&é\\u{0}>\")","legacy":{"outcome":"ok","value":"\"&lt;&amp;é\\0&gt;\""},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok({\"a\": \"one two\"}), Err(\"web: expected String or Bytes\"), Err(\"web: decoded component is not UTF-8\"))"},"domain_worse":false,"function":"web::parse_form","input":"(web::parse_form(\"a=one+two&a=ignored\"),web::parse_form(42),web::parse_form(\"%FF=x\"))","legacy":{"outcome":"ok","value":"(Ok({\"a\": \"one two\"}), Err(\"web: expected String or Bytes\"), Err(\"web: decoded component is not UTF-8\"))"},"wording_rule":null},
-			{"class":"Refused for a host function","construct":"web::response","function":"web::response","input":"web::response(200,#{},\"\",())","input_shape":"Value options/body","reason":"dynamic body/headers and response output","work_group":"dynamic body/headers and response output"},
+			{"class":"Equal","domain":{"outcome":"ok","value":"Ok({\"body\": \"body\", \"headers\": {\"content-type\": [\"text/plain\"], \"x\": [\"a\", \"b\"]}, \"status\": 200})"},"domain_worse":false,"function":"web::response","input":"web::response(200,\"body\",\"text/plain\",#{\"x\":[\"a\",\"b\"]})","legacy":{"outcome":"ok","value":"Ok({\"body\": \"body\", \"headers\": {\"content-type\": [\"text/plain\"], \"x\": [\"a\", \"b\"]}, \"status\": 200})"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok({\"body\": \"<b>hi</b>\", \"headers\": {\"content-type\": [\"text/html; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"},"domain_worse":false,"function":"web::html","input":"(web::html(200,\"<b>hi</b>\"),web::html(199,42))","legacy":{"outcome":"ok","value":"(Ok({\"body\": \"<b>hi</b>\", \"headers\": {\"content-type\": [\"text/html; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok({\"body\": \"hello\", \"headers\": {\"content-type\": [\"text/plain; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"},"domain_worse":false,"function":"web::text","input":"(web::text(200,\"hello\"),web::text(199,42))","legacy":{"outcome":"ok","value":"(Ok({\"body\": \"hello\", \"headers\": {\"content-type\": [\"text/plain; charset=utf-8\"]}, \"status\": 200}), Err(\"web: expected String or Bytes\"))"},"wording_rule":null},
 			{"class":"Refused for a host function","construct":"fs::read_bytes","function":"fs::read_bytes","input":"fs::read_bytes(\"\")","input_shape":"&str","reason":"bytes","work_group":"bytes"},
@@ -102,7 +102,7 @@
 			{"class":"Equal","domain":{"outcome":"ok","value":"(\"file\", 3, false, false, true, true)"},"domain_worse":false,"function":"fs::metadata","input":"let m=fs::metadata(\"a.txt\").unwrap(); (m.kind,m.size,m.readonly,m.symlink,m.modified_ms>0,fs::metadata(\"missing\").is_err())","legacy":{"outcome":"ok","value":"(\"file\", 3, false, false, true, true)"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok([\"a.txt\", \"empty\"]), Ok([]), true)"},"domain_worse":false,"function":"fs::read_dir","input":"(fs::read_dir(\".\"),fs::read_dir(\"empty\"),fs::read_dir(\"missing\").is_err())","legacy":{"outcome":"ok","value":"(Ok([\"a.txt\", \"empty\"]), Ok([]), true)"},"wording_rule":null},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok({\"day\": 1, \"hour\": 0, \"millisecond\": 0, \"minute\": 0, \"month\": 1, \"offset_seconds\": 0, \"second\": 0, \"weekday\": 4, \"year\": 1970, \"zone\": \"UTC\"}), true)"},"domain_worse":false,"function":"time::parts","input":"(time::parts(0,\"UTC\"),time::parts(0,\"not-a-zone\").is_err())","legacy":{"outcome":"ok","value":"(Ok({\"day\": 1, \"hour\": 0, \"millisecond\": 0, \"minute\": 0, \"month\": 1, \"offset_seconds\": 0, \"second\": 0, \"weekday\": 4, \"year\": 1970, \"zone\": \"UTC\"}), true)"},"wording_rule":null},
-			{"class":"Refused for a host function","construct":"time::from_parts","function":"time::from_parts","input":"time::from_parts(#{},\"\")","input_shape":"Object: outside typed input set","reason":"borrowed object input","work_group":"borrowed object input"},
+			{"class":"Equal","domain":{"outcome":"ok","value":"Ok(0)"},"domain_worse":false,"function":"time::from_parts","input":"time::from_parts(#{year:1970,month:1,day:1},\"UTC\")","legacy":{"outcome":"ok","value":"Ok(0)"},"wording_rule":null},
 			{"class":"Intentional difference","construct":"time::sleep","domain":{"message":"refused: time::sleep is asynchronous; await its call as time::sleep(...).await (input 1, line 1, column 1)","origin":null,"outcome":"refused"},"domain_worse":false,"function":"time::sleep","input":"time::sleep(0)","legacy":{"outcome":"ok","value":"<::std::future::Future>"},"wording_rule":"direct-host-await-required","work_group":"direct host await"},
 			{"class":"Equal","construct":"time::sleep","domain":{"outcome":"ok","value":"Ok(())"},"domain_worse":false,"function":"time::sleep","input":"time::sleep(0).await","legacy":{"outcome":"ok","value":"Ok(())"},"wording_rule":null,"work_group":"direct host await"},
 			{"class":"Equal","domain":{"outcome":"ok","value":"(Ok([\"a\", \"b c\"]), Ok([]), Err(\"split_max needs a count of zero or more, not -1\"))"},"domain_worse":false,"function":"text::split_max","input":"(text::split_max(\"a b c\",2),text::split_max(\"\",0),text::split_max(\"a\",-1))","legacy":{"outcome":"ok","value":"(Ok([\"a\", \"b c\"]), Ok([]), Err(\"split_max needs a count of zero or more, not -1\"))"},"wording_rule":null},
@@ -132,81 +132,21 @@
 				{
 					"classified_sites": 11,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let (x, y) = (2, 3); let shared = [1]; let effects = []; fn f() { 10 } struct Boxed { value } let old = f; let c = || f() + shared[0]; let b = Boxed { value: 7 }; x + y",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "effects.push(1); fn f() { 20 } (old(), f(), c(), b.value, b is Boxed)",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let x = x + 5; let [left, right] = [8,9]; let #{a: renamed} = #{a: 4}; (x,y,left,right,renamed,effects.len())",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "fn f() { 99 } let broken = ;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "new_name",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "(x, shared, f(), effects.len())",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "struct Boxed { other }",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "while true {} ",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "x",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "computed",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "x",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "x",
-							"session": "reset"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "x",
-							"session": "session"
-						}
+						{"action":"eval","input":"let (x, y) = (2, 3); let shared = [1]; let effects = []; fn f() { 10 } struct Boxed { value } let old = f; let c = || f() + shared[0]; let b = Boxed { value: 7 }; x + y","session":"session"},
+						{"action":"eval","input":"effects.push(1); fn f() { 20 } (old(), f(), c(), b.value, b is Boxed)","session":"session"},
+						{"action":"eval","input":"let x = x + 5; let [left, right] = [8,9]; let #{a: renamed} = #{a: 4}; (x,y,left,right,renamed,effects.len())","session":"session"},
+						{"action":"eval","input":"fn f() { 99 } let broken = ;","session":"session"},
+						{"action":"eval","input":"shared.push(2); let x = 99; let new_name = 1; panic!(\"partial\");","session":"session"},
+						{"action":"eval","input":"new_name","session":"session"},
+						{"action":"eval","input":"(x, shared, f(), effects.len())","session":"session"},
+						{"action":"eval","input":"struct Boxed { other }","session":"session"},
+						{"action":"eval","input":"while true {} ","session":"session"},
+						{"action":"eval","input":"x","session":"session"},
+						{"action":"unclassified","input":"computed","session":"session"},
+						{"action":"eval","input":"x","session":"session"},
+						{"action":"eval","input":"x","session":"reset"},
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"eval","input":"x","session":"session"}
 					],
 					"excluded": [
 						"computed",
@@ -232,11 +172,7 @@
 				{
 					"classified_sites": 1,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let a = 1;\nlet b = +* 2;\nlet c = 3;",
-							"session": "session"
-						}
+						{"action":"eval","input":"let a = 1;\nlet b = +* 2;\nlet c = 3;","session":"session"}
 					],
 					"excluded": [],
 					"name": "tests::compile_error_maps_to_the_typed_line_and_column",
@@ -245,21 +181,9 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "fn boom(x) {\n  panic!(\"bad {}\", x)\n}",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let y = 2;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "boom(y)",
-							"session": "session"
-						}
+						{"action":"eval","input":"fn boom(x) {\n  panic!(\"bad {}\", x)\n}","session":"session"},
+						{"action":"eval","input":"let y = 2;","session":"session"},
+						{"action":"eval","input":"boom(y)","session":"session"}
 					],
 					"excluded": [],
 					"name": "tests::runtime_error_in_an_older_definition_reports_that_input",
@@ -268,21 +192,9 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let c = |v| v.missing_method();",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let z = 1;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "c(z)",
-							"session": "session"
-						}
+						{"action":"eval","input":"let c = |v| v.missing_method();","session":"session"},
+						{"action":"eval","input":"let z = 1;","session":"session"},
+						{"action":"eval","input":"c(z)","session":"session"}
 					],
 					"excluded": [],
 					"name": "tests::runtime_error_through_a_retained_closure_reports_the_closure_input",
@@ -291,66 +203,18 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let keep = 1;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let x = ;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "use std::fmt;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "impl Foo { fn f() {} }",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "macro_rules! m { () => {} }",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "fn main() { 1 }",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let __rnx_x = 1;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let q = 1 / 0;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "nonexistent_fn()",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let v = [1]; v[9]",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "panic!(\"p\")",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "keep",
-							"session": "session"
-						}
+						{"action":"eval","input":"let keep = 1;","session":"session"},
+						{"action":"eval","input":"let x = ;","session":"session"},
+						{"action":"eval","input":"use std::fmt;","session":"session"},
+						{"action":"eval","input":"impl Foo { fn f() {} }","session":"session"},
+						{"action":"eval","input":"macro_rules! m { () => {} }","session":"session"},
+						{"action":"eval","input":"fn main() { 1 }","session":"session"},
+						{"action":"eval","input":"let __rnx_x = 1;","session":"session"},
+						{"action":"eval","input":"let q = 1 / 0;","session":"session"},
+						{"action":"eval","input":"nonexistent_fn()","session":"session"},
+						{"action":"eval","input":"let v = [1]; v[9]","session":"session"},
+						{"action":"eval","input":"panic!(\"p\")","session":"session"},
+						{"action":"eval","input":"keep","session":"session"}
 					],
 					"excluded": [],
 					"name": "tests::every_refusal_and_failure_reports_user_text_never_generated_text",
@@ -359,21 +223,9 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let saved = [];",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let f = saved[0]; f()",
-							"session": "session"
-						}
+						{"action":"eval","input":"let saved = [];","session":"session"},
+						{"action":"eval","input":"saved.push(|| panic!(\"retained failure\")); panic!(\"outer\");","session":"session"},
+						{"action":"eval","input":"let f = saved[0]; f()","session":"session"}
 					],
 					"excluded": [],
 					"name": "tests::a_closure_retained_by_a_failed_input_still_maps_to_that_input",
@@ -382,21 +234,9 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "ceiling",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "ceiling",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "ceiling",
-							"session": "session"
-						}
+						{"action":"unclassified","input":"ceiling","session":"session"},
+						{"action":"unclassified","input":"ceiling","session":"session"},
+						{"action":"unclassified","input":"ceiling","session":"session"}
 					],
 					"excluded": [
 						"ceiling",
@@ -409,11 +249,7 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						}
+						{"action":"unclassified","input":"loop","session":"session"}
 					],
 					"excluded": [
 						"loop"
@@ -424,16 +260,8 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						}
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"unclassified","input":"loop","session":"session"}
 					],
 					"excluded": [
 						"loop",
@@ -445,21 +273,9 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let saved = [];",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "saved.push(|| panic!(\"from the failed input\")); panic!(\"outer\");",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let f = saved[0]; f()",
-							"session": "session"
-						}
+						{"action":"eval","input":"let saved = [];","session":"session"},
+						{"action":"eval","input":"saved.push(|| panic!(\"from the failed input\")); panic!(\"outer\");","session":"session"},
+						{"action":"eval","input":"let f = saved[0]; f()","session":"session"}
 					],
 					"excluded": [],
 					"name": "retention_tests::a_closure_kept_by_a_failed_input_keeps_its_unit_and_its_position",
@@ -468,36 +284,12 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "fn thrower() {\n  panic!(\"deep\")\n}",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let held = || thrower();",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "panic!(\"here\")",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "thrower()",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "held()",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let v = []; v[3]",
-							"session": "session"
-						}
+						{"action":"eval","input":"fn thrower() {\n  panic!(\"deep\")\n}","session":"session"},
+						{"action":"eval","input":"let held = || thrower();","session":"session"},
+						{"action":"eval","input":"panic!(\"here\")","session":"session"},
+						{"action":"eval","input":"thrower()","session":"session"},
+						{"action":"eval","input":"held()","session":"session"},
+						{"action":"eval","input":"let v = []; v[3]","session":"session"}
 					],
 					"excluded": [],
 					"name": "retention_tests::every_ordinary_runtime_error_finds_its_position",
@@ -506,21 +298,9 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "session"
-						}
+						{"action":"unclassified","input":"private","session":"session"},
+						{"action":"unclassified","input":"private","session":"session"},
+						{"action":"unclassified","input":"private","session":"session"}
 					],
 					"excluded": [
 						"private",
@@ -533,26 +313,10 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let c = || 1;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let d = || 2;",
-							"session": "session"
-						},
-						{
-							"action": "reset",
-							"input": "",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "1 + 1",
-							"session": "session"
-						}
+						{"action":"eval","input":"let c = || 1;","session":"session"},
+						{"action":"eval","input":"let d = || 2;","session":"session"},
+						{"action":"reset","input":"","session":"session"},
+						{"action":"eval","input":"1 + 1","session":"session"}
 					],
 					"excluded": [],
 					"name": "retention_tests::a_reset_keeps_the_context_and_empties_the_session",
@@ -561,31 +325,11 @@
 				{
 					"classified_sites": 4,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "wide"
-						},
-						{
-							"action": "eval",
-							"input": "n000 + n099",
-							"session": "wide"
-						},
-						{
-							"action": "eval",
-							"input": "let n000 = 0;",
-							"session": "narrow"
-						},
-						{
-							"action": "eval",
-							"input": "let n099 = 99;",
-							"session": "narrow"
-						},
-						{
-							"action": "eval",
-							"input": "n000 + n099",
-							"session": "narrow"
-						}
+						{"action":"unclassified","input":"loop","session":"wide"},
+						{"action":"eval","input":"n000 + n099","session":"wide"},
+						{"action":"eval","input":"let n000 = 0;","session":"narrow"},
+						{"action":"eval","input":"let n099 = 99;","session":"narrow"},
+						{"action":"eval","input":"n000 + n099","session":"narrow"}
 					],
 					"excluded": [
 						"loop"
@@ -596,51 +340,15 @@
 				{
 					"classified_sites": 8,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let a = 1; let b = 2; let c = 3;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "a = 10;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "a",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let b = b + 40;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "b",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let [d, e] = [4, 5];",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "(c, d, e)",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "(a, b, c, d, e)",
-							"session": "session"
-						}
+						{"action":"eval","input":"let a = 1; let b = 2; let c = 3;","session":"session"},
+						{"action":"eval","input":"a = 10;","session":"session"},
+						{"action":"eval","input":"a","session":"session"},
+						{"action":"eval","input":"let b = b + 40;","session":"session"},
+						{"action":"eval","input":"b","session":"session"},
+						{"action":"eval","input":"let [d, e] = [4, 5];","session":"session"},
+						{"action":"eval","input":"(c, d, e)","session":"session"},
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"eval","input":"(a, b, c, d, e)","session":"session"}
 					],
 					"excluded": [
 						"loop"
@@ -651,41 +359,13 @@
 				{
 					"classified_sites": 6,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let original = [1];",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let alias = original;",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "alias.push(2);",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "original",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "original.push(3);",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "alias",
-							"session": "session"
-						}
+						{"action":"eval","input":"let original = [1];","session":"session"},
+						{"action":"eval","input":"let alias = original;","session":"session"},
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"eval","input":"alias.push(2);","session":"session"},
+						{"action":"eval","input":"original","session":"session"},
+						{"action":"eval","input":"original.push(3);","session":"session"},
+						{"action":"eval","input":"alias","session":"session"}
 					],
 					"excluded": [
 						"loop"
@@ -696,31 +376,11 @@
 				{
 					"classified_sites": 4,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let counter = [0];",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "let bump = || counter.push(1);",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "bump(); bump();",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "counter",
-							"session": "session"
-						}
+						{"action":"eval","input":"let counter = [0];","session":"session"},
+						{"action":"eval","input":"let bump = || counter.push(1);","session":"session"},
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"eval","input":"bump(); bump();","session":"session"},
+						{"action":"eval","input":"counter","session":"session"}
 					],
 					"excluded": [
 						"loop"
@@ -731,31 +391,11 @@
 				{
 					"classified_sites": 5,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let shared = [1]; let scalar = 1;",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "shared.push(2); scalar = 99; let fresh = 5; panic!(\"stop\");",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "shared",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "scalar",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "fresh",
-							"session": "session"
-						}
+						{"action":"eval","input":"let shared = [1]; let scalar = 1;","session":"session"},
+						{"action":"eval","input":"shared.push(2); scalar = 99; let fresh = 5; panic!(\"stop\");","session":"session"},
+						{"action":"eval","input":"shared","session":"session"},
+						{"action":"eval","input":"scalar","session":"session"},
+						{"action":"eval","input":"fresh","session":"session"}
 					],
 					"excluded": [],
 					"name": "prelude_tests::a_failed_input_publishes_no_rebinding_and_keeps_its_mutation",
@@ -764,31 +404,11 @@
 				{
 					"classified_sites": 4,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let captured = 7;",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "format!(\"{captured}\")",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "format!(\"{captured:?} and {captured}\")",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "println!(\"{captured}\");",
-							"session": "session"
-						}
+						{"action":"eval","input":"let captured = 7;","session":"session"},
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"eval","input":"format!(\"{captured}\")","session":"session"},
+						{"action":"eval","input":"format!(\"{captured:?} and {captured}\")","session":"session"},
+						{"action":"eval","input":"println!(\"{captured}\");","session":"session"}
 					],
 					"excluded": [
 						"loop"
@@ -799,21 +419,9 @@
 				{
 					"classified_sites": 2,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let inside = 3;",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "session"
-						},
-						{
-							"action": "eval",
-							"input": "`v ${inside}`",
-							"session": "session"
-						}
+						{"action":"eval","input":"let inside = 3;","session":"session"},
+						{"action":"unclassified","input":"loop","session":"session"},
+						{"action":"eval","input":"`v ${inside}`","session":"session"}
 					],
 					"excluded": [
 						"loop"
@@ -901,41 +509,13 @@
 				{
 					"classified_sites": 3,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let x = 7;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "let v = [x];",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "fn kept(n) { n + 1 }",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "let c = |v| v.missing_method();",
-							"session": "s"
-						},
-						{
-							"action": "renumber",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "c(1)",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "let x = ;",
-							"session": "s"
-						}
+						{"action":"eval","input":"let x = 7;","session":"s"},
+						{"action":"eval","input":"let v = [x];","session":"s"},
+						{"action":"eval","input":"fn kept(n) { n + 1 }","session":"s"},
+						{"action":"eval","input":"let c = |v| v.missing_method();","session":"s"},
+						{"action":"renumber","input":"","session":"s"},
+						{"action":"eval","input":"c(1)","session":"s"},
+						{"action":"eval","input":"let x = ;","session":"s"}
 					],
 					"excluded": [],
 					"name": "numbering_tests::renumber_preserves_sources_and_labels_retained_closures_by_their_own_numbering",
@@ -944,76 +524,20 @@
 				{
 					"classified_sites": 7,
 					"events": [
-						{
-							"action": "eval",
-							"input": "let a = |v| v.missing_method();",
-							"session": "s"
-						},
-						{
-							"action": "renumber",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "let b = |v| v.missing_method();",
-							"session": "s"
-						},
-						{
-							"action": "renumber",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "let c = |v| v.missing_method();",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "a(1)",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "b(1)",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "c(1)",
-							"session": "s"
-						},
-						{
-							"action": "renumber",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "renumber",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "let broken = ;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "c(1)",
-							"session": "s"
-						},
-						{
-							"action": "reset",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "a(1)",
-							"session": "s"
-						}
+						{"action":"eval","input":"let a = |v| v.missing_method();","session":"s"},
+						{"action":"renumber","input":"","session":"s"},
+						{"action":"eval","input":"let b = |v| v.missing_method();","session":"s"},
+						{"action":"renumber","input":"","session":"s"},
+						{"action":"eval","input":"let c = |v| v.missing_method();","session":"s"},
+						{"action":"eval","input":"a(1)","session":"s"},
+						{"action":"eval","input":"b(1)","session":"s"},
+						{"action":"eval","input":"c(1)","session":"s"},
+						{"action":"renumber","input":"","session":"s"},
+						{"action":"renumber","input":"","session":"s"},
+						{"action":"eval","input":"let broken = ;","session":"s"},
+						{"action":"eval","input":"c(1)","session":"s"},
+						{"action":"reset","input":"","session":"s"},
+						{"action":"eval","input":"a(1)","session":"s"}
 					],
 					"excluded": [],
 					"name": "numbering_tests::repeated_boundaries_and_three_generations_do_not_relabel_old_sources",
@@ -1022,21 +546,9 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "s"
-						},
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "s"
-						},
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "s"
-						}
+						{"action":"unclassified","input":"private","session":"s"},
+						{"action":"unclassified","input":"private","session":"s"},
+						{"action":"unclassified","input":"private","session":"s"}
 					],
 					"excluded": [
 						"private",
@@ -1049,16 +561,8 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "s"
-						},
-						{
-							"action": "unclassified",
-							"input": "private",
-							"session": "s"
-						}
+						{"action":"unclassified","input":"private","session":"s"},
+						{"action":"unclassified","input":"private","session":"s"}
 					],
 					"excluded": [
 						"private",
@@ -1070,11 +574,7 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "loop",
-							"session": "s"
-						}
+						{"action":"unclassified","input":"loop","session":"s"}
 					],
 					"excluded": [
 						"loop"
@@ -1092,76 +592,20 @@
 				{
 					"classified_sites": 13,
 					"events": [
-						{
-							"action": "eval",
-							"input": "const GREETING = \"hello\";",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const N = 40;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "GREETING",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "fn more() { N + 2 }",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "more()",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const M = N * 2;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "M",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "pub const P = 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "pub struct Point { x }",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "enum E { A }",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const N = 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "more()",
-							"session": "s"
-						},
-						{
-							"action": "reset",
-							"input": "",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "N",
-							"session": "s"
-						}
+						{"action":"eval","input":"const GREETING = \"hello\";","session":"s"},
+						{"action":"eval","input":"const N = 40;","session":"s"},
+						{"action":"eval","input":"GREETING","session":"s"},
+						{"action":"eval","input":"fn more() { N + 2 }","session":"s"},
+						{"action":"eval","input":"more()","session":"s"},
+						{"action":"eval","input":"const M = N * 2;","session":"s"},
+						{"action":"eval","input":"M","session":"s"},
+						{"action":"eval","input":"pub const P = 1;","session":"s"},
+						{"action":"eval","input":"pub struct Point { x }","session":"s"},
+						{"action":"eval","input":"enum E { A }","session":"s"},
+						{"action":"eval","input":"const N = 1;","session":"s"},
+						{"action":"eval","input":"more()","session":"s"},
+						{"action":"reset","input":"","session":"s"},
+						{"action":"eval","input":"N","session":"s"}
 					],
 					"excluded": [],
 					"name": "const_tests::a_const_is_retained_and_used_later",
@@ -1170,36 +614,12 @@
 				{
 					"classified_sites": 6,
 					"events": [
-						{
-							"action": "eval",
-							"input": "const A = 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const C = A + 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "C",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const A = \"x\";",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "A",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "C",
-							"session": "s"
-						}
+						{"action":"eval","input":"const A = 1;","session":"s"},
+						{"action":"eval","input":"const C = A + 1;","session":"s"},
+						{"action":"eval","input":"C","session":"s"},
+						{"action":"eval","input":"const A = \"x\";","session":"s"},
+						{"action":"eval","input":"A","session":"s"},
+						{"action":"eval","input":"C","session":"s"}
 					],
 					"excluded": [],
 					"name": "const_tests::a_failed_const_redeclaration_keeps_the_previous_one_and_errors_keep_their_origin",
@@ -1208,41 +628,13 @@
 				{
 					"classified_sites": 5,
 					"events": [
-						{
-							"action": "eval",
-							"input": "const main = 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const __rnx_x = 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "struct S { a }",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "const S = 1;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "mod m {}",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "use std::string::String;",
-							"session": "s"
-						},
-						{
-							"action": "eval",
-							"input": "impl S { fn f(self) {} }",
-							"session": "s"
-						}
+						{"action":"eval","input":"const main = 1;","session":"s"},
+						{"action":"eval","input":"const __rnx_x = 1;","session":"s"},
+						{"action":"eval","input":"struct S { a }","session":"s"},
+						{"action":"eval","input":"const S = 1;","session":"s"},
+						{"action":"eval","input":"mod m {}","session":"s"},
+						{"action":"eval","input":"use std::string::String;","session":"s"},
+						{"action":"eval","input":"impl S { fn f(self) {} }","session":"s"}
 					],
 					"excluded": [],
 					"name": "const_tests::reserved_names_and_type_shapes_still_apply",
@@ -1251,16 +643,8 @@
 				{
 					"classified_sites": 0,
 					"events": [
-						{
-							"action": "unclassified",
-							"input": "context",
-							"session": "session"
-						},
-						{
-							"action": "unclassified",
-							"input": "context",
-							"session": "session"
-						}
+						{"action":"unclassified","input":"context","session":"session"},
+						{"action":"unclassified","input":"context","session":"session"}
 					],
 					"excluded": [
 						"context",
@@ -1830,12 +1214,12 @@
 		}
 	],
 	"request_options": [
-		{"class":"Intentional difference","construct":"unknown-bad-url","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 56","origin":{"column":56,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=[1];let options=#{unknown:moved};drop(moved);http::request(\"GET\",\"not a url\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection.","wording_rule":"snapshot-moved-argument"},
-		{"class":"Intentional difference","construct":"unknown-good-url","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 56","origin":{"column":56,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=[1];let options=#{unknown:moved};drop(moved);http::request(\"GET\",\"http://127.0.0.1/\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: unknown option \\\"unknown\\\"\")"},"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection.","wording_rule":"snapshot-moved-argument"},
-		{"class":"Intentional difference","construct":"read-headers","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 56","origin":{"column":56,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=#{};let options=#{headers:moved};drop(moved);http::request(\"GET\",\"http://127.0.0.1/\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: headers must be an object\")"},"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection.","wording_rule":"snapshot-moved-argument"},
-		{"class":"Intentional difference","construct":"read-body","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 70","origin":{"column":70,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=String::from(\"body\");let options=#{body:moved};drop(moved);http::request(\"GET\",\"http://127.0.0.1/\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: body must be String or Bytes\")"},"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection.","wording_rule":"snapshot-moved-argument"},
-		{"class":"Equal","construct":"unknown-live-bad-url","domain":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"domain_worse":false,"function":"http::request","input":"http::request(\"GET\",\"not a url\",#{unknown:[1]}).await","legacy":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection.","wording_rule":null},
-		{"class":"Equal","construct":"unknown-live-good-url","domain":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: unknown option \\\"unknown\\\"\")"},"domain_worse":false,"function":"http::request","input":"http::request(\"GET\",\"http://127.0.0.1/\",#{unknown:[1]}).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: unknown option \\\"unknown\\\"\")"},"reason":"A by-snapshot host argument is read in full at the call; a moved descendant is an access error before the handler and any effects. Live skipped fields retain parser error selection.","wording_rule":null}
+		{"class":"Intentional difference","construct":"unknown-bad-url","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 56","origin":{"column":56,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=[1];let options=#{unknown:moved};drop(moved);http::request(\"GET\",\"not a url\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves.","wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"unknown-good-url","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 56","origin":{"column":56,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=[1];let options=#{unknown:moved};drop(moved);http::request(\"GET\",\"http://127.0.0.1/\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: unknown option \\\"unknown\\\"\")"},"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves.","wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"read-headers","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 56","origin":{"column":56,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=#{};let options=#{headers:moved};drop(moved);http::request(\"GET\",\"http://127.0.0.1/\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: headers must be an object\")"},"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves.","wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"read-body","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 70","origin":{"column":70,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"function":"http::request","input":"let moved=String::from(\"body\");let options=#{body:moved};drop(moved);http::request(\"GET\",\"http://127.0.0.1/\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: body must be String or Bytes\")"},"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves.","wording_rule":"snapshot-moved-argument"},
+		{"class":"Equal","construct":"unknown-live-bad-url","domain":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"domain_worse":false,"function":"http::request","input":"http::request(\"GET\",\"not a url\",#{unknown:[1]}).await","legacy":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves.","wording_rule":null},
+		{"class":"Equal","construct":"unknown-live-good-url","domain":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: unknown option \\\"unknown\\\"\")"},"domain_worse":false,"function":"http::request","input":"http::request(\"GET\",\"http://127.0.0.1/\",#{unknown:[1]}).await","legacy":{"outcome":"ok","value":"Err(\"cannot get http://127.0.0.1/: unknown option \\\"unknown\\\"\")"},"reason":"A moved value within the bounded snapshotted tree fails before the handler. Unsupported kinds and depth/frontier bounds are unentered diagnostic leaves.","wording_rule":null}
 	],
 	"script_await_probes": [
 		{"case":"direct","class":"Equal","domain":{"outcome":"ok","value":"7"},"domain_worse":false,"input":"async fn f(x){x+1} f(6).await","legacy":{"outcome":"ok","value":"7"},"wording_rule":null},
@@ -1847,5 +1231,29 @@
 		{"case":"ordinary-await","class":"Intentional difference","domain":{"message":"refused: ordinary is not asynchronous; remove .await and call it as ordinary(...) (input 1, line 1, column 18)","origin":null,"outcome":"refused"},"domain_worse":false,"input":"fn ordinary(){7} ordinary().await","legacy":{"message":"Missing protocol function `INTO_FUTURE` for `std::i64`","origin":{"column":18,"input":1,"line":1},"outcome":"runtime"},"wording_rule":"script-await-requires-async"},
 		{"case":"moved-direct","class":"Wording","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 15\n  at input 1, line 1, column 42","origin":{"column":15,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"async fn f(x){x.len()} let x=[7];drop(x);f(x).await","legacy":{"message":"Cannot read the value: it has been moved","origin":{"column":15,"input":1,"line":1},"outcome":"runtime"},"wording_rule":"appended-frames"}
 	],
-	"summary": {"classes":{"Equal":247,"Equal by property":3,"Intentional difference":15,"Refused at admission":1,"Refused for a host function":9,"Wording":21},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":5,"top_constructs":[["http::get_bytes",2],["http::request_bytes",2],["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":1,"top_constructs":[["constant bytes",1]]}}}
+	"snapshot_inputs": [
+		{"class":"Intentional difference","construct":"time-ignored","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 62","origin":{"column":62,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=[1];let p=#{year:1970,month:1,day:1,ignored:v};drop(v);time::from_parts(p,\"UTC\")","legacy":{"outcome":"ok","value":"Ok(0)"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"time-read","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 49","origin":{"column":49,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=[1];let p=#{year:v,month:1,day:1};drop(v);time::from_parts(p,\"UTC\")","legacy":{"outcome":"ok","value":"Err(\"time field \\\"year\\\" must be an integer: Expected number type, but found `std::vec::Vec`\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"process-empty","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 38","origin":{"column":38,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=[1];let p=#{unknown:v};drop(v);process::run(\"\",[],p)","legacy":{"outcome":"ok","value":"Err(\"cannot run : program is empty\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"process-ignored","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 38","origin":{"column":38,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=[1];let p=#{unknown:v};drop(v);process::run(\"/0275-missing\",[],p)","legacy":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: unknown option \\\"unknown\\\"\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"process-args","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 47","origin":{"column":47,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=String::from(\"value\");let a=[v];drop(v);process::run(\"/0275-missing\",a,#{})","legacy":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: argument 1 must be a string\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"process-env","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 57","origin":{"column":57,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=String::from(\"value\");let p=#{env:#{K:v}};drop(v);process::run(\"/0275-missing\",[],p)","legacy":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: environment variable \\\"K\\\": value must be a string or None\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"response-earlier-error","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 36","origin":{"column":36,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=[\"a\"];let h=#{\"x\":v};drop(v);web::response(199,\"body\",\"text/plain\",h)","legacy":{"outcome":"ok","value":"Err(\"response status wants 200 to 599\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Intentional difference","construct":"response-header","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 36","origin":{"column":36,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"let v=[\"a\"];let h=#{\"x\":v};drop(v);web::response(200,\"body\",\"text/plain\",h)","legacy":{"outcome":"ok","value":"Err(\"web::response header \\\"x\\\" value 0: web: header values want String, Bytes or a vector\")"},"wording_rule":"snapshot-moved-argument"},
+		{"class":"Equal","construct":"http-leaf","domain":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"domain_worse":false,"input":"let v=[1];let options=#{unknown:Ok(v)};drop(v);http::request(\"GET\",\"not a url\",options).await","legacy":{"outcome":"ok","value":"Err(\"cannot get not a url: invalid URL: relative URL without a base\")"},"wording_rule":null},
+		{"class":"Equal","construct":"time-leaf-ignored","domain":{"outcome":"ok","value":"Ok(0)"},"domain_worse":false,"input":"let v=[1];let p=#{year:1970,month:1,day:1,ignored:Ok(v)};drop(v);time::from_parts(p,\"UTC\")","legacy":{"outcome":"ok","value":"Ok(0)"},"wording_rule":null},
+		{"class":"Equal","construct":"time-leaf-read","domain":{"outcome":"ok","value":"Err(\"time field \\\"year\\\" must be an integer: Expected number type, but found `std::result::Result`\")"},"domain_worse":false,"input":"let v=[1];let p=#{year:Ok(v),month:1,day:1};drop(v);time::from_parts(p,\"UTC\")","legacy":{"outcome":"ok","value":"Err(\"time field \\\"year\\\" must be an integer: Expected number type, but found `std::result::Result`\")"},"wording_rule":null},
+		{"class":"Equal","construct":"process-leaf-ignored","domain":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: unknown option \\\"unknown\\\"\")"},"domain_worse":false,"input":"let v=[1];let p=#{unknown:Ok(v)};drop(v);process::run(\"/0275-missing\",[],p)","legacy":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: unknown option \\\"unknown\\\"\")"},"wording_rule":null},
+		{"class":"Equal","construct":"process-leaf-read","domain":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: input must be a String or Bytes\")"},"domain_worse":false,"input":"let v=[1];let p=#{input:Ok(v)};drop(v);process::run(\"/0275-missing\",[],p)","legacy":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: input must be a String or Bytes\")"},"wording_rule":null},
+		{"class":"Equal","construct":"response-leaf-skipped","domain":{"outcome":"ok","value":"Err(\"response status wants 200 to 599\")"},"domain_worse":false,"input":"let v=[1];let h=#{\"x\":Ok(v)};drop(v);web::response(199,\"body\",\"text/plain\",h)","legacy":{"outcome":"ok","value":"Err(\"response status wants 200 to 599\")"},"wording_rule":null},
+		{"class":"Equal","construct":"response-leaf-read","domain":{"outcome":"ok","value":"Err(\"web::response header \\\"x\\\" value 0: web: header values want String, Bytes or a vector\")"},"domain_worse":false,"input":"let v=[1];let h=#{\"x\":Ok(v)};drop(v);web::response(200,\"body\",\"text/plain\",h)","legacy":{"outcome":"ok","value":"Err(\"web::response header \\\"x\\\" value 0: web: header values want String, Bytes or a vector\")"},"wording_rule":null},
+		{"class":"Wording","construct":"time-root","domain":{"message":"Expected type `std::object::Object` but found `std::vec::Vec`\n  at input 1, line 1, column 1","origin":{"column":1,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"time::from_parts([],\"UTC\")","legacy":{"message":"Expected type `std::object::Object` but found `std::vec::Vec`","origin":{"column":1,"input":1,"line":1},"outcome":"runtime"},"wording_rule":"appended-frames"},
+		{"class":"Equal","construct":"time-live-ignored","domain":{"outcome":"ok","value":"Ok(0)"},"domain_worse":false,"input":"time::from_parts(#{year:1970,month:1,day:1,ignored:||1},\"UTC\")","legacy":{"outcome":"ok","value":"Ok(0)"},"wording_rule":null},
+		{"class":"Equal","construct":"time-wrong-field","domain":{"outcome":"ok","value":"Err(\"time field \\\"year\\\" must be an integer: Expected number type, but found `std::vec::Vec`\")"},"domain_worse":false,"input":"time::from_parts(#{year:[1],month:1,day:1},\"UTC\")","legacy":{"outcome":"ok","value":"Err(\"time field \\\"year\\\" must be an integer: Expected number type, but found `std::vec::Vec`\")"},"wording_rule":null},
+		{"class":"Equal","construct":"time-roundtrip","domain":{"outcome":"ok","value":"Ok(0)"},"domain_worse":false,"input":"time::from_parts(time::parts(0,\"UTC\").unwrap(),\"UTC\")","legacy":{"outcome":"ok","value":"Ok(0)"},"wording_rule":null},
+		{"class":"Equal","construct":"response-owned","domain":{"outcome":"ok","value":"Ok({\"body\": \"body\", \"headers\": {\"content-type\": [\"text/plain\"], \"x\": [\"a\", \"b\"]}, \"status\": 200})"},"domain_worse":false,"input":"web::response(200,\"body\",\"text/plain\",#{\"x\":[\"a\",\"b\"]})","legacy":{"outcome":"ok","value":"Ok({\"body\": \"body\", \"headers\": {\"content-type\": [\"text/plain\"], \"x\": [\"a\", \"b\"]}, \"status\": 200})"},"wording_rule":null},
+		{"class":"Refused at admission","construct":"response-bytes","domain":{"message":"refused: byte-string literals is not available in an execution session; start `rnx repl` without --engine=execution (input 1, line 1, column 19)","origin":null,"outcome":"refused"},"domain_worse":false,"input":"web::response(200,b\"body\",\"text/plain\",#{})","legacy":{"outcome":"ok","value":"Ok({\"body\": b\"body\", \"headers\": {\"content-type\": [\"text/plain\"]}, \"status\": 200})"},"wording_rule":null},
+		{"class":"Equal","construct":"process-live-unknown","domain":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: unknown option \\\"unknown\\\"\")"},"domain_worse":false,"input":"process::run(\"/0275-missing\",[],#{unknown:||1})","legacy":{"outcome":"ok","value":"Err(\"cannot run /0275-missing: unknown option \\\"unknown\\\"\")"},"wording_rule":null}
+	],
+	"summary": {"classes":{"Equal":262,"Equal by property":3,"Intentional difference":23,"Refused at admission":2,"Refused for a host function":6,"Wording":22},"work_groups":{"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"bytes":{"count":5,"top_constructs":[["http::get_bytes",2],["http::request_bytes",2],["fs::read_bytes",1]]},"source forms":{"count":2,"top_constructs":[["constant bytes",1],["response-bytes",1]]}}}
 }

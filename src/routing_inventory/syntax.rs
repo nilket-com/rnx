@@ -274,6 +274,7 @@ impl<'ast> Visit<'ast> for Scan {
 			"host_function_with_output",
 			"host_function_string_input",
 			"host_function_tree_input",
+			"host_function_tree_inputs",
 			"host_function_await",
 			"field_function",
 			"index_function",
@@ -309,7 +310,7 @@ impl<'ast> Visit<'ast> for Scan {
 				"host_function" => "typed",
 				"host_function_with_output" => "dynamic-output",
 				"host_function_string_input" => "string-input",
-				"host_function_tree_input" => "tree-input",
+				"host_function_tree_input" | "host_function_tree_inputs" => "tree-input",
 				"host_function_await" => "awaited",
 				_ => "undeclared",
 			};
@@ -372,6 +373,7 @@ impl<'ast> Visit<'ast> for Scan {
 					"host_function_with_output",
 					"host_function_string_input",
 					"host_function_tree_input",
+					"host_function_tree_inputs",
 					"host_function_await",
 					"field_function",
 					"index_function",
@@ -382,7 +384,7 @@ impl<'ast> Visit<'ast> for Scan {
 						"host_function" => "typed",
 						"host_function_with_output" => "dynamic-output",
 						"host_function_string_input" => "string-input",
-						"host_function_tree_input" => "tree-input",
+						"host_function_tree_input" | "host_function_tree_inputs" => "tree-input",
 						"host_function_await" => "awaited",
 						_ => "undeclared",
 					};
@@ -416,6 +418,13 @@ impl<'ast> Visit<'ast> for Scan {
 				.is_some_and(|t| t.to_string() == "string_input")
 			{
 				class = "string-input";
+				at += 1;
+			}
+			if tokens
+				.first()
+				.is_some_and(|t| t.to_string() == "tree_input")
+			{
+				class = "tree-input";
 				at += 1;
 			}
 			if name == "assoc" {
