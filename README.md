@@ -85,11 +85,15 @@ validated: unknown options or trailing arguments that were previously ignored
 are reported as errors.
 
 Execution sessions support direct `time::sleep(...).await`, `http::get(...).await`
-and `http::request(...).await` in the input, including blocks and loops. Pending
-calls are interruptible. Futures as values, user async functions and blocks,
-`select`, bytes, and unsupported frontend forms remain refused. Ordinary
-functions keep the legacy restriction on `.await`. An async host call must be
-awaited directly; binding its future or taking its function value is refused.
+and `http::request(...).await` in the input, including blocks and loops, and in
+script `async fn` bodies called directly as `f(args).await`. Async declarations
+survive between inputs; a redefinition that would invalidate a retained caller
+is refused before effects. Pending calls, including nested calls, are interruptible.
+Futures as values, async blocks and closures, `select`, bytes, and unsupported
+frontend forms remain refused. Ordinary functions keep the legacy restriction
+on `.await`; awaiting an ordinary function is refused with advice to remove it.
+An async call must be awaited directly; binding its future or taking its
+function value is refused.
 Request options are snapshotted in full: a moved value inside them is an access
 error at the call, including in a field the parser would ignore. Unsupported forms are refused
 before effects, without replay or migration to legacy. `map(f)` with an

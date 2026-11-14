@@ -54,6 +54,20 @@ impl Error {
 		}
 	}
 
+	/// A direct script-call await requirement, including its enclosing function.
+	pub fn script_await_refusal(&self) -> Option<(&crate::Item, &crate::Item, bool, bool)> {
+		match &*self.kind {
+			#[cfg(feature = "execution")]
+			ErrorKind::ScriptAwaitRefusal {
+				item,
+				caller,
+				as_value,
+				remove_await,
+			} => Some((item.as_ref(), caller.as_ref(), *as_value, *remove_await)),
+			_ => None,
+		}
+	}
+
 	/// Whether this diagnostic identifies an async construct in a forbidden context.
 	pub fn requires_async_context(&self) -> bool {
 		matches!(
@@ -281,6 +295,13 @@ impl Error {
 #[derive(Debug)]
 #[non_exhaustive]
 pub(crate) enum ErrorKind {
+	#[cfg(feature = "execution")]
+	ScriptAwaitRefusal {
+		item: crate::ItemBuf,
+		caller: crate::ItemBuf,
+		as_value: bool,
+		remove_await: bool,
+	},
 	#[cfg(feature = "execution")]
 	AsyncHostRefusal {
 		item: crate::ItemBuf,
@@ -728,6 +749,17 @@ impl core::error::Error for ErrorKind {
 impl fmt::Display for ErrorKind {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			#[cfg(feature = "execution")]
+			ErrorKind::ScriptAwaitRefusal { item, caller, as_value, remove_await } => {
+				write!(f, "{caller}: ")?;
+				if *remove_await {
+					write!(f, "{item} is not asynchronous; remove .await and call it as {item}(...)")?;
+				} else {
+					write!(f, "{item} is asynchronous")?;
+					if *as_value { write!(f, "; futures as values are not available")?; }
+					write!(f, "; await its call as {item}(...).await")?;
+				}
+			}
 			#[cfg(feature = "execution")]
 			ErrorKind::ExecutionRefusal { construct } => write!(f, "execution core refuses {construct}")?,
 			#[cfg(feature = "execution")]

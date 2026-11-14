@@ -38,6 +38,24 @@ pub(super) fn await_call(host: &str, as_value: bool) -> String {
 	format!("{host} is asynchronous{reason}; await its call as {host}(...).await")
 }
 
+pub(super) fn script_await(
+	caller: &str,
+	function: &str,
+	as_value: bool,
+	remove_await: bool,
+) -> String {
+	let reason = if remove_await {
+		format!("{function} is not asynchronous; remove .await and call it as {function}(...)")
+	} else {
+		await_call(function, as_value)
+	};
+	if caller == "main" {
+		reason
+	} else {
+		format!("{caller}: {reason}")
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -148,5 +166,54 @@ mod tests {
 			7
 		);
 		legacy.close().unwrap();
+	}
+
+	#[test]
+	fn engine_and_session_script_await_wording_cannot_drift() {
+		for (source, as_value, remove_await) in [
+			("async fn f(){7} fn g(){f()}", false, false),
+			("async fn f(){7} fn g(){f}", true, false),
+			("fn f(){7} async fn g(){f().await}", false, true),
+		] {
+			let context = crate::routing_inventory::session_parity_context().unwrap();
+			let mut domain = rune::experimental_core::domain::ProgramDomain::new(
+				Default::default(),
+				Default::default(),
+				context.execution_runtime().unwrap(),
+			)
+			.unwrap();
+			let mut sources = rune::Sources::new();
+			sources
+				.insert(
+					rune::Source::memory(format!("{source} pub fn main(s){{let r=7;(#{{}},r)}}"))
+						.unwrap(),
+				)
+				.unwrap();
+			let mut diagnostics = rune::Diagnostics::new();
+			assert!(
+				domain
+					.compile_session(&context, &mut sources, &mut diagnostics, 1, &[], &[])
+					.is_err()
+			);
+			let errors: Vec<_> = diagnostics
+				.diagnostics()
+				.iter()
+				.filter_map(|d| match d {
+					rune::diagnostics::Diagnostic::Fatal(f) => {
+						let error = f.as_compile_error()?;
+						let (item, caller, value, remove) = error.script_await_refusal()?;
+						Some((error, item, caller, value, remove))
+					}
+					_ => None,
+				})
+				.collect();
+			assert_eq!(errors.len(), 1, "{diagnostics:?}");
+			let (error, item, caller, value, remove) = errors[0];
+			assert_eq!((value, remove), (as_value, remove_await));
+			assert_eq!(item.to_string(), "f");
+			assert_eq!(caller.to_string(), "g");
+			assert_eq!(error.to_string(), script_await("g", "f", value, remove));
+			domain.close().unwrap();
+		}
 	}
 }

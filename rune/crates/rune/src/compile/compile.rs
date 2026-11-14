@@ -373,7 +373,7 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 						}
 					}
 					if matches!(f.call, crate::runtime::Call::Async)
-						&& !collector.allows_async_main(hash)
+						&& !collector.allows_async_functions()
 					{
 						let operation = crate::experimental_core::error::Refusal::AsyncFunction;
 						collector.record_failure(
@@ -449,7 +449,7 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 					}
 					if !matches!(f.call, crate::runtime::Call::Immediate)
 						&& !(matches!(f.call, crate::runtime::Call::Async)
-							&& collector.allows_async_main(hash))
+							&& collector.allows_async_functions())
 					{
 						let operation = if matches!(f.call, crate::runtime::Call::Async) {
 							crate::experimental_core::error::Refusal::AsyncFunction

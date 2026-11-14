@@ -38,6 +38,21 @@
       "name": "compile::context::awaiting_tests::an_invalid_wait_output_certificate_does_not_enroll_the_adapter",
       "ignored": false,
       "timeout_seconds": 1800
+    },
+    {
+      "name": "function::host::awaiting::tests::script::direct_script_await_keeps_owned_arguments_and_host_effects_once_across_slices",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "function::host::awaiting::tests::script::refused_script_future_sites_never_execute_host_effects",
+      "ignored": false,
+      "timeout_seconds": 1800
+    },
+    {
+      "name": "function::host::awaiting::tests::script::recursive_script_await_has_an_exact_frame_frontier_and_cleans_failed_calls",
+      "ignored": false,
+      "timeout_seconds": 1800
     }
   ]
 }

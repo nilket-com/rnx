@@ -154,6 +154,7 @@ pub(crate) struct Collector {
 	invalid_break: Option<Location>,
 	unenrolled_host: Option<(Location, crate::ItemBuf)>,
 	async_host: Option<(Location, crate::ItemBuf, Refusal)>,
+	script_await: Option<(Location, crate::ItemBuf, crate::ItemBuf, Refusal)>,
 	source_uses: Vec<Hash>,
 	self_proofs: Vec<(u32, Hash, Hash, Location)>,
 	proofs: receiver_proofs::Proofs,
@@ -161,8 +162,8 @@ pub(crate) struct Collector {
 }
 
 impl Collector {
-	pub(crate) fn allows_async_main(&self, hash: Hash) -> bool {
-		self.opaque_session.is_some() && hash == Hash::type_hash(["main"])
+	pub(crate) fn allows_async_functions(&self) -> bool {
+		self.opaque_session.is_some()
 	}
 
 	pub(crate) fn record_failure(&mut self, error: Error) {
@@ -256,6 +257,19 @@ impl Collector {
 				Span::new(at.start, at.end),
 				crate::compile::ErrorKind::BreakUnsupportedValue,
 			);
+		}
+		if let Some((at, item, caller, refusal)) = self.script_await.take() {
+			if error.refusal == Some(refusal) && error.location == Some(at) {
+				return crate::compile::Error::new(
+					Span::new(at.start, at.end),
+					crate::compile::ErrorKind::ScriptAwaitRefusal {
+						item,
+						caller,
+						as_value: refusal == Refusal::FutureValue,
+						remove_await: refusal == Refusal::Await,
+					},
+				);
+			}
 		}
 		if let Some((at, item, refusal)) = self.async_host.take() {
 			if error.refusal == Some(refusal) && error.location == Some(at) {
@@ -405,6 +419,7 @@ impl Collector {
 		let native_helpers = &mut self.native_helpers;
 		let unenrolled_host = &mut self.unenrolled_host;
 		let async_host = &mut self.async_host;
+		let script_await = &mut self.script_await;
 		let moved_error = core::cell::Cell::new(None);
 		let invalid_break = core::cell::Cell::new(None);
 		let self_proof = core::cell::Cell::new(None);
@@ -414,9 +429,24 @@ impl Collector {
 			captures,
 			source,
 			revision,
-			&mut |hash, at| {
-				let hash = match hash {
+			&mut |request, at| {
+				let hash = match request {
 					super::lower::Resolve::Script(hash) => hash,
+					super::lower::Resolve::ScriptAwait {
+						hash: target,
+						refusal,
+					} => {
+						use crate::alloc::borrow::TryToOwned;
+						let target = pool.item_for_hash(target).ok_or_else(|| {
+							Error::new(ErrorKind::InvalidCode, "await target identity")
+						})?;
+						let caller = pool.item_for_hash(hash).ok_or_else(|| {
+							Error::new(ErrorKind::InvalidCode, "await caller identity")
+						})?;
+						*script_await =
+							Some((at, target.try_to_owned()?, caller.try_to_owned()?, refusal));
+						return Err(Error::refused(refusal).at(at));
+					}
 					super::lower::Resolve::AsyncHost { hash, refusal } => {
 						if let Some(item) = context
 							.lookup_meta_by_hash(hash)
@@ -460,6 +490,7 @@ impl Collector {
 							super::lower::Resolve::Any => &mut *any_helper,
 							super::lower::Resolve::Script(_)
 							| super::lower::Resolve::AsyncHost { .. }
+							| super::lower::Resolve::ScriptAwait { .. }
 							| super::lower::Resolve::NativeMethod { .. }
 							| super::lower::Resolve::Constructor { .. } => unreachable!(),
 						};
@@ -475,6 +506,7 @@ impl Collector {
 							}
 							super::lower::Resolve::Script(_)
 							| super::lower::Resolve::AsyncHost { .. }
+							| super::lower::Resolve::ScriptAwait { .. }
 							| super::lower::Resolve::NativeMethod { .. }
 							| super::lower::Resolve::Constructor { .. } => unreachable!(),
 						};
@@ -513,7 +545,8 @@ impl Collector {
 			&mut self.proofs,
 			hash,
 			opaque.as_ref(),
-			self.opaque_session.is_some() && hash == Hash::type_hash(["main"]),
+			self.opaque_session.is_some()
+				&& (hash == Hash::type_hash(["main"]) || constants.async_functions.contains(&hash)),
 		);
 		let function = match result {
 			Ok(function) => function,
@@ -692,6 +725,7 @@ pub(crate) fn compile_inner(
 		invalid_break: None,
 		unenrolled_host: None,
 		async_host: None,
+		script_await: None,
 		source_uses: Vec::new(),
 		self_proofs: Vec::new(),
 		proofs: receiver_proofs::Proofs::default(),

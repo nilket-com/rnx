@@ -9,6 +9,8 @@ use rune::experimental_core::{
 #[cfg(test)]
 mod admission_costs;
 #[cfg(test)]
+mod async_functions;
+#[cfg(test)]
 mod collection_costs;
 #[cfg(test)]
 mod collection_tests;
@@ -514,6 +516,42 @@ impl DomainSession {
 				let at = at
 					.and_then(|at| generated.map.locate(at))
 					.unwrap_or((number, 0));
+				if let Some((error, function, caller, as_value, remove_await)) =
+					diagnostics.diagnostics().iter().find_map(|d| match d {
+						rune::diagnostics::Diagnostic::Fatal(f) => {
+							let error = f.as_compile_error()?;
+							let (function, caller, as_value, remove_await) =
+								error.script_await_refusal()?;
+							Some((error, function, caller, as_value, remove_await))
+						}
+						_ => None,
+					}) {
+					let function = function.to_string();
+					let function = function.trim_start_matches("::");
+					let caller = caller.to_string();
+					let caller = caller.trim_start_matches("::");
+					let mut origin = generated
+						.map
+						.locate(error.span().range().start)
+						.unwrap_or(at);
+					// Every retained body is compiled before any effect. A changed
+					// declaration that invalidates an earlier caller is rejected here;
+					// its proposed declaration set never replaces the live one.
+					if let Some(name) = function.split("::").next()
+						&& let (Some(old), Some(new)) =
+							(self.declarations.get(name), p.declarations.get(name))
+						&& new.input == number
+						&& old.source != new.source
+						&& origin.0 != number
+					{
+						origin = (number, new.offset);
+					}
+					return Err(self.refused_at(
+						&remedy::script_await(caller, function, as_value, remove_await),
+						origin.0,
+						origin.1,
+					));
+				}
 				if let Some((host, as_value)) =
 					diagnostics.diagnostics().iter().find_map(|d| match d {
 						rune::diagnostics::Diagnostic::Fatal(f) => {
@@ -988,17 +1026,22 @@ mod tests {
 
 	#[test]
 	fn constant_diagnostic_async_categories_are_truthful() {
-		for source in ["async {1}.await", "async fn f(){1} f().await", "async {1}"] {
+		for source in ["async {1}.await", "async {1}"] {
 			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 			let Err(Failure::Refused(message)) = s.eval(source) else {
 				panic!("expected async refusal: {source}");
 			};
-			assert!(
-				message.contains("an async block") || message.contains("an async function"),
-				"{source}: {message}"
-			);
+			assert!(message.contains("an async block"), "{source}: {message}");
 		}
 		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+		assert_eq!(
+			s.eval_rendered(
+				"async fn f(){1} f().await",
+				&crate::format::Limits::default()
+			)
+			.unwrap(),
+			Some("1".into())
+		);
 		assert_eq!(
 			s.eval_rendered(
 				"const A=\"async await select\";/* async */ A",

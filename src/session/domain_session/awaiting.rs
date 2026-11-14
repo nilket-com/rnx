@@ -201,7 +201,10 @@ mod tests {
 			("let f=time::sleep(0);0", "await its call"),
 			("let f=time::sleep;0", "futures as values"),
 			("async {7}.await", "an async block"),
-			("async fn f(){7} f().await", "an async function"),
+			(
+				"let f=async ||7;0",
+				"a call with unsupported or unknown closure arity",
+			),
 			("select {_ = time::sleep(0)=>7}", "select"),
 		] {
 			let error = text(&mut fresh, &format!("a.push(2);{source}"))

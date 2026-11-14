@@ -29,6 +29,10 @@ pub(crate) enum Resolve {
 		hash: Hash,
 		refusal: Refusal,
 	},
+	ScriptAwait {
+		hash: Hash,
+		refusal: Refusal,
+	},
 	Constructor {
 		hash: Hash,
 		tag: Type,
@@ -1639,6 +1643,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		if self.context.host_is_wait_adapter(hash) {
 			return self.refuse_async_host(hash, Refusal::FutureValue, expr.span);
 		}
+		if self.constants.async_functions.contains(&hash) {
+			return self.refuse_script_await(hash, Refusal::FutureValue, expr.span);
+		}
 		let at = self.location(span);
 		let resolve = match self.constants.struct_shape(hash) {
 			Some(shape) => match shape.fields {
@@ -2262,6 +2269,32 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		Err(self.refused(span, refusal))
 	}
 
+	#[cold]
+	#[inline(never)]
+	fn refuse_script_await(&mut self, hash: Hash, refusal: Refusal, span: Span) -> Result<()> {
+		let at = self.location(span);
+		(self.resolve)(Resolve::ScriptAwait { hash, refusal }, at)?;
+		Err(self.refused(span, refusal))
+	}
+
+	// A script await is a normal iterative call. No future can escape this site.
+	#[inline(never)]
+	fn await_script(
+		&mut self,
+		call: &hir::ExprCall<'_>,
+		hash: Hash,
+		out: u32,
+		span: Span,
+	) -> Result<()> {
+		let at = self.location(span);
+		let function = (self.resolve)(Resolve::Script(hash), at)?;
+		let args = self.operands(call.args)?;
+		let (args_start, args_len) = self.function.arguments(&args)?;
+		let call = self.transaction.script_call(function, args_len, at)?;
+		self.emit(call.op(out, args_start), span)?;
+		Ok(())
+	}
+
 	#[inline(never)]
 	fn await_host(&mut self, value: hir::ExprId, out: u32, span: Span) -> Result<()> {
 		if !self.allow_host_await {
@@ -2284,9 +2317,14 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			return Err(self.refused(span, Refusal::Await));
 		};
 		if self.constants.async_functions.contains(&hash) {
-			return Err(self.refused(span, Refusal::AsyncFunction));
+			return self.await_script(call, hash, out, span);
 		}
 		if !self.context.host_requires_await(hash) {
+			if self.pool.item_for_hash(hash).is_some()
+				&& self.context.lookup_function(hash).is_none()
+			{
+				return self.refuse_script_await(hash, Refusal::Await, expr.span);
+			}
 			return Err(self.refused(span, Refusal::Await));
 		}
 		if !self.context.host_is_wait_adapter(hash) {
@@ -2325,6 +2363,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		if let hir::Call::Meta { hash } = call.call {
 			if self.context.host_is_wait_adapter(hash) {
 				return self.refuse_async_host(hash, Refusal::AwaitRequired, span);
+			}
+			if self.constants.async_functions.contains(&hash) {
+				return self.refuse_script_await(hash, Refusal::AwaitRequired, span);
 			}
 			if ordering_constructor(hash).is_some() {
 				return self.call_ordering_constructor(hash, call, out, span);

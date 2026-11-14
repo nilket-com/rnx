@@ -584,7 +584,7 @@ fn entries() -> Vec<Entry> {
 			file: "src/session/interactive.rs",
 			owner: "eval_rendered",
 			call: "METHOD eval_rendered",
-			needs: "sticky --engine=execution opt-in; default is legacy; no runtime fallback; async and native presenters remain deferred; dependency restarts preserve the selected engine",
+			needs: "sticky --engine=execution opt-in; default is legacy; no runtime fallback; direct script and host awaits supported, futures as values deferred; dependency restarts preserve the selected engine",
 		},
 		Entry {
 			name: "worker-jupyter",
@@ -592,7 +592,7 @@ fn entries() -> Vec<Entry> {
 			file: "src/worker.rs",
 			owner: "run",
 			call: "METHOD eval_worker",
-			needs: "sticky execution opt-in; default legacy; domain HTML/native presenters and async deferred",
+			needs: "sticky execution opt-in; default legacy; domain HTML/native presenters and direct script/host awaits supported; futures as values deferred",
 		},
 		Entry {
 			name: "dep-in-session",

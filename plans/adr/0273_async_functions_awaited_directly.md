@@ -1,6 +1,6 @@
 # ADR 0273: async functions awaited directly in an execution session
 
-Status: Proposed
+Status: Accepted
 
 Base: published f7a8e42fb57b035fe2fbe59cb2c02a885d485a6c (ADR 0272).
 
@@ -75,3 +75,31 @@ arguments, interruption) for a ruling.
 
 Futures as values, concurrency of any kind, async closures and blocks,
 bytes.
+
+## Results
+
+Direct script awaits use existing certified script calls and iterative frames.
+Async identity and names come from the existing indexing set and compilation
+pool. No executor, instruction, policy, solver or runtime edit was needed.
+
+An incompatible redefinition is refused at the redefining input before effects,
+naming caller and callee; the previous declarations and bindings remain usable.
+Awaiting an ordinary script function is refused with advice to remove `.await`.
+Moved arguments retain ordinary-call behavior, without a special case.
+
+Legacy observation established left-to-right arguments, lazy body execution,
+body errors and `?`, nested waits, recursion and terminal interruption. With a
+call and its await inseparable, no user operation can run between argument
+creation and body execution. Existing moved host-snapshot differences remain.
+
+Seven ordinary lowering frames have identical unoptimized stack allocations
+beside the base. Ordinary lowering and direct script awaits retain their source
+nesting frontiers on 2 MiB and 90%-headroom stacks. Script recursion retains the
+existing configured frame and fuel limits. Native signal controls cover sleep
+and loopback HTTP three async calls deep, with recovery and no result-arm effect.
+
+The measured parity table adds eight rows: four Equal, three Intentional
+difference, and one Wording under the existing appended-frames rule. Older
+sections are unchanged. The 292-row pin is 158,338 bytes under its unchanged
+163,840-byte cap. Three ownership/refusal/frame-cleanup cases extend the existing
+exact Miri inventory; no gate driver or selection policy changed.

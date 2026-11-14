@@ -68,6 +68,7 @@ signature!(
 
 #[cfg(test)]
 mod tests {
+	mod script;
 	use super::*;
 	use crate::experimental_core::{
 		domain::{CrossOutcome, ProgramDomain},
