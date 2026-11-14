@@ -113,7 +113,12 @@ fn witness_probe() {
 	validate_ties();
 	let recipe = recipes().into_iter().find(|r| r["name"] == name).unwrap();
 	let mut old = Session::new(context()).unwrap();
-	let mut fresh = DomainSession::new(context(), crate::session::DEFAULT_CEILING).unwrap();
+	let mut fresh = DomainSession::for_frontend(
+		context(),
+		crate::session::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	let directory = private();
 	let mut external = false;
 	let mut rows = Vec::new();
@@ -147,8 +152,12 @@ fn witness_probe() {
 		}
 		if action.get("independent_reset").is_some() {
 			let mut reset = Session::new(context()).unwrap();
-			let mut domain_reset =
-				DomainSession::new(context(), crate::session::DEFAULT_CEILING).unwrap();
+			let mut domain_reset = DomainSession::for_frontend(
+				context(),
+				crate::session::DEFAULT_CEILING,
+				crate::session::remedy::FrontEnd::Terminal,
+			)
+			.unwrap();
 			expected(&parity_old(&mut reset, "x"), &json!({"outcome":"compile"}));
 			expected(
 				&parity_new(&mut domain_reset, "x"),

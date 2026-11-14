@@ -108,7 +108,12 @@ pub(super) fn report() -> serde_json::Value {
 		("body_label_while_value", "'w:while true{break 'w 7}"),
 	] {
 		let mut old = Session::new(context()).unwrap();
-		let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+		let mut new = DomainSession::for_frontend(
+			context(),
+			DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
+		)
+		.unwrap();
 		let (legacy, domain) = parity_observe(&mut old, &mut new, input);
 		let (class, rule, worse) = super::classify(&legacy, &domain);
 		rows.push(serde_json::json!({"construct":name,"input":input,"legacy":legacy,"domain":domain,"class":class,"wording_rule":rule,"domain_worse":worse}));
@@ -121,7 +126,12 @@ pub(super) fn report() -> serde_json::Value {
 fn valued_for_is_a_source_error() {
 	use crate::session::domain_session::transcripts::{parity_new, parity_old};
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	for input in ["for x in [1]{break 7}", "for x in [1]{break 7;}0"] {
 		let a = parity_old(&mut old, input);
 		let b = parity_new(&mut new, input);

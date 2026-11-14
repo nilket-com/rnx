@@ -153,6 +153,9 @@ def run(binary, engine, mode, scratch=False):
                 send('async {7}.await')
                 output = until(b'> ')
                 assert (b'an async block is not available' in output) == (engine == 'execution'), output
+                if engine == 'execution':
+                    assert b'start `rnx repl` without --engine=execution' in output, output
+                    assert b'select the `' not in output and b'use the legacy session engine' not in output, output
             else:
                 assert not (root/'argv.json').exists()
                 send('alias.push(2);a.len()+c()')

@@ -21,7 +21,7 @@ impl Engine {
 	}
 	pub fn display_name(self) -> &'static str {
 		match self {
-			Self::Legacy => "Rune (rnx)",
+			Self::Legacy => crate::kernel_name::LEGACY_KERNEL_DISPLAY_NAME,
 			Self::Execution => "Rune (rnx execution; sync only)",
 		}
 	}

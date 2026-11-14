@@ -14,13 +14,14 @@ impl InteractiveSession {
 		context: rune::Context,
 		ceiling: usize,
 		engine: EngineChoice,
+		frontend: super::remedy::FrontEnd,
 		http: crate::http::State,
 		lifecycle: crate::lifecycle::Lifecycle,
 		presenters: crate::present::Presenters,
 	) -> crate::Result<Self> {
 		if engine == EngineChoice::Execution {
 			Ok(Self::Execution(Box::new(
-				DomainSession::new(context, ceiling)?
+				DomainSession::for_frontend(context, ceiling, frontend)?
 					.with_http(http)
 					.with_lifecycle(lifecycle)
 					.with_presenters(presenters),

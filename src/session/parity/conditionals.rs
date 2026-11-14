@@ -19,7 +19,12 @@ const CASES: &[(&str, &str)] = &[
 ];
 fn pair(source: &str) -> (Value, Value) {
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	let a = parity_old(&mut old, source);
 	let b = parity_new(&mut new, source);
 	old.close().unwrap();
@@ -73,7 +78,12 @@ fn no_else_session_controls() {
 		"if let Some(x)=Some(7) {seen.push(1);panic!(\"noelse\");x}",
 	] {
 		let mut old = Session::new(context()).unwrap();
-		let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+		let mut new = DomainSession::for_frontend(
+			context(),
+			DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
+		)
+		.unwrap();
 		let init = "let seen=[];";
 		assert_eq!(parity_old(&mut old, init), parity_new(&mut new, init));
 		let source = format!("let a={expression};a");

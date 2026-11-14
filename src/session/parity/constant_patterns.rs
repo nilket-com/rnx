@@ -10,7 +10,12 @@ use crate::session::{
 #[test]
 fn patterns_preserve_sessions_and_scope() {
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	for source in [
 		"let kept=[7];",
 		"const A={let (a,b)=(2,3);a+b};A",

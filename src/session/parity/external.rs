@@ -269,7 +269,12 @@ fn child() {
 	let context = || crate::routing_inventory::session_parity_context().unwrap();
 	let mut old = legacy.then(|| Session::new(context()).unwrap());
 	let mut new = (!legacy).then(|| {
-		domain_session::DomainSession::new(context(), crate::session::DEFAULT_CEILING).unwrap()
+		domain_session::DomainSession::for_frontend(
+			context(),
+			crate::session::DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
+		)
+		.unwrap()
 	});
 	let mut used = BTreeSet::new();
 	let mut expected = snapshot(&root);

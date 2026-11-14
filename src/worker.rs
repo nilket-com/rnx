@@ -2,6 +2,7 @@
 use crate::session::{
 	Failure,
 	interactive::{EngineChoice, InteractiveSession},
+	remedy::FrontEnd,
 };
 use serde_json::{Value, json};
 use std::{
@@ -13,22 +14,19 @@ pub const FRAME_CAP: usize = 256 * 1024;
 const MAX_ID: u64 = (1_u64 << 53) - 1;
 pub struct Transport {
 	engine: EngineChoice,
+	frontend: FrontEnd,
 	read: BufReader<File>,
 	write: File,
 }
 impl Transport {
 	pub fn from_args(args: &[String]) -> Result<Self, (i32, String)> {
-		let engine = match args.get(5) {
-			None => EngineChoice::Legacy,
-			Some(arg) => EngineChoice::parse(arg.strip_prefix("--engine=").unwrap_or(""))
-				.map_err(|e| (2, e))?,
-		};
-		if !matches!(args.len(), 5 | 6)
+		if !(5..=7).contains(&args.len())
 			|| args[1] != "--control-read"
 			|| args[3] != "--control-write"
 		{
 			return Err((2, "worker needs --control-read N --control-write N".into()));
 		}
+		let (engine, frontend) = options(&args[5..]).map_err(|e| (2, e))?;
 		let number = |s: &str| {
 			s.parse::<usize>().map_err(|_| {
 				(
@@ -41,6 +39,7 @@ impl Transport {
 			.map_err(|e| (1, format!("cannot open worker control: {e}")))?;
 		Ok(Self {
 			engine,
+			frontend,
 			read: BufReader::new(read),
 			write,
 		})
@@ -79,6 +78,29 @@ impl Transport {
 		self.write.write_all(b"\n")?;
 		self.write.flush()
 	}
+}
+fn options(args: &[String]) -> Result<(EngineChoice, FrontEnd), String> {
+	let mut engine = None;
+	let mut frontend = None;
+	for arg in args {
+		if let Some(value) = arg.strip_prefix("--engine=") {
+			if engine.is_some() {
+				return Err("duplicate worker engine".into());
+			}
+			engine = Some(EngineChoice::parse(value)?);
+		} else if let Some(value) = arg.strip_prefix("--frontend=") {
+			if frontend.is_some() {
+				return Err("duplicate worker frontend".into());
+			}
+			frontend = Some(FrontEnd::parse(value)?);
+		} else {
+			return Err("unknown worker option".into());
+		}
+	}
+	Ok((
+		engine.unwrap_or(EngineChoice::Legacy),
+		frontend.unwrap_or_default(),
+	))
 }
 fn object<'a>(v: &'a Value, keys: &[&str]) -> io::Result<&'a serde_json::Map<String, Value>> {
 	let o = v
@@ -184,6 +206,7 @@ pub fn run(
 		context,
 		crate::repl::ceiling(),
 		engine,
+		transport.frontend,
 		http,
 		lifecycle,
 		presenters,
@@ -314,6 +337,35 @@ pub fn run(
 #[cfg(test)]
 mod tests {
 	use super::*;
+	#[test]
+	fn frontend_is_a_closed_startup_choice_with_a_neutral_default() {
+		assert_eq!(
+			options(&[]).unwrap(),
+			(EngineChoice::Legacy, FrontEnd::Neutral)
+		);
+		for frontend in ["terminal", "notebook", "neutral"] {
+			for engine in ["legacy", "execution"] {
+				let args = [
+					format!("--frontend={frontend}"),
+					format!("--engine={engine}"),
+				];
+				assert_eq!(
+					options(&args).unwrap(),
+					(
+						EngineChoice::parse(engine).unwrap(),
+						FrontEnd::parse(frontend).unwrap()
+					)
+				);
+			}
+		}
+		for args in [
+			vec!["--frontend=unknown"],
+			vec!["--frontend=notebook", "--frontend=terminal"],
+			vec!["--engine=legacy", "--engine=execution"],
+		] {
+			assert!(options(&args.into_iter().map(str::to_owned).collect::<Vec<_>>()).is_err());
+		}
+	}
 	#[test]
 	fn diagnostics_are_capped_on_character_boundaries() {
 		let (s, cut) = bounded("é".repeat(20), 9);

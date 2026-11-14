@@ -213,6 +213,7 @@ impl Worker {
 		if engine == crate::engine::Engine::Execution {
 			cmd.arg("--engine=execution");
 		}
+		cmd.arg("--frontend=notebook");
 		cmd.stdin(Stdio::null())
 			.stdout(Stdio::piped())
 			.stderr(Stdio::piped());

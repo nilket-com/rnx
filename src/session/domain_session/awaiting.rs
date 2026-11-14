@@ -71,7 +71,7 @@ mod tests {
 		c
 	}
 	fn session() -> DomainSession {
-		DomainSession::new(context(), DEFAULT_CEILING).unwrap()
+		DomainSession::for_frontend(context(), DEFAULT_CEILING, remedy::FrontEnd::Terminal).unwrap()
 	}
 	fn text(s: &mut DomainSession, input: &str) -> std::result::Result<Option<String>, Failure> {
 		s.eval_rendered(input, &crate::format::Limits::default())

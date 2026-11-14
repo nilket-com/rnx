@@ -343,8 +343,15 @@ pub fn run(
 		.completion_type(CompletionType::List)
 		.build();
 	let mut editor: Editor<RnxHelper, FileHistory> = Editor::with_config(config)?;
-	let mut session =
-		InteractiveSession::new(context, ceiling(), engine, http, lifecycle, presenters)?;
+	let mut session = InteractiveSession::new(
+		context,
+		ceiling(),
+		engine,
+		crate::session::remedy::FrontEnd::Terminal,
+		http,
+		lifecycle,
+		presenters,
+	)?;
 	let names = Rc::new(RefCell::new(snapshot(&session, &host)));
 	editor.set_helper(Some(RnxHelper {
 		names: names.clone(),

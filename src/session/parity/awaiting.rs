@@ -19,9 +19,13 @@ fn contexts() -> crate::routing_inventory::Result<(DomainSession, Session)> {
 		Ok((c, http, life))
 	}
 	let (c, h, l) = make()?;
-	let fresh = DomainSession::new(c, crate::session::DEFAULT_CEILING)?
-		.with_http(h)
-		.with_lifecycle(l);
+	let fresh = DomainSession::for_frontend(
+		c,
+		crate::session::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)?
+	.with_http(h)
+	.with_lifecycle(l);
 	let (c, h, l) = make()?;
 	let old = Session::new(c)?.with_http(h).with_lifecycle(l);
 	Ok((fresh, old))

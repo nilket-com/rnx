@@ -32,6 +32,7 @@ pub(crate) struct DomainSession {
 	// Typed native presenters stay with the installed context across reset.
 	presenters: crate::present::Presenters,
 	cleanup_notes: Vec<String>,
+	frontend: remedy::FrontEnd,
 	#[cfg(test)]
 	collect_fail_after: Option<usize>,
 	#[cfg(test)]
@@ -45,6 +46,13 @@ fn fault(e: impl std::fmt::Display) -> Failure {
 }
 impl DomainSession {
 	pub(crate) fn new(context: Context, ceiling: usize) -> Result<Self> {
+		Self::for_frontend(context, ceiling, remedy::FrontEnd::default())
+	}
+	pub(crate) fn for_frontend(
+		context: Context,
+		ceiling: usize,
+		frontend: remedy::FrontEnd,
+	) -> Result<Self> {
 		let runtime = context.execution_runtime()?;
 		let domain = ProgramDomain::new(Default::default(), Default::default(), runtime)
 			.map_err(|e| format!("{e:?}"))?;
@@ -66,6 +74,7 @@ impl DomainSession {
 			runtime: crate::execute::Runtime::new()?,
 			presenters: Default::default(),
 			cleanup_notes: Vec::new(),
+			frontend,
 			#[cfg(test)]
 			collect_fail_after: None,
 			#[cfg(test)]
@@ -514,18 +523,7 @@ impl DomainSession {
 					}) {
 					let host = host.to_string();
 					let host = host.trim_start_matches("::");
-					let reason = if as_value {
-						"; futures as values are not available"
-					} else {
-						""
-					};
-					return Err(self.refused_at(
-						&format!(
-							"{host} is asynchronous{reason}; await its call as {host}(...).await"
-						),
-						at.0,
-						at.1,
-					));
+					return Err(self.refused_at(&remedy::await_call(host, as_value), at.0, at.1));
 				}
 				if let Some(construct) = diagnostics.diagnostics().iter().find_map(|d| match d {
 					rune::diagnostics::Diagnostic::Fatal(f) => {
@@ -534,9 +532,9 @@ impl DomainSession {
 					_ => None,
 				}) {
 					return Err(self.refused_at(
-						&format!(
-							"execution session does not support {construct}; start `rnx repl` without --engine=execution"
-						),
+						&self
+							.frontend
+							.fallback(&format!("execution session does not support {construct}")),
 						at.0,
 						at.1,
 					));
@@ -558,7 +556,14 @@ impl DomainSession {
 						if let Some(host) = host {
 							let name = host.to_string();
 							let name = name.trim_start_matches("::");
-							return Err(self.refused_at(&format!("{name} needs {}, not yet available in an execution session; start `rnx repl` without --engine=execution", host_wait_reason(name)), at.0, at.1));
+							return Err(self.refused_at(
+								&self.frontend.fallback(&format!(
+									"{name} needs {}, not yet available in an execution session",
+									host_wait_reason(name)
+								)),
+								at.0,
+								at.1,
+							));
 						}
 					}
 					return Err(self.unsupported(refused_construct(refusal), at));
@@ -644,7 +649,13 @@ impl DomainSession {
 		self.after_cleanup(result, release)
 	}
 	fn unsupported(&self, construct: &str, at: (usize, usize)) -> Failure {
-		self.refused_at(&format!("{construct} is not available in an execution session; start `rnx repl` without --engine=execution"),at.0,at.1)
+		self.refused_at(
+			&self.frontend.fallback(&format!(
+				"{construct} is not available in an execution session"
+			)),
+			at.0,
+			at.1,
+		)
 	}
 
 	fn origin(&self, input: usize, offset: usize) -> Option<Origin> {
@@ -937,7 +948,10 @@ mod tests {
 				panic!("expected cross-input refusal: {construct}");
 			};
 			assert!(message.contains(construct), "{message}");
-			assert!(message.contains("without --engine=execution"), "{message}");
+			assert!(
+				message.contains("use the legacy session engine"),
+				"{message}"
+			);
 			let mut single = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 			let Err(Failure::Refused(same)) = single.eval(&format!("{definition} {call}")) else {
 				panic!("expected single-input refusal");

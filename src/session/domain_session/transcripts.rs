@@ -175,7 +175,12 @@ fn legacy(s: &mut Session, input: &str) -> std::result::Result<Option<String>, D
 #[test]
 fn differential_transcript() {
 	let mut old = Session::new(context()).unwrap();
-	let mut fresh = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut fresh = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	for row in ROWS {
 		match row.input {
 			":budget" => {
@@ -237,7 +242,12 @@ fn differential_transcript() {
 
 #[test]
 fn mapped_frames_cross_inputs_redefinition_renumber_and_reset() {
-	let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut s = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	s.eval("fn fail(){1/0} let a=||fail();0").unwrap();
 	s.eval("let b=||a();0").unwrap();
 	let d = diagnostic(s.eval("b()").unwrap_err());
@@ -262,7 +272,12 @@ fn mapped_frames_cross_inputs_redefinition_renumber_and_reset() {
 
 #[test]
 fn mapped_frames_cut_long_chain() {
-	let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut s = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	let d = diagnostic(
 		s.eval("fn f(n){if n==0 {1/0} else {f(n-1)}} f(40)")
 			.unwrap_err(),

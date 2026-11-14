@@ -256,7 +256,12 @@ fn literal_report() -> serde_json::Value {
 			let pair = sessions.entry(event.session.clone()).or_insert_with(|| {
 				(
 					Session::new(context()).unwrap(),
-					DomainSession::new(context(), super::DEFAULT_CEILING).unwrap(),
+					DomainSession::for_frontend(
+						context(),
+						super::DEFAULT_CEILING,
+						crate::session::remedy::FrontEnd::Terminal,
+					)
+					.unwrap(),
 					None::<String>,
 				)
 			});
@@ -435,7 +440,12 @@ fn constant_report() -> serde_json::Value {
 		("constant bytes", "const A=b\"ab\"; A"),
 	] {
 		let mut old = Session::new(context()).unwrap();
-		let mut new = DomainSession::new(context(), super::DEFAULT_CEILING).unwrap();
+		let mut new = DomainSession::for_frontend(
+			context(),
+			super::DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
+		)
+		.unwrap();
 		let (legacy, domain) = parity_observe(&mut old, &mut new, input);
 		rows.push(
 			serde_json::json!({"construct":construct,"input":input,"legacy":legacy,"domain":domain}),
@@ -621,7 +631,12 @@ fn notebook_probe() {
 	let notebook: serde_json::Value =
 		serde_json::from_slice(&std::fs::read(name).unwrap()).unwrap();
 	let mut old = Session::new(context()).unwrap();
-	let mut fresh = DomainSession::new(context(), super::DEFAULT_CEILING).unwrap();
+	let mut fresh = DomainSession::for_frontend(
+		context(),
+		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Notebook,
+	)
+	.unwrap();
 	let mut rows = Vec::new();
 	let mut blocked = None;
 	let mut stop = false;
@@ -680,9 +695,10 @@ pub(crate) fn observe_host(
 		domain_session::{DomainSession, transcripts::parity_observe},
 	};
 	let mut old = Session::new(c)?;
-	let mut fresh = DomainSession::new(
+	let mut fresh = DomainSession::for_frontend(
 		crate::routing_inventory::session_parity_context()?,
 		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
 	)?;
 	let (a, b) = parity_observe(&mut old, &mut fresh, input);
 	let (class, rule, worse) = classify(&a, &b);
@@ -713,7 +729,11 @@ pub(crate) fn observe_host_value(
 	crate::interchange::install_test_factory(&mut a)?;
 	crate::interchange::install_test_factory(&mut b)?;
 	let mut old = Session::new(a)?;
-	let mut fresh = DomainSession::new(b, super::DEFAULT_CEILING)?;
+	let mut fresh = DomainSession::for_frontend(
+		b,
+		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)?;
 	let (legacy, domain) = parity_observe(&mut old, &mut fresh, input);
 	let (class, wording_rule, domain_worse) = classify(&legacy, &domain);
 	old.close()?;

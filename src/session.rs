@@ -358,6 +358,7 @@ pub(crate) enum EvalValue {
 pub(crate) mod domain_session;
 pub(crate) mod interactive;
 mod one_shot;
+pub(crate) mod remedy;
 
 pub struct Session {
 	/// The compile-time context, owned, so an input cannot be compiled

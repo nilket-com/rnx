@@ -10,7 +10,12 @@ use crate::session::{
 use serde_json::Value;
 fn pair(source: &str) -> (Value, Value) {
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	let a = parity_old(&mut old, source);
 	let b = parity_new(&mut new, source);
 	old.close().unwrap();
@@ -44,7 +49,12 @@ fn values_and_transactionality() {
 		assert_eq!(a, b, "{source}");
 	}
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	assert_eq!(
 		parity_old(&mut old, "let kept=[7];"),
 		parity_new(&mut new, "let kept=[7];")
@@ -161,7 +171,12 @@ fn option_and_field_diagnostics() {
 	let (_, b) = pair("fn Some(x){x} const A=Some(1);A");
 	assert_ne!(b["outcome"], "ok");
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	assert_eq!(
 		parity_old(&mut old, "let kept=[7];"),
 		parity_new(&mut new, "let kept=[7];")

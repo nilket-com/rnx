@@ -64,6 +64,7 @@ pub mod allocation {
 }
 mod io;
 mod json;
+mod kernel_name;
 mod memory;
 mod method;
 mod path;

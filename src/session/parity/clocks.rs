@@ -98,9 +98,10 @@ pub(crate) fn observe(
 	};
 	let property = Property::for_function(function).ok_or("not a clock property")?;
 	let mut old = Session::new(context)?;
-	let mut new = DomainSession::new(
+	let mut new = DomainSession::for_frontend(
 		crate::routing_inventory::session_parity_context()?,
 		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
 	)?;
 	let a = capture(property, function, |input| parity_old(&mut old, input));
 	let b = capture(property, function, |input| parity_new(&mut new, input));

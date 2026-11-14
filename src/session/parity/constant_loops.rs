@@ -11,7 +11,12 @@ use crate::session::{
 #[test]
 fn loop_scope_and_failed_input() {
 	let mut old = Session::new(context()).unwrap();
-	let mut new = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
+	let mut new = DomainSession::for_frontend(
+		context(),
+		DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
+	)
+	.unwrap();
 	for source in [
 		"let kept=[7];",
 		"const A={let x=9;while let Some(x)=Some(2){break;}x};A",

@@ -52,7 +52,7 @@ def run():
             else:
                 assert old['failure'] is None and old['plain']=='1',old
                 assert new['failure']['category']=='refused',new
-                assert new['failure']['diagnostic']=='refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 7, line 1, column 11)',new
+                assert new['failure']['diagnostic']=='refused: an async block is not available in an execution session; use the legacy session engine (input 7, line 1, column 11)',new
                 assert workers[0].execute('a.len()')[0]['text_plain']=='3'
                 assert workers[1].execute('a.len()')[0]['text_plain']=='2'
             print(name,policy,'PASS')
@@ -116,8 +116,41 @@ def before_armed():
             if fd is not None:os.close(fd)
 
 
+def frontend_remedies():
+    for frontend, remedy in [
+        (None,'use the legacy session engine'),
+        ('neutral','use the legacy session engine'),
+        ('terminal','start `rnx repl` without --engine=execution'),
+        ('notebook','select the `Rune (rnx)` kernel'),
+    ]:
+        w=Parent(BINARY,engine='execution',frontend=frontend)
+        try:
+            for source,reason in [
+                ('async {7}.await','an async block is not available'),
+                ('http::get_bytes("")','http::get_bytes needs bytes'),
+                ('const A=b"ab";A','execution session does not support byte-string constants'),
+            ]:
+                reply,_,_=w.execute(source)
+                assert reply['failure']['category']=='refused',reply
+                text=reply['failure']['diagnostic']
+                assert reason in text and remedy in text and ', line 1, column ' in text,reply
+            reply,_,_=w.execute('time::sleep(0)')
+            assert 'await its call as time::sleep(...).await' in reply['failure']['diagnostic'],reply
+            assert remedy not in reply['failure']['diagnostic'],reply
+            w.begin(op='reset');w.settled();w.handoff()
+            reply,_,_=w.execute('async {7}.await')
+            assert remedy in reply['failure']['diagnostic'] and '(input 1, line 1, column 1)' in reply['failure']['diagnostic'],reply
+        finally:w.close()
+    # The neutral advice corresponds to the existing public worker option.
+    w=Parent(BINARY,engine='legacy')
+    try:
+        reply,_,_=w.execute('async {7}.await')
+        assert reply['failure'] is None and reply['text_plain']=='7',reply
+    finally:w.close()
+
+
 if __name__=='__main__':
-    run();lost_armed()
+    run();lost_armed();frontend_remedies()
     if "--test-support" in sys.argv:before_armed()
     outcomes=[]
     for engine in ('legacy','execution'):

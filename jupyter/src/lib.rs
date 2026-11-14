@@ -14,3 +14,5 @@ pub mod worker;
 pub mod install;
 
 pub mod engine;
+#[path = "../../src/kernel_name.rs"]
+mod kernel_name;

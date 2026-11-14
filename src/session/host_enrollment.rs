@@ -138,9 +138,10 @@ fn resolved_refusals_preserve_aliases_and_first_cause() {
 		"use process::run as save; save(\"\",[],#{})",
 		"use process::run; run(\"\",[],#{})",
 	] {
-		let mut session = DomainSession::new(
+		let mut session = DomainSession::for_frontend(
 			crate::routing_inventory::session_parity_context().unwrap(),
 			super::DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
 		)
 		.unwrap();
 		let result = parity_new(&mut session, source);
@@ -215,9 +216,10 @@ fn string_input_sessions_preserve_values_and_reject_before_effects() {
 	let quoted = serde_json::to_string(path.to_str().unwrap()).unwrap();
 	let mut old =
 		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
-	let mut new = DomainSession::new(
+	let mut new = DomainSession::for_frontend(
 		crate::routing_inventory::session_parity_context().unwrap(),
 		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
 	)
 	.unwrap();
 	for input in [
@@ -266,9 +268,10 @@ fn bytes_are_not_representable_in_execution_sessions() {
 		"\"bytes\".as_bytes()",
 		"fs::read_bytes(\"unused\")",
 	] {
-		let mut new = DomainSession::new(
+		let mut new = DomainSession::for_frontend(
 			crate::routing_inventory::session_parity_context().unwrap(),
 			super::DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
 		)
 		.unwrap();
 		let row = parity_new(&mut new, input);
@@ -281,9 +284,10 @@ fn bytes_are_not_representable_in_execution_sessions() {
 fn owned_json_differential() {
 	let mut old =
 		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
-	let mut new = super::domain_session::DomainSession::new(
+	let mut new = super::domain_session::DomainSession::for_frontend(
 		crate::routing_inventory::session_parity_context().unwrap(),
 		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
 	)
 	.unwrap();
 	use super::domain_session::transcripts::{parity_new, parity_old};
@@ -326,9 +330,10 @@ fn string_responses_differential() {
 	use super::domain_session::transcripts::{parity_new, parity_old};
 	let mut old =
 		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
-	let mut new = super::domain_session::DomainSession::new(
+	let mut new = super::domain_session::DomainSession::for_frontend(
 		crate::routing_inventory::session_parity_context().unwrap(),
 		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
 	)
 	.unwrap();
 	for name in ["html", "text"] {
@@ -377,9 +382,10 @@ fn string_responses_moved_and_bytes_contracts() {
 		let mut old =
 			super::Session::new(crate::routing_inventory::session_parity_context().unwrap())
 				.unwrap();
-		let mut new = super::domain_session::DomainSession::new(
+		let mut new = super::domain_session::DomainSession::for_frontend(
 			crate::routing_inventory::session_parity_context().unwrap(),
 			super::DEFAULT_CEILING,
+			crate::session::remedy::FrontEnd::Terminal,
 		)
 		.unwrap();
 		let moved = format!(r#"let s=String::from("x");drop(s);web::{name}(200,s)"#);
@@ -404,9 +410,10 @@ fn escape_html_differential_and_recovery() {
 	use super::domain_session::transcripts::{parity_new, parity_old};
 	let mut old =
 		super::Session::new(crate::routing_inventory::session_parity_context().unwrap()).unwrap();
-	let mut new = super::domain_session::DomainSession::new(
+	let mut new = super::domain_session::DomainSession::for_frontend(
 		crate::routing_inventory::session_parity_context().unwrap(),
 		super::DEFAULT_CEILING,
+		crate::session::remedy::FrontEnd::Terminal,
 	)
 	.unwrap();
 	for source in [

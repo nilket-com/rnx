@@ -44,12 +44,37 @@ def main():
                     reply=client.get_shell_msg(timeout=20)
                     if reply['parent_header'].get('msg_id')==identity:
                         return reply['content'],messages
+            def refusals():
+                remedy = f"select the `{old['display_name']}` kernel"
+                for source, reason in [
+                    ('async {7}.await', 'an async block is not available'),
+                    ('http::get_bytes("")', 'http::get_bytes needs bytes'),
+                    ('const A=b"ab";A', 'execution session does not support byte-string constants'),
+                ]:
+                    reply, messages = execute(source)
+                    assert reply['status']=='error', reply
+                    text=reply['evalue']
+                    assert reason in text and remedy in text, reply
+                    assert 'start `rnx repl`' not in text and 'use the legacy session engine' not in text, reply
+                    assert '(input ' in text and ', line 1, column ' in text, reply
+                    assert any(m['msg_type']=='error' and m['content']['evalue']==text for m in messages), messages
+                for source in ['time::sleep(0)', 'let f=time::sleep;0']:
+                    reply,_=execute(source)
+                    assert reply['status']=='error' and 'await its call as time::sleep(...).await' in reply['evalue'],reply
+                    assert remedy not in reply['evalue'],reply
+                reply,_=execute('struct NotebookRemedyShape {x}')
+                assert reply['status']=='ok',reply
+                reply,_=execute('struct NotebookRemedyShape {y}')
+                assert reply['status']=='error' and ':reset before redeclaring it' in reply['evalue'],reply
+                assert remedy not in reply['evalue'],reply
             reply, messages = execute('let keep=7;keep')
             assert reply['status']=='ok', reply
             assert any(m['msg_type']=='execute_result' and m['content']['data'].get('text/plain')=='7' for m in messages), messages
+            refusals()
             client.stop_channels()
             km.restart_kernel(now=True)
             client=km.client();client.start_channels();client.wait_for_ready(timeout=20)
+            refusals()
             reply,_=execute('async {7}.await')
             assert reply['status']=='error' and 'an async block is not available' in str(reply), reply
             reply,_=execute('keep')

@@ -1,6 +1,6 @@
 # ADR 0272: a refusal names a remedy that works where it is shown
 
-Status: Proposed
+Status: Accepted
 
 Base: published 21e38e787baf9e433b55cc80acf344771925ec5f (ADR 0271).
 
