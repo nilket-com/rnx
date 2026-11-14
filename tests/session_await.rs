@@ -14,7 +14,7 @@ impl Drop for Running {
 		let _ = self.0.wait();
 	}
 }
-fn pending(engine: &str, http: bool, nested: bool) -> f64 {
+fn pending(engine: &str, http: bool, nested: bool, block: bool) -> f64 {
 	let listener = TcpListener::bind("127.0.0.1:0").unwrap();
 	let url = format!(
 		"http://127.0.0.1:{}/",
@@ -84,7 +84,9 @@ fn pending(engine: &str, http: bool, nested: bool) -> f64 {
 	} else {
 		"time::sleep(10000).await".into()
 	};
-	let wait = if nested {
+	let wait = if block {
+		format!("async {{async {{{wait}}}.await}}.await")
+	} else if nested {
 		writeln!(
 			input,
 			"async fn c(){{{wait}}}\nasync fn b(){{c().await}}\nasync fn a(){{b().await}}"
@@ -148,7 +150,7 @@ fn pending_wait_is_terminal_bounded_and_next_input_recovers_in_both_engines() {
 	for engine in ["legacy", "execution"] {
 		for http in [false, true] {
 			rows.push(
-				serde_json::json!({"engine":engine,"http":http,"interrupt_ms":pending(engine,http,false)}),
+				serde_json::json!({"engine":engine,"http":http,"interrupt_ms":pending(engine,http,false,false)}),
 			);
 		}
 	}
@@ -162,7 +164,7 @@ fn pending_wait_is_terminal_bounded_and_next_input_recovers_in_both_engines() {
 fn nested_script_wait_is_terminal_and_bindings_survive_a_real_signal() {
 	for engine in ["legacy", "execution"] {
 		for http in [false, true] {
-			pending(engine, http, true);
+			pending(engine, http, true, false);
 		}
 	}
 }
@@ -231,5 +233,14 @@ fn async_script_fetches_loopback_once_from_an_earlier_input() {
 			"{engine}: {output}\n{errors}"
 		);
 		server.join().unwrap();
+	}
+}
+
+#[test]
+fn nested_async_block_wait_is_interrupted_with_no_later_effects() {
+	for engine in ["legacy", "execution"] {
+		for http in [false, true] {
+			pending(engine, http, false, true);
+		}
 	}
 }

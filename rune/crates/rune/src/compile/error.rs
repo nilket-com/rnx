@@ -68,6 +68,23 @@ impl Error {
 		}
 	}
 
+	/// Whether an async block was used as a future value, and whether it moves captures.
+	pub fn async_block_value_refusal(&self) -> Option<bool> {
+		match &*self.kind {
+			#[cfg(feature = "execution")]
+			ErrorKind::AsyncBlockValue { do_move } => Some(*do_move),
+			_ => None,
+		}
+	}
+	/// Retained session binding that a directly awaited move block would invalidate.
+	pub fn retained_async_move_refusal(&self) -> Option<&str> {
+		match &*self.kind {
+			#[cfg(feature = "execution")]
+			ErrorKind::RetainedAsyncMove { binding } => Some(binding),
+			_ => None,
+		}
+	}
+
 	/// Whether this diagnostic identifies an async construct in a forbidden context.
 	pub fn requires_async_context(&self) -> bool {
 		matches!(
@@ -295,6 +312,14 @@ impl Error {
 #[derive(Debug)]
 #[non_exhaustive]
 pub(crate) enum ErrorKind {
+	#[cfg(feature = "execution")]
+	AsyncBlockValue {
+		do_move: bool,
+	},
+	#[cfg(feature = "execution")]
+	RetainedAsyncMove {
+		binding: String,
+	},
 	#[cfg(feature = "execution")]
 	ScriptAwaitRefusal {
 		item: crate::ItemBuf,
@@ -749,6 +774,16 @@ impl core::error::Error for ErrorKind {
 impl fmt::Display for ErrorKind {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
+			#[cfg(feature = "execution")]
+			ErrorKind::AsyncBlockValue { do_move } => {
+				let prefix = if *do_move { "async move" } else { "async" };
+				write!(f, "{prefix} block futures as values are not available; await the block directly as {prefix} {{ ... }}.await")?;
+			}
+			#[cfg(feature = "execution")]
+			ErrorKind::RetainedAsyncMove { binding } => {
+				write!(f, "async move cannot consume retained binding {binding}; omit move, or shadow {binding} with a fresh let inside a local block")?;
+			}
+
 			#[cfg(feature = "execution")]
 			ErrorKind::ScriptAwaitRefusal { item, caller, as_value, remove_await } => {
 				write!(f, "{caller}: ")?;

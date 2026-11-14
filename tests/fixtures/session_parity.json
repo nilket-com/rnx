@@ -1,4 +1,10 @@
 {
+	"block_await_probes": [
+		{"case":"return-boundary","class":"Equal","domain":{"outcome":"ok","value":"8"},"domain_worse":false,"input":"async{let x=async{return 7;99}.await;x+1}.await","legacy":{"outcome":"ok","value":"8"},"wording_rule":null},
+		{"case":"capture-bindings","class":"Equal","domain":{"outcome":"ok","value":"(1, [1, 2], [1, 2], 2)"},"domain_worse":false,"input":"let n=1;let v=[1];let w=v;let r=async{n=2;v.push(2);n}.await;(n,v,w,r)","legacy":{"outcome":"ok","value":"(1, [1, 2], [1, 2], 2)"},"wording_rule":null},
+		{"case":"future-value","class":"Intentional difference","domain":{"message":"refused: async block futures as values are not available; await the block directly as async { ... }.await (input 1, line 1, column 1)","origin":null,"outcome":"refused"},"domain_worse":false,"input":"async {7}","legacy":{"outcome":"ok","value":"<::std::future::Future>"},"wording_rule":"direct-block-await-required"},
+		{"case":"move-future-value","class":"Intentional difference","domain":{"message":"refused: async move block futures as values are not available; await the block directly as async move { ... }.await (input 1, line 1, column 1)","origin":null,"outcome":"refused"},"domain_worse":false,"input":"async move {7}","legacy":{"outcome":"ok","value":"<::std::future::Future>"},"wording_rule":"direct-block-await-required"}
+	],
 	"conditional_probes": [
 		{"class":"Equal","construct":"if true","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if true {7}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
 		{"class":"Equal","construct":"if false","domain":{"outcome":"ok","value":null},"domain_worse":false,"input":"let a=if false {7}; a","legacy":{"outcome":"ok","value":null},"wording_rule":null},
@@ -1409,7 +1415,7 @@
 					"input": "let a=[1];let f=|n|n+1;0"
 				},
 				{
-					"existing_class": "Policy (historical fixture label, not a classification decision)",
+					"existing_class": "Equal",
 					"input": "a.push(2); async {1}.await"
 				},
 				{
@@ -1461,8 +1467,8 @@
 					"old()"
 				],
 				[
-					"async-refusal",
-					"Policy",
+					"async-block",
+					"Equal",
 					"a.push(3);async {1}.await"
 				]
 			],
@@ -1841,5 +1847,5 @@
 		{"case":"ordinary-await","class":"Intentional difference","domain":{"message":"refused: ordinary is not asynchronous; remove .await and call it as ordinary(...) (input 1, line 1, column 18)","origin":null,"outcome":"refused"},"domain_worse":false,"input":"fn ordinary(){7} ordinary().await","legacy":{"message":"Missing protocol function `INTO_FUTURE` for `std::i64`","origin":{"column":18,"input":1,"line":1},"outcome":"runtime"},"wording_rule":"script-await-requires-async"},
 		{"case":"moved-direct","class":"Wording","domain":{"message":"Cannot read the value: it has been moved\n  at input 1, line 1, column 15\n  at input 1, line 1, column 42","origin":{"column":15,"input":1,"line":1},"outcome":"runtime"},"domain_worse":false,"input":"async fn f(x){x.len()} let x=[7];drop(x);f(x).await","legacy":{"message":"Cannot read the value: it has been moved","origin":{"column":15,"input":1,"line":1},"outcome":"runtime"},"wording_rule":"appended-frames"}
 	],
-	"summary": {"classes":{"Equal":245,"Equal by property":3,"Intentional difference":13,"Refused at admission":1,"Refused for a host function":9,"Wording":21},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":5,"top_constructs":[["http::get_bytes",2],["http::request_bytes",2],["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":1,"top_constructs":[["constant bytes",1]]}}}
+	"summary": {"classes":{"Equal":247,"Equal by property":3,"Intentional difference":15,"Refused at admission":1,"Refused for a host function":9,"Wording":21},"work_groups":{"argument-vector and options-object input":{"count":1,"top_constructs":[["process::run",1]]},"argument-vector/options input and bytes output":{"count":1,"top_constructs":[["process::run_bytes",1]]},"borrowed object input":{"count":1,"top_constructs":[["time::from_parts",1]]},"bytes":{"count":5,"top_constructs":[["http::get_bytes",2],["http::request_bytes",2],["fs::read_bytes",1]]},"dynamic body/headers and response output":{"count":1,"top_constructs":[["web::response",1]]},"source forms":{"count":1,"top_constructs":[["constant bytes",1]]}}}
 }

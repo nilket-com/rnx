@@ -8,6 +8,7 @@
 //! nothing for the others. Bare locals are read in place where the reference's
 //! `writes_nothing` rule allows; capturing move closures transfer payload ownership and track moved bindings.
 
+mod async_blocks;
 mod dynamic_methods;
 pub(super) use dynamic_methods::native_function as native_method_function;
 mod iter_terminals;
@@ -32,6 +33,12 @@ pub(crate) enum Resolve {
 	ScriptAwait {
 		hash: Hash,
 		refusal: Refusal,
+	},
+	AsyncBlockValue {
+		do_move: bool,
+	},
+	RetainedAsyncMove {
+		variable: hir::Variable,
 	},
 	Constructor {
 		hash: Hash,
@@ -1310,7 +1317,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			E::Call(call) => self.call(call, out, span),
 			E::If(conditional) => self.conditional(conditional, Some(out), span),
 			E::Match(hir) => self.pattern_match(hir, Some(out), span),
-			E::AsyncBlock(_) => Err(self.refused(span, Refusal::AsyncBlock)),
+			E::AsyncBlock(block) => self.refuse_async_block(block.do_move, span),
 			E::Yield(_) => Err(self.refused(span, Refusal::Yield)),
 			E::Await(value) => self.await_host(value, out, span),
 			E::Select(_) => Err(self.refused(span, Refusal::Select)),
@@ -2304,8 +2311,8 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		while let hir::ExprKind::Group(inner) = expr.kind {
 			expr = self.exprs.get(inner);
 		}
-		if matches!(expr.kind, hir::ExprKind::AsyncBlock(_)) {
-			return Err(self.refused(span, Refusal::AsyncBlock));
+		if let hir::ExprKind::AsyncBlock(block) = expr.kind {
+			return self.await_block(block, out, expr.span);
 		}
 		if matches!(expr.kind, hir::ExprKind::Select(_)) {
 			return Err(self.refused(span, Refusal::Select));

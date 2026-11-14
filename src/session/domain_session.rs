@@ -9,6 +9,8 @@ use rune::experimental_core::{
 #[cfg(test)]
 mod admission_costs;
 #[cfg(test)]
+mod async_blocks;
+#[cfg(test)]
 mod async_functions;
 #[cfg(test)]
 mod collection_costs;
@@ -516,6 +518,27 @@ impl DomainSession {
 				let at = at
 					.and_then(|at| generated.map.locate(at))
 					.unwrap_or((number, 0));
+
+				if let Some((error, reason)) = diagnostics.diagnostics().iter().find_map(|d| {
+					let rune::diagnostics::Diagnostic::Fatal(f) = d else {
+						return None;
+					};
+					let error = f.as_compile_error()?;
+					let reason = if let Some(do_move) = error.async_block_value_refusal() {
+						remedy::async_block_value(do_move)
+					} else if let Some(binding) = error.retained_async_move_refusal() {
+						remedy::retained_async_move(binding)
+					} else {
+						return None;
+					};
+					Some((error, reason))
+				}) {
+					let origin = generated
+						.map
+						.locate(error.span().range().start)
+						.unwrap_or(at);
+					return Err(self.refused_at(&reason, origin.0, origin.1));
+				}
 				if let Some((error, function, caller, as_value, remove_await)) =
 					diagnostics.diagnostics().iter().find_map(|d| match d {
 						rune::diagnostics::Diagnostic::Fatal(f) => {
@@ -1026,12 +1049,15 @@ mod tests {
 
 	#[test]
 	fn constant_diagnostic_async_categories_are_truthful() {
-		for source in ["async {1}.await", "async {1}"] {
+		for source in ["async {1}", "async move {1}"] {
 			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 			let Err(Failure::Refused(message)) = s.eval(source) else {
 				panic!("expected async refusal: {source}");
 			};
-			assert!(message.contains("an async block"), "{source}: {message}");
+			assert!(
+				message.contains("block futures as values"),
+				"{source}: {message}"
+			);
 		}
 		let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
 		assert_eq!(
@@ -1114,7 +1140,7 @@ mod tests {
 		);
 		let mut armed = 0;
 		let result = s
-			.eval_rendered_with_armed("a.push(2);async {1}.await", &limits, &mut |_| {
+			.eval_rendered_with_armed("a.push(2);let future=async {1};0", &limits, &mut |_| {
 				armed += 1;
 				Ok(())
 			})
@@ -1135,7 +1161,7 @@ mod tests {
 		)
 		.unwrap();
 		for text in [
-			"a.push(2); async {1}.await",
+			"a.push(2); let future=async {1};0",
 			"a.push(2); [1].iter().map(f).collect::<Vec>()",
 			"mod M {}",
 		] {
@@ -1217,7 +1243,7 @@ mod tests {
 			s.eval_rendered("[1,2,3]", &limits).unwrap();
 			assert_eq!(s.domain.live_counts(), retained);
 			assert_eq!(s.domain.capacity_counts().unwrap(), capacity);
-			assert!(s.eval("async {1}.await").is_err());
+			assert!(s.eval("async {1}").is_err());
 			assert_eq!(s.domain.live_counts(), retained);
 		}
 		s.eval_rendered("f=0;0", &limits).unwrap();

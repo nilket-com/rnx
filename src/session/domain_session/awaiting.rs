@@ -200,7 +200,7 @@ mod tests {
 			("time::sleep(0)", "await its call"),
 			("let f=time::sleep(0);0", "await its call"),
 			("let f=time::sleep;0", "futures as values"),
-			("async {7}.await", "an async block"),
+			("async {7}", "async block futures as values"),
 			(
 				"let f=async ||7;0",
 				"a call with unsupported or unknown closure arity",

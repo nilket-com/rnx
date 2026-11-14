@@ -141,6 +141,22 @@ impl Program {
 pub(crate) mod opaque;
 pub(crate) mod receiver_proofs;
 
+/// Body identity and await capability are independent of its diagnostic owner.
+#[derive(Clone, Copy)]
+pub(crate) enum BodyKind {
+	Function,
+	Closure { owner: Hash },
+	AsyncBlock { owner: Hash },
+}
+impl BodyKind {
+	fn owner(self, hash: Hash) -> Hash {
+		match self {
+			Self::Function => hash,
+			Self::Closure { owner } | Self::AsyncBlock { owner } => owner,
+		}
+	}
+}
+
 pub(crate) struct Collector {
 	opaque_session: Option<opaque::Envelope>,
 	revision: u64,
@@ -155,6 +171,9 @@ pub(crate) struct Collector {
 	unenrolled_host: Option<(Location, crate::ItemBuf)>,
 	async_host: Option<(Location, crate::ItemBuf, Refusal)>,
 	script_await: Option<(Location, crate::ItemBuf, crate::ItemBuf, Refusal)>,
+	async_block_value: Option<(Location, bool)>,
+	retained_async_move: Option<(Location, crate::alloc::String)>,
+	async_block_control: Option<(Location, crate::compile::ErrorKind)>,
 	source_uses: Vec<Hash>,
 	self_proofs: Vec<(u32, Hash, Hash, Location)>,
 	proofs: receiver_proofs::Proofs,
@@ -207,6 +226,103 @@ impl Collector {
 		}
 	}
 
+	#[inline(never)]
+	pub(crate) fn observe_async_block(
+		&mut self,
+		owner: Hash,
+		hash: Hash,
+		exprs: &crate::hir::Exprs<'_>,
+		block: &crate::hir::AsyncBlock<'_>,
+		query: &crate::query::QueryInner<'_>,
+		pool: &Pool,
+		context: &Context,
+	) -> Result<()> {
+		let item = crate::hir::ItemFn {
+			span: block.block.span,
+			args: &[],
+			body: *block.block,
+		};
+		self.observe(
+			owner,
+			hash,
+			None,
+			false,
+			exprs,
+			&item,
+			block.captures,
+			query,
+			pool,
+			context,
+		)
+	}
+	#[inline(never)]
+	pub(crate) fn lower_async_block(
+		&mut self,
+		owner: Hash,
+		hash: Hash,
+		source: u32,
+		exprs: &crate::hir::Exprs<'_>,
+		block: &crate::hir::AsyncBlock<'_>,
+		query: &crate::query::QueryInner<'_>,
+		pool: &Pool,
+		context: &Context,
+		refused: &[(Hash, Refusal)],
+	) -> Result<()> {
+		let item = crate::hir::ItemFn {
+			span: block.block.span,
+			args: &[],
+			body: *block.block,
+		};
+		let result = self.lower(
+			hash,
+			BodyKind::AsyncBlock { owner },
+			None,
+			source,
+			exprs,
+			&item,
+			block.captures,
+			query,
+			pool,
+			context,
+			refused,
+		);
+		let Err(error) = result else { return result };
+		if error.refusal != Some(Refusal::LoopControl) {
+			return Err(error);
+		}
+		let Some(at) = error.location else {
+			return Err(error);
+		};
+		let Some(expr) = exprs
+			.expressions()
+			.find(|e| e.span.start.0 == at.start && e.span.end.0 == at.end)
+		else {
+			return Err(error);
+		};
+		// A fresh block frame cannot target an enclosing body's loop. Preserve
+		// the ordinary assembler's source diagnostic at this new boundary only.
+		let (label, kind) = match expr.kind {
+			crate::hir::ExprKind::Break(b) => {
+				(b.label, crate::compile::ErrorKind::BreakUnsupported)
+			}
+			crate::hir::ExprKind::Continue(c) => {
+				(c.label, crate::compile::ErrorKind::ContinueUnsupported)
+			}
+			_ => return Err(error),
+		};
+		let kind = if let Some(label) = label {
+			crate::compile::ErrorKind::MissingLabel {
+				label: label.try_into()?,
+			}
+		} else {
+			kind
+		};
+		self.async_block_control = Some((at, kind));
+		let error = Error::refused(Refusal::FrontendDiagnostic).at(at);
+		self.failure = Some(error);
+		Err(error)
+	}
+
 	pub(crate) fn checkpoint_diagnostics(
 		&mut self,
 		diagnostics: &Diagnostics,
@@ -249,6 +365,14 @@ impl Collector {
 	}
 
 	pub(crate) fn compile_error(&mut self, error: Error, fallback: Span) -> crate::compile::Error {
+		if self.async_block_control.as_ref().is_some_and(|(at, _)| {
+			error.refusal == Some(Refusal::FrontendDiagnostic) && error.location == Some(*at)
+		}) {
+			if let Some((at, kind)) = self.async_block_control.take() {
+				return crate::compile::Error::new(Span::new(at.start, at.end), kind);
+			}
+		}
+
 		if let Some(at) = self.invalid_break.filter(|at| {
 			error.refusal == Some(Refusal::FrontendDiagnostic) && error.location == Some(*at)
 		}) {
@@ -258,6 +382,23 @@ impl Collector {
 				crate::compile::ErrorKind::BreakUnsupportedValue,
 			);
 		}
+		if let Some((at, do_move)) = self.async_block_value.take() {
+			if error.refusal == Some(Refusal::AsyncBlock) && error.location == Some(at) {
+				return crate::compile::Error::new(
+					Span::new(at.start, at.end),
+					crate::compile::ErrorKind::AsyncBlockValue { do_move },
+				);
+			}
+		}
+		if let Some((at, binding)) = self.retained_async_move.take() {
+			if error.refusal == Some(Refusal::AsyncBlock) && error.location == Some(at) {
+				return crate::compile::Error::new(
+					Span::new(at.start, at.end),
+					crate::compile::ErrorKind::RetainedAsyncMove { binding },
+				);
+			}
+		}
+
 		if let Some((at, item, caller, refusal)) = self.script_await.take() {
 			if error.refusal == Some(refusal) && error.location == Some(at) {
 				return crate::compile::Error::new(
@@ -315,6 +456,7 @@ impl Collector {
 	pub(crate) fn lower(
 		&mut self,
 		hash: Hash,
+		body_kind: BodyKind,
 		receiver: Option<Hash>,
 		source: u32,
 		exprs: &crate::hir::Exprs<'_>,
@@ -420,6 +562,8 @@ impl Collector {
 		let unenrolled_host = &mut self.unenrolled_host;
 		let async_host = &mut self.async_host;
 		let script_await = &mut self.script_await;
+		let async_block_value = &mut self.async_block_value;
+		let retained_async_move = &mut self.retained_async_move;
 		let moved_error = core::cell::Cell::new(None);
 		let invalid_break = core::cell::Cell::new(None);
 		let self_proof = core::cell::Cell::new(None);
@@ -440,12 +584,29 @@ impl Collector {
 						let target = pool.item_for_hash(target).ok_or_else(|| {
 							Error::new(ErrorKind::InvalidCode, "await target identity")
 						})?;
-						let caller = pool.item_for_hash(hash).ok_or_else(|| {
-							Error::new(ErrorKind::InvalidCode, "await caller identity")
-						})?;
+						let caller =
+							pool.item_for_hash(body_kind.owner(hash)).ok_or_else(|| {
+								Error::new(ErrorKind::InvalidCode, "await caller identity")
+							})?;
 						*script_await =
 							Some((at, target.try_to_owned()?, caller.try_to_owned()?, refusal));
 						return Err(Error::refused(refusal).at(at));
+					}
+
+					super::lower::Resolve::AsyncBlockValue { do_move } => {
+						*async_block_value = Some((at, do_move));
+						return Err(Error::refused(Refusal::AsyncBlock).at(at));
+					}
+					super::lower::Resolve::RetainedAsyncMove { variable } => {
+						use crate::alloc::borrow::TryToOwned;
+						let binding = opaque
+							.as_ref()
+							.and_then(|p| p.returned_binding(exprs, variable))
+							.ok_or_else(|| {
+								Error::new(ErrorKind::InvalidCode, "retained async move identity")
+							})?;
+						*retained_async_move = Some((at, binding.try_to_owned()?));
+						return Err(Error::refused(Refusal::AsyncBlock).at(at));
 					}
 					super::lower::Resolve::AsyncHost { hash, refusal } => {
 						if let Some(item) = context
@@ -491,6 +652,8 @@ impl Collector {
 							super::lower::Resolve::Script(_)
 							| super::lower::Resolve::AsyncHost { .. }
 							| super::lower::Resolve::ScriptAwait { .. }
+							| super::lower::Resolve::AsyncBlockValue { .. }
+							| super::lower::Resolve::RetainedAsyncMove { .. }
 							| super::lower::Resolve::NativeMethod { .. }
 							| super::lower::Resolve::Constructor { .. } => unreachable!(),
 						};
@@ -507,6 +670,8 @@ impl Collector {
 							super::lower::Resolve::Script(_)
 							| super::lower::Resolve::AsyncHost { .. }
 							| super::lower::Resolve::ScriptAwait { .. }
+							| super::lower::Resolve::AsyncBlockValue { .. }
+							| super::lower::Resolve::RetainedAsyncMove { .. }
 							| super::lower::Resolve::NativeMethod { .. }
 							| super::lower::Resolve::Constructor { .. } => unreachable!(),
 						};
@@ -546,7 +711,9 @@ impl Collector {
 			hash,
 			opaque.as_ref(),
 			self.opaque_session.is_some()
-				&& (hash == Hash::type_hash(["main"]) || constants.async_functions.contains(&hash)),
+				&& (matches!(body_kind, BodyKind::AsyncBlock { .. })
+					|| hash == Hash::type_hash(["main"])
+					|| constants.async_functions.contains(&hash)),
 		);
 		let function = match result {
 			Ok(function) => function,
@@ -726,6 +893,9 @@ pub(crate) fn compile_inner(
 		unenrolled_host: None,
 		async_host: None,
 		script_await: None,
+		async_block_value: None,
+		retained_async_move: None,
+		async_block_control: None,
 		source_uses: Vec::new(),
 		self_proofs: Vec::new(),
 		proofs: receiver_proofs::Proofs::default(),

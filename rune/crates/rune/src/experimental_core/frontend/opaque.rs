@@ -39,8 +39,52 @@ struct Node {
 }
 pub(crate) struct Proof {
 	facts: Vec<Fact>,
+	returned_delta: Option<hir::ExprId>,
 }
 impl Proof {
+	/// The validated entry delta identifies bindings needed after this input.
+	/// Only a new move-block site pays this lookup; ordinary inputs allocate
+	/// no extra binding map and perform no additional walk.
+	pub(crate) fn returned_binding<'hir>(
+		&self,
+		exprs: &hir::Exprs<'hir>,
+		variable: hir::Variable,
+	) -> Option<&'hir str> {
+		let hir::ExprKind::Object(object) = exprs.get(self.returned_delta?).kind else {
+			return None;
+		};
+		object.assignments.iter().find_map(|field| {
+			matches!(exprs.get(field.assign).kind, hir::ExprKind::Variable(v) if v == variable)
+				.then_some(field.key.1)
+		})
+	}
+	pub(crate) fn retained_capture(
+		&self,
+		exprs: &hir::Exprs<'_>,
+		captures: &[hir::Variable],
+	) -> Result<Option<hir::Variable>> {
+		let Some(delta) = self.returned_delta else {
+			return Ok(None);
+		};
+		if captures.is_empty() {
+			return Ok(None);
+		}
+		let hir::ExprKind::Object(object) = exprs.get(delta).kind else {
+			return Ok(None);
+		};
+		let mut captured = crate::alloc::HashSet::new();
+		for &variable in captures {
+			captured.try_insert(variable)?;
+		}
+		Ok(object.assignments.iter().find_map(|field| {
+			if let hir::ExprKind::Variable(v) = exprs.get(field.assign).kind {
+				captured.contains(&v).then_some(v)
+			} else {
+				None
+			}
+		}))
+	}
+
 	pub(crate) fn exact(&self, id: hir::ExprId) -> Option<Hash> {
 		match self.facts.get(id.index()).copied().unwrap_or(Fact::Plain) {
 			Fact::Exact(hash) => Some(hash),
@@ -812,7 +856,10 @@ pub(crate) fn analyze(
 	b.own(item)?;
 	if !bounded {
 		b.validate(item, &[], is_entry)?;
-		return Ok(Proof { facts: Vec::new() });
+		return Ok(Proof {
+			facts: Vec::new(),
+			returned_delta: b.envelope.map(|(_, delta)| delta),
+		});
 	}
 	// Host value captures are rejected by the creating body's proof. Captures in
 	// an admitted closure are therefore plain, including across old programs.
@@ -823,7 +870,10 @@ pub(crate) fn analyze(
 	b.graph(item)?;
 	let facts = b.solve()?;
 	b.validate(item, &facts, is_entry)?;
-	Ok(Proof { facts })
+	Ok(Proof {
+		facts,
+		returned_delta: b.envelope.map(|(_, delta)| delta),
+	})
 }
 
 #[cfg(test)]

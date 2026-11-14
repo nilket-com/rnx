@@ -89,7 +89,11 @@ and `http::request(...).await` in the input, including blocks and loops, and in
 script `async fn` bodies called directly as `f(args).await`. Async declarations
 survive between inputs; a redefinition that would invalidate a retained caller
 is refused before effects. Pending calls, including nested calls, are interruptible.
-Futures as values, async blocks and closures, `select`, bytes, and unsupported
+Directly awaited `async { ... }.await` and `async move { ... }.await` blocks
+keep their own return boundary and capture rules. A move of a retained binding
+is refused before effects; omit `move`, or shadow the binding with a fresh
+`let` inside a local block. Futures as values, async
+closures, `select`, bytes, and unsupported
 frontend forms remain refused. Ordinary functions keep the legacy restriction
 on `.await`; awaiting an ordinary function is refused with advice to remove it.
 An async call must be awaited directly; binding its future or taking its

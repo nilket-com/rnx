@@ -56,6 +56,18 @@ pub(super) fn script_await(
 	}
 }
 
+pub(super) fn async_block_value(do_move: bool) -> String {
+	let prefix = if do_move { "async move" } else { "async" };
+	format!(
+		"{prefix} block futures as values are not available; await the block directly as {prefix} {{ ... }}.await"
+	)
+}
+pub(super) fn retained_async_move(binding: &str) -> String {
+	format!(
+		"async move cannot consume retained binding {binding}; omit move, or shadow {binding} with a fresh let inside a local block"
+	)
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -87,7 +99,7 @@ mod tests {
 			(FrontEnd::Neutral, "use the legacy session engine"),
 		];
 		for (source, reason) in [
-			("async {7}.await", "an async block is not available"),
+			("select {_ = time::sleep(0)=>7}", "select is not available"),
 			("http::get_bytes(\"\")", "http::get_bytes needs bytes"),
 			(
 				"const A=b\"ab\";A",
@@ -148,7 +160,7 @@ mod tests {
 			DEFAULT_CEILING,
 		)
 		.unwrap();
-		let error = refused(&mut s, "async {7}.await");
+		let error = refused(&mut s, "select {_ = time::sleep(0)=>7}");
 		assert!(error.contains("use the legacy session engine"), "{error}");
 		s.close().unwrap();
 		// This is the same legacy branch selected by the worker's existing
@@ -159,13 +171,75 @@ mod tests {
 		.unwrap();
 		assert_eq!(
 			legacy
-				.eval("async {7}.await")
+				.eval("select {_ = time::sleep(0)=>7}")
 				.unwrap()
 				.as_integer::<i64>()
 				.unwrap(),
 			7
 		);
 		legacy.close().unwrap();
+	}
+
+	#[test]
+	fn engine_and_session_block_diagnostics_share_the_exact_remedy() {
+		for (source, delta, reason) in [
+			(
+				"pub async fn main(s){let r=async{7};(#{},r)}",
+				false,
+				async_block_value(false),
+			),
+			(
+				"pub async fn main(s){let r=async move{7};(#{},r)}",
+				false,
+				async_block_value(true),
+			),
+			(
+				"pub async fn main(s){let n=1;let r=async move{n}.await;(#{n},r)}",
+				true,
+				retained_async_move("n"),
+			),
+		] {
+			let context = crate::routing_inventory::session_parity_context().unwrap();
+			let mut domain = rune::experimental_core::domain::ProgramDomain::new(
+				Default::default(),
+				Default::default(),
+				context.execution_runtime().unwrap(),
+			)
+			.unwrap();
+			let mut sources = rune::Sources::new();
+			sources
+				.insert(rune::Source::memory(source).unwrap())
+				.unwrap();
+			let mut diagnostics = rune::Diagnostics::new();
+			assert!(
+				domain
+					.compile_session(
+						&context,
+						&mut sources,
+						&mut diagnostics,
+						1,
+						&[],
+						if delta { &["n"] } else { &[] }
+					)
+					.is_err()
+			);
+			let errors: Vec<_> = diagnostics
+				.diagnostics()
+				.iter()
+				.filter_map(|d| {
+					let rune::diagnostics::Diagnostic::Fatal(f) = d else {
+						return None;
+					};
+					let e = f.as_compile_error()?;
+					(e.async_block_value_refusal().is_some()
+						|| e.retained_async_move_refusal().is_some())
+					.then_some(e)
+				})
+				.collect();
+			assert_eq!(errors.len(), 1, "{diagnostics:?}");
+			assert_eq!(errors[0].to_string(), reason);
+			domain.close().unwrap();
+		}
 	}
 
 	#[test]

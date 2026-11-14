@@ -315,7 +315,12 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 								}
 								crate::experimental_core::error::Refusal::CallClosure
 							}
-							SecondaryBuild::AsyncBlock(_) => {
+							SecondaryBuild::AsyncBlock(b) => {
+								if collector.allows_async_functions()
+									&& matches!(b.call, crate::runtime::Call::Async)
+								{
+									continue;
+								}
 								crate::experimental_core::error::Refusal::AsyncBlock
 							}
 						};
@@ -342,6 +347,24 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 						)
 						.map_err(|e| collector.compile_error(e, location.span))?;
 					for build in &secondary_builds {
+						if let SecondaryBuild::AsyncBlock(b) = &build.build {
+							if collector.allows_async_functions()
+								&& matches!(b.call, crate::runtime::Call::Async)
+							{
+								collector
+									.observe_async_block(
+										hash,
+										self.q.pool.item_type_hash(build.item_meta.item),
+										&exprs,
+										b.hir,
+										self.q.inner,
+										self.q.pool,
+										self.q.context,
+									)
+									.map_err(|e| collector.compile_error(e, b.hir.block.span))?;
+							}
+						}
+
 						if let SecondaryBuild::Closure(c) = &build.build {
 							if matches!(c.call, crate::runtime::Call::Immediate) {
 								let closure = hir::ItemFn {
@@ -394,6 +417,7 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 					collector
 						.lower(
 							hash,
+							crate::experimental_core::frontend::BodyKind::Function,
 							type_hash,
 							location.source_id.into_index() as u32,
 							&exprs,
@@ -412,6 +436,37 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 							collector.compile_error(e, at)
 						})?;
 					for build in &secondary_builds {
+						if let SecondaryBuild::AsyncBlock(b) = &build.build {
+							if collector.allows_async_functions()
+								&& matches!(b.call, crate::runtime::Call::Async)
+							{
+								collector.checkpoint_diagnostics(
+									self.q.diagnostics,
+									hash,
+									Some(b.hir.block.span),
+								);
+								collector
+									.lower_async_block(
+										hash,
+										self.q.pool.item_type_hash(build.item_meta.item),
+										location.source_id.into_index() as u32,
+										&exprs,
+										b.hir,
+										self.q.inner,
+										self.q.pool,
+										self.q.context,
+										&refused_functions,
+									)
+									.map_err(|e| {
+										let at = e
+											.location
+											.map(|l| Span::new(l.start, l.end))
+											.unwrap_or(b.hir.block.span);
+										collector.compile_error(e, at)
+									})?;
+							}
+						}
+
 						if let SecondaryBuild::Closure(c) = &build.build {
 							if matches!(c.call, crate::runtime::Call::Immediate) {
 								let closure = hir::ItemFn {
@@ -433,6 +488,9 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 								collector
 									.lower(
 										self.q.pool.item_type_hash(build.item_meta.item),
+										crate::experimental_core::frontend::BodyKind::Closure {
+											owner: hash,
+										},
 										None,
 										location.source_id.into_index() as u32,
 										&exprs,

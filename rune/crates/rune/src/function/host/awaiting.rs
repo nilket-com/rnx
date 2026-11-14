@@ -68,6 +68,7 @@ signature!(
 
 #[cfg(test)]
 mod tests {
+	mod blocks;
 	mod script;
 	use super::*;
 	use crate::experimental_core::{

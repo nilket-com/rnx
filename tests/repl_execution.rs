@@ -45,7 +45,7 @@ fn default_stays_legacy_and_execution_session_is_sticky_across_reset() {
 	}
 	let actual = repl(
 		Some("execution"),
-		"let a=[1];0\na.push(2);async {1}.await\na.len()\n:dep polars\na.len()\n:reset\nasync {1}.await\n:quit\n",
+		"let a=[1];0\na.push(2);async {1}.await\na.len()\n:dep polars\na.len()\nselect {_ = time::sleep(0)=>7}\n:reset\nasync {1}.await\nlet future=async {1};0\nselect {_ = time::sleep(0)=>7}\n:quit\n",
 	);
 	let mut out = String::from_utf8(actual.stdout).unwrap();
 	for number in 1..=8 {
@@ -55,7 +55,7 @@ fn default_stays_legacy_and_execution_session_is_sticky_across_reset() {
 	}
 	let err = String::from_utf8(actual.stderr).unwrap();
 	assert!(actual.status.success());
-	assert_eq!(out, "0\n1\n1\nsession reset\n");
+	assert_eq!(out, "0\n1\n2\n2\nsession reset\n1\n");
 	assert!(err.contains(":dep requires a terminal"), "{err}");
 	let refusals: Vec<_> = err
 		.lines()
@@ -64,10 +64,13 @@ fn default_stays_legacy_and_execution_session_is_sticky_across_reset() {
 	assert_eq!(
 		refusals,
 		[
-			"refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 2, line 1, column 11)",
-			"refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 1, line 1, column 1)",
+			"refused: select is not available in an execution session; start `rnx repl` without --engine=execution (input 5, line 1, column 1)",
+			"refused: async block futures as values are not available; await the block directly as async { ... }.await (input 2, line 1, column 12)",
+			"refused: select is not available in an execution session; start `rnx repl` without --engine=execution (input 3, line 1, column 1)",
 		]
 	);
+	assert!(!err.contains("select the `"), "{err}");
+	assert!(!err.contains("use the legacy session engine"), "{err}");
 }
 #[test]
 fn execution_spelling_is_repl_only() {

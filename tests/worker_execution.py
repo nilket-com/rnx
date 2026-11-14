@@ -17,7 +17,7 @@ TABLE=[
     ('compile','Wording','let broken = ;'),
     ('old-origin-definition','Equal','fn old() { panic!("old failure"); }'),
     ('old-origin','Wording','old()'),
-    ('async-refusal','Policy','a.push(3);async {1}.await'),
+    ('async-block','Equal','a.push(3);async {1}.await'),
 ]
 
 
@@ -49,12 +49,6 @@ def run():
                     frames='\n  at input 5, line 1, column 12\n  at input 6, line 1, column 1'
                     assert frames in new['failure']['diagnostic'],new
                     assert new['failure']['diagnostic'].replace(frames,'',1)==old['failure']['diagnostic'],(old,new)
-            else:
-                assert old['failure'] is None and old['plain']=='1',old
-                assert new['failure']['category']=='refused',new
-                assert new['failure']['diagnostic']=='refused: an async block is not available in an execution session; use the legacy session engine (input 7, line 1, column 11)',new
-                assert workers[0].execute('a.len()')[0]['text_plain']=='3'
-                assert workers[1].execute('a.len()')[0]['text_plain']=='2'
             print(name,policy,'PASS')
         for w in workers:
             w.begin(op='reset');reply,_=w.settled();w.handoff()
@@ -126,7 +120,7 @@ def frontend_remedies():
         w=Parent(BINARY,engine='execution',frontend=frontend)
         try:
             for source,reason in [
-                ('async {7}.await','an async block is not available'),
+                ('select {_ = time::sleep(0)=>7}','select is not available'),
                 ('http::get_bytes("")','http::get_bytes needs bytes'),
                 ('const A=b"ab";A','execution session does not support byte-string constants'),
             ]:
@@ -138,7 +132,7 @@ def frontend_remedies():
             assert 'await its call as time::sleep(...).await' in reply['failure']['diagnostic'],reply
             assert remedy not in reply['failure']['diagnostic'],reply
             w.begin(op='reset');w.settled();w.handoff()
-            reply,_,_=w.execute('async {7}.await')
+            reply,_,_=w.execute('select {_ = time::sleep(0)=>7}')
             assert remedy in reply['failure']['diagnostic'] and '(input 1, line 1, column 1)' in reply['failure']['diagnostic'],reply
         finally:w.close()
     # The neutral advice corresponds to the existing public worker option.

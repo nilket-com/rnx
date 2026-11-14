@@ -1,6 +1,6 @@
 # ADR 0274: async blocks awaited directly in an execution session
 
-Status: Proposed
+Status: Accepted
 
 Base: published e4076bd335f823389d242eba3543c5e3b901686a (ADR 0273).
 

@@ -152,10 +152,22 @@ def run(binary, engine, mode, scratch=False):
                 until(b'> ')
                 send('async {7}.await')
                 output = until(b'> ')
-                assert (b'an async block is not available' in output) == (engine == 'execution'), output
+                assert b'7\r\n' in output and b'error' not in output.lower(), output
+                send('let future=async {7};0')
+                output = until(b'> ')
+                assert (b'async block futures as values are not available' in output) == (engine == 'execution'), output
                 if engine == 'execution':
-                    assert b'start `rnx repl` without --engine=execution' in output, output
+                    assert b'await the block directly as async { ... }.await' in output, output
+                    assert b'start `rnx repl`' not in output and b'select the `' not in output and b'use the legacy session engine' not in output, output
+                else:
+                    assert b'0\r\n' in output, output
+                send('select {_ = time::sleep(0)=>7}')
+                output = until(b'> ')
+                if engine == 'execution':
+                    assert b'refused: select is not available in an execution session; start `rnx repl` without --engine=execution (input 3, line 1, column 1)' in output, output
                     assert b'select the `' not in output and b'use the legacy session engine' not in output, output
+                else:
+                    assert b'7\r\n' in output and b'error' not in output.lower(), output
             else:
                 assert not (root/'argv.json').exists()
                 send('alias.push(2);a.len()+c()')

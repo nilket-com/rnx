@@ -139,9 +139,7 @@ const ROWS: &[Row] = &[
 	},
 	Row {
 		input: "a.push(2); async {1}.await",
-		class: Class::Policy {
-			execution: "refused: an async block is not available in an execution session; start `rnx repl` without --engine=execution (input 3, line 1, column 12)",
-		},
+		class: Class::Equal,
 	},
 	Row {
 		input: ":reset",

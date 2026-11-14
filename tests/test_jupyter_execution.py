@@ -47,7 +47,7 @@ def main():
             def refusals():
                 remedy = f"select the `{old['display_name']}` kernel"
                 for source, reason in [
-                    ('async {7}.await', 'an async block is not available'),
+                    ('select {_ = time::sleep(0)=>7}', 'select is not available'),
                     ('http::get_bytes("")', 'http::get_bytes needs bytes'),
                     ('const A=b"ab";A', 'execution session does not support byte-string constants'),
                 ]:
@@ -76,7 +76,7 @@ def main():
             client=km.client();client.start_channels();client.wait_for_ready(timeout=20)
             refusals()
             reply,_=execute('async {7}.await')
-            assert reply['status']=='error' and 'an async block is not available' in str(reply), reply
+            assert reply['status']=='ok', reply
             reply,_=execute('keep')
             assert reply['status']=='error', reply
             reply,_=execute('9')
