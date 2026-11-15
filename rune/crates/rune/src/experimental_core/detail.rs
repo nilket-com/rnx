@@ -158,6 +158,9 @@ pub enum HostDynamicReason {
 	Unsupported,
 	Cycle,
 	OutputAccess,
+	OutputEnvelope,
+	OutputConsumed,
+	OutputTree,
 }
 
 #[allow(missing_docs)]
@@ -841,6 +844,15 @@ impl fmt::Display for Message<'_> {
 							write!(f, " of type {hash}")?;
 						}
 						Ok(())
+					}
+					R::OutputEnvelope => {
+						f.write_str("host output contract violation: wrong owned-output envelope")
+					}
+					R::OutputConsumed => {
+						f.write_str("host output contract violation: owned output already consumed")
+					}
+					R::OutputTree => {
+						f.write_str("host output contract violation: malformed owned output tree")
 					}
 				}
 			}

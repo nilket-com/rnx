@@ -15,7 +15,12 @@ use rune::runtime::{Function, Object, OwnedTuple, TypeValue, Value, Vec as RuneV
 /// representation. Rune 0.14.2's Deserialize casts u64 to i64, wrapping large
 /// positive integers; its unsigned Value variant does not have that defect.
 pub fn parse(text: &str) -> Result<Value, String> {
-	let document: serde_json::Value = serde_json::from_str(text).map_err(|error| {
+	let document = parse_document(text)?;
+	from_document(document).map_err(|error| format!("cannot convert parsed JSON document: {error}"))
+}
+
+fn parse_document(text: &str) -> Result<serde_json::Value, String> {
+	serde_json::from_str(text).map_err(|error| {
 		let reason = format!("cannot parse JSON document: {error}");
 		// serde_json exposes the error category, but not this specific code.
 		// Boundary gates pin both the counter and this diagnostic spelling.
@@ -26,14 +31,98 @@ pub fn parse(text: &str) -> Result<Value, String> {
 		} else {
 			reason
 		}
-	})?;
-	from_document(document).map_err(|error| format!("cannot convert parsed JSON document: {error}"))
+	})
+}
+
+// This source owns serde's parsed document. The Rune side sees only consuming
+// iterators and closed nodes, and neither imports serde nor builds legacy nodes.
+enum ParsedOutput {
+	Result(Result<serde_json::Value, String>),
+	Value(serde_json::Value),
+	Error(String),
+}
+struct ParsedArray(std::vec::IntoIter<serde_json::Value>);
+impl Iterator for ParsedArray {
+	type Item = ParsedOutput;
+	fn next(&mut self) -> Option<Self::Item> {
+		self.0.next().map(ParsedOutput::Value)
+	}
+	fn size_hint(&self) -> (usize, Option<usize>) {
+		self.0.size_hint()
+	}
+}
+impl ExactSizeIterator for ParsedArray {}
+struct ParsedObject(serde_json::map::IntoIter);
+impl Iterator for ParsedObject {
+	type Item = (String, ParsedOutput);
+	fn next(&mut self) -> Option<Self::Item> {
+		self.0
+			.next()
+			.map(|(key, value)| (key, ParsedOutput::Value(value)))
+	}
+	fn size_hint(&self) -> (usize, Option<usize>) {
+		self.0.size_hint()
+	}
+}
+impl ExactSizeIterator for ParsedObject {}
+impl rune::host::OwnedOutputSource for ParsedOutput {
+	type Array = ParsedArray;
+	type Object = ParsedObject;
+	fn into_node(self) -> rune::host::OutputNode<Self> {
+		use rune::host::OutputNode as Node;
+		use serde_json::Value as Json;
+		match self {
+			Self::Result(Ok(value)) => Node::Result {
+				success: true,
+				value: Self::Value(value),
+			},
+			Self::Result(Err(error)) => Node::Result {
+				success: false,
+				value: Self::Error(error),
+			},
+			Self::Error(error) => Node::String(error),
+			Self::Value(value) => match value {
+				Json::Null => Node::Unit,
+				Json::Bool(value) => Node::Bool(value),
+				Json::Number(value) => {
+					if let Some(value) = value.as_i64() {
+						Node::I64(value)
+					} else if let Some(value) = value.as_u64() {
+						Node::U64(value)
+					} else {
+						// A Number is i64/u64/finite f64 with arbitrary_precision off.
+						// A violated host invariant is a named contract error, not panic.
+						Node::F64(value.as_f64().unwrap_or(f64::NAN))
+					}
+				}
+				Json::String(text) => Node::String(text),
+				Json::Array(values) => Node::Array(ParsedArray(values.into_iter())),
+				Json::Object(values) => Node::Object(ParsedObject(values.into_iter())),
+			},
+		}
+	}
+}
+fn parse_owned(text: &str) -> Result<rune::host::OwnedTreeOutput, rune::runtime::VmError> {
+	Ok(rune::host::OwnedTreeOutput::new(ParsedOutput::Result(
+		parse_document(text),
+	))?)
+}
+
+#[cfg(test)]
+#[path = "json/direct_tests.rs"]
+mod direct_tests;
+
+#[cfg(test)]
+thread_local! {
+	static LEGACY_DOCUMENT_NODES: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 /// Only called on a tree already bounded by the parser. Consuming the tree
 /// avoids retaining a second complete copy during conversion. Allocation
 /// failures in Rune's containers remain catchable errors.
 fn from_document(document: serde_json::Value) -> Result<Value, rune::alloc::Error> {
+	#[cfg(test)]
+	LEGACY_DOCUMENT_NODES.with(|count| count.set(count.get() + 1));
 	use serde_json::Value as Json;
 	Ok(match document {
 		Json::Null => Value::from(()),
@@ -431,7 +520,7 @@ pub(crate) fn install(
 	context: &mut rune::Context,
 ) -> crate::Result<Vec<crate::host::HostFunction>> {
 	let mut module = rune::Module::with_crate("json")?;
-	module.host_function_with_output("parse", parse, rune::host::OutputCertificate::JSON_RESULT)?;
+	module.host_function_owned_output("parse", parse, parse_owned)?;
 	module.host_function_tree_input(
 		"stringify",
 		|value: Value| stringify(&value),

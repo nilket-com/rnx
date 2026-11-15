@@ -272,6 +272,7 @@ impl<'ast> Visit<'ast> for Scan {
 			"associated_function",
 			"host_function",
 			"host_function_with_output",
+			"host_function_owned_output",
 			"host_function_string_input",
 			"host_function_tree_input",
 			"host_function_tree_inputs",
@@ -308,7 +309,7 @@ impl<'ast> Visit<'ast> for Scan {
 			let class = match method.as_str() {
 				"opaque_method" | "opaque_factory" => "host-value",
 				"host_function" => "typed",
-				"host_function_with_output" => "dynamic-output",
+				"host_function_with_output" | "host_function_owned_output" => "dynamic-output",
 				"host_function_string_input" => "string-input",
 				"host_function_tree_input" | "host_function_tree_inputs" => "tree-input",
 				"host_function_await" => "awaited",
@@ -371,6 +372,7 @@ impl<'ast> Visit<'ast> for Scan {
 					"associated_function",
 					"host_function",
 					"host_function_with_output",
+					"host_function_owned_output",
 					"host_function_string_input",
 					"host_function_tree_input",
 					"host_function_tree_inputs",
@@ -382,7 +384,9 @@ impl<'ast> Visit<'ast> for Scan {
 				{
 					let class = match method.as_str() {
 						"host_function" => "typed",
-						"host_function_with_output" => "dynamic-output",
+						"host_function_with_output" | "host_function_owned_output" => {
+							"dynamic-output"
+						}
 						"host_function_string_input" => "string-input",
 						"host_function_tree_input" | "host_function_tree_inputs" => "tree-input",
 						"host_function_await" => "awaited",

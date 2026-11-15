@@ -32,6 +32,7 @@ mod object_storage;
 mod opaque;
 #[cfg(test)]
 mod opaque_tests;
+mod owned_output;
 mod vec_constructors;
 mod vec_resize;
 pub use formatting::FormatLimits;

@@ -327,6 +327,17 @@ impl Executor {
 		shape: HostOutputKind,
 	) -> Result<Value> {
 		match shape {
+			HostOutputKind::OwnedTree => {
+				use crate::function::host::owned_output::contract;
+				let envelope = value
+					.borrow_ref::<crate::function::host::OwnedTreeOutput>()
+					.map_err(|_| {
+						contract(super::super::error::HostDynamicReason::OutputEnvelope)
+					})?;
+				let materialized = envelope.materialize(store);
+				self.pending_host_cleanup = materialized.cleanup;
+				materialized.result
+			}
 			HostOutputKind::OpaqueOwned => {
 				let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
 					let descriptor = self
@@ -592,6 +603,73 @@ mod tests {
 	use super::*;
 	use crate::experimental_core::{error::HostCause, frontend, heap::Limits};
 	use crate::{Context, Diagnostics, Hash, Module, Source, Sources};
+
+	struct DirectDocument(bool);
+	impl crate::host::OwnedOutputSource for DirectDocument {
+		type Array = std::iter::Empty<Self>;
+		type Object = std::iter::Empty<(std::string::String, Self)>;
+		fn into_node(self) -> crate::host::OutputNode<Self> {
+			if self.0 {
+				crate::host::OutputNode::Result {
+					success: true,
+					value: Self(false),
+				}
+			} else {
+				crate::host::OutputNode::I64(7)
+			}
+		}
+	}
+
+	#[test]
+	fn direct_output_enrollment_and_envelope_contract() {
+		use super::minimal_tests::{code, executor, installed};
+		use crate::experimental_core::error::HostDynamicReason as Reason;
+		use crate::host::{owned_output::contract, OwnedTreeOutput};
+		let mut module = Module::with_item(["tiny"]).unwrap();
+		module
+			.host_function_owned_output(
+				"document",
+				|_: &str| 1i64,
+				|_: &str| -> core::result::Result<OwnedTreeOutput, stock::VmError> {
+					Ok(OwnedTreeOutput::new(DirectDocument(true))?)
+				},
+			)
+			.unwrap();
+		let context = installed(module);
+		let code = code(&context, "document", 1);
+		let mut executor = executor(&context);
+		let mut store = Store::new(Limits::default()).unwrap();
+		let input = store.root_string("input").unwrap();
+		let root = executor
+			.invoke_code(&code, &mut store, 0, &[&input], 100)
+			.unwrap();
+		assert_eq!(
+			store.variant_parts(root.value).unwrap(),
+			(Type::Result, true, Some(Value::I64(7)))
+		);
+		store.root_release(root).unwrap();
+		store.root_release(input).unwrap();
+		let bad = executor
+			.host_output(
+				&mut store,
+				&stock::Value::from(42i64),
+				HostOutputKind::OwnedTree,
+			)
+			.unwrap_err();
+		assert_eq!(bad, contract(Reason::OutputEnvelope));
+		let packet =
+			stock::Value::new(OwnedTreeOutput::new(DirectDocument(true)).unwrap()).unwrap();
+		let root = executor
+			.host_output(&mut store, &packet, HostOutputKind::OwnedTree)
+			.unwrap();
+		store.release(root).unwrap();
+		let twice = executor
+			.host_output(&mut store, &packet, HostOutputKind::OwnedTree)
+			.unwrap_err();
+		assert_eq!(twice, contract(Reason::OutputConsumed));
+		assert!(executor.pending_host_cleanup.is_none());
+		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+	}
 
 	#[test]
 	fn host_error_preserves_reviewed_and_unclassified_native_classes() {

@@ -50,7 +50,7 @@ fn host_policy() -> Vec<HostPolicy> {
 		"\"{}\"",
 		Class::DynamicOutput,
 		"&str",
-		"JSON_RESULT: owned readable acyclic tree",
+		"owned-output: consuming Result<JSON tree,String>, direct Store construction",
 	);
 	add(
 		"io::stdin",

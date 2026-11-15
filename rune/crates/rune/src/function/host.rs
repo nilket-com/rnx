@@ -42,8 +42,10 @@ host_types!(
 );
 pub(crate) mod awaiting;
 pub(crate) mod opaque;
+pub(crate) mod owned_output;
 pub(crate) mod owned_tree;
 pub use awaiting::AwaitHostFunction;
+pub use owned_output::{OutputNode, OwnedOutputSource, OwnedTreeOutput};
 pub use owned_tree::{OwnedTreeInput, TreeKind, TreeNode};
 /// Closed scalar/optional/result shapes and two concrete dynamic output certificates.
 #[doc(hidden)]
@@ -58,6 +60,8 @@ pub enum HostOutputKind {
 	ResultDynamicString,
 	/// A uniquely owned, explicitly enrolled native object (session entry only).
 	OpaqueOwned,
+	/// A consuming, closed Result<tree, String> output transport.
+	OwnedTree,
 }
 /// One node in a static output-shape graph. Every declared node must be importable.
 /// Indices refer to nodes in the same certificate; recursive containers describe
@@ -206,6 +210,8 @@ impl HostSignature {
 	pub(crate) fn valid(self) -> bool {
 		self.arity <= 4
 			&& (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
+			&& (self.output != HostOutputKind::OwnedTree
+				|| (self.arity == 1 && self.arguments[0] == HostType::String))
 			&& (!self.arguments.contains(&HostType::OpaqueShared)
 				|| (self.arity == 1 && self.arguments[0] == HostType::OpaqueShared))
 			&& self.arguments[self.arity as usize..]
@@ -337,6 +343,15 @@ impl HostOutput for crate::runtime::Value {
 impl sealed::Output for Result<crate::runtime::Value, std::string::String> {}
 impl HostOutput for Result<crate::runtime::Value, std::string::String> {
 	const SHAPE: HostOutputKind = HostOutputKind::ResultDynamicString;
+}
+
+impl sealed::Output for OwnedTreeOutput {}
+impl HostOutput for OwnedTreeOutput {
+	const SHAPE: HostOutputKind = HostOutputKind::OwnedTree;
+}
+impl sealed::Output for Result<OwnedTreeOutput, crate::runtime::VmError> {}
+impl HostOutput for Result<OwnedTreeOutput, crate::runtime::VmError> {
+	const SHAPE: HostOutputKind = HostOutputKind::OwnedTree;
 }
 
 // Concrete owned trees use the existing transactional importer, and still require

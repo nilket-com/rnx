@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::heap::owned_output::tests::carrier_consumes_once_and_drops_unconsumed_source",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::heap::owned_output::tests::consuming_document_owns_children_order_and_index",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::heap::owned_output::tests::malformed_and_panicking_producers_leave_no_partial_values",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::execute::host_bridge::tests::direct_output_enrollment_and_envelope_contract",
+      "ignored": false,
+      "timeout_seconds": 600
+    },
+    {
+      "name": "experimental_core::heap::owned_output::tests::list_adopts_its_checked_buffer_and_charges_actual_capacity",
+      "ignored": false,
+      "timeout_seconds": 600
+    }
+  ]
+}

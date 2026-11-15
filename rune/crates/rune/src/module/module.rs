@@ -276,6 +276,72 @@ impl Module {
 		self.function_inner(data, Docs::EMPTY, None)
 	}
 
+	/// Keep the legacy handler and consume a closed document directly into the
+	/// execution Store. Only one borrowed string is admitted as input; the return
+	/// packet is transport, never a script-visible native object.
+	/// ```
+	/// use rune::host::{OwnedOutputSource, OwnedTreeOutput, OutputNode};
+	/// struct Document(bool);
+	/// impl OwnedOutputSource for Document {
+	///     type Array = std::iter::Empty<Self>;
+	///     type Object = std::iter::Empty<(String, Self)>;
+	///     fn into_node(self) -> OutputNode<Self> {
+	///         if self.0 { OutputNode::Result { success: true, value: Self(false) } }
+	///         else { OutputNode::I64(7) }
+	///     }
+	/// }
+	/// let mut module = rune::Module::new();
+	/// module.host_function_owned_output("document", |_: &str| 7i64,
+	///     |_: &str| -> Result<OwnedTreeOutput, rune::runtime::VmError> {
+	///         Ok(OwnedTreeOutput::new(Document(true))?)
+	///     }).unwrap();
+	/// ```
+	/// ```compile_fail,E0277
+	/// let mut module = rune::Module::new();
+	/// module.host_function_owned_output("document", |_: &str| (),
+	///     |_: i64| -> Result<rune::host::OwnedTreeOutput, rune::runtime::VmError> { todo!() });
+	/// ```
+	/// ```compile_fail,E0277
+	/// let mut module = rune::Module::new();
+	/// module.host_function_owned_output("document", |_: &str| (),
+	///     |_: &str, _: &str| -> Result<rune::host::OwnedTreeOutput, rune::runtime::VmError> { todo!() });
+	/// ```
+	/// ```compile_fail,E0277
+	/// let mut module = rune::Module::new();
+	/// module.host_function_owned_output("document", |_: &str| (), |_: &str| 7i64);
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn host_function_owned_output<N, F, A, G>(
+		&mut self,
+		name: N,
+		legacy: F,
+		adapter: G,
+	) -> Result<ItemFnMut<'_>, ContextError>
+	where
+		N: IntoComponent,
+		F: Function<A, crate::function::Plain, Return: MaybeTypeOf>,
+		A: FunctionArgs,
+		G: crate::function::host::HostFunction<
+			(crate::function::Ref<str>,),
+			Return = Result<crate::function::host::OwnedTreeOutput, crate::runtime::VmError>,
+		>,
+	{
+		let mut data = FunctionData::new::<N, F, A, crate::function::Plain>(name, legacy)?;
+		let signature = G::signature();
+		let handler = crate::runtime::FunctionHandler::new(move |stack, addr, args, output| {
+			adapter.call(stack, addr, args, output)
+		})?;
+		data.alternate_host = Some(crate::function::host::AlternateHost {
+			await_only: false,
+			handler,
+			enrollment: crate::function::host::HostEnrollment {
+				signature,
+				certificate: None,
+			},
+		});
+		self.function_inner(data, Docs::EMPTY, None)
+	}
+
 	/// Keep the legacy handler and enroll a separate string-only execution adapter.
 	/// The adapter accepts only a final StringOrRejected argument, optionally
 	/// preceded by a borrowed path or an i64. The output promise is independent.
