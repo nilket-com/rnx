@@ -13,6 +13,7 @@ use core::sync::atomic::{AtomicU64, Ordering};
 
 mod admission;
 mod cloning;
+mod collection_get;
 mod comparison;
 mod formatting;
 mod growth;

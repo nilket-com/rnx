@@ -185,10 +185,10 @@ fn method_policy(r: &Receiver, name: &str, parameters: &[Hash], inline: bool) ->
 		"::std::char" => name == "to_i64",
 		"::std::string::String" => in_names(
 			name,
-			"chars clone cmp contains ends_with is_empty len push replace split starts_with trim",
+			"chars clone cmp contains ends_with get is_empty len push replace split starts_with trim",
 		),
-		"::std::vec::Vec" => in_names(name, "clone cmp is_empty iter len push resize sort_by"),
-		"::std::tuple::Tuple" => in_names(name, "clone cmp is_empty iter len"),
+		"::std::vec::Vec" => in_names(name, "clone cmp get is_empty iter len push resize sort_by"),
+		"::std::tuple::Tuple" => in_names(name, "clone cmp get is_empty iter len"),
 		"::std::object::Object" => in_names(
 			name,
 			"clone contains_key get insert is_empty iter len remove",

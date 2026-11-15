@@ -16,7 +16,7 @@ use std::{
 	time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
-fn opaque_error(error: impl std::fmt::Debug) -> std::io::Error {
+pub(super) fn opaque_error(error: impl std::fmt::Debug) -> std::io::Error {
 	std::io::Error::other(format!("{error:?}"))
 }
 
@@ -48,7 +48,11 @@ pub(super) fn child(
 	input: &Path,
 	engine: &str,
 	clock: &str,
+	fixture: &str,
 ) -> Result<Value, Box<dyn std::error::Error>> {
+	if !matches!(fixture, "" | "orders" | "journey") {
+		return Err("unreviewed census fixture".into());
+	}
 	let original = std::fs::read_to_string(input)?;
 	let source = super::enrollment::augment_source(&original)?;
 	let lifecycle = crate::lifecycle::Lifecycle::new(true)?;
@@ -63,7 +67,16 @@ pub(super) fn child(
 				.with_context(&context)
 				.with_diagnostics(&mut diagnostics)
 				.build_vm()?;
-			let result = rune::runtime::budget::with(2_000_000, || vm.call(["main"], ())).call();
+			let arguments = if fixture == "journey" {
+				Some(super::journey::stock_arguments()?)
+			} else {
+				None
+			};
+			let result = rune::runtime::budget::with(2_000_000, || match arguments {
+				Some(args) => vm.call(["main"], (args,)),
+				None => vm.call(["main"], ()),
+			})
+			.call();
 			match result {
 				Ok(value) => {
 					let clock_value = value.as_integer::<i64>().ok();
@@ -107,7 +120,17 @@ pub(super) fn child(
 			executor
 				.set_host_runtime(Some(context.execution_runtime()?))
 				.map_err(opaque_error)?;
-			match executor.invoke(&program, &mut store, main, &[], 2_000_000) {
+			let arguments = if fixture == "journey" {
+				Some(super::journey::fresh_arguments(&mut store)?)
+			} else {
+				None
+			};
+			let borrowed = arguments.iter().collect::<Vec<_>>();
+			let execution = executor.invoke(&program, &mut store, main, &borrowed, 2_000_000);
+			if let Some(root) = arguments {
+				store.root_release(root).map_err(opaque_error)?;
+			}
+			match execution {
 				Ok(root) => {
 					let clock_value = match store.root_scalar(&root).map_err(opaque_error)? {
 						Some(Scalar::I64(v)) => Some(v),
@@ -184,7 +207,7 @@ fn plan() -> Result<Vec<Plan<'static>>, Box<dyn std::error::Error>> {
 			|| !id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
 			|| !ids.insert(id)
 			|| !matches!(mode, "execute" | "admission-only")
-			|| !matches!(fixture, "" | "orders")
+			|| !matches!(fixture, "" | "orders" | "journey")
 			|| !matches!(clock, "" | "wall" | "monotonic")
 			|| (mode == "execute" && !reason.is_empty())
 			|| (mode == "admission-only" && reason.is_empty())
@@ -268,6 +291,9 @@ fn invoke(
 			work.join("data/orders.json"),
 		)?;
 	}
+	if item.fixture == "journey" {
+		super::journey::setup(repo, &work)?;
+	}
 	let mut command = Command::new("/usr/bin/timeout");
 	command
 		.args([
@@ -338,6 +364,7 @@ fn invoke(
 			engine,
 			item.clock,
 			"/report/result.json",
+			item.fixture,
 		])
 		.env_clear()
 		.stdin(Stdio::null())
@@ -359,6 +386,9 @@ fn invoke(
 	let observation: Value = serde_json::from_slice(&fs::read(report.join("result.json"))?)?;
 	if observation["clock_ok"] != true || observation["lifecycle_closed"] != true {
 		return Err("census clock or lifecycle check failed".into());
+	}
+	if item.fixture == "journey" {
+		super::journey::check(&work, &result.stdout, &observation)?;
 	}
 	Ok(
 		json!({"observation":observation,"stdout":result.stdout,"stderr":result.stderr,"files":snapshot(&work)?}),
@@ -565,7 +595,7 @@ mod tests {
 	fn execution_plan_accounts_for_every_case() {
 		let rows = plan().unwrap();
 		assert_eq!(rows.len(), 244);
-		assert_eq!(rows.iter().filter(|row| row.mode == "execute").count(), 67);
+		assert_eq!(rows.iter().filter(|row| row.mode == "execute").count(), 71);
 		assert_eq!(
 			rows.iter().filter(|row| row.reason == "no-main").count(),
 			16

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "toolchain": "nightly-2026-09-01",
+  "features": "fmt,workspace,execution,capture-io,disable-io,sha2",
+  "miriflags": "-Zmiri-strict-provenance",
+  "tests": [
+    {
+      "name": "experimental_core::heap::collection_get::tests::collection_get_retains_children_and_copies_slice_container",
+      "ignored": false,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "experimental_core::heap::collection_get::tests::collection_get_bounds_utf8_unit_and_inclusive_overflow",
+      "ignored": false,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "experimental_core::heap::collection_get::tests::collection_get_moved_receiver_precedes_index_conversion_but_child_is_not_read",
+      "ignored": false,
+      "timeout_seconds": 300
+    },
+    {
+      "name": "experimental_core::heap::collection_get::tests::collection_get_slice_admission_rolls_back_children_and_option_failure",
+      "ignored": false,
+      "timeout_seconds": 300
+    }
+  ]
+}

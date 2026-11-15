@@ -121,6 +121,10 @@ impl Store {
 			return Err(self.text_missing(receiver, method.hash())?);
 		}
 		match method {
+			// Private collection providers enter their separate cold helper.
+			Method::VecGet | Method::TupleGet | Method::StringGet => {
+				Err(err(ErrorKind::InvalidCode))
+			}
 			Method::IsEmpty => {
 				self.argument(receiver, 0, MovedAccess::Read)?;
 				Ok(Value::Bool(self.len(receiver)? == 0))

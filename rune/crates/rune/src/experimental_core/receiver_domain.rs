@@ -50,3 +50,100 @@ mod tests {
 		check_nominal(1, 0).unwrap();
 	}
 }
+
+// TypeName::from_type and builtin_hash are exhaustive matches over engine Type
+// and diagnostic identities. This additional exhaustive match ties every builtin
+// identity (including each iterator family and Type tokens) to the same receiver
+// table that dynamic compilation proves over. Nominals come from Query/Context.
+#[cfg(test)]
+#[test]
+fn collection_get_universe_covers_every_diagnostic_receiver_kind() {
+	use super::detail::TypeName as T;
+	fn covered(name: T) -> bool {
+		match name {
+			T::Struct(_) => true,
+			T::Unit
+			| T::Bool
+			| T::I64
+			| T::U64
+			| T::F64
+			| T::Char
+			| T::Ordering
+			| T::String
+			| T::Vec
+			| T::Tuple
+			| T::Object
+			| T::Option
+			| T::Result
+			| T::Range
+			| T::RangeInclusive
+			| T::VecIter
+			| T::RangeIter
+			| T::UnsignedRangeIter
+			| T::CharRangeIter
+			| T::Function
+			| T::Type
+			| T::RangeFrom
+			| T::RangeFull
+			| T::RangeToInclusive
+			| T::RangeTo
+			| T::RangeInclusiveIter
+			| T::UnsignedRangeInclusiveIter
+			| T::CharRangeInclusiveIter
+			| T::RangeFromIter
+			| T::UnsignedRangeFromIter
+			| T::CharRangeFromIter
+			| T::OptionIter
+			| T::StringSplit
+			| T::CharSplit
+			| T::Chars
+			| T::Skip
+			| T::Take
+			| T::ObjectIter => name
+				.builtin_hash()
+				.is_some_and(|hash| crate::function::methods::RECEIVERS.contains(&hash)),
+		}
+	}
+	for name in [
+		T::Unit,
+		T::Bool,
+		T::I64,
+		T::U64,
+		T::F64,
+		T::Char,
+		T::Ordering,
+		T::String,
+		T::Vec,
+		T::Tuple,
+		T::Object,
+		T::Option,
+		T::Result,
+		T::Range,
+		T::RangeInclusive,
+		T::VecIter,
+		T::RangeIter,
+		T::UnsignedRangeIter,
+		T::CharRangeIter,
+		T::Function,
+		T::Type,
+		T::RangeFrom,
+		T::RangeFull,
+		T::RangeToInclusive,
+		T::RangeTo,
+		T::RangeInclusiveIter,
+		T::UnsignedRangeInclusiveIter,
+		T::CharRangeInclusiveIter,
+		T::RangeFromIter,
+		T::UnsignedRangeFromIter,
+		T::CharRangeFromIter,
+		T::OptionIter,
+		T::StringSplit,
+		T::CharSplit,
+		T::Chars,
+		T::Skip,
+		T::Take,
+		T::ObjectIter,
+	] {
+		assert!(covered(name), "{name:?}");
+	}
+}

@@ -1,6 +1,6 @@
 # ADR 0277: the object methods the project's own scripts use
 
-Status: Proposed
+Status: Accepted
 
 Base: published 09c47eeb95bc7ec5bc559983a08ccd4f4dd1ec58 (ADR 0276).
 

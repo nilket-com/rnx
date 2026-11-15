@@ -93,7 +93,7 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 	if let Some(effect) = object::Method::from_id(id) {
 		use object::Method::*;
 		return Some(match effect {
-			Get | ContainsKey | Insert | Remove | IsEmpty => false,
+			Get | ContainsKey | Insert | Remove | IsEmpty | VecGet | TupleGet | StringGet => false,
 		});
 	}
 	if let Some(effect) = iter_terminal::Intrinsic::from_id(id) {

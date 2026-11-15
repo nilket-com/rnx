@@ -1896,12 +1896,14 @@ impl Context {
 		#[cfg(feature = "execution")]
 		let object_touch = match &assoc.name.kind {
 			meta::AssociatedKind::Instance(name) => {
-				crate::function::object::Method::from_name(name).and_then(|m| {
-					let (plain, trait_hash) = plain();
-					self.object
-						.begin(m, assoc.container, plain, trait_hash)
-						.map(|bit| (m, bit))
-				})
+				crate::function::object::Method::from_provider(name, assoc.container).and_then(
+					|m| {
+						let (plain, trait_hash) = plain();
+						self.object
+							.begin(m, assoc.container, plain, trait_hash)
+							.map(|bit| (m, bit))
+					},
+				)
 			}
 			_ => None,
 		};

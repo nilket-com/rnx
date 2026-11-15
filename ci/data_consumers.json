@@ -637,6 +637,15 @@
       "max_bytes": 25937,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
     },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/0277_get_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0277_get_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/contract.rs"
+      },
+      "max_bytes": 47192,
+      "reason": "ADR 0277 live Object-method admissions and inherited diagnostic overlay consumed by the complete 242-row contract."
+    },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/cases.json": {
       "class": "live-fixture",
       "consumer": {

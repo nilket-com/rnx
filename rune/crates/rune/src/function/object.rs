@@ -1,4 +1,4 @@
-//! C17b closed Object method and `is_empty` policy. Registration is constant
+//! Closed collection method provider policy. Registration is constant
 //! work; no handler is invoked.
 use crate::runtime as rt;
 use crate::{Hash, TypeHash};
@@ -19,6 +19,9 @@ pub(crate) enum Method {
 	Insert,
 	Remove,
 	IsEmpty,
+	VecGet,
+	TupleGet,
+	StringGet,
 }
 
 /// A receiver family with a certified stock provider.
@@ -31,12 +34,15 @@ pub(crate) enum Family {
 }
 
 impl Method {
-	pub(crate) const ALL: [Self; 5] = [
+	pub(crate) const ALL: [Self; 8] = [
 		Self::Get,
 		Self::ContainsKey,
 		Self::Insert,
 		Self::Remove,
 		Self::IsEmpty,
+		Self::VecGet,
+		Self::TupleGet,
+		Self::StringGet,
 	];
 	const FIRST_ID: u32 = 0x8000_00a0;
 
@@ -51,10 +57,35 @@ impl Method {
 		})
 	}
 
+	/// Selects the independently certified provider for this receiver. Source
+	/// spelling still resolves to Get; private provider IDs are never names.
+	pub(crate) fn from_provider(name: &str, receiver: Hash) -> Option<Self> {
+		let method = Self::from_name(name)?;
+		Self::for_receiver(method.hash(), receiver)
+	}
+
+	pub(crate) fn for_receiver(name: Hash, receiver: Hash) -> Option<Self> {
+		let method = Self::from_hash(name)?;
+		if method == Self::Get {
+			if receiver == rt::Vec::HASH {
+				return Some(Self::VecGet);
+			}
+			if receiver == rt::OwnedTuple::HASH {
+				return Some(Self::TupleGet);
+			}
+			if receiver == crate::alloc::String::HASH {
+				return Some(Self::StringGet);
+			}
+		}
+		Some(method)
+	}
+
 	/// `Hash::ident` of the method name, computed at compile time.
 	pub(crate) const fn hash(self) -> Hash {
 		let associated = match self {
-			Self::Get => crate::hash_in!(crate, ::std::object::Object.get),
+			Self::Get | Self::VecGet | Self::TupleGet | Self::StringGet => {
+				crate::hash_in!(crate, ::std::object::Object.get)
+			}
 			Self::ContainsKey => crate::hash_in!(crate, ::std::object::Object.contains_key),
 			Self::Insert => crate::hash_in!(crate, ::std::object::Object.insert),
 			Self::Remove => crate::hash_in!(crate, ::std::object::Object.remove),
@@ -86,7 +117,12 @@ impl Method {
 		match self {
 			Self::IsEmpty => 1,
 			Self::Insert => 3,
-			Self::Get | Self::ContainsKey | Self::Remove => 2,
+			Self::Get
+			| Self::ContainsKey
+			| Self::Remove
+			| Self::VecGet
+			| Self::TupleGet
+			| Self::StringGet => 2,
 		}
 	}
 
@@ -100,6 +136,9 @@ impl Method {
 	pub(crate) const fn provided_by(self, family: Family) -> bool {
 		match self {
 			Self::IsEmpty => true,
+			Self::VecGet => matches!(family, Family::Vec),
+			Self::TupleGet => matches!(family, Family::Tuple),
+			Self::StringGet => matches!(family, Family::String),
 			_ => matches!(family, Family::Object),
 		}
 	}
@@ -143,7 +182,7 @@ const fn family_bit(family: Family) -> u8 {
 #[derive(Default)]
 pub(crate) struct State {
 	pending: u8,
-	certified: [u8; 5],
+	certified: [u8; 8],
 	closed: u8,
 }
 
@@ -203,9 +242,41 @@ mod tests {
 			assert_eq!(Method::from_hash(Hash::ident(name)), Some(m));
 			assert_eq!(Method::from_id(m.id()), Some(m));
 		}
-		assert_eq!(Method::from_id(Method::IsEmpty.id() + 1), None);
+		assert_eq!(Method::from_id(Method::StringGet.id() + 1), None);
 		assert_eq!(Method::from_id(Method::Get.id() - 1), None);
 		assert_eq!(Method::from_name("len"), None);
+	}
+
+	#[test]
+	fn collection_provider_certificates_are_independent() {
+		let mut state = State::default();
+		for (marker, hash, method) in [
+			(marker::OBJECT, rt::Object::HASH, Method::Get),
+			(marker::VEC, rt::Vec::HASH, Method::VecGet),
+			(marker::TUPLE, rt::OwnedTuple::HASH, Method::TupleGet),
+			(
+				marker::STRING,
+				crate::alloc::String::HASH,
+				Method::StringGet,
+			),
+		] {
+			assert_eq!(Method::from_provider("get", hash), Some(method));
+			assert_eq!(method.hash(), Method::Get.hash());
+			assert_eq!(Method::from_id(method.id()), Some(method));
+			assert!(!state.ready(method));
+			state.begin_module(marker);
+			let bit = state.begin(method, hash, true, None).unwrap();
+			state.installed(method, bit);
+			state.finish_module(0);
+			assert!(state.ready(method));
+		}
+		assert!(state
+			.begin(Method::VecGet, rt::Vec::HASH, true, None)
+			.is_none());
+		assert!(!state.ready(Method::VecGet));
+		assert!(state.ready(Method::Get));
+		assert!(state.ready(Method::TupleGet));
+		assert!(state.ready(Method::StringGet));
 	}
 
 	#[test]
@@ -228,7 +299,10 @@ mod tests {
 	fn foreign_or_partial_install_is_not_certified() {
 		let mut s = State::default();
 		s.begin_module(marker::OBJECT);
-		for m in Method::ALL {
+		for m in Method::ALL
+			.into_iter()
+			.filter(|m| m.provider(rt::Object::HASH).is_some())
+		{
 			let bit = s.begin(m, rt::Object::HASH, true, None).unwrap();
 			s.installed(m, bit);
 		}
@@ -242,7 +316,7 @@ mod tests {
 			(marker::STRING, crate::alloc::String::HASH),
 		] {
 			s.begin_module(marker);
-			// Their own `get` is not a provider, so it neither certifies nor closes.
+			// Object get remains a separate certificate from collection get.
 			assert!(s.begin(Method::Get, receiver, true, None).is_none());
 			let bit = s.begin(Method::IsEmpty, receiver, true, None).unwrap();
 			s.installed(Method::IsEmpty, bit);

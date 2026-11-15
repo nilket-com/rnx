@@ -6,7 +6,7 @@ id	class
 0004	stock-fails
 0005	stock-fails
 0006	stock-fails
-0007	fresh-refuses-Method
+0007	both-admit
 0008	stock-fails
 0009	stock-fails
 0010	stock-fails
@@ -71,7 +71,7 @@ id	class
 0069	stock-fails
 0070	stock-fails
 0071	stock-fails
-0072	fresh-refuses-Method
+0072	both-admit
 0073	stock-fails
 0074	stock-fails
 0075	stock-fails
@@ -155,8 +155,8 @@ id	class
 0153	stock-fails
 0154	stock-fails
 0155	stock-fails
-0156	fresh-refuses-Method
-0157	fresh-refuses-Method
+0156	both-admit
+0157	both-admit
 0158	stock-fails
 0159	stock-fails
 0160	stock-fails

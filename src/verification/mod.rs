@@ -5,6 +5,7 @@ mod census;
 mod census_execution;
 use crate::clock_properties as clock;
 mod enrollment;
+mod journey;
 
 use serde_json::{Value, json};
 use std::fs::{self, OpenOptions};
@@ -96,7 +97,13 @@ pub(crate) fn main() -> Result<()> {
 		[mode, suite, input, engine, clock, output]
 			if mode == "--child" && suite == "census-exec" =>
 		{
-			let value = census_execution::child(Path::new(input), engine, clock)?;
+			let value = census_execution::child(Path::new(input), engine, clock, "")?;
+			write_new(Path::new(output), &value)
+		}
+		[mode, suite, input, engine, clock, output, fixture]
+			if mode == "--child" && suite == "census-exec" =>
+		{
+			let value = census_execution::child(Path::new(input), engine, clock, fixture)?;
 			write_new(Path::new(output), &value)
 		}
 		[mode, config, output] if mode == "enrollment-child" => {

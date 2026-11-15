@@ -41,6 +41,9 @@ impl Lower<'_, '_> {
 			return Err(self.refused(span, Refusal::Arity));
 		}
 		let proven = self.object_origin(target, 0);
+		if method == Method::Get && !proven {
+			return self.call_collection_get(call, target, out, span);
+		}
 		self.transaction
 			.object_method(self.context, self.constants, self.pool, method, proven)
 			.map_err(|e| e.at(self.location(span)))?;
@@ -61,5 +64,29 @@ impl Lower<'_, '_> {
 			span,
 		)?;
 		Ok(())
+	}
+	/// Unknown get receivers require total native coverage before any operands
+	/// are lowered. A user implementation or foreign host provider refuses the
+	/// site; execution can never discover a compilation refusal after effects.
+	#[cold]
+	#[inline(never)]
+	fn call_collection_get(
+		&mut self,
+		call: &hir::ExprCall<'_>,
+		target: hir::ExprId,
+		out: u32,
+		span: Span,
+	) -> Result<()> {
+		let name = Method::Get.hash();
+		if self.constants.method_script.closed(name)
+			|| !self.transaction.supports_dynamic_method(
+				self.context,
+				self.constants,
+				self.pool,
+				name,
+			) {
+			return Err(self.refused(span, Refusal::Method));
+		}
+		self.call_dynamic_method(call, target, name, out, span)
 	}
 }

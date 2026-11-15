@@ -28,7 +28,7 @@ fn native_method(context: &Context, receiver: Hash, name: Hash) -> Option<(u32, 
 			return Some((method.id(), method.arity()));
 		}
 	}
-	if let Some(method) = object::Method::from_hash(name) {
+	if let Some(method) = object::Method::for_receiver(name, receiver) {
 		if method.provider(receiver).is_some() && context.object_method(method) {
 			return Some((method.id(), method.arity()));
 		}
@@ -530,6 +530,9 @@ impl CompileTransaction {
 		pool: &crate::compile::Pool,
 		name: Hash,
 	) -> bool {
+		if name == crate::function::object::Method::Get.hash() && query.method_script.closed(name) {
+			return false;
+		}
 		// Keep the pre-C17f script dispatch choice; only the new resize path
 		// may add this provider after proving its fill at the individual site.
 		if name == crate::function::clone::RESIZE_NAME

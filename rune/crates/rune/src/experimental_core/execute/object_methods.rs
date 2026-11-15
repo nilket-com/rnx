@@ -36,17 +36,21 @@ impl Executor {
 				.get(base.checked_add(slot as usize).ok_or_else(invalid)?)
 				.ok_or_else(invalid)?;
 		}
-		let result = store
-			.object_method(method, &values[..count as usize])
-			.map_err(|e| {
-				// A wrong receiver needs the compile-time absence proof.
-				match e.detail {
-					Detail::MissingInstanceFunction { hash, .. } if !code.absent_method(hash) => {
-						invalid()
-					}
-					_ => e,
+		let result = match method {
+			Method::VecGet | Method::TupleGet | Method::StringGet => {
+				store.collection_get(method, values[0], values[1])
+			}
+			_ => store.object_method(method, &values[..count as usize]),
+		}
+		.map_err(|e| {
+			// A wrong receiver needs the compile-time absence proof.
+			match e.detail {
+				Detail::MissingInstanceFunction { hash, .. } if !code.absent_method(hash) => {
+					invalid()
 				}
-			})?;
+				_ => e,
+			}
+		})?;
 		self.put(
 			store,
 			base.checked_add(out as usize).ok_or_else(invalid)?,

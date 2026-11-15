@@ -1155,6 +1155,18 @@ const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
 		arity: crate::function::object::Method::IsEmpty.arity(),
 	},
 	CertifiedIntrinsic {
+		id: crate::function::object::Method::VecGet.id(),
+		arity: 2,
+	},
+	CertifiedIntrinsic {
+		id: crate::function::object::Method::TupleGet.id(),
+		arity: 2,
+	},
+	CertifiedIntrinsic {
+		id: crate::function::object::Method::StringGet.id(),
+		arity: 2,
+	},
+	CertifiedIntrinsic {
 		id: VEC_RESIZE,
 		arity: 3,
 	},
@@ -3363,7 +3375,7 @@ mod intrinsic_partition_tests {
 		// adds the six Option and Result methods and C17b the five Object methods.
 		// C18b3c adds two Vec constructors and C17f adds resize.
 		// C17c numeric intrinsics live outside this table.
-		assert_eq!(CERTIFIED_INTRINSICS.len(), 64);
+		assert_eq!(CERTIFIED_INTRINSICS.len(), 67);
 		assert_eq!(
 			certified_intrinsic(CERTIFIED_INTRINSICS, VEC_RESIZE)
 				.unwrap()

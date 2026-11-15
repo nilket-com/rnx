@@ -6,7 +6,7 @@ id	mode	reason	fixture	clock
 0004	admission-only	stock-fails		
 0005	admission-only	stock-fails		
 0006	admission-only	stock-fails		
-0007	admission-only	fresh-refuses-Method		
+0007	execute		journey	
 0008	admission-only	stock-fails		
 0009	admission-only	stock-fails		
 0010	admission-only	stock-fails		
@@ -71,7 +71,7 @@ id	mode	reason	fixture	clock
 0069	admission-only	stock-fails		
 0070	admission-only	stock-fails		
 0071	admission-only	stock-fails		
-0072	admission-only	fresh-refuses-Method		
+0072	execute			
 0073	admission-only	stock-fails		
 0074	admission-only	stock-fails		
 0075	admission-only	stock-fails		
@@ -155,8 +155,8 @@ id	mode	reason	fixture	clock
 0153	admission-only	stock-fails		
 0154	admission-only	stock-fails		
 0155	admission-only	stock-fails		
-0156	admission-only	fresh-refuses-Method		
-0157	admission-only	fresh-refuses-Method		
+0156	execute			
+0157	execute			
 0158	admission-only	stock-fails		
 0159	admission-only	stock-fails		
 0160	admission-only	stock-fails		

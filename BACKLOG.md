@@ -1,5 +1,13 @@
 # Follow-ups
 
+- ADR 0277: index Object lookup, which still scans the field vector while
+  stock uses a hash index. Measure present/absent get and construction
+  (insert loop and json::parse import) at 8, 1,000 and 100,000 fields,
+  unoptimized and optimized. Store::record duplicate-key validation and
+  insertion also scan preceding keys; if measured construction is quadratic,
+  address it as the next record before other work. Preserve ownership,
+  field order, moves, memory charges and before-effect refusals.
+
 - ADR 0221: typed block execution for generic F64 chains, isolated from the
   shared executor and without adding callers to its operation helpers.
 

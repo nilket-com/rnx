@@ -1005,3 +1005,6 @@ mod store_budget_string_tests;
 
 #[cfg(test)]
 mod frame_budget_tests;
+
+#[cfg(test)]
+mod collection_get_tests;

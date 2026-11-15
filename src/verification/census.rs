@@ -691,6 +691,7 @@ pub(super) fn self_check() -> CensusResult<Value> {
 	}
 	let equivalence_cases = super::census_execution::equivalence_self_check()?;
 	let warning_cases = warning_self_check()?;
+	super::journey::self_check()?;
 	Ok(
 		json!({"status":"PASS","equivalence_cases":equivalence_cases,"warning_cases":warning_cases,"canonical_order_ascii":true,"unknown_metadata_refused":true,
         "float_metadata_refused":true,"invalid_child_selections_refused":2,
@@ -720,7 +721,7 @@ mod tests {
 	fn admission_classes_are_explicit_and_closed() {
 		let policy = admission_policy(ADMISSIONS).unwrap();
 		assert_eq!(policy.len(), 244);
-		assert_eq!(policy["0007"], "fresh-refuses-Native");
+		assert_eq!(policy["0007"], "both-admit");
 		assert!(admission_policy("id\tclass\nx\tboth-admit\nx\tstock-fails\n").is_err());
 		assert!(admission_policy("id\tclass\nx\tunknown\n").is_err());
 		assert_eq!(policy["0212"], "fresh-refuses-AsyncFunction");

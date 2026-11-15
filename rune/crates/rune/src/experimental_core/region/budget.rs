@@ -180,6 +180,7 @@ pub(crate) struct BVec<'b, T: AnalysisPod> {
 }
 
 impl<'b, T: AnalysisPod> BVec<'b, T> {
+	// Keep native-analysis helper inlining stable across unrelated feature additions.
 	pub(crate) fn new(budget: &'b Budget) -> Self {
 		const {
 			assert!(
@@ -196,6 +197,7 @@ impl<'b, T: AnalysisPod> BVec<'b, T> {
 	}
 
 	/// An empty vector with exactly `capacity` charged and allocated.
+	#[inline]
 	pub(crate) fn with_capacity(budget: &'b Budget, capacity: usize) -> Result<Self, Grow> {
 		let mut v = Self::new(budget);
 		if capacity > 0 {
@@ -243,6 +245,7 @@ impl<'b, T: AnalysisPod> BVec<'b, T> {
 	}
 
 	/// Appends, growing like an ordinary amortized push.
+	#[inline]
 	pub(crate) fn push(&mut self, value: T) -> Result<(), Grow> {
 		if self.vec.len() == self.vec.capacity() {
 			let capacity = amortized::<T>(self.vec.capacity()).ok_or(Grow::Budget)?;
