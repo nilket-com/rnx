@@ -87,7 +87,9 @@ impl Payload {
 			Self::ValueRange { start, end } => small(Some(*start), Some(*end), None),
 			Self::ValueRangeIterator { next, end } => small(Some(*next), Some(*end), None),
 			Self::VectorIterator(iter) => small(Some(Value::Heap(iter.handle)), None, None),
-			Self::Record { fields, .. } => AdmissionChildren::Fields(fields.iter()),
+			Self::Record { fields, .. } | Self::Object { fields, .. } => {
+				AdmissionChildren::Fields(fields.iter())
+			}
 			Self::List { values, .. } => AdmissionChildren::Values(values.iter()),
 			Self::Closure { captures, .. } => AdmissionChildren::Values(captures.iter()),
 			Self::SortGuard(state) => AdmissionChildren::ParentValues(

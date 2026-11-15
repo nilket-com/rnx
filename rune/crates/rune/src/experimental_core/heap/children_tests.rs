@@ -18,7 +18,9 @@ impl Payload {
 				}
 				Self::VectorIterator(iter) if index == 0 => Some(Value::Heap(iter.handle)),
 				Self::SortGuard(state) if index == 0 => Some(Value::Heap(state.parent)),
-				Self::Record { fields, .. } => fields.get(index).map(|(_, value)| *value),
+				Self::Record { fields, .. } | Self::Object { fields, .. } => {
+					fields.get(index).map(|(_, value)| *value)
+				}
 				Self::List { values, .. } => values.get(index).copied(),
 				Self::Closure { captures, .. } => captures.get(index).copied(),
 				Self::ValueRange { start, .. } if index == 0 => Some(*start),
@@ -68,6 +70,7 @@ fn variant(payload: &Payload) -> &'static str {
 		Payload::RangeIterator { .. } => "RangeIterator",
 		Payload::ValueRangeIterator { .. } => "ValueRangeIterator",
 		Payload::Record { .. } => "Record",
+		Payload::Object { .. } => "Object",
 		Payload::List { .. } => "List",
 		Payload::Closure { .. } => "Closure",
 	}
@@ -138,9 +141,16 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 			Type::Object,
 			Type::Struct(crate::experimental_core::value::Nominal(0)),
 		] {
-			cases.push(Payload::Record {
-				tag,
-				fields: fields(input),
+			cases.push(if tag == Type::Object {
+				Payload::Object {
+					fields: fields(input),
+					index: None,
+				}
+			} else {
+				Payload::Record {
+					tag,
+					fields: fields(input),
+				}
 			});
 		}
 	}
@@ -226,7 +236,7 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		}
 		s.edges = 0;
 	}
-	assert_eq!(seen.len(), 15);
+	assert_eq!(seen.len(), 16);
 	assert_eq!(
 		(size_of::<Payload>(), size_of::<Entry>(), size_of::<Slot>()),
 		(40, 72, 80)

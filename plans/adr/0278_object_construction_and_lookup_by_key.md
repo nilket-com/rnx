@@ -1,6 +1,6 @@
 # ADR 0278: object construction and key lookup independent of object size
 
-Status: Proposed
+Status: Accepted
 
 Base: published 64fd789ddcc0aff02dc42e2884d737728947d900 (ADR 0277).
 

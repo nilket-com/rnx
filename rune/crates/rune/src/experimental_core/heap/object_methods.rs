@@ -82,20 +82,17 @@ impl Store {
 			return Err(err(ErrorKind::InvalidCode));
 		};
 		match self.payload(h)? {
-			Payload::Record {
-				tag: Type::Object,
-				fields,
-			} => Ok(fields),
+			Payload::Object { fields, .. } => Ok(fields),
 			_ => Err(err(ErrorKind::InvalidCode)),
 		}
 	}
 
 	fn key_index(&self, receiver: Value, key: Value) -> Result<Option<usize>> {
 		let key = self.text(key)?;
-		Ok(self
-			.object_fields(receiver)?
-			.iter()
-			.position(|(name, _)| name.as_str() == key))
+		let Value::Heap(h) = receiver else {
+			return Err(err(ErrorKind::InvalidCode));
+		};
+		self.payload(h)?.key_position(key)
 	}
 
 	fn some(&mut self, value: Value) -> Result<Value> {
@@ -171,7 +168,18 @@ impl Store {
 			(*old, key.capacity())
 		};
 		let result = self.some(old)?;
-		let charged = self.entry(h)?.charged_bytes().checked_sub(key_bytes);
+		let index_drop = match self.payload(h)? {
+			Payload::Object {
+				fields,
+				index: Some(index),
+			} if fields.len() - 1 < object_index::INDEX_AT => index.bytes(),
+			_ => 0,
+		};
+		let charged = self
+			.entry(h)?
+			.charged_bytes()
+			.checked_sub(key_bytes)
+			.and_then(|n| n.checked_sub(index_drop));
 		let staged = charged
 			.ok_or_else(|| err(ErrorKind::InvalidCode))
 			.and_then(|charged| Ok((charged, self.replacement_bytes(h, charged)?)))
@@ -183,10 +191,16 @@ impl Store {
 				return Err(e);
 			}
 		};
-		let Payload::Record { fields, .. } = self.mutable(h)? else {
-			unreachable!()
+		let Payload::Object { fields, index } = self.mutable(h)? else {
+			return Err(err(ErrorKind::InvalidCode));
 		};
+		if let Some(map) = index {
+			map.remove(&fields[i].0, i);
+		}
 		let (key, _) = fields.remove(i);
+		if fields.len() < object_index::INDEX_AT {
+			*index = None;
+		}
 		drop(key);
 		self.entry_mut(h)?.set_charged_bytes(charged);
 		self.bytes = bytes;

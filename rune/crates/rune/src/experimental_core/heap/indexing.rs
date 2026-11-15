@@ -1,11 +1,9 @@
 //! Stock index dispatch, with separate read, write and mutable-place rules.
 use super::{err, Payload, Store};
-use crate::alloc::{String, Vec};
 use crate::experimental_core::{
 	error::{Detail, Error, ErrorKind, Result, TypeName},
 	value::{Type, Value},
 };
-use core::mem::size_of;
 
 /// Static keys borrow the Program; dynamic keys are resolved only while the
 /// Store is immutably borrowed, before the insertion transaction mutates it.
@@ -15,7 +13,8 @@ pub(super) enum RecordKey<'p> {
 }
 
 impl RecordKey<'_> {
-	fn borrow<'a>(&'a self, store: &'a Store) -> Result<&'a str> {
+	#[inline(always)]
+	pub(super) fn borrow<'a>(&'a self, store: &'a Store) -> Result<&'a str> {
 		match self {
 			Self::Static(key) => Ok(key),
 			Self::Dynamic(key) => store.text(*key),
@@ -37,6 +36,25 @@ fn unsupported(value: Value) -> Error {
 }
 
 impl Store {
+	#[cold]
+	#[inline(never)]
+	pub(super) fn object_dynamic_get(
+		&mut self,
+		value: Value,
+		handle: super::Handle,
+		index: Value,
+	) -> Result<Value> {
+		let Some(old) = self.payload(handle)?.key_value(self.text(index)?)? else {
+			return Err(err(ErrorKind::IndexOutOfBounds).with_detail(
+				super::super::error::Detail::MissingKey {
+					target: self.index_type(value)?,
+				},
+			));
+		};
+		self.retain(old)?;
+		Ok(old)
+	}
+
 	#[inline(always)]
 	fn index_tag(&self, value: Value) -> Result<Option<Type>> {
 		Ok(match value {
@@ -305,22 +323,25 @@ impl Store {
 				unreachable!()
 			};
 			let key = self.text(index)?;
-			let Payload::Record { fields, .. } = self.payload(h)? else {
-				unreachable!()
+			return match self.payload(h)? {
+				Payload::Record { fields, .. } => {
+					let Some(old) = fields
+						.iter()
+						.find(|(name, _)| name.as_str() == key)
+						.map(|(_, old)| *old)
+					else {
+						return Err(err(ErrorKind::IndexOutOfBounds).with_detail(
+							Detail::MissingKey {
+								target: self.index_type(value)?,
+							},
+						));
+					};
+					self.retain(old)?;
+					Ok(old)
+				}
+				Payload::Object { .. } => self.object_dynamic_get(value, h, index),
+				_ => unreachable!(),
 			};
-			let Some(old) = fields
-				.iter()
-				.find(|(name, _)| name.as_str() == key)
-				.map(|(_, old)| *old)
-			else {
-				return Err(
-					err(ErrorKind::IndexOutOfBounds).with_detail(Detail::MissingKey {
-						target: self.index_type(value)?,
-					}),
-				);
-			};
-			self.retain(old)?;
-			return Ok(old);
 		}
 		if self.index_tag(value)? == Some(Type::Vec) {
 			return Err(Error::new(ErrorKind::Type, "execute").with_detail(
@@ -398,129 +419,29 @@ impl Store {
 		};
 		self.mutable(h)?;
 		let text = key.borrow(self)?;
-		let Payload::Record { tag, fields } = self.payload(h)? else {
-			unreachable!()
-		};
-		if let Some(i) = fields.iter().position(|(name, _)| name.as_str() == text) {
-			let old = fields[i].1;
-			let edges = self.replacement_edges(old, new)?;
-			self.retain(new)?;
-			let Payload::Record { fields, .. } = self.mutable(h)? else {
-				unreachable!()
-			};
-			fields[i].1 = new;
-			self.edges = edges;
-			self.assert_work();
-			return self.release(old);
-		}
-		if *tag != Type::Object {
-			return Err(
-				err(ErrorKind::IndexOutOfBounds).with_detail(Detail::MissingKey {
-					target: self.index_type(value)?,
-				}),
-			);
-		}
-		let len = fields.len();
-		let cap = fields.capacity();
-		let key_bytes = fields
-			.iter()
-			.try_fold(0usize, |n, (key, _)| n.checked_add(key.capacity()))
-			.ok_or_else(|| err(ErrorKind::Overflow))?;
-		let next = if len == cap {
-			cap.checked_mul(2)
-				.ok_or_else(|| err(ErrorKind::Overflow))?
-				.max(1)
-		} else {
-			cap
-		};
-		let planned = next
-			.checked_mul(size_of::<(String, Value)>())
-			.and_then(|n| n.checked_add(key_bytes))
-			.and_then(|n| n.checked_add(text.len()))
-			.ok_or_else(|| err(ErrorKind::Overflow))?;
-		self.replacement_bytes(h, planned)?;
-		let copy = String::try_from(text)?;
-		let mut replacement = if len == cap {
-			Some(Vec::try_with_capacity(next)?)
-		} else {
-			None
-		};
-		let actual_cap = replacement.as_ref().map_or(cap, |v| v.capacity());
-		let charged = actual_cap
-			.checked_mul(size_of::<(String, Value)>())
-			.and_then(|n| n.checked_add(key_bytes))
-			.and_then(|n| n.checked_add(copy.capacity()))
-			.ok_or_else(|| err(ErrorKind::Overflow))?;
-		let bytes = self.replacement_bytes(h, charged)?;
-		let edges = self
-			.edges
-			.checked_add(Self::heap_edge(new))
-			.ok_or_else(|| err(ErrorKind::Overflow))?;
-		self.reserve_work(Self::heap_edge(new), 0)?;
-		// Validate the entire capacity proof before retaining or moving any key.
-		let actual_room = replacement.as_ref().map_or(cap, |next| next.capacity());
-		if actual_room < len.checked_add(1).ok_or_else(|| err(ErrorKind::Overflow))? {
-			return Err(Error::new(ErrorKind::InvalidCode, "field capacity"));
-		}
-		self.retain(new)?;
-		let staged = (|| -> Result<()> {
-			let Payload::Record { fields, .. } = self.mutable(h)? else {
-				unreachable!()
-			};
-			if let Some(mut next) = replacement.take() {
-				let mut failure = None;
-				while let Some(pair) = fields.pop() {
-					if let Err(pair) = next.push_within_capacity(pair) {
-						// Restore the original ordering and ownership on a violated
-						// capacity proof; neither vector ever owns extra heap roots.
-						fields.push_within_capacity(pair).map_err(|_| {
-							Error::new(ErrorKind::InvalidCode, "field rollback capacity")
-						})?;
-						while let Some(pair) = next.pop() {
-							fields.push_within_capacity(pair).map_err(|_| {
-								Error::new(ErrorKind::InvalidCode, "field rollback capacity")
-							})?;
-						}
-						failure = Some(Error::new(ErrorKind::InvalidCode, "field capacity"));
-						break;
-					}
+		match self.payload(h)? {
+			Payload::Record { fields, .. } => {
+				if let Some(i) = fields.iter().position(|(name, _)| name.as_str() == text) {
+					let old = fields[i].1;
+					let edges = self.replacement_edges(old, new)?;
+					self.retain(new)?;
+					let Payload::Record { fields, .. } = self.mutable(h)? else {
+						unreachable!()
+					};
+					fields[i].1 = new;
+					self.edges = edges;
+					self.assert_work();
+					return self.release(old);
 				}
-				if let Some(e) = failure {
-					Err(e)
-				} else {
-					next.reverse();
-					match next.push_within_capacity((copy, new)) {
-						Ok(_) => {
-							core::mem::swap(fields, &mut next);
-							Ok(())
-						}
-						Err(_) => {
-							next.reverse();
-							while let Some(pair) = next.pop() {
-								fields.push_within_capacity(pair).map_err(|_| {
-									Error::new(ErrorKind::InvalidCode, "field rollback capacity")
-								})?;
-							}
-							Err(Error::new(ErrorKind::InvalidCode, "field capacity"))
-						}
-					}
-				}
-			} else {
-				fields
-					.push_within_capacity((copy, new))
-					.map(|_| ())
-					.map_err(|_| Error::new(ErrorKind::InvalidCode, "field capacity"))
+				Err(
+					err(ErrorKind::IndexOutOfBounds).with_detail(Detail::MissingKey {
+						target: self.index_type(value)?,
+					}),
+				)
 			}
-		})();
-		if let Err(e) = staged {
-			self.release(new)?;
-			return Err(e);
+			Payload::Object { .. } => self.object_set_key(h, key, new),
+			_ => unreachable!(),
 		}
-		self.entry_mut(h)?.set_charged_bytes(charged);
-		self.bytes = bytes;
-		self.edges = edges;
-		self.assert_work();
-		Ok(())
 	}
 }
 

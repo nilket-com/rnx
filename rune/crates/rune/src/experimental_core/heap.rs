@@ -24,7 +24,11 @@ mod hot;
 mod indexing;
 mod iter_terminals;
 mod number_methods;
+mod object_index;
+#[cfg(test)]
+mod object_index_tests;
 mod object_methods;
+mod object_storage;
 mod opaque;
 #[cfg(test)]
 mod opaque_tests;
@@ -178,6 +182,10 @@ enum Payload {
 		tag: Type,
 		value: Box<host_value::HostValue>,
 	},
+	Object {
+		fields: Vec<(String, Value)>,
+		index: Option<Box<object_index::Index>>,
+	},
 }
 
 // Child values are inert copies; this iterator never acquires ownership.
@@ -207,8 +215,55 @@ impl Iterator for Children<'_> {
 }
 
 impl Payload {
+	fn record_fields(&self) -> Result<&Vec<(String, Value)>> {
+		match self {
+			Self::Object { fields, .. } | Self::Record { fields, .. } => Ok(fields),
+			_ => Err(err(ErrorKind::Type)),
+		}
+	}
+
+	#[inline(always)]
+	fn key_position(&self, key: &str) -> Result<Option<usize>> {
+		let Self::Object { fields, index } = self else {
+			return Err(err(ErrorKind::Type));
+		};
+		Ok(match index {
+			Some(index) => index.position(key, |i| fields[i].0.as_str()),
+			None => fields.iter().position(|(name, _)| name.as_str() == key),
+		})
+	}
+
+	// Object-only helpers. Struct paths keep their direct searches in the caller.
+	#[inline(always)]
+	fn key_value(&self, key: &str) -> Result<Option<Value>> {
+		let Self::Object { fields, .. } = self else {
+			return Err(err(ErrorKind::Type));
+		};
+		Ok(self.key_position(key)?.map(|at| fields[at].1))
+	}
+
+	#[cold]
+	#[inline(never)]
+	fn object_bytes(&self) -> Result<usize> {
+		let Self::Object { fields, index } = self else {
+			return Err(err(ErrorKind::InvalidCode));
+		};
+		fields
+			.capacity()
+			.checked_mul(size_of::<(String, Value)>())
+			.and_then(|n| {
+				fields
+					.iter()
+					.try_fold(n, |n, (key, _)| n.checked_add(key.capacity()))
+			})
+			.and_then(|n| n.checked_add(index.as_ref().map_or(0, |i| i.bytes())))
+			.ok_or_else(|| err(ErrorKind::Overflow))
+	}
+
+	#[inline(always)]
 	fn bytes(&self) -> Result<usize> {
 		let bytes = match self {
+			Self::Object { .. } => return self.object_bytes(),
 			Self::Host { value, .. } => Some(value.bytes),
 			Self::Moved(_) => Some(0),
 			Self::SortGuard(state) => Some(state.bytes()?),
@@ -257,7 +312,9 @@ impl Payload {
 			Self::SortGuard(state) => {
 				Children::ParentValues(Some(Value::Heap(state.parent)), state.values.iter())
 			}
-			Self::Record { fields, .. } => Children::Fields(fields.iter()),
+			Self::Record { fields, .. } | Self::Object { fields, .. } => {
+				Children::Fields(fields.iter())
+			}
 			Self::List { values, .. } => Children::Values(values.iter()),
 			Self::Closure { captures, .. } => Children::Values(captures.iter()),
 			Self::ValueRange { start, end } => Children::Two(Some(*start), Some(*end)),
@@ -267,6 +324,7 @@ impl Payload {
 
 	fn tag(&self) -> Type {
 		match self {
+			Self::Object { .. } => Type::Object,
 			Self::Moved(tag) => *tag,
 			Self::String(_) => Type::String,
 			Self::Range { .. } => Type::Range,
@@ -594,7 +652,7 @@ impl Store {
 					.filter(|v| matches!(v, Value::Heap(_)))
 					.count()
 			}
-			Payload::Record { fields, .. } => fields
+			Payload::Record { fields, .. } | Payload::Object { fields, .. } => fields
 				.iter()
 				.filter(|(_, value)| matches!(value, Value::Heap(_)))
 				.count(),
@@ -612,6 +670,7 @@ impl Store {
 
 	/// Reserve conservative peak ownership before retaining/publishing anything.
 	/// W: work.capacity >= pending releases + live child edges + one root.
+	#[inline(always)]
 	fn reserve_work(&mut self, new_edges: usize, queued: usize) -> Result<()> {
 		let needed = self
 			.edges
@@ -634,6 +693,7 @@ impl Store {
 		debug_assert!(self.free.capacity() >= self.slots.len());
 	}
 
+	#[inline(always)]
 	fn replacement_edges(&mut self, old: Value, new: Value) -> Result<usize> {
 		let next = self
 			.edges
@@ -847,9 +907,7 @@ impl Store {
 		let Value::Heap(handle) = value else {
 			return Err(err(ErrorKind::Type));
 		};
-		let Payload::Record { fields, .. } = self.payload(handle)? else {
-			return Err(err(ErrorKind::Type));
-		};
+		let fields = self.payload(handle)?.record_fields()?;
 		Ok(fields)
 	}
 
@@ -999,7 +1057,7 @@ impl Store {
 		}
 
 		match tag {
-			Type::Object => {}
+			Type::Object => return self.object_record(fields),
 			Type::Struct(nominal) => self.record_struct_nominal(nominal)?,
 			_ => return Err(err(ErrorKind::Type)),
 		}
@@ -1054,17 +1112,19 @@ impl Store {
 			| Type::RangeTo => return self.other_range_field(handle, key),
 			_ => return Err(err(ErrorKind::Type)),
 		}
-		let Payload::Record { fields, .. } = self.payload(handle)? else {
-			return Err(err(ErrorKind::Type));
-		};
-
-		let value = fields
-			.iter()
-			.find(|(name, _)| name.as_str() == key)
-			.map(|(_, value)| *value)
-			.ok_or_else(|| err(ErrorKind::IndexOutOfBounds))?;
-		self.retain(value)?;
-		Ok(value)
+		match self.payload(handle)? {
+			Payload::Record { fields, .. } => {
+				let value = fields
+					.iter()
+					.find(|(name, _)| name.as_str() == key)
+					.map(|(_, value)| *value)
+					.ok_or_else(|| err(ErrorKind::IndexOutOfBounds))?;
+				self.retain(value)?;
+				Ok(value)
+			}
+			Payload::Object { .. } => self.object_field(handle, key),
+			_ => Err(err(ErrorKind::Type)),
+		}
 	}
 
 	pub(crate) fn field_get_mut(&mut self, value: Value, key: &str) -> Result<Value> {
@@ -1079,51 +1139,57 @@ impl Store {
 			return Err(err(ErrorKind::Type));
 		}
 		self.mutable(handle)?;
-		let Payload::Record { tag, fields } = self.payload(handle)? else {
-			return Err(err(match self.entry(handle)?.tag()? {
+		match self.payload(handle)? {
+			Payload::Record { tag, fields } => {
+				let old = fields
+					.iter()
+					.find(|(name, _)| name.as_str() == key)
+					.map(|(_, value)| *value);
+				let old = old.ok_or_else(|| {
+					err(if *tag == Type::Object {
+						ErrorKind::IndexOutOfBounds
+					} else {
+						ErrorKind::Type
+					})
+				})?;
+				self.retain(old)?;
+				Ok(old)
+			}
+			Payload::Object { .. } => self.object_field_get_mut(handle, key),
+			_ => Err(err(match self.entry(handle)?.tag()? {
 				Type::Struct(_) => ErrorKind::IndexOutOfBounds,
 				_ => ErrorKind::Type,
-			}));
-		};
-		let old = fields
-			.iter()
-			.find(|(name, _)| name.as_str() == key)
-			.map(|(_, value)| *value);
-		let old = old.ok_or_else(|| {
-			err(if *tag == Type::Object {
-				ErrorKind::IndexOutOfBounds
-			} else {
-				ErrorKind::Type
-			})
-		})?;
-		self.retain(old)?;
-		Ok(old)
+			})),
+		}
 	}
 
 	pub(crate) fn field_set_mut(&mut self, value: Value, key: &str, new: Value) -> Result<()> {
 		let Value::Heap(handle) = value else {
 			return Err(err(ErrorKind::InvalidCode));
 		};
-		let Payload::Record { fields, .. } = self.mutable(handle)? else {
-			return Err(err(ErrorKind::InvalidCode));
-		};
-		let index = fields
-			.iter()
-			.position(|(name, _)| name.as_str() == key)
-			.ok_or_else(|| err(ErrorKind::InvalidCode))?;
-		let old = fields[index].1;
-		if old == new {
-			return Ok(());
+		match self.mutable(handle)? {
+			Payload::Record { fields, .. } => {
+				let index = fields
+					.iter()
+					.position(|(name, _)| name.as_str() == key)
+					.ok_or_else(|| err(ErrorKind::InvalidCode))?;
+				let old = fields[index].1;
+				if old == new {
+					return Ok(());
+				}
+				let edges = self.replacement_edges(old, new)?;
+				self.retain(new)?;
+				let Payload::Record { fields, .. } = self.mutable(handle)? else {
+					unreachable!()
+				};
+				fields[index].1 = new;
+				self.edges = edges;
+				self.assert_work();
+				self.release(old)
+			}
+			Payload::Object { .. } => self.object_field_set_mut(handle, key, new),
+			_ => Err(err(ErrorKind::InvalidCode)),
 		}
-		let edges = self.replacement_edges(old, new)?;
-		self.retain(new)?;
-		let Payload::Record { fields, .. } = self.mutable(handle)? else {
-			unreachable!()
-		};
-		fields[index].1 = new;
-		self.edges = edges;
-		self.assert_work();
-		self.release(old)
 	}
 
 	pub(crate) fn set_field(&mut self, value: Value, key: &str, new: Value) -> Result<()> {
@@ -1307,10 +1373,7 @@ impl Store {
 			Value::Unit => Ok(0),
 			Value::Heap(h) => match self.payload(h)? {
 				Payload::String(s) => Ok(s.len()),
-				Payload::Record {
-					tag: Type::Object,
-					fields,
-				} => Ok(fields.len()),
+				Payload::Object { fields, .. } => Ok(fields.len()),
 				Payload::List {
 					tag: Type::Vec | Type::Tuple,
 					values,

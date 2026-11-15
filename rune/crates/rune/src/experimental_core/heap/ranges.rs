@@ -560,11 +560,7 @@ impl Store {
 			return Err(err(ErrorKind::InvalidCode));
 		};
 		let key = self.text(key)?;
-		let Payload::Record {
-			tag: Type::Object,
-			fields,
-		} = self.payload(handle)?
-		else {
+		let Payload::Object { fields, .. } = self.payload(handle)? else {
 			return Err(err(ErrorKind::InvalidCode));
 		};
 		Ok(fields.iter().any(|(field, _)| field.as_str() == key))

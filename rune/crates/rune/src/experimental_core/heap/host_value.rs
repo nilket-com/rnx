@@ -190,11 +190,7 @@ impl Store {
 		let Value::Heap(handle) = self.import(root)? else {
 			return Err(err(ErrorKind::Type));
 		};
-		let Payload::Record {
-			tag: Type::Object,
-			fields,
-		} = self.payload(handle)?
-		else {
+		let Payload::Object { fields, .. } = self.payload(handle)? else {
 			return Err(err(ErrorKind::Type));
 		};
 		if fields.len() != expected.len() {

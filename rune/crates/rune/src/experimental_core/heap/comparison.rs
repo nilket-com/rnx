@@ -75,7 +75,7 @@ impl<'a> Sequence<'a> {
 enum Task<'a> {
 	Pair(Item<'a>, Item<'a>, usize),
 	Sequence(Sequence<'a>, Sequence<'a>, u64, usize),
-	Object(&'a [(String, Value)], &'a [(String, Value)], usize, usize),
+	Object(&'a [(String, Value)], &'a Payload, usize, usize),
 }
 
 fn error(kind: ErrorKind) -> Error {
@@ -167,10 +167,7 @@ impl Store {
 			Item::Value(Value::Unit) => return Ok(Sequence::Values(&[])),
 			Item::Value(Value::Heap(h)) => match self.payload(h)? {
 				Payload::List { values, .. } => return Ok(Sequence::Values(values)),
-				Payload::Record {
-					tag: Type::Object,
-					fields,
-				} => return Ok(Sequence::Pairs(fields)),
+				Payload::Object { fields, .. } => return Ok(Sequence::Pairs(fields)),
 				Payload::Range { start, end } => return Ok(Sequence::Range(*start, *end)),
 				Payload::ValueRange { start, end } => {
 					return Ok(match self.range_iteration_bounds(*start, *end)? {
@@ -239,7 +236,8 @@ impl Store {
 				},
 				Task::Object(a, b, index, depth) => {
 					if let Some((key, value)) = a.get(index) {
-						if let Some((_, rhs)) = b.iter().find(|(k, _)| k == key) {
+						if let Some(at) = b.key_position(key)? {
+							let rhs = &b.record_fields()?[at].1;
 							stack.try_push(Task::Object(a, b, index + 1, depth))?;
 							stack.try_push(Task::Pair(
 								Item::Value(*value),
@@ -357,10 +355,26 @@ impl Store {
 								))?;
 								None
 							}
-							Payload::Record { tag, fields } => {
-								if *tag == Type::Object && !equality {
+							Payload::Object { fields, .. } => {
+								if !equality {
 									return Err(self.unsupported_pair(op, a, b));
 								}
+								let other = match b {
+									Item::Value(Value::Heap(h)) => match self.payload(h)? {
+										p @ Payload::Object { .. } => Some(p),
+										_ => None,
+									},
+									_ => None,
+								}
+								.ok_or_else(|| self.expected_pair(lhs, b))?;
+								if fields.len() != other.record_fields()?.len() {
+									Some(Some(Ordering::Less))
+								} else {
+									stack.try_push(Task::Object(fields, other, 0, depth))?;
+									None
+								}
+							}
+							Payload::Record { tag, fields } => {
 								let other = match b {
 									Item::Value(Value::Heap(h)) => match self.payload(h)? {
 										Payload::Record { tag: t, fields } if t == tag => {
@@ -369,27 +383,17 @@ impl Store {
 										_ => None,
 									},
 									_ => None,
-								};
-								let Some(other) = other else {
-									return Err(if *tag == Type::Object {
-										self.expected_pair(lhs, b)
-									} else {
-										self.unsupported_pair(op, a, b)
-									});
-								};
+								}
+								.ok_or_else(|| self.unsupported_pair(op, a, b))?;
 								if equality && fields.len() != other.len() {
 									Some(Some(Ordering::Less))
 								} else {
-									stack.try_push(if *tag == Type::Object {
-										Task::Object(fields, other, 0, depth)
-									} else {
-										Task::Sequence(
-											Sequence::Fields(fields),
-											Sequence::Fields(other),
-											0,
-											depth,
-										)
-									})?;
+									stack.try_push(Task::Sequence(
+										Sequence::Fields(fields),
+										Sequence::Fields(other),
+										0,
+										depth,
+									))?;
 									None
 								}
 							}

@@ -273,7 +273,9 @@ impl<'v, 's> ValueView<'v, 's> {
 					tag: Type::Struct(_),
 					fields,
 				} => ViewKind::Nominal { len: fields.len() },
-				Payload::Record { fields, .. } => ViewKind::Object { len: fields.len() },
+				Payload::Record { fields, .. } | Payload::Object { fields, .. } => {
+					ViewKind::Object { len: fields.len() }
+				}
 				Payload::Variant {
 					tag: Type::Option,
 					success,
@@ -340,9 +342,7 @@ impl<'v, 's> ValueView<'v, 's> {
 
 	/// Indexed field name for an object or named nominal; no key search or copy.
 	pub fn field_name(&self, index: usize) -> Result<&'s str> {
-		let Payload::Record { fields, .. } = self.payload()? else {
-			return Err(err(ErrorKind::Type));
-		};
+		let fields = self.payload()?.record_fields()?;
 		fields
 			.get(index)
 			.map(|(name, _)| name.as_str())
@@ -354,7 +354,9 @@ impl<'v, 's> ValueView<'v, 's> {
 	pub fn child(&self, index: usize) -> Result<ValueView<'v, 's>> {
 		let child = match self.payload()? {
 			Payload::List { values, .. } => values.get(index).copied(),
-			Payload::Record { fields, .. } => fields.get(index).map(|(_, value)| *value),
+			Payload::Record { fields, .. } | Payload::Object { fields, .. } => {
+				fields.get(index).map(|(_, value)| *value)
+			}
 			Payload::Variant { payload, .. } if index == 0 => *payload,
 			Payload::Variant { .. } => None,
 			_ => return Err(err(ErrorKind::Type)),

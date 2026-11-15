@@ -75,7 +75,7 @@ fn child(store: &Store, value: Value, index: usize) -> Result<(Option<&str>, Val
 	};
 	Ok(match store.payload(h)? {
 		Payload::List { values, .. } => (None, *values.get(index).ok_or_else(invalid)?),
-		Payload::Record { fields, .. } => {
+		Payload::Record { fields, .. } | Payload::Object { fields, .. } => {
 			let (k, v) = fields.get(index).ok_or_else(invalid)?;
 			(Some(k.as_str()), *v)
 		}
@@ -270,10 +270,7 @@ fn node(
 					len = values.len();
 					TreeKind::Tuple
 				}
-				Payload::Record {
-					tag: Type::Object,
-					fields,
-				} => {
+				Payload::Object { fields, .. } => {
 					len = fields.len();
 					TreeKind::Object
 				}

@@ -71,10 +71,8 @@ impl Store {
 					values: copy,
 				}
 			}
-			Payload::Record {
-				tag: tag @ (Type::Object | Type::Struct(_)),
-				fields,
-			} => {
+			payload @ (Payload::Record { fields, .. } | Payload::Object { fields, .. }) => {
+				let tag = payload.tag();
 				let size = fields
 					.len()
 					.checked_mul(size_of::<(String, Value)>())
@@ -84,6 +82,12 @@ impl Store {
 							.try_fold(n, |n, (key, _)| n.checked_add(key.len()))
 					})
 					.ok_or_else(|| err(ErrorKind::StoreCapacity))?;
+				let size = if tag == Type::Object && fields.len() >= object_index::INDEX_AT {
+					size.checked_add(object_index::Index::planned(fields.len())?)
+						.ok_or_else(|| err(ErrorKind::Overflow))?
+				} else {
+					size
+				};
 				self.clone_room(start, scratch, size)?;
 				let mut copy = Vec::try_with_capacity(fields.len())?;
 				let mut key_bytes = 0usize;
@@ -102,9 +106,10 @@ impl Store {
 						.ok_or_else(|| err(ErrorKind::StoreCapacity))?;
 					self.clone_room(start, scratch, actual)?;
 				}
-				Payload::Record {
-					tag: *tag,
-					fields: copy,
+				if tag == Type::Object {
+					self.object_payload(copy)?
+				} else {
+					Payload::Record { tag, fields: copy }
 				}
 			}
 			_ => {

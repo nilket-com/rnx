@@ -893,10 +893,7 @@ impl Store {
 						},
 					)?;
 				}
-				Payload::Record {
-					tag: Type::Object,
-					fields,
-				} if debug => {
+				Payload::Object { fields, .. } if debug => {
 					let mut needed_bytes = 2usize;
 					for (key, _) in fields {
 						#[cfg(test)]
@@ -1011,9 +1008,7 @@ impl Store {
 					tag: Type::Vec | Type::Tuple | Type::Struct(_),
 					..
 				}
-				| Payload::Record {
-					tag: Type::Object, ..
-				}
+				| Payload::Object { .. }
 				| Payload::Variant {
 					tag: Type::Option | Type::Result,
 					..
