@@ -48,7 +48,7 @@ def required(paths, graphs=None, manifests=None):
 
 
 def policy_digest():
-	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'required_stages.py', 'package_gates.py', 'suite_stage.py', 'child_result.py', 'accept.py')})
+	return child.identity({p: child.digest(Path(__file__).with_name(p)) for p in ('gate_policy.py', 'required_stages.py', 'package_gates.py', 'suite_stage.py', 'native_contracts.py', 'child_result.py', 'accept.py')})
 
 
 def close_prerequisites(commands, selected, prerequisites):
@@ -123,6 +123,12 @@ def finalize(manifest, evidence, root=ROOT):
 			if row['context']['kind'] != 'producer': raise ValueError('stage requires producer receipt: ' + name)
 		if name == 'cross' and row['context']['kind'] != 'producer':
 			raise ValueError('cross requires its own producer receipt')
+		if name == 'rune-suite':
+			from native_contracts import catalogue, manifest as native_manifest, MANIFEST
+			semantic = json.loads(Path(row['producer']['receipt']).read_text())['contracts']
+			if semantic.get('manifest_sha256') != child.digest(Path(root)/MANIFEST):
+				raise ValueError('native contract manifest changed')
+			catalogue(native_manifest(root), semantic['cases'])
 	return {'schema': 1, 'status': 'PASS', 'candidate': manifest['record']['candidate'],
 		'scope': manifest['scope'], 'publication_eligible': publication_eligible(manifest['scope']),
 		'source': manifest['source'], 'selection': child.identity(manifest), 'evidence': evidence, 'durations': durations}

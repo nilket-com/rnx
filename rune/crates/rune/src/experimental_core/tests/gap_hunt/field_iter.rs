@@ -226,45 +226,49 @@ fn contract() {
 	fs::create_dir(&scratch.0).unwrap();
 	let generated = cases();
 	let mut coverage = 0;
+	let mut row_differences = super::ContractRows::default();
 	for (n, (label, source)) in generated.iter().enumerate() {
-		let id = format!("{n:05}");
-		let path = out.join(format!("{id}.source.rn"));
-		fs::write(&path, source).unwrap();
-		let stock = observe_case("stock", label, source, &path, &scratch.0, &out, &id);
-		let run = observe_case("fresh", label, source, &path, &scratch.0, &out, &id);
-		let actual: Vec<_> = run.record.split('\t').collect();
-		assert_eq!(actual.len(), 5);
-		let mut pieces = label.split('/');
-		let root = pieces.next().unwrap();
-		let target = pieces.next().unwrap_or("");
-		let refusal = if matches!(root, "field" | "iterate") {
-			match target {
-				"bytes" => Some("Some(ByteStr)"),
-				_ => None,
+		row_differences.check(format!("{n}: {label}"), |_diagnostic| {
+			let id = format!("{n:05}");
+			let path = out.join(format!("{id}.source.rn"));
+			fs::write(&path, source).unwrap();
+			let stock = observe_case("stock", label, source, &path, &scratch.0, &out, &id);
+			let run = observe_case("fresh", label, source, &path, &scratch.0, &out, &id);
+			let actual: Vec<_> = run.record.split('\t').collect();
+			assert_eq!(actual.len(), 5);
+			let mut pieces = label.split('/');
+			let root = pieces.next().unwrap();
+			let target = pieces.next().unwrap_or("");
+			let refusal = if matches!(root, "field" | "iterate") {
+				match target {
+					"bytes" => Some("Some(ByteStr)"),
+					_ => None,
+				}
+			} else {
+				None
+			};
+			if let Some(refusal) = refusal {
+				assert_eq!(
+					(&actual[0], &actual[1]),
+					(&"refused", &refusal),
+					"coverage refusal: {label}"
+				);
+				coverage += 1;
+				return;
 			}
-		} else {
-			None
-		};
-		if let Some(refusal) = refusal {
+			let expected: Vec<_> = stock.record.split('\t').collect();
+			assert_eq!(expected.len(), 5);
+			// Operation labels are engine-specific; exact metadata has focused tests.
 			assert_eq!(
-				(&actual[0], &actual[1]),
-				(&"refused", &refusal),
-				"coverage refusal: {label}"
+				(&actual[..2], &actual[3..]),
+				(&expected[..2], &expected[3..]),
+				"fresh observation {label}"
 			);
-			coverage += 1;
-			continue;
-		}
-		let expected: Vec<_> = stock.record.split('\t').collect();
-		assert_eq!(expected.len(), 5);
-		// Operation labels are engine-specific; exact metadata has focused tests.
-		assert_eq!(
-			(&actual[..2], &actual[3..]),
-			(&expected[..2], &expected[3..]),
-			"fresh observation {label}"
-		);
-		assert_eq!(hex(&run.stdout), hex(&stock.stdout), "fresh stdout {label}");
-		assert_eq!(hex(&run.stderr), hex(&stock.stderr), "fresh stderr {label}");
+			assert_eq!(hex(&run.stdout), hex(&stock.stdout), "fresh stdout {label}");
+			assert_eq!(hex(&run.stderr), hex(&stock.stderr), "fresh stderr {label}");
+		});
 	}
+	row_differences.finish();
 	assert_eq!(coverage, 7);
 	super::contract_completed("fresh", generated.len());
 }

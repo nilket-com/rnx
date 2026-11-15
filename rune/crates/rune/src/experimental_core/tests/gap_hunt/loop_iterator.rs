@@ -212,54 +212,61 @@ fn contract() {
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"));
-		let expected = &stock.observation;
-		let fresh = launch("fresh", i, case, &folder.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"));
+				let expected = &stock.observation;
+				let fresh = launch("fresh", i, case, &folder.join("fresh"));
+				crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+					&stock.observation,
+					&fresh.observation,
+				);
+				let audit = &fresh.observation["fresh_audit"];
+				for key in [
+					"no_cleanup_error",
+					"clean_after_row",
+					"row_idle",
+					"reuse",
+					"idle",
+				] {
+					assert_eq!(audit[key], true, "{label}: {key}");
+				}
+				for key in [
+					"row_live_entries",
+					"row_payload_bytes",
+					"live_entries",
+					"payload_bytes",
+				] {
+					assert_eq!(audit[key], 0, "{label}: {key}");
+				}
+				let actual = &fresh.observation["outcome"];
+				if expected["outcome"]["status"] == "compile-error" {
+					assert_eq!(actual["status"], "compile-error", "{label}");
+					assert_eq!(
+						actual["diagnostics"], expected["outcome"]["diagnostics"],
+						"{label}"
+					);
+					assert_eq!(audit["invoked"], false);
+				} else if case["policy"] == "Retain-refusal" {
+					assert_eq!(actual["status"], "refused", "{label}");
+					assert_eq!(actual["refusal"], "Pattern", "{label}");
+					assert_eq!(audit["invoked"], false);
+				} else {
+					assert_eq!(audit["invoked"], true, "{label}");
+					assert_eq!(project(actual), expected["projected"], "{label}");
+				}
+				assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
+				assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+			},
 		);
-		let audit = &fresh.observation["fresh_audit"];
-		for key in [
-			"no_cleanup_error",
-			"clean_after_row",
-			"row_idle",
-			"reuse",
-			"idle",
-		] {
-			assert_eq!(audit[key], true, "{label}: {key}");
-		}
-		for key in [
-			"row_live_entries",
-			"row_payload_bytes",
-			"live_entries",
-			"payload_bytes",
-		] {
-			assert_eq!(audit[key], 0, "{label}: {key}");
-		}
-		let actual = &fresh.observation["outcome"];
-		if expected["outcome"]["status"] == "compile-error" {
-			assert_eq!(actual["status"], "compile-error", "{label}");
-			assert_eq!(
-				actual["diagnostics"], expected["outcome"]["diagnostics"],
-				"{label}"
-			);
-			assert_eq!(audit["invoked"], false);
-		} else if case["policy"] == "Retain-refusal" {
-			assert_eq!(actual["status"], "refused", "{label}");
-			assert_eq!(actual["refusal"], "Pattern", "{label}");
-			assert_eq!(audit["invoked"], false);
-		} else {
-			assert_eq!(audit["invoked"], true, "{label}");
-			assert_eq!(project(actual), expected["projected"], "{label}");
-		}
-		assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
-		assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", cases.len());
 }
 

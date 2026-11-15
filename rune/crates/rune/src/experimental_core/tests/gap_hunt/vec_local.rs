@@ -222,100 +222,109 @@ fn contract() {
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"));
-		let expected = &stock.observation;
-		let fresh = launch("fresh", i, case, &folder.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
-		);
-		let observed = &fresh.observation;
-		let audit = &observed["fresh_audit"];
-		for key in [
-			"no_cleanup_error",
-			"clean_after_row",
-			"row_idle",
-			"reuse",
-			"idle",
-		] {
-			assert_eq!(audit[key], true, "{label}: {key}");
-		}
-		for key in [
-			"row_live_entries",
-			"row_payload_bytes",
-			"live_entries",
-			"payload_bytes",
-		] {
-			assert_eq!(audit[key], 0, "{label}: {key}");
-		}
-		let outcome = &observed["outcome"];
-		if let Some(rule) = dispositions.get(label) {
-			use sha2::{Digest, Sha256};
-			assert_eq!(rule["ruling"], "01a1511a-f99b-722e-a49a-e7a74e601943");
-			assert_eq!(
-				rule["source_sha256"],
-				hex(&Sha256::digest(case["source"].as_str().unwrap().as_bytes()))
-			);
-			assert_eq!(audit["invoked"], true, "{label}");
-			assert_eq!(project(outcome), rule["fresh"], "{label}");
-			if label == "frames/miss" {
-				assert_eq!(rule["policy"], "Raw-frame-disposition");
-				let trace = |folder: &Path| -> Json {
-					serde_json::from_slice(&fs::read(folder.join("logical.json")).unwrap()).unwrap()
-				};
-				assert_eq!(
-					trace(&folder.join("fresh")),
-					trace(&folder.join("stock")),
-					"{label}: logical frames/context/rendered"
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"));
+				let expected = &stock.observation;
+				let fresh = launch("fresh", i, case, &folder.join("fresh"));
+				crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+					&stock.observation,
+					&fresh.observation,
 				);
-			} else {
-				assert_eq!(label, "value/return-rhs");
-				crate::experimental_core::tests::gap_hunt::assert_diverging_initializer_warning(
+				let observed = &fresh.observation;
+				let audit = &observed["fresh_audit"];
+				for key in [
+					"no_cleanup_error",
+					"clean_after_row",
+					"row_idle",
+					"reuse",
+					"idle",
+				] {
+					assert_eq!(audit[key], true, "{label}: {key}");
+				}
+				for key in [
+					"row_live_entries",
+					"row_payload_bytes",
+					"live_entries",
+					"payload_bytes",
+				] {
+					assert_eq!(audit[key], 0, "{label}: {key}");
+				}
+				let outcome = &observed["outcome"];
+				if let Some(rule) = dispositions.get(label) {
+					use sha2::{Digest, Sha256};
+					assert_eq!(rule["ruling"], "01a1511a-f99b-722e-a49a-e7a74e601943");
+					assert_eq!(
+						rule["source_sha256"],
+						hex(&Sha256::digest(case["source"].as_str().unwrap().as_bytes()))
+					);
+					assert_eq!(audit["invoked"], true, "{label}");
+					assert_eq!(project(outcome), rule["fresh"], "{label}");
+					if label == "frames/miss" {
+						assert_eq!(rule["policy"], "Raw-frame-disposition");
+						let trace = |folder: &Path| -> Json {
+							serde_json::from_slice(&fs::read(folder.join("logical.json")).unwrap())
+								.unwrap()
+						};
+						assert_eq!(
+							trace(&folder.join("fresh")),
+							trace(&folder.join("stock")),
+							"{label}: logical frames/context/rendered"
+						);
+					} else {
+						assert_eq!(label, "value/return-rhs");
+						crate::experimental_core::tests::gap_hunt::assert_diverging_initializer_warning(
 					&observed["warnings"],
 					case["source"].as_str().unwrap(),
 					"[1,2]",
 				);
-				assert_eq!(rule["policy"], "Intentional-divergence");
-				assert_eq!(expected["outcome"]["status"], "compile-error");
-			}
-		} else if expected["outcome"]["status"] == "compile-error" {
-			assert_eq!(outcome["status"], "compile-error", "{label}");
-			assert_eq!(
-				outcome["diagnostics"], expected["outcome"]["diagnostics"],
-				"{label}"
-			);
-			assert_eq!(audit["invoked"], false, "{label}");
-		} else if let Some(rule) = c16e_admissions.iter().find(|row| row["label"] == label) {
-			use sha2::{Digest, Sha256};
-			assert_eq!(rule["index"], i);
-			assert_eq!(rule["previous_policy"], case["policy"]);
-			assert_eq!(rule["disposition"], "Exact");
-			assert_eq!(
-				rule["source_sha256"],
-				hex(&Sha256::digest(case["source"].as_str().unwrap().as_bytes()))
-			);
-			assert_eq!(audit["invoked"], true, "{label}");
-			assert_eq!(project(outcome), expected["projected"], "{label}");
-		} else if case["policy"] == "Retain-refusal" && label != "excluded/for" {
-			assert_eq!(outcome["status"], "refused", "{label}");
-			assert_eq!(outcome["refusal"], "Pattern", "{label}");
-			assert_eq!(audit["invoked"], false, "{label}");
-			let at = &outcome["location"];
-			let source = case["source"].as_str().unwrap();
-			let start = at["start"].as_u64().unwrap() as usize;
-			let end = at["end"].as_u64().unwrap() as usize;
-			assert!(!source.get(start..end).unwrap().is_empty(), "{label}");
-		} else {
-			assert_eq!(audit["invoked"], true, "{label}");
-			assert_eq!(project(outcome), expected["projected"], "{label}");
-		}
-		assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
-		assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+						assert_eq!(rule["policy"], "Intentional-divergence");
+						assert_eq!(expected["outcome"]["status"], "compile-error");
+					}
+				} else if expected["outcome"]["status"] == "compile-error" {
+					assert_eq!(outcome["status"], "compile-error", "{label}");
+					assert_eq!(
+						outcome["diagnostics"], expected["outcome"]["diagnostics"],
+						"{label}"
+					);
+					assert_eq!(audit["invoked"], false, "{label}");
+				} else if let Some(rule) = c16e_admissions.iter().find(|row| row["label"] == label)
+				{
+					use sha2::{Digest, Sha256};
+					assert_eq!(rule["index"], i);
+					assert_eq!(rule["previous_policy"], case["policy"]);
+					assert_eq!(rule["disposition"], "Exact");
+					assert_eq!(
+						rule["source_sha256"],
+						hex(&Sha256::digest(case["source"].as_str().unwrap().as_bytes()))
+					);
+					assert_eq!(audit["invoked"], true, "{label}");
+					assert_eq!(project(outcome), expected["projected"], "{label}");
+				} else if case["policy"] == "Retain-refusal" && label != "excluded/for" {
+					assert_eq!(outcome["status"], "refused", "{label}");
+					assert_eq!(outcome["refusal"], "Pattern", "{label}");
+					assert_eq!(audit["invoked"], false, "{label}");
+					let at = &outcome["location"];
+					let source = case["source"].as_str().unwrap();
+					let start = at["start"].as_u64().unwrap() as usize;
+					let end = at["end"].as_u64().unwrap() as usize;
+					assert!(!source.get(start..end).unwrap().is_empty(), "{label}");
+				} else {
+					assert_eq!(audit["invoked"], true, "{label}");
+					assert_eq!(project(outcome), expected["projected"], "{label}");
+				}
+				assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
+				assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+			},
+		);
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", cases.len());
 }
 

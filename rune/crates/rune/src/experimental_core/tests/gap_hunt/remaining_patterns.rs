@@ -211,95 +211,102 @@ fn contract() {
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"));
-		let expected = &stock.observation;
-		let fresh = launch("fresh", i, case, &folder.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
-		);
-		let audit = &fresh.observation["fresh_audit"];
-		for key in [
-			"no_cleanup_error",
-			"clean_after_row",
-			"row_idle",
-			"reuse",
-			"idle",
-		] {
-			assert_eq!(audit[key], true, "{label}: {key}");
-		}
-		for key in [
-			"row_live_entries",
-			"row_payload_bytes",
-			"live_entries",
-			"payload_bytes",
-		] {
-			assert_eq!(audit[key], 0, "{label}: {key}");
-		}
-		let actual = &fresh.observation["outcome"];
-		let runtime_error = expected["outcome"]["status"] == "error";
-		// Frozen C16e dispositions retain these compile-time boundaries.
-		if expected["outcome"]["status"] == "compile-error" {
-			if matches!(
-				label,
-				"literal/float" | "literal/float-miss" | "syntax/result-bad-arity"
-			) {
-				assert_eq!(actual["status"], "refused", "{label}");
-				assert_eq!(actual["refusal"], "Pattern", "{label}");
-			} else {
-				assert_eq!(actual["status"], "compile-error", "{label}");
-				assert_eq!(actual["refusal"], "FrontendDiagnostic", "{label}");
-			}
-			assert_eq!(audit["invoked"], false);
-		} else if matches!(label, "calling/arity-zero" | "calling/arity-two") {
-			if label == "calling/arity-zero" {
-				assert_eq!(i, 96);
-			}
-			// S4: a statically resolved call with the wrong count is a located
-			// Arity refusal, so stock runs the program and raises its error.
-			assert_eq!(actual["status"], "refused", "{label}");
-			assert_eq!(actual["refusal"], "Arity", "{label}");
-			assert!(actual["location"].is_object(), "{label}");
-			assert_eq!(audit["invoked"], false);
-		} else if case["policy"] == "Retain-refusal" {
-			assert_eq!(actual["status"], "refused", "{label}");
-			assert_eq!(actual["refusal"], "Pattern", "{label}");
-			assert_eq!(audit["invoked"], false);
-		} else if runtime_error {
-			let actual = project(actual);
-			let expected = &expected["projected"];
-			for key in ["status", "class", "display", "chain_displays"] {
-				assert_eq!(actual[key], expected[key], "{label}: {key}");
-			}
-			let sites = actual["sites"].as_array().unwrap();
-			let oracle_sites = expected["sites"].as_array().unwrap();
-			assert_eq!(sites.len(), oracle_sites.len());
-			for (a, b) in sites.iter().zip(oracle_sites) {
-				for key in ["source", "start", "end"] {
-					assert_eq!(a[key], b[key]);
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"));
+				let expected = &stock.observation;
+				let fresh = launch("fresh", i, case, &folder.join("fresh"));
+				crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+					&stock.observation,
+					&fresh.observation,
+				);
+				let audit = &fresh.observation["fresh_audit"];
+				for key in [
+					"no_cleanup_error",
+					"clean_after_row",
+					"row_idle",
+					"reuse",
+					"idle",
+				] {
+					assert_eq!(audit[key], true, "{label}: {key}");
 				}
-			}
-		} else {
-			// C18a: `calling/method` (a method on a struct literal) now runs
-			// and matches stock.
-			assert_eq!(audit["invoked"], true, "{label}");
-			assert_eq!(project(actual), expected["projected"], "{label}");
-		}
-		// Inherited compile-time refusals have no runtime logical trace.
-		if runtime_error && actual["status"] == "error" {
-			assert_eq!(
-				trace(&folder.join("fresh")),
-				trace(&folder.join("stock")),
-				"{label}: logical frames/context/rendered"
-			);
-		}
-		assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
-		assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+				for key in [
+					"row_live_entries",
+					"row_payload_bytes",
+					"live_entries",
+					"payload_bytes",
+				] {
+					assert_eq!(audit[key], 0, "{label}: {key}");
+				}
+				let actual = &fresh.observation["outcome"];
+				let runtime_error = expected["outcome"]["status"] == "error";
+				// Frozen C16e dispositions retain these compile-time boundaries.
+				if expected["outcome"]["status"] == "compile-error" {
+					if matches!(
+						label,
+						"literal/float" | "literal/float-miss" | "syntax/result-bad-arity"
+					) {
+						assert_eq!(actual["status"], "refused", "{label}");
+						assert_eq!(actual["refusal"], "Pattern", "{label}");
+					} else {
+						assert_eq!(actual["status"], "compile-error", "{label}");
+						assert_eq!(actual["refusal"], "FrontendDiagnostic", "{label}");
+					}
+					assert_eq!(audit["invoked"], false);
+				} else if matches!(label, "calling/arity-zero" | "calling/arity-two") {
+					if label == "calling/arity-zero" {
+						assert_eq!(i, 96);
+					}
+					// S4: a statically resolved call with the wrong count is a located
+					// Arity refusal, so stock runs the program and raises its error.
+					assert_eq!(actual["status"], "refused", "{label}");
+					assert_eq!(actual["refusal"], "Arity", "{label}");
+					assert!(actual["location"].is_object(), "{label}");
+					assert_eq!(audit["invoked"], false);
+				} else if case["policy"] == "Retain-refusal" {
+					assert_eq!(actual["status"], "refused", "{label}");
+					assert_eq!(actual["refusal"], "Pattern", "{label}");
+					assert_eq!(audit["invoked"], false);
+				} else if runtime_error {
+					let actual = project(actual);
+					let expected = &expected["projected"];
+					for key in ["status", "class", "display", "chain_displays"] {
+						assert_eq!(actual[key], expected[key], "{label}: {key}");
+					}
+					let sites = actual["sites"].as_array().unwrap();
+					let oracle_sites = expected["sites"].as_array().unwrap();
+					assert_eq!(sites.len(), oracle_sites.len());
+					for (a, b) in sites.iter().zip(oracle_sites) {
+						for key in ["source", "start", "end"] {
+							assert_eq!(a[key], b[key]);
+						}
+					}
+				} else {
+					// C18a: `calling/method` (a method on a struct literal) now runs
+					// and matches stock.
+					assert_eq!(audit["invoked"], true, "{label}");
+					assert_eq!(project(actual), expected["projected"], "{label}");
+				}
+				// Inherited compile-time refusals have no runtime logical trace.
+				if runtime_error && actual["status"] == "error" {
+					assert_eq!(
+						trace(&folder.join("fresh")),
+						trace(&folder.join("stock")),
+						"{label}: logical frames/context/rendered"
+					);
+				}
+				assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
+				assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+			},
+		);
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", cases.len());
 }
 

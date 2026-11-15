@@ -1,0 +1,31 @@
+{
+ "rule": "ADR 0279: source-bound current contract expectations, over the complete prior dispositions. Class 1 keeps the full precise ADR 0273 refusal; class 2 keeps full named ADR 0247 HostNotEnrolled diagnostics; class 3 compares the entire admitted observable to live legacy. Historical data remain unchanged.",
+ "rows": [
+  {
+   "index": 29,
+   "classification_0279": 3,
+   "legacy": {
+    "index": 29,
+    "label": "reuse/get",
+    "source_sha256": "62e50a0a59e3a27f3698d169f128c2c53bff4e21e9213cfd37d41c06d1feb8a7",
+    "stock_canonical_sha256": "9e4fa6af9451513c2af9bd72f342deb2b1b62aa174fccf692a2feee3b1386a4b",
+    "fresh": {
+     "location": {
+      "end": 122,
+      "source": 0,
+      "start": 114
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 114, end: 122 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+     "refusal": "Method",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 114:122, kind: Custom { error: \"Method\" } }) })]",
+    "classification": "Inherited-refusal"
+   },
+   "admitted": {
+    "classification": "Exact",
+    "note": "ADR 0279: admission from ADR 0277; compare the complete observable to live legacy."
+   }
+  }
+ ]
+}

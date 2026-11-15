@@ -1,6 +1,6 @@
 # Implementation plan 0279: ignored contracts run in the complete final
 
-Status: Proposed
+Status: Implemented
 
 Paired ADR: ../adr/0279_ignored_contracts_run_in_the_complete_final.md.
 
@@ -25,3 +25,17 @@ Paired ADR: ../adr/0279_ignored_contracts_run_in_the_complete_final.md.
    counts, the rows totals and the per-stage durations. Results state
    what the code does; no paths under target/ and no development
    history. The candidate is frozen once the packet is sent.
+
+## Results
+
+Implemented the shared all-row collector and per-contract current-rule
+supplements without changing production engine code or historical data.
+Two refusal updates, forty named-host diagnostic updates and four admissions
+are source-bound; admitted observations are compared with live legacy.
+
+The complete Rune suite executes every manifest case, with ignored policy
+and sandbox variants preserved. Its coverage is checked independently by
+the finalizer; absent selectors and partial executions cannot pass. Test
+binaries retain compilation-unit provenance and their raw evidence belongs
+to the existing final release mechanism. All 35 ignored contracts preserve
+their row totals (10,106 comparisons).

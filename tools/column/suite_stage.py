@@ -114,7 +114,13 @@ def main():
 	a = p.parse_args(); out = a.out.resolve(); out.mkdir(parents=True, exist_ok=False)
 	r = dict(status='FAIL', stage=a.stage)
 	try:
-		r.update(checks=run(a.stage, out), status='PASS')
+		r['checks'] = run(a.stage, out)
+		if a.stage == 'rune-suite':
+			from native_contracts import run as contracts
+			r['contracts'] = contracts(ROOT, out)
+			if r['contracts']['status'] != 'PASS':
+				raise ValueError(r['contracts']['error'])
+		r['status'] = 'PASS'
 	except Exception: r['error'] = traceback.format_exc()
 	finally:
 		if a.stage == 'suite-adapter-polars':

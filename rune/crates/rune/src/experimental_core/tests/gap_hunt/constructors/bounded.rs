@@ -7,58 +7,65 @@ fn contract() {
 	let cases: Vec<Json> = serde_json::from_str(CASES).unwrap();
 	let frozen: Json = serde_json::from_str(DISPOSITIONS).unwrap();
 	let start = Instant::now();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		assert!(start.elapsed() < Duration::from_secs(1700));
-		let label = case["label"].as_str().unwrap();
-		let source = case["source"].as_str().unwrap();
-		let dir = out.join(format!("{i:03}"));
-		let stock = launch_case("stock", i, case, &dir.join("stock"));
-		if stock.observation["observation"]["outcome"]["status"] == "compile-error" {
-			assert_eq!(stock.observation["observation"]["reuse"], Json::Null);
-			assert_eq!(
-				frozen[format!("{i:03}")]["disposition"],
-				"Refused-frontend-arity"
-			);
-		} else {
-			assert_eq!(stock.observation["observation"]["reuse"]["status"], "value");
-		}
-		let expected = expected_stock(case, &stock.observation);
-		let complete = if i == 125 {
-			let mut counterfactual_case = case.clone();
-			counterfactual_case["fuel"] = json!(200000);
-			let complete = launch_case_with_counterfactual(
-				i,
-				&counterfactual_case,
-				&dir.join("stock-complete"),
-			);
-			assert!(complete.stderr.is_empty());
-			Some(expected_stock(&counterfactual_case, &complete.observation))
-		} else {
-			None
-		};
-		let fresh = launch_case("fresh", i, case, &dir.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				assert!(start.elapsed() < Duration::from_secs(1700));
+				let label = case["label"].as_str().unwrap();
+				let source = case["source"].as_str().unwrap();
+				let dir = out.join(format!("{i:03}"));
+				let stock = launch_case("stock", i, case, &dir.join("stock"));
+				if stock.observation["observation"]["outcome"]["status"] == "compile-error" {
+					assert_eq!(stock.observation["observation"]["reuse"], Json::Null);
+					assert_eq!(
+						frozen[format!("{i:03}")]["disposition"],
+						"Refused-frontend-arity"
+					);
+				} else {
+					assert_eq!(stock.observation["observation"]["reuse"]["status"], "value");
+				}
+				let expected = expected_stock(case, &stock.observation);
+				let complete = if i == 125 {
+					let mut counterfactual_case = case.clone();
+					counterfactual_case["fuel"] = json!(200000);
+					let complete = launch_case_with_counterfactual(
+						i,
+						&counterfactual_case,
+						&dir.join("stock-complete"),
+					);
+					assert!(complete.stderr.is_empty());
+					Some(expected_stock(&counterfactual_case, &complete.observation))
+				} else {
+					None
+				};
+				let fresh = launch_case("fresh", i, case, &dir.join("fresh"));
+				crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+					&stock.observation,
+					&fresh.observation,
+				);
+				let mut actual = fresh.observation;
+				actual["observation"]["outcome"] = super::d1c_diagnostics::before(
+					"constructors",
+					label,
+					source,
+					"fresh",
+					&actual["observation"]["outcome"],
+				);
+				compare(
+					case,
+					&frozen[format!("{i:03}")],
+					&expected,
+					&actual,
+					complete.as_ref(),
+				);
+				assert!(stock.stderr.is_empty(), "C15 stock stderr {i}");
+				assert!(fresh.stderr.is_empty(), "C15 stderr {i}");
+			},
 		);
-		let mut actual = fresh.observation;
-		actual["observation"]["outcome"] = super::d1c_diagnostics::before(
-			"constructors",
-			label,
-			source,
-			"fresh",
-			&actual["observation"]["outcome"],
-		);
-		compare(
-			case,
-			&frozen[format!("{i:03}")],
-			&expected,
-			&actual,
-			complete.as_ref(),
-		);
-		assert!(stock.stderr.is_empty(), "C15 stock stderr {i}");
-		assert!(fresh.stderr.is_empty(), "C15 stderr {i}");
 	}
+	row_differences.finish();
 	fs::write(
 		out.join("COMPLETE"),
 		"execution133 strict against live stock; P1, pre-effect refusal and fuel policy only\n",

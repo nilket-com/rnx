@@ -1,0 +1,57 @@
+{
+ "rule": "ADR 0279 class 1: ADR 0273 names and locates the async function value, retaining the complete diagnostics and strict refusal lifecycle. Frozen rules remain unchanged.",
+ "rows": {
+  "refused/async-comparator": {
+   "index": 95,
+   "legacy": {
+    "constraint": {
+     "status": "refused",
+     "kind": "Unsupported",
+     "source_sha256": "7f2c788d42758602ca27aa012d538c3b3ad07439cbecde3630687b9cb2fcd918",
+     "invoked": false,
+     "capturing_supported": false,
+     "operation": "AsyncFunction"
+    },
+    "span": {
+     "source_sha256": "7f2c788d42758602ca27aa012d538c3b3ad07439cbecde3630687b9cb2fcd918",
+     "source": 0,
+     "start": 86,
+     "end": 119,
+     "span_hex": "6173796e6320666e206173796e635f636d7028612c62297b612e636d702862297d"
+    },
+    "disposition": {
+     "index": 95,
+     "label": "refused/async-comparator",
+     "source_sha256": "7f2c788d42758602ca27aa012d538c3b3ad07439cbecde3630687b9cb2fcd918",
+     "policy": "Refused-surface",
+     "ruling": {
+      "message_id": "01a140c8-f7ff-74e4-947f-3123f68af086",
+      "seq": 15291
+     }
+    }
+   },
+   "fresh": {
+    "kind": "Unsupported",
+    "location": {
+     "end": 81,
+     "source": 0,
+     "start": 72
+    },
+    "operation": "FutureValue",
+    "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 11, start: 72, end: 81 }), operation: \"FutureValue\", refusal: Some(FutureValue), detail: None }",
+    "refusal": "FutureValue",
+    "status": "refused",
+    "source_sha256": "7f2c788d42758602ca27aa012d538c3b3ad07439cbecde3630687b9cb2fcd918",
+    "invoked": false
+   },
+   "span": {
+    "source_sha256": "7f2c788d42758602ca27aa012d538c3b3ad07439cbecde3630687b9cb2fcd918",
+    "source": 0,
+    "start": 72,
+    "end": 81,
+    "span_hex": "6173796e635f636d70"
+   },
+   "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 72:81, kind: ScriptAwaitRefusal { item: async_cmp, caller: main, as_value: true, remove_await: false } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 86:119, kind: Custom { error: \"AsyncFunction\" } }) })]"
+  }
+ }
+}

@@ -158,44 +158,51 @@ fn check_contract(slice: bool) {
 	let rows: Vec<Json> = serde_json::from_str(CASES).unwrap();
 	let started = Instant::now();
 	let mut count = 0;
-	for index in 0..rows.len() {
+	let mut row_differences = super::ContractRows::default();
+	for (index, row) in rows.iter().enumerate() {
 		if slice && ![0, 1, 2, 3, 5, 6, 18, 21, 24, 27].contains(&index) {
 			continue;
 		}
 		count += 1;
-		assert!(started.elapsed() < Duration::from_secs(1700));
-		let receipt_bytes = fs::read(&receipt_path).unwrap();
-		assert_eq!(hex(&Sha256::digest(&receipt_bytes)), receipt_hash);
-		let receipt: Json = serde_json::from_slice(&receipt_bytes).unwrap();
-		assert_eq!(receipt["expected_repo"], source);
-		assert_eq!(receipt["binary_sha256"], binary_hash);
-		let units = receipt["units"].as_array().unwrap();
-		assert!(!units.is_empty());
-		assert!(units.iter().all(|unit| unit["recorded_cwd"] == source));
-		let dir = out.join(format!("{index:03}"));
-		fs::create_dir(&dir).unwrap();
-		let expected = launch("stock", index, &dir.join("stock"));
-		let mut actual = launch("fresh", index, &dir.join("fresh"));
-		let audit = actual
-			.as_object_mut()
-			.unwrap()
-			.remove("fresh_audit")
-			.unwrap();
-		assert_eq!(audit["post_code_drop"], true);
-		for key in ["row_idle", "executor_idle"] {
-			assert_eq!(audit[key], true);
-		}
-		for key in [
-			"row_live_entries",
-			"row_payload_bytes",
-			"live_entries",
-			"payload_bytes",
-		] {
-			assert_eq!(audit[key], 0);
-		}
-		actual["engine"] = json!("stock");
-		assert_eq!(actual, expected, "C15c stock {index}");
+		row_differences.check(
+			format!("{index}: {}", row["label"].as_str().unwrap()),
+			|_diagnostic| {
+				assert!(started.elapsed() < Duration::from_secs(1700));
+				let receipt_bytes = fs::read(&receipt_path).unwrap();
+				assert_eq!(hex(&Sha256::digest(&receipt_bytes)), receipt_hash);
+				let receipt: Json = serde_json::from_slice(&receipt_bytes).unwrap();
+				assert_eq!(receipt["expected_repo"], source);
+				assert_eq!(receipt["binary_sha256"], binary_hash);
+				let units = receipt["units"].as_array().unwrap();
+				assert!(!units.is_empty());
+				assert!(units.iter().all(|unit| unit["recorded_cwd"] == source));
+				let dir = out.join(format!("{index:03}"));
+				fs::create_dir(&dir).unwrap();
+				let expected = launch("stock", index, &dir.join("stock"));
+				let mut actual = launch("fresh", index, &dir.join("fresh"));
+				let audit = actual
+					.as_object_mut()
+					.unwrap()
+					.remove("fresh_audit")
+					.unwrap();
+				assert_eq!(audit["post_code_drop"], true);
+				for key in ["row_idle", "executor_idle"] {
+					assert_eq!(audit[key], true);
+				}
+				for key in [
+					"row_live_entries",
+					"row_payload_bytes",
+					"live_entries",
+					"payload_bytes",
+				] {
+					assert_eq!(audit[key], 0);
+				}
+				actual["engine"] = json!("stock");
+				assert_eq!(actual, expected, "C15c stock {index}");
+			},
+		);
 	}
+	row_differences.finish();
 	assert_eq!(
 		binary_hash,
 		hex(&Sha256::digest(fs::read(&executable).unwrap()))

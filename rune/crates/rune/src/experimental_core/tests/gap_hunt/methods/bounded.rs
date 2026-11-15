@@ -20,37 +20,65 @@ fn c13_drain(
 
 // Compare program output while ignoring only libtest's elapsed-time summary.
 fn c13_stdout_body(stdout: &[u8]) -> &[u8] {
-    let prefix = b"\nrunning 1 test\n";
-    let suffix = b".\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; ";
-    let rest = stdout.strip_prefix(prefix).expect("C13 libtest prefix");
-    let at = rest.windows(suffix.len()).rposition(|window| window == suffix).expect("C13 libtest summary");
-    let summary = std::str::from_utf8(&rest[at..]).expect("C13 libtest summary UTF-8");
-    assert!(summary.contains(" filtered out; finished in ") && summary.ends_with("s\n\n"));
-    &rest[..at]
+	let prefix = b"\nrunning 1 test\n";
+	let suffix = b".\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; ";
+	let rest = stdout.strip_prefix(prefix).expect("C13 libtest prefix");
+	let at = rest
+		.windows(suffix.len())
+		.rposition(|window| window == suffix)
+		.expect("C13 libtest summary");
+	let summary = std::str::from_utf8(&rest[at..]).expect("C13 libtest summary UTF-8");
+	assert!(summary.contains(" filtered out; finished in ") && summary.ends_with("s\n\n"));
+	&rest[..at]
 }
 
 // The stock engine is run for this source and fixture on every contract pass.
-fn c13_live_expected(case: &Json, index: usize, row: &Json, dir: &Path) -> (Json, Vec<u8>, Vec<u8>) {
-    let index_text = index.to_string();
-    let stock = super::live_oracle::run_child_with_limits(
-        "experimental_core::tests::gap_hunt::methods::child", case["label"].as_str().unwrap(),
-        dir, "C13_RESULT", &[("C13_CASE", index_text.as_ref()), ("C13_ENGINE", "stock".as_ref())],
-        15, Duration::from_secs(45));
-    assert_eq!(stock.observation["schema"], 1);
-    assert_eq!(stock.observation["engine"], "stock");
-    assert_eq!(stock.observation["index"], index);
-    assert_eq!(stock.observation["source_sha256"], case["source_sha256"]);
-    assert_eq!(stock.observation["fixture"], case["fixture"]);
-    let label = case["label"].as_str().unwrap();
-    let source = case["source"].as_str().unwrap();
-    let mut observation = stock.observation["observation"].clone();
-    observation["outcome"] = super::d1c_diagnostics::d1d_before("methods", label, source, "stock", &observation["outcome"]);
-    observation = super::method_diagnostics::intentional_json_before("methods", label, source, "stock", &observation);
-    let observation = project_observation(&observation, &observation, "");
-    let mut expected = row.clone();
-    expected["stock_observation"] = observation.clone();
-    expected["fresh_expectation"] = observation;
-    (expected, stock.stdout, stock.stderr)
+fn c13_live_expected(
+	case: &Json,
+	index: usize,
+	row: &Json,
+	dir: &Path,
+) -> (Json, Vec<u8>, Vec<u8>) {
+	let index_text = index.to_string();
+	let stock = super::live_oracle::run_child_with_limits(
+		"experimental_core::tests::gap_hunt::methods::child",
+		case["label"].as_str().unwrap(),
+		dir,
+		"C13_RESULT",
+		&[
+			("C13_CASE", index_text.as_ref()),
+			("C13_ENGINE", "stock".as_ref()),
+		],
+		15,
+		Duration::from_secs(45),
+	);
+	assert_eq!(stock.observation["schema"], 1);
+	assert_eq!(stock.observation["engine"], "stock");
+	assert_eq!(stock.observation["index"], index);
+	assert_eq!(stock.observation["source_sha256"], case["source_sha256"]);
+	assert_eq!(stock.observation["fixture"], case["fixture"]);
+	let label = case["label"].as_str().unwrap();
+	let source = case["source"].as_str().unwrap();
+	let mut observation = stock.observation["observation"].clone();
+	observation["outcome"] = super::d1c_diagnostics::d1d_before(
+		"methods",
+		label,
+		source,
+		"stock",
+		&observation["outcome"],
+	);
+	observation = super::method_diagnostics::intentional_json_before(
+		"methods",
+		label,
+		source,
+		"stock",
+		&observation,
+	);
+	let observation = project_observation(&observation, &observation, "");
+	let mut expected = row.clone();
+	expected["stock_observation"] = observation.clone();
+	expected["fresh_expectation"] = observation;
+	(expected, stock.stdout, stock.stderr)
 }
 
 #[test]
@@ -67,7 +95,9 @@ fn contract() {
 	let cases: Vec<Json> = serde_json::from_str(CASES).unwrap();
 	let frozen: Json = serde_json::from_str(DISPOSITIONS).unwrap();
 	let start = Instant::now();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
+		row_differences.check(format!("{i}: {}", case["label"].as_str().unwrap()), |_diagnostic| {
 		assert!(start.elapsed() < Duration::from_secs(1700));
 		let dir = out.join(format!("{i:03}"));
 		fs::create_dir(&dir).unwrap();
@@ -138,7 +168,10 @@ fn contract() {
 		compare(case, &live_expected, &actual);
         assert_eq!(c13_stdout_body(&stdout), c13_stdout_body(&stock_stdout), "C13 stdout {i}");
         assert_eq!(stderr, stock_stderr, "C13 stderr {i}");
+
+		});
 	}
+	row_differences.finish();
 	fs::write(
 		out.join("COMPLETE"),
 		"execution84 strict; P1 pointers and frozen frame leaves only\n",

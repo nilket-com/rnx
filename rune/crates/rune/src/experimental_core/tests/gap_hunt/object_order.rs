@@ -260,25 +260,33 @@ fn run_contract() {
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"));
-		let mut expected = stock.observation;
-		expected["stdout_hex"] = json!(hex(&stock.stdout));
-		expected["stderr_hex"] = json!(hex(&stock.stderr));
-		let fresh = launch("fresh", i, case, &folder.join("fresh"));
-		verify_case(
-			i,
-			case,
-			&expected,
-			&fresh.observation,
-			&fresh.stdout,
-			&fresh.stderr,
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"));
+				let mut expected = stock.observation;
+				expected["stdout_hex"] = json!(hex(&stock.stdout));
+				expected["stderr_hex"] = json!(hex(&stock.stderr));
+				let fresh = launch("fresh", i, case, &folder.join("fresh"));
+				diagnostic.observations(&expected, &fresh.observation);
+				verify_case(
+					i,
+					case,
+					&expected,
+					&fresh.observation,
+					&fresh.stdout,
+					&fresh.stderr,
+				);
+			},
 		);
 	}
 	super::contract_completed("fresh", cases.len());
+	row_differences.finish();
 }
 
 /// Run case `index` on `engine` in a bounded child and check its envelope.

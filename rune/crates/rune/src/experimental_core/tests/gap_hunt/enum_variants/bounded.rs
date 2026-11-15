@@ -7,62 +7,69 @@ fn contract() {
 	let cases: Vec<Json> = serde_json::from_str(CASES).unwrap();
 	let frozen: Json = serde_json::from_str(DISPOSITIONS).unwrap();
 	let start = Instant::now();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		assert!(start.elapsed() < Duration::from_secs(1700));
-		let label = case["label"].as_str().unwrap();
-		let source = case["source"].as_str().unwrap();
-		let dir = out.join(format!("{i:03}"));
-		let stock = launch_case("stock", i, case, &dir.join("stock"));
-		let raw = &stock.observation["observation"];
-		if raw["outcome"]["status"] == "compile-error" {
-			assert_eq!(raw["reuse"], Json::Null);
-			assert_eq!(frozen[format!("{i:03}")]["disposition"], "Refused-frontend");
-		} else {
-			assert_eq!(raw["reuse"]["status"], "value");
-		}
-		let complete = if i == 148 {
-			// The stock fuel stop keeps the first event of the complete tape.
-			let mut counterfactual_case = case.clone();
-			counterfactual_case["fuel"] = json!(200000);
-			let complete = launch_case_inner(
-				"stock",
-				i,
-				&counterfactual_case,
-				&dir.join("stock-complete"),
-				true,
-			);
-			assert!(complete.stderr.is_empty());
-			let complete = expected_stock(&counterfactual_case, &complete.observation);
-			let tape = complete["observation"]["events"].as_array().unwrap();
-			assert_eq!(raw["events"], json!(&tape[..1]));
-			Some(complete)
-		} else {
-			None
-		};
-		let expected = expected_stock(case, &stock.observation);
-		let fresh = launch_case("fresh", i, case, &dir.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				assert!(start.elapsed() < Duration::from_secs(1700));
+				let label = case["label"].as_str().unwrap();
+				let source = case["source"].as_str().unwrap();
+				let dir = out.join(format!("{i:03}"));
+				let stock = launch_case("stock", i, case, &dir.join("stock"));
+				let raw = &stock.observation["observation"];
+				if raw["outcome"]["status"] == "compile-error" {
+					assert_eq!(raw["reuse"], Json::Null);
+					assert_eq!(frozen[format!("{i:03}")]["disposition"], "Refused-frontend");
+				} else {
+					assert_eq!(raw["reuse"]["status"], "value");
+				}
+				let complete = if i == 148 {
+					// The stock fuel stop keeps the first event of the complete tape.
+					let mut counterfactual_case = case.clone();
+					counterfactual_case["fuel"] = json!(200000);
+					let complete = launch_case_inner(
+						"stock",
+						i,
+						&counterfactual_case,
+						&dir.join("stock-complete"),
+						true,
+					);
+					assert!(complete.stderr.is_empty());
+					let complete = expected_stock(&counterfactual_case, &complete.observation);
+					let tape = complete["observation"]["events"].as_array().unwrap();
+					assert_eq!(raw["events"], json!(&tape[..1]));
+					Some(complete)
+				} else {
+					None
+				};
+				let expected = expected_stock(case, &stock.observation);
+				let fresh = launch_case("fresh", i, case, &dir.join("fresh"));
+				crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+					&stock.observation,
+					&fresh.observation,
+				);
+				let mut actual = fresh.observation;
+				actual["observation"]["outcome"] = super::d1c_diagnostics::before(
+					"enum_variants",
+					label,
+					source,
+					"fresh",
+					&actual["observation"]["outcome"],
+				);
+				compare(
+					case,
+					&frozen[format!("{i:03}")],
+					&expected,
+					&actual,
+					complete.as_ref(),
+				);
+				assert!(stock.stderr.is_empty(), "C15b stock stderr {i}");
+				assert!(fresh.stderr.is_empty(), "C15b stderr {i}");
+			},
 		);
-		let mut actual = fresh.observation;
-		actual["observation"]["outcome"] = super::d1c_diagnostics::before(
-			"enum_variants",
-			label,
-			source,
-			"fresh",
-			&actual["observation"]["outcome"],
-		);
-		compare(
-			case,
-			&frozen[format!("{i:03}")],
-			&expected,
-			&actual,
-			complete.as_ref(),
-		);
-		assert!(stock.stderr.is_empty(), "C15b stock stderr {i}");
-		assert!(fresh.stderr.is_empty(), "C15b stderr {i}");
 	}
+	row_differences.finish();
 	fs::write(
 		out.join("COMPLETE"),
 		"execution166 strict against live stock; P1, pre-effect refusal and fuel policy only\n",

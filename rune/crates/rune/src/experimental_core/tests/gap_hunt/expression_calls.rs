@@ -220,105 +220,112 @@ fn contract() {
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"));
-		let expected = &stock.observation;
-		let fresh = launch("fresh", i, case, &folder.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
-		);
-		let audit = &fresh.observation["fresh_audit"];
-		for key in [
-			"no_cleanup_error",
-			"clean_after_row",
-			"row_idle",
-			"reuse",
-			"idle",
-		] {
-			assert_eq!(audit[key], true, "{label}: {key}");
-		}
-		for key in [
-			"row_live_entries",
-			"row_payload_bytes",
-			"live_entries",
-			"payload_bytes",
-		] {
-			assert_eq!(audit[key], 0, "{label}: {key}");
-		}
-		let actual = &fresh.observation["outcome"];
-		let policy = &disposition[i];
-		assert_eq!(policy["index"], i);
-		assert_eq!(policy["label"], case["label"]);
-		assert_eq!(policy["source_sha256"], case["source_sha256"]);
-		if let Some(rule) = c17a.get(format!("{i:03}")) {
-			// C17a admits `unwrap`; the frozen disposition still records the refusal.
-			assert_eq!(i, 13);
-			assert_eq!(rule["classification"], "Exact");
-			assert_eq!(rule["source_sha256"], case["source_sha256"]);
-			assert_eq!(policy["classification"], "Retain-refusal");
-			assert_eq!(policy["refusal"], rule["previous_refusal"]);
-			assert_eq!(audit["invoked"], true);
-			assert_eq!(project(actual), expected["projected"], "{label}");
-		} else if let Some(rule) = admissions.get(format!("{i:03}")) {
-			assert_eq!(i, 98);
-			assert_eq!(rule["authority"], 21347);
-			assert_eq!(rule["classification"], "Exact");
-			assert_eq!(rule["source_sha256"], case["source_sha256"]);
-			assert_eq!(policy["classification"], "Retain-refusal");
-			assert_eq!(policy["refusal"], "UnresolvedFunction");
-			assert_eq!(audit["invoked"], true);
-			assert_eq!(project(actual), expected["projected"], "{label}");
-		} else if policy["classification"] == "Retain-refusal" {
-			assert_eq!(actual["status"], "refused", "{label}");
-			assert_eq!(actual["refusal"], policy["refusal"], "{label}");
-			assert_eq!(actual["location"], policy["location"], "{label}");
-			assert_eq!(audit["invoked"], false);
-		} else if expected["outcome"]["status"] == "compile-error" {
-			assert_eq!(policy["classification"], "Exact");
-			assert_eq!(actual["status"], "compile-error", "{label}");
-			assert_eq!(
-				actual["diagnostics"], expected["outcome"]["diagnostics"],
-				"{label}"
-			);
-			assert_eq!(audit["invoked"], false);
-		} else if actual["status"] == "error" {
-			assert_eq!(audit["typed_failure_kind"], actual["class"]);
-			let actual = project(actual);
-			for key in ["status", "class", "display"] {
-				assert_eq!(actual[key], expected["projected"][key], "{label}: {key}");
-			}
-			assert_eq!(policy["classification"], "Exact");
-			assert_eq!(
-				actual["chain_displays"], expected["projected"]["chain_displays"],
-				"{label}"
-			);
-			let sites = actual["sites"].as_array().unwrap();
-			let oracle_sites = expected["projected"]["sites"].as_array().unwrap();
-			assert_eq!(sites.len(), oracle_sites.len());
-			for (a, b) in sites.iter().zip(oracle_sites) {
-				for key in ["source", "start", "end"] {
-					assert_eq!(a[key], b[key], "{label}: {key}");
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"));
+				let expected = &stock.observation;
+				let fresh = launch("fresh", i, case, &folder.join("fresh"));
+				crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+					&stock.observation,
+					&fresh.observation,
+				);
+				let audit = &fresh.observation["fresh_audit"];
+				for key in [
+					"no_cleanup_error",
+					"clean_after_row",
+					"row_idle",
+					"reuse",
+					"idle",
+				] {
+					assert_eq!(audit[key], true, "{label}: {key}");
 				}
-			}
-		} else {
-			assert_eq!(policy["classification"], "Exact");
-			assert_eq!(audit["invoked"], true);
-			assert_eq!(project(actual), expected["projected"], "{label}");
-		}
-		if expected["outcome"]["status"] == "error" {
-			assert_eq!(
-				trace(&folder.join("fresh")),
-				trace(&folder.join("stock")),
-				"{label}: logical frames/context/rendered"
-			);
-		}
-		assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
-		assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+				for key in [
+					"row_live_entries",
+					"row_payload_bytes",
+					"live_entries",
+					"payload_bytes",
+				] {
+					assert_eq!(audit[key], 0, "{label}: {key}");
+				}
+				let actual = &fresh.observation["outcome"];
+				let policy = &disposition[i];
+				assert_eq!(policy["index"], i);
+				assert_eq!(policy["label"], case["label"]);
+				assert_eq!(policy["source_sha256"], case["source_sha256"]);
+				if let Some(rule) = c17a.get(format!("{i:03}")) {
+					// C17a admits `unwrap`; the frozen disposition still records the refusal.
+					assert_eq!(i, 13);
+					assert_eq!(rule["classification"], "Exact");
+					assert_eq!(rule["source_sha256"], case["source_sha256"]);
+					assert_eq!(policy["classification"], "Retain-refusal");
+					assert_eq!(policy["refusal"], rule["previous_refusal"]);
+					assert_eq!(audit["invoked"], true);
+					assert_eq!(project(actual), expected["projected"], "{label}");
+				} else if let Some(rule) = admissions.get(format!("{i:03}")) {
+					assert_eq!(i, 98);
+					assert_eq!(rule["authority"], 21347);
+					assert_eq!(rule["classification"], "Exact");
+					assert_eq!(rule["source_sha256"], case["source_sha256"]);
+					assert_eq!(policy["classification"], "Retain-refusal");
+					assert_eq!(policy["refusal"], "UnresolvedFunction");
+					assert_eq!(audit["invoked"], true);
+					assert_eq!(project(actual), expected["projected"], "{label}");
+				} else if policy["classification"] == "Retain-refusal" {
+					assert_eq!(actual["status"], "refused", "{label}");
+					assert_eq!(actual["refusal"], policy["refusal"], "{label}");
+					assert_eq!(actual["location"], policy["location"], "{label}");
+					assert_eq!(audit["invoked"], false);
+				} else if expected["outcome"]["status"] == "compile-error" {
+					assert_eq!(policy["classification"], "Exact");
+					assert_eq!(actual["status"], "compile-error", "{label}");
+					assert_eq!(
+						actual["diagnostics"], expected["outcome"]["diagnostics"],
+						"{label}"
+					);
+					assert_eq!(audit["invoked"], false);
+				} else if actual["status"] == "error" {
+					assert_eq!(audit["typed_failure_kind"], actual["class"]);
+					let actual = project(actual);
+					for key in ["status", "class", "display"] {
+						assert_eq!(actual[key], expected["projected"][key], "{label}: {key}");
+					}
+					assert_eq!(policy["classification"], "Exact");
+					assert_eq!(
+						actual["chain_displays"], expected["projected"]["chain_displays"],
+						"{label}"
+					);
+					let sites = actual["sites"].as_array().unwrap();
+					let oracle_sites = expected["projected"]["sites"].as_array().unwrap();
+					assert_eq!(sites.len(), oracle_sites.len());
+					for (a, b) in sites.iter().zip(oracle_sites) {
+						for key in ["source", "start", "end"] {
+							assert_eq!(a[key], b[key], "{label}: {key}");
+						}
+					}
+				} else {
+					assert_eq!(policy["classification"], "Exact");
+					assert_eq!(audit["invoked"], true);
+					assert_eq!(project(actual), expected["projected"], "{label}");
+				}
+				if expected["outcome"]["status"] == "error" {
+					assert_eq!(
+						trace(&folder.join("fresh")),
+						trace(&folder.join("stock")),
+						"{label}: logical frames/context/rendered"
+					);
+				}
+				assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
+				assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+			},
+		);
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", cases.len());
 }
 

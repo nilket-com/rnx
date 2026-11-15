@@ -107,103 +107,108 @@ fn contract() {
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
 	let mut policies = std::collections::BTreeMap::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, &(label, source, mode, policy)) in CASES.iter().enumerate() {
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, &folder.join("stock"));
-		let expected = super::d1b_diagnostics::intentional_json_before(
-			"format_specs",
-			label,
-			source,
-			"stock",
-			&project(&stock.observation["outcome"]),
-		);
-		let fresh = launch("fresh", i, &folder.join("fresh"));
-		crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
-			&stock.observation,
-			&fresh.observation,
-		);
-		let audit = &fresh.observation["fresh_audit"];
-		assert_eq!(audit["clean_after_row"], true);
-		assert_eq!(audit["reuse"], true);
-		assert_eq!(audit["no_cleanup_error"], true);
-		assert_eq!(audit["live_entries"], 0);
-		assert_eq!(audit["payload_bytes"], 0);
-		assert_eq!(audit["idle"], true);
-		if let Some(bits) = mode.strip_prefix("c5-f64-") {
-			assert_eq!(audit["input_f64_bits"], bits);
-		}
-		*policies.entry(policy).or_insert(0usize) += 1;
-		let outcome = &fresh.observation["outcome"];
-		assert_ne!(outcome["status"], "unmapped-value", "raw saved: {label}");
-		assert_ne!(outcome["class"], "UNMAPPED", "raw saved: {label}");
-		match policy {
-			"Exact" => {
-				let projected = project(outcome);
-				let projected = super::d1b_diagnostics::intentional_json_before(
-					"format_specs",
-					label,
-					source,
-					"fresh",
-					&projected,
-				);
-				let mut expected = expected;
-				if let Some(sites) = super::d1b_diagnostics::intentional_sites_before(
-					"format_specs",
-					label,
-					source,
-					"fresh",
-				) {
-					expected["sites"] = sites;
+		row_differences.check(format!("{i}: {label}"), |_diagnostic| {
+			assert!(labels.insert(label));
+			let folder = out.join(format!("{i:03}"));
+			let stock = launch("stock", i, &folder.join("stock"));
+			let expected = super::d1b_diagnostics::intentional_json_before(
+				"format_specs",
+				label,
+				source,
+				"stock",
+				&project(&stock.observation["outcome"]),
+			);
+			let fresh = launch("fresh", i, &folder.join("fresh"));
+			crate::experimental_core::tests::gap_hunt::assert_warning_multisets(
+				&stock.observation,
+				&fresh.observation,
+			);
+			let audit = &fresh.observation["fresh_audit"];
+			assert_eq!(audit["clean_after_row"], true);
+			assert_eq!(audit["reuse"], true);
+			assert_eq!(audit["no_cleanup_error"], true);
+			assert_eq!(audit["live_entries"], 0);
+			assert_eq!(audit["payload_bytes"], 0);
+			assert_eq!(audit["idle"], true);
+			if let Some(bits) = mode.strip_prefix("c5-f64-") {
+				assert_eq!(audit["input_f64_bits"], bits);
+			}
+			*policies.entry(policy).or_insert(0usize) += 1;
+			let outcome = &fresh.observation["outcome"];
+			assert_ne!(outcome["status"], "unmapped-value", "raw saved: {label}");
+			assert_ne!(outcome["class"], "UNMAPPED", "raw saved: {label}");
+			match policy {
+				"Exact" => {
+					let projected = project(outcome);
+					let projected = super::d1b_diagnostics::intentional_json_before(
+						"format_specs",
+						label,
+						source,
+						"fresh",
+						&projected,
+					);
+					let mut expected = expected;
+					if let Some(sites) = super::d1b_diagnostics::intentional_sites_before(
+						"format_specs",
+						label,
+						source,
+						"fresh",
+					) {
+						expected["sites"] = sites;
+					}
+					assert_eq!(
+						projected, expected,
+						"execution exact fields/sites/argument chain: {label}"
+					);
 				}
-				assert_eq!(
-					projected, expected,
-					"execution exact fields/sites/argument chain: {label}"
-				);
+				"Compile-error" => {
+					assert_eq!(outcome["status"], "compile-error");
+					assert_eq!(
+						outcome["diagnostics"], expected["diagnostics"],
+						"shared frontend diagnostics: {label}"
+					);
+				}
+				"Refused-format-type" => {
+					assert_eq!(outcome["status"], "refused");
+					assert_eq!(outcome["refusal"], "Some(FormatSpec)");
+				}
+				"Retained-dynamic-precision" => {
+					assert_eq!(outcome["status"], "compile-error");
+					assert_eq!(outcome["refusal"], "Some(FrontendDiagnostic)");
+					assert_eq!(outcome["location"], json!({"source":0,"start":22,"end":29}));
+					assert_eq!(outcome["diagnostics"],"[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 22:29, kind: Custom { error: \"execution core: dynamic precision is not admitted\" } }) })]");
+				}
+				"Retained-resource" => {
+					assert_eq!(outcome["status"], "error");
+					assert_eq!(outcome["class"], "FormatLimit");
+					assert_eq!(expected["status"], "value");
+				}
+				_ => panic!("unknown C5 policy {policy}"),
 			}
-			"Compile-error" => {
-				assert_eq!(outcome["status"], "compile-error");
-				assert_eq!(
-					outcome["diagnostics"], expected["diagnostics"],
-					"shared frontend diagnostics: {label}"
-				);
+			for run in [&stock, &fresh] {
+				assert!(!has_address(
+					&String::from_utf8(run.stdout.clone()).unwrap()
+				));
+				assert!(!has_address(
+					&String::from_utf8(run.stderr.clone()).unwrap()
+				));
 			}
-			"Refused-format-type" => {
-				assert_eq!(outcome["status"], "refused");
-				assert_eq!(outcome["refusal"], "Some(FormatSpec)");
-			}
-			"Retained-dynamic-precision" => {
-				assert_eq!(outcome["status"], "compile-error");
-				assert_eq!(outcome["refusal"], "Some(FrontendDiagnostic)");
-				assert_eq!(outcome["location"], json!({"source":0,"start":22,"end":29}));
-				assert_eq!(outcome["diagnostics"],"[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 22:29, kind: Custom { error: \"execution core: dynamic precision is not admitted\" } }) })]");
-			}
-			"Retained-resource" => {
-				assert_eq!(outcome["status"], "error");
-				assert_eq!(outcome["class"], "FormatLimit");
-				assert_eq!(expected["status"], "value");
-			}
-			_ => panic!("unknown C5 policy {policy}"),
-		}
-		for run in [&stock, &fresh] {
-			assert!(!has_address(
-				&String::from_utf8(run.stdout.clone()).unwrap()
-			));
-			assert!(!has_address(
-				&String::from_utf8(run.stderr.clone()).unwrap()
-			));
-		}
-		assert_eq!(
-			byte_projection(&fresh.stdout),
-			byte_projection(&stock.stdout),
-			"stdout: {label}"
-		);
-		assert_eq!(
-			byte_projection(&fresh.stderr),
-			byte_projection(&stock.stderr),
-			"stderr: {label}"
-		);
+			assert_eq!(
+				byte_projection(&fresh.stdout),
+				byte_projection(&stock.stdout),
+				"stdout: {label}"
+			);
+			assert_eq!(
+				byte_projection(&fresh.stderr),
+				byte_projection(&stock.stderr),
+				"stderr: {label}"
+			);
+
+		});
 	}
+	row_differences.finish();
 	assert_eq!(labels.len(), COUNT);
 	assert_eq!(
 		policies,

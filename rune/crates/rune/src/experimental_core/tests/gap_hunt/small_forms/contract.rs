@@ -208,64 +208,72 @@ fn contract() {
 	let (cases, policies, counts) = c12_data();
 	let start = Instant::now();
 	assert_eq!(cases.len(), policies.len());
+	let mut row_differences = super::ContractRows::default();
 	for (i, (case, policy)) in cases.iter().zip(&policies).enumerate() {
-		assert!(start.elapsed() < Duration::from_secs(1700));
-		let dir = out.join(format!("{i:03}"));
-		let (mut stock, stock_stdout, stock_stderr) = c12_launch("stock", i, &dir.join("stock"));
-		for key in ["label", "source_sha256", "fixture", "fuel"] {
-			assert_eq!(stock[key], case[key]);
-		}
-		assert_eq!(stock["schema"], 1);
-		assert_eq!(stock["engine"], "stock");
-		assert_eq!(stock["index"], i);
-		assert_eq!(
-			stock["source_hex"],
-			hex(case["source"].as_str().unwrap().as_bytes())
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				assert!(start.elapsed() < Duration::from_secs(1700));
+				let dir = out.join(format!("{i:03}"));
+				let (mut stock, stock_stdout, stock_stderr) =
+					c12_launch("stock", i, &dir.join("stock"));
+				for key in ["label", "source_sha256", "fixture", "fuel"] {
+					assert_eq!(stock[key], case[key]);
+				}
+				assert_eq!(stock["schema"], 1);
+				assert_eq!(stock["engine"], "stock");
+				assert_eq!(stock["index"], i);
+				assert_eq!(
+					stock["source_hex"],
+					hex(case["source"].as_str().unwrap().as_bytes())
+				);
+				let source = case["source"].as_str().unwrap();
+				stock["observation"]["outcome"] = super::d1c_diagnostics::before(
+					"small_forms",
+					case["label"].as_str().unwrap(),
+					source,
+					"stock",
+					&stock["observation"]["outcome"],
+				);
+				stock["observation"] = super::method_diagnostics::intentional_json_before(
+					"small_forms",
+					case["label"].as_str().unwrap(),
+					source,
+					"stock",
+					&stock["observation"],
+				);
+				let mut allowed = counts.get(format!("{i:03}")).cloned().unwrap_or(json!({}));
+				allowed
+					.as_object_mut()
+					.unwrap()
+					.retain(|path, _| !path.ends_with("/raw"));
+				let portable = project_p1(&c12_without_raw(stock), &allowed)
+					.unwrap_or_else(|e| panic!("P1 stock row{i}: {e}"));
+				let mut expected = policy.clone();
+				expected["stock"] = portable;
+				c12_with_admission(i, &mut expected);
+				let (mut actual, stdout, stderr) = c12_launch("fresh", i, &dir.join("fresh"));
+				actual["observation"]["outcome"] = super::d1c_diagnostics::before(
+					"small_forms",
+					actual["label"].as_str().unwrap(),
+					source,
+					"fresh",
+					&actual["observation"]["outcome"],
+				);
+				c12_compare(i, &expected, &actual, &counts);
+				let stock_subject = subject_stdout(&stock_stdout).unwrap();
+				assert_eq!(
+					subject_stdout(&stdout).unwrap(),
+					stock_subject,
+					"stdout row{i}"
+				);
+				assert!(stock_subject.is_empty());
+				assert!(stock_stderr.is_empty());
+				assert_eq!(stderr, stock_stderr);
+			},
 		);
-		let source = case["source"].as_str().unwrap();
-		stock["observation"]["outcome"] = super::d1c_diagnostics::before(
-			"small_forms",
-			case["label"].as_str().unwrap(),
-			source,
-			"stock",
-			&stock["observation"]["outcome"],
-		);
-		stock["observation"] = super::method_diagnostics::intentional_json_before(
-			"small_forms",
-			case["label"].as_str().unwrap(),
-			source,
-			"stock",
-			&stock["observation"],
-		);
-		let mut allowed = counts.get(format!("{i:03}")).cloned().unwrap_or(json!({}));
-		allowed
-			.as_object_mut()
-			.unwrap()
-			.retain(|path, _| !path.ends_with("/raw"));
-		let portable = project_p1(&c12_without_raw(stock), &allowed)
-			.unwrap_or_else(|e| panic!("P1 stock row{i}: {e}"));
-		let mut expected = policy.clone();
-		expected["stock"] = portable;
-		c12_with_admission(i, &mut expected);
-		let (mut actual, stdout, stderr) = c12_launch("fresh", i, &dir.join("fresh"));
-		actual["observation"]["outcome"] = super::d1c_diagnostics::before(
-			"small_forms",
-			actual["label"].as_str().unwrap(),
-			source,
-			"fresh",
-			&actual["observation"]["outcome"],
-		);
-		c12_compare(i, &expected, &actual, &counts);
-		let stock_subject = subject_stdout(&stock_stdout).unwrap();
-		assert_eq!(
-			subject_stdout(&stdout).unwrap(),
-			stock_subject,
-			"stdout row{i}"
-		);
-		assert!(stock_subject.is_empty());
-		assert!(stock_stderr.is_empty());
-		assert_eq!(stderr, stock_stderr);
 	}
+	row_differences.finish();
 	fs::write(
 		out.join("COMPLETE"),
 		"execution111 against live stock; P1 pointers only\n",

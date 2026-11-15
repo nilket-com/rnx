@@ -1,0 +1,79 @@
+{
+ "rule": "ADR 0279: source-bound current contract expectations, over the complete prior dispositions. Class 1 keeps the full precise ADR 0273 refusal; class 2 keeps full named ADR 0247 HostNotEnrolled diagnostics; class 3 compares the entire admitted observable to live legacy. Historical data remain unchanged.",
+ "rows": [
+  {
+   "index": 29,
+   "classification_0279": 2,
+   "legacy": {
+    "index": 29,
+    "label": "insert/with-capacity",
+    "source_sha256": "a44048b34efc3d257a53a9e3a9ab9d6e7442d1b224ca5c5bd428f10f77eb2d30",
+    "stock_canonical_sha256": "786c12dfcb4aa59f35f37031d1cd9639bf04aba09ce8e086ca57e9698c3c3df6",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 102,
+      "source": 0,
+      "start": 78
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 78, end: 102 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+     "refusal": "Native",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 78:102, kind: Custom { error: \"Native\" } }) })]"
+   },
+   "admitted": {
+    "stock_canonical_sha256": "786c12dfcb4aa59f35f37031d1cd9639bf04aba09ce8e086ca57e9698c3c3df6",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 102,
+      "source": 0,
+      "start": 78
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 78, end: 102 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+     "refusal": "Native",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 78:102, kind: HostNotEnrolled { item: ::std::object::Object::with_capacity } }) })]"
+   }
+  },
+  {
+   "index": 30,
+   "classification_0279": 2,
+   "legacy": {
+    "index": 30,
+    "label": "insert/object-new",
+    "source_sha256": "e8d798906c2a2aafbdae990cab0b7d62339a756c15e64218d98748a81296f261",
+    "stock_canonical_sha256": "aa82512360cfbd0fb3b45a730a9bbfcb4cbaf97cb6155799fac502143b050a3e",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 91,
+      "source": 0,
+      "start": 78
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 78, end: 91 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+     "refusal": "Native",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 78:91, kind: Custom { error: \"Native\" } }) })]"
+   },
+   "admitted": {
+    "stock_canonical_sha256": "aa82512360cfbd0fb3b45a730a9bbfcb4cbaf97cb6155799fac502143b050a3e",
+    "classification": "Inherited-refusal",
+    "fresh": {
+     "location": {
+      "end": 91,
+      "source": 0,
+      "start": 78
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 78, end: 91 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+     "refusal": "Native",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 78:91, kind: HostNotEnrolled { item: ::std::object::Object::new } }) })]"
+   }
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 # ADR 0279: ignored contracts run in the complete final
 
-Status: Proposed
+Status: Accepted
 
 Base: published aa12d6db59c9c87a9eccb9ba17729021006523f5 (ADR 0278).
 
@@ -13,7 +13,7 @@ introduced by records that were published while no gate ran them:
 
 | Contracts | First failure |
 |---|---|
-| callback_sort, dynamic_methods | the refusal is now AwaitRequired where the contract expects AsyncFunction, with a different span |
+| callback_sort, dynamic_methods | the refusals are now FutureValue and AwaitRequired where the contracts expect AsyncFunction, with more precise spans |
 | function_values, iter_adapters, numeric_methods, object_order, option_methods, type_values | the diagnostic is now HostNotEnrolled naming the item, where the contract expects the text Custom Native |
 | iter_terminals, object_keys, wrong_arity | a row the contract expects to be refused is now admitted |
 
@@ -73,3 +73,48 @@ also hides how many rows drifted.
 
 Importing JSON directly into the new store; new admissions beyond the
 rows these contracts already declare.
+
+## Results
+
+The complete final derives and runs all 50 native-manifest cases: 42 unique
+selectors, including all 35 ignored selectors and their separate strict
+sandbox variants. Discovery, exact selection, passed counts, row totals,
+timeouts, declared fixture inputs and empty-stderr requirements remain
+checked. The stage and finalizer independently reject missing, extra or
+changed cases. Copied test binaries carry their compilation-unit source
+proof; final-owned raw observations and binaries are released by the existing
+owner mechanism after durable acceptance or failure evidence.
+
+Each contract retains its existing comparisons inside a row collector. A
+mismatch records the row and original assertion values, then execution
+continues through the remaining rows before one contract failure. A control
+plants two mismatches and verifies that both are reported and the final row
+is reached. Catalogue controls remove ignored and nonignored cases and add
+a new manifest case; missing execution is rejected.
+
+The eleven stale contracts contain 3,390 rows and 46 changed expectations:
+
+| Contract | Rows | Refusal kind/span | Named host diagnostic | Newly admitted | Defects |
+|---|---:|---:|---:|---:|---:|
+| callback_sort | 131 | 1 | 0 | 0 | 0 |
+| dynamic_methods | 259 | 1 | 0 | 0 | 0 |
+| function_values | 101 | 0 | 25 | 0 | 0 |
+| iter_adapters | 1,134 | 0 | 3 | 1 | 0 |
+| iter_terminals | 580 | 0 | 1 | 1 | 0 |
+| numeric_methods | 370 | 0 | 3 | 0 | 0 |
+| object_keys | 70 | 0 | 0 | 1 | 0 |
+| object_order | 74 | 0 | 2 | 0 | 0 |
+| option_methods | 166 | 0 | 4 | 0 | 0 |
+| type_values | 120 | 0 | 2 | 0 | 0 |
+| wrong_arity | 385 | 0 | 0 | 1 | 0 |
+| Total | 3,390 | 2 | 40 | 4 | 0 |
+
+Per-contract supplements pin the prior effective rule and source before
+applying each update; frozen observations remain unchanged. The two ADR
+0273 refusals name the offending async function and locate its use instead
+of its declaration, retaining complete diagnostics. The forty ADR 0247
+HostNotEnrolled diagnostics retain the named item and exact text. Four rows
+admitted by ADR 0248 or 0277 compare their entire observable results with
+live legacy, including value graphs, effects, reuse, streams and warnings.
+No production engine source changes. All 35 ignored contracts retain their
+individual row totals, totaling 10,106 comparisons.

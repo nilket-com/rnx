@@ -278,16 +278,23 @@ fn contract() {
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	fs::create_dir(&out).unwrap();
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"));
-		let fresh = launch("fresh", i, case, &folder.join("fresh"));
-		verify_case(i, case, &stock.observation, &fresh.observation);
-		assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
-		assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"));
+				let fresh = launch("fresh", i, case, &folder.join("fresh"));
+				verify_case(i, case, &stock.observation, &fresh.observation);
+				assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
+				assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+			},
+		);
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", cases.len());
 }
 

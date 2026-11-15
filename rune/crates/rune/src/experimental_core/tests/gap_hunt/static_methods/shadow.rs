@@ -5,17 +5,49 @@
 /// Names the lowering dispatches on without a script target, from each table.
 fn fast_path_names() -> Vec<&'static str> {
 	let mut names = vec![
-		"len", "clone", "push", "collect", "sort_by", "get", "contains_key", "insert", "remove",
-		"is_empty", "abs", "round", "powf", "cmp", "unwrap", "expect", "is_some", "is_none",
-		"is_ok", "is_err", "unwrap_or", "chars", "skip", "take", "count", "next", "sum",
-		"product", "map", "filter", "filter_map", "flat_map", "enumerate", "chain", "rev",
-		"fold", "reduce", "find", "any", "all", "iter",
+		"len",
+		"clone",
+		"push",
+		"collect",
+		"sort_by",
+		"get",
+		"contains_key",
+		"insert",
+		"remove",
+		"is_empty",
+		"abs",
+		"round",
+		"powf",
+		"cmp",
+		"unwrap",
+		"expect",
+		"is_some",
+		"is_none",
+		"is_ok",
+		"is_err",
+		"unwrap_or",
+		"chars",
+		"skip",
+		"take",
+		"count",
+		"next",
+		"sum",
+		"product",
+		"map",
+		"filter",
+		"filter_map",
+		"flat_map",
+		"enumerate",
+		"chain",
+		"rev",
+		"fold",
+		"reduce",
+		"find",
+		"any",
+		"all",
+		"iter",
 	];
-	names.extend(
-		crate::function::text::Method::ALL
-			.iter()
-			.map(|m| m.name()),
-	);
+	names.extend(crate::function::text::Method::ALL.iter().map(|m| m.name()));
 	names.extend(
 		crate::function::number::Method::ALL
 			.iter()
@@ -60,20 +92,20 @@ fn shadow(program: &str) -> Option<Json> {
 	.unwrap();
 	let mut executor = Executor::new().unwrap();
 	executor
-		.set_host_runtime(Some(
-			context.execution_runtime().unwrap(),
-		))
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
 		.unwrap();
 	let main = built.function(Hash::type_hash(["main"])).unwrap();
-	Some(match executor.invoke(&built, &mut store, main, &[], 200_000) {
-		Ok(root) => {
-			let value = store.import(&root).unwrap();
-			let runtime_graph = graph(&mut store, value);
-			store.root_release(root).unwrap();
-			json!({"value":runtime_graph})
-		}
-		Err(failure) => json!({"error":self::failure(&failure, &built, &sources)["class"]}),
-	})
+	Some(
+		match executor.invoke(&built, &mut store, main, &[], 200_000) {
+			Ok(root) => {
+				let value = store.import(&root).unwrap();
+				let runtime_graph = graph(&mut store, value);
+				store.root_release(root).unwrap();
+				json!({"value":runtime_graph})
+			}
+			Err(failure) => json!({"error":self::failure(&failure, &built, &sources)["class"]}),
+		},
+	)
 }
 
 #[test]
@@ -89,6 +121,7 @@ fn shadow_contract() {
 		("a,b", "|x|x,|x,y|x"),
 	];
 	let mut admitted = 0;
+	let mut row_differences = super::ContractRows::default();
 	for name in fast_path_names() {
 		for (params, args) in ARGS {
 			let params = if params.is_empty() {
@@ -115,10 +148,13 @@ fn shadow_contract() {
 					continue;
 				};
 				admitted += 1;
+				row_differences.check(&program, |_diagnostic| {
 				assert_eq!(execution, legacy_shadow(&program), "{program}");
+				});
 			}
 		}
 	}
+	row_differences.finish();
 	eprintln!("C18a shadow programs admitted: {admitted}");
 	// The certain-receiver forms of every name are admitted at least.
 	assert!(admitted >= 2 * fast_path_names().len(), "{admitted}");

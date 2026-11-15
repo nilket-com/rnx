@@ -1,0 +1,68 @@
+{
+ "rule": "ADR 0279: source-bound current contract expectations, over the complete prior dispositions. Class 1 keeps the full precise ADR 0273 refusal; class 2 keeps full named ADR 0247 HostNotEnrolled diagnostics; class 3 compares the entire admitted observable to live legacy. Historical data remain unchanged.",
+ "rows": [
+  {
+   "index": 510,
+   "classification_0279": 3,
+   "legacy": {
+    "index": 510,
+    "label": "receiver/const-source",
+    "source_sha256": "460f83bc9b784c6d15555af1567d25706e7c2642db28851e56e0a9f367ef1c28",
+    "stock_row_sha256": "1ff57b5cfd5bb936b9e2901b4b1abae0473e3d68c6333ab1782fcce63ef4fd8b",
+    "fresh": {
+     "location": {
+      "end": 63,
+      "source": 0,
+      "start": 58
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 58, end: 63 }), operation: \"FrontendDiagnostic\", refusal: Some(FrontendDiagnostic), detail: None }",
+     "refusal": "FrontendDiagnostic",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 58:63, kind: Custom { error: \"restricted scalar constant\" } }) })]",
+    "classification": "Inherited-refusal"
+   },
+   "admitted": {
+    "classification": "Exact",
+    "note": "ADR 0279: admission from ADR 0248; compare the complete observable to live legacy."
+   }
+  },
+  {
+   "index": 558,
+   "classification_0279": 2,
+   "legacy": {
+    "index": 558,
+    "label": "compile/range-fn-value",
+    "source_sha256": "5eef3149eeca2ef9ba508d6f7033b39fc9d71ffebab26643048b3a30773cf8c9",
+    "stock_row_sha256": "66b0aa07c7f27eb702301e0d10d842fc6773457cca427601ab796853e67db4bb",
+    "fresh": {
+     "location": {
+      "end": 86,
+      "source": 0,
+      "start": 70
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 70, end: 86 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+     "refusal": "Native",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 70:86, kind: Custom { error: \"Native\" } }) })]",
+    "classification": "Inherited-refusal"
+   },
+   "admitted": {
+    "stock_row_sha256": "66b0aa07c7f27eb702301e0d10d842fc6773457cca427601ab796853e67db4bb",
+    "fresh": {
+     "location": {
+      "end": 86,
+      "source": 0,
+      "start": 70
+     },
+     "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 70, end: 86 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+     "refusal": "Native",
+     "status": "refused"
+    },
+    "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 70:86, kind: HostNotEnrolled { item: ::std::iter::range } }) })]",
+    "classification": "Inherited-refusal"
+   }
+  }
+ ]
+}

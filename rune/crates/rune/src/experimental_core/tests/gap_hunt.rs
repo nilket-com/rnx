@@ -30,8 +30,10 @@ use std::{
 	vec::Vec,
 };
 
+mod contract_rows;
 #[path = "gap_hunt/s8_tuple.rs"]
 mod s8_tuple;
+use contract_rows::ContractRows;
 
 pub(super) mod d1b_diagnostics;
 mod d1c_diagnostics;

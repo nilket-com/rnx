@@ -176,44 +176,50 @@ fn blocking_wait_child() {
 fn blocking_wait_controls() {
 	let root = std::path::PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
 	let selector = "experimental_core::tests::gap_hunt::live_oracle::blocking_wait_child";
-	let success = run_child_with_limits(
-		selector,
-		"success",
-		&root.join("success"),
-		"V4_ORACLE_RESULT",
-		&[("V4_ORACLE_MODE", "success".as_ref())],
-		5,
-		Duration::from_secs(5),
-	);
-	assert_eq!(success.observation, serde_json::json!({"ok":true}));
+	let mut row_differences = super::ContractRows::default();
+	row_differences.check("success", |_diagnostic| {
+		let success = run_child_with_limits(
+			selector,
+			"success",
+			&root.join("success"),
+			"V4_ORACLE_RESULT",
+			&[("V4_ORACLE_MODE", "success".as_ref())],
+			5,
+			Duration::from_secs(5),
+		);
+		assert_eq!(success.observation, serde_json::json!({"ok":true}));
+	});
 	for (mode, wall) in [
 		("timeout", Duration::from_millis(250)),
 		("stream", Duration::from_secs(5)),
 	] {
-		let folder = root.join(mode);
-		let failed = std::panic::catch_unwind(|| {
-			run_child_with_limits(
-				selector,
-				mode,
-				&folder,
-				"V4_ORACLE_RESULT",
-				&[("V4_ORACLE_MODE", mode.as_ref())],
-				5,
-				wall,
-			)
+		row_differences.check(mode, |_diagnostic| {
+			let folder = root.join(mode);
+			let failed = std::panic::catch_unwind(|| {
+				run_child_with_limits(
+					selector,
+					mode,
+					&folder,
+					"V4_ORACLE_RESULT",
+					&[("V4_ORACLE_MODE", mode.as_ref())],
+					5,
+					wall,
+				)
+			});
+			assert!(failed.is_err(), "{mode}: required stop missing");
+			let receipt = fs::read_to_string(folder.join("receipt.txt")).unwrap();
+			assert!(receipt.contains("stop:true\n"));
+			assert!(receipt.contains(if mode == "timeout" {
+				"timeout:true\nstream_limit:false\n"
+			} else {
+				"timeout:false\nstream_limit:true\n"
+			}));
+			for stream in ["stdout", "stderr"] {
+				assert!(fs::metadata(folder.join(stream)).unwrap().len() <= CAP as u64);
+			}
 		});
-		assert!(failed.is_err(), "{mode}: required stop missing");
-		let receipt = fs::read_to_string(folder.join("receipt.txt")).unwrap();
-		assert!(receipt.contains("stop:true\n"));
-		assert!(receipt.contains(if mode == "timeout" {
-			"timeout:true\nstream_limit:false\n"
-		} else {
-			"timeout:false\nstream_limit:true\n"
-		}));
-		for stream in ["stdout", "stderr"] {
-			assert!(fs::metadata(folder.join(stream)).unwrap().len() <= CAP as u64);
-		}
 	}
+	row_differences.finish();
 	std::println!("CONTRACT ENGINE both");
 	std::println!("CONTRACT ROWS 3");
 }

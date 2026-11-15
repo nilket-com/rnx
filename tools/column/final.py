@@ -103,6 +103,8 @@ def run_stages(root, out, selection, owner, environment, evidence, rows):
 				cross = owner.assign(root/'target/rnx-verify',name,name=parent.name)
 				if cross != parent: raise ValueError('cross assignment differs from selection')
 				env['RNX_FINAL_CROSS_ROOT'] = str(cross)
+			elif kind == 'contracts':
+				env['RNX_FINAL_CONTRACT_ROOT'] = str(owner.assign(out,name+'-contracts'))
 			else: raise ValueError('unknown bulk root kind: '+kind)
 		with (out/(name+'.log')).open('x') as log:
 			done = child.run(command,cwd=root,root=root,env=env,stdout=log,stderr=subprocess.STDOUT,

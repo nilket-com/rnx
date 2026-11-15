@@ -224,60 +224,64 @@ fn contract_cases(generated: Vec<(String, String)>) {
 			["literal/vec/get", "literal/string/get", "literal/tuple/get"]
 		);
 	}
+	let mut row_differences = super::ContractRows::default();
 	for (n, (label, source)) in generated.iter().enumerate() {
-		let id = format!("{n:05}");
-		let path = out.join(format!("{id}.source.rn"));
-		fs::write(&path, source).unwrap();
-		let [stock, run] = ["stock", "fresh"].map(|engine| {
-			let run = launch(&path, &path, "main", engine, &scratch.0, &out, &id);
-			assert!(run.complete, "{engine} {label}: {}", run.record);
-			super::len_clone::assert_no_addresses(label, &run.record, &run.stdout, &run.stderr);
-			let fields: Vec<_> = run.record.split('\t').collect();
-			assert!(!fields[1].contains("0x"), "unstable class: {}", run.record);
-			run
-		});
-		let actual: Vec<_> = run.record.split('\t').collect();
-		// C12 admits all five historical range-shape refusal witnesses.
-		// Compare their complete observations and streams to stock below.
-		let mut expected: Vec<_> = stock.record.split('\t').collect();
-		// Nine string-slice rows report stock's Debug fallback class. Equate
-		// only those rows to new's public Panic class; compare the exact panic
-		// message and streams below.
-		if matches!(
-			label.as_str(),
-			"dynamic/string/reversed/get"
-				| "dynamic/string/reversed/add"
-				| "dynamic/string/past-end/get"
-				| "dynamic/string/past-end/add"
-				| "dynamic/string/start-past-end/get"
-				| "dynamic/string/start-past-end/add"
-				| "witness/utf8-split-start"
-				| "witness/utf8-split-end"
-				| "witness/utf8-empty-split"
-		) {
+		row_differences.check(format!("{n}: {label}"), |_diagnostic| {
+			let id = format!("{n:05}");
+			let path = out.join(format!("{id}.source.rn"));
+			fs::write(&path, source).unwrap();
+			let [stock, run] = ["stock", "fresh"].map(|engine| {
+				let run = launch(&path, &path, "main", engine, &scratch.0, &out, &id);
+				assert!(run.complete, "{engine} {label}: {}", run.record);
+				super::len_clone::assert_no_addresses(label, &run.record, &run.stdout, &run.stderr);
+				let fields: Vec<_> = run.record.split('\t').collect();
+				assert!(!fields[1].contains("0x"), "unstable class: {}", run.record);
+				run
+			});
+			let actual: Vec<_> = run.record.split('\t').collect();
+			// C12 admits all five historical range-shape refusal witnesses.
+			// Compare their complete observations and streams to stock below.
+			let mut expected: Vec<_> = stock.record.split('\t').collect();
+			// Nine string-slice rows report stock's Debug fallback class. Equate
+			// only those rows to new's public Panic class; compare the exact panic
+			// message and streams below.
+			if matches!(
+				label.as_str(),
+				"dynamic/string/reversed/get"
+					| "dynamic/string/reversed/add"
+					| "dynamic/string/past-end/get"
+					| "dynamic/string/past-end/add"
+					| "dynamic/string/start-past-end/get"
+					| "dynamic/string/start-past-end/add"
+					| "witness/utf8-split-start"
+					| "witness/utf8-split-end"
+					| "witness/utf8-empty-split"
+			) {
+				assert_eq!(
+					expected[1],
+					"stock:Panic { reason: Panic { inner: \"missing string slice\" } }"
+				);
+				expected[1] = "Panic";
+			}
+			// The engine-specific source-site label is retained, not equated.
 			assert_eq!(
-				expected[1],
-				"stock:Panic { reason: Panic { inner: \"missing string slice\" } }"
+				(&actual[..2], &actual[3..]),
+				(&expected[..2], &expected[3..]),
+				"observation drift: {label}"
 			);
-			expected[1] = "Panic";
-		}
-		// The engine-specific source-site label is retained, not equated.
-		assert_eq!(
-			(&actual[..2], &actual[3..]),
-			(&expected[..2], &expected[3..]),
-			"observation drift: {label}"
-		);
-		assert_eq!(
-			hex(&run.stdout),
-			hex(&stock.stdout),
-			"stdout drift: {label}"
-		);
-		assert_eq!(
-			hex(&run.stderr),
-			hex(&stock.stderr),
-			"stderr drift: {label}"
-		);
+			assert_eq!(
+				hex(&run.stdout),
+				hex(&stock.stdout),
+				"stdout drift: {label}"
+			);
+			assert_eq!(
+				hex(&run.stderr),
+				hex(&stock.stderr),
+				"stderr drift: {label}"
+			);
+		});
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", generated.len());
 }
 

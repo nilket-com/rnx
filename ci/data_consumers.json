@@ -420,6 +420,15 @@
       "max_bytes": 18458,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
     },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/0279_contract_updates.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0279_contract_updates.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/contract.rs"
+      },
+      "max_bytes": 57344,
+      "reason": "ADR 0279 source-bound current rules for 25 function-value rows; the contract verifies the complete replaced disposition and full named HostNotEnrolled diagnostic. Historical observations remain unchanged."
+    },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/cases.json": {
       "class": "live-fixture",
       "consumer": {

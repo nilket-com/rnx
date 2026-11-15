@@ -40,6 +40,7 @@ BULK_ROOTS = {
 	'fixed-route': ('fixed',),
 	'generated-projects': ('project',),
 	'cross': ('cross',),
+	'rune-suite': ('contracts',),
 }
 
 BULK_ROOTS.update({name: ('baseline',) for name in LINTS})

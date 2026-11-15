@@ -187,26 +187,33 @@ fn run_contract_cases(function_copy: bool) {
 	}
 	let cases_file = function_copy.then_some(supplemental_cases.as_path());
 	let mut labels = std::collections::BTreeSet::new();
+	let mut row_differences = super::ContractRows::default();
 	for (i, case) in cases.iter().enumerate() {
-		let label = case["label"].as_str().unwrap();
-		assert!(labels.insert(label));
-		let folder = out.join(format!("{i:03}"));
-		let stock = launch("stock", i, case, &folder.join("stock"), cases_file);
-		let expected = &stock.observation;
-		let fresh = launch("fresh", i, case, &folder.join("fresh"), cases_file);
-		if function_copy {
-			verify_function_copy_record(
-				&fresh.observation,
-				case,
-				expected,
-				&disposition["rows"][i],
-			);
-		} else {
-			verify_record(&fresh.observation, case, expected, &disposition["rows"][i]);
-		}
-		assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
-		assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+		row_differences.check(
+			format!("{i}: {}", case["label"].as_str().unwrap()),
+			|_diagnostic| {
+				let label = case["label"].as_str().unwrap();
+				assert!(labels.insert(label));
+				let folder = out.join(format!("{i:03}"));
+				let stock = launch("stock", i, case, &folder.join("stock"), cases_file);
+				let expected = &stock.observation;
+				let fresh = launch("fresh", i, case, &folder.join("fresh"), cases_file);
+				if function_copy {
+					verify_function_copy_record(
+						&fresh.observation,
+						case,
+						expected,
+						&disposition["rows"][i],
+					);
+				} else {
+					verify_record(&fresh.observation, case, expected, &disposition["rows"][i]);
+				}
+				assert_eq!(hex(&fresh.stdout), hex(&stock.stdout), "stdout: {label}");
+				assert_eq!(hex(&fresh.stderr), hex(&stock.stderr), "stderr: {label}");
+			},
+		);
 	}
+	row_differences.finish();
 	super::contract_completed("fresh", cases.len());
 }
 
