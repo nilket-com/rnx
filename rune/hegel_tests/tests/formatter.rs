@@ -120,7 +120,7 @@ fn token_vocabulary() -> Vec<&'static str> {
 /// Property: the formatter never panics on arbitrary unicode input.
 #[test]
 fn formatting_never_panics_on_arbitrary_text() {
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("formatting_never_panics_on_arbitrary_text", 2000, |tc| {
 		let source: String = tc.draw(hegel::one_of!(
 			generators::text().boxed(),
 			generators::vecs(
@@ -133,9 +133,7 @@ fn formatting_never_panics_on_arbitrary_text() {
 		));
 
 		try_format(&source);
-	})
-	.settings(hegel::Settings::new().test_cases(2000))
-	.run();
+	});
 }
 
 /// Property: formatting something which has already been formatted changes
@@ -147,7 +145,7 @@ fn formatting_never_panics_on_arbitrary_text() {
 fn formatting_is_idempotent() {
 	let vocabulary = token_vocabulary();
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("formatting_is_idempotent", 5000, |tc| {
 		let count = tc.draw(generators::integers::<usize>().max_value(40));
 		let mut source = String::new();
 
@@ -170,9 +168,7 @@ fn formatting_is_idempotent() {
 			once, twice,
 			"Formatting is not a fixed point.\nSource:\n{source}\nOnce:\n{once}\nTwice:\n{twice}"
 		);
-	})
-	.settings(hegel::Settings::new().test_cases(5000))
-	.run();
+	});
 }
 
 /// The shapes which have been found not to be a fixed point, kept as cases of
@@ -190,6 +186,8 @@ fn known_shapes_are_a_fixed_point() {
 		"f//c\nn\n",
 		"return 'label break \n",
 		"mod {   \n",
+		"crate ! { ",
+		"crate\n//! doc\n{ ",
 	] {
 		let Some(once) = try_format(source) else {
 			continue;
@@ -202,4 +200,29 @@ fn known_shapes_are_a_fixed_point() {
 			"Formatting is not a fixed point.\nSource:\n{source}\nOnce:\n{once}\nTwice:\n{twice}"
 		);
 	}
+}
+
+#[test]
+fn conditional_record_formatter_counterexamples_are_checked() {
+	for source in [
+		"crate ! { }",
+		"name ! ( )",
+		"name ! [ ]",
+		"crate\n//! doc\n{ ",
+	] {
+		let once = try_format(source).expect("counterexample must format");
+		let twice = try_format(&once).expect("formatted counterexample must format");
+		assert_eq!(once, twice, "{source:?}");
+	}
+	// A brace is not a module name. Treating it as one wrote a missing
+	// module's delimiter into its enclosing block on the following pass.
+	// The incomplete macro is now recognized as a macro, so its missing
+	// delimiter is rejected rather than rewritten as a different expression.
+	for source in ["crate ! { ", "{ mod { ", "mod { "] {
+		assert!(
+			try_format(source).is_none(),
+			"missing module name accepted: {source:?}"
+		);
+	}
+	assert!(try_format("mod present {}").is_some());
 }

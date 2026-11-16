@@ -15,7 +15,7 @@ use rune_hegel_tests::{eval_reference, eval_result, expr, render, ALL_OPS};
 fn const_eval_matches_runtime_eval() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("const_eval_matches_runtime_eval", 100, |tc| {
 		let depth = tc.draw(generators::integers::<u32>().max_value(3));
 		let e = tc.draw(expr(depth, true, ALL_OPS.to_vec()));
 
@@ -45,6 +45,5 @@ fn const_eval_matches_runtime_eval() {
                  reference: {expected:?}\nruntime: {runtime:?}\nconst: {constant:?}\nsource: {src}"
 			),
 		}
-	})
-	.run();
+	});
 }

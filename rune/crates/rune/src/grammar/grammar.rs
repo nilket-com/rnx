@@ -1564,8 +1564,8 @@ fn primary(
 				// A macro is invoked through any of the three delimiters, which
 				// are interchangeable since its input is a raw token stream
 				// either way.
-				K![!] if matches!(p.glued(1)?, K!['('] | K!['['] | K!['{']) => {
-					let (matcher, close) = match p.glued(1)? {
+				K![!] if matches!(p.nth(1)?, K!['('] | K!['['] | K!['{']) => {
+					let (matcher, close) = match p.nth(1)? {
 						K!['('] => (parens as fn(Kind) -> i32, K![')']),
 						K!['['] => (brackets as fn(Kind) -> i32, K![']']),
 						_ => (braces as fn(Kind) -> i32, K!['}']),

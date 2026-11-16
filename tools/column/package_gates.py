@@ -7,6 +7,9 @@ PACKAGE_CHECKS = {
 	'rune/examples/Cargo.toml': ('package-examples', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'rune/examples/Cargo.toml', '--all-targets']]),
 	'rune/benches/Cargo.toml': ('package-benches', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'rune/benches/Cargo.toml', '--benches']]),
 	'rune/hegel_tests/Cargo.toml': ('package-hegel', [['cargo', '+1.98.1', 'test', '--manifest-path', 'rune/hegel_tests/Cargo.toml']]),
+	'rune/tools/xtask/column/probe/Cargo.toml': ('package-column-probe', [['cargo', '+1.98.1', 'check', '--locked', '--all-targets', '--all-features', '--manifest-path', 'rune/tools/xtask/column/probe/Cargo.toml']]),
+	'rune/tools/xtask/measure/harness/Cargo.toml': ('package-measure-harness', [['cargo', '+1.98.1', 'check', '--locked', '--all-targets', '--all-features', '--manifest-path', 'rune/tools/xtask/measure/harness/Cargo.toml']]),
+	'rune/tools/xtask/Cargo.toml': ('package-xtask', [['cargo', '+1.98.1', 'test', '--locked', '--all-targets', '--all-features', '--manifest-path', 'rune/tools/xtask/Cargo.toml']]),
 	'tools/polars-gen/Cargo.toml': ('package-polars-gen', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'tools/polars-gen/Cargo.toml', '--all-targets']]),
 }
 DEMO_CHECKS = {

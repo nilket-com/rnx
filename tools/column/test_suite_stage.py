@@ -62,11 +62,30 @@ class DeclaredOutput(unittest.TestCase):
 	def test_cleanup_rejection_fails(self):self.exercise(cleanup_failure=True)
 
 class PackageChecks(unittest.TestCase):
+	def test_probe_build_and_lint_use_configured_headers_and_refuse_missing_headers(self):
+		manifest = 'rune/tools/xtask/column/probe/Cargo.toml'
+		with tempfile.TemporaryDirectory() as tmp:
+			root = Path(tmp)
+			header = root/'include/valgrind/callgrind.h'
+			header.parent.mkdir(parents=True); header.touch()
+			with patch('fixed_route_gate.valgrind_root', return_value=root), patch.object(suite.subprocess, 'run') as run:
+				for index, verb in enumerate(('check', 'clippy')):
+					suite.invoke(['cargo', '+1.98.1', verb, '--manifest-path', manifest], root, root/f'{index}.log')
+					self.assertEqual(run.call_args.kwargs['env']['VALGRIND_INCLUDE'], str(root/'include'))
+				header.unlink(); run.reset_mock()
+				with self.assertRaisesRegex(ValueError, 'requires Valgrind include'):
+					suite.invoke(['cargo', '+1.98.1', 'check', '--manifest-path', manifest], root, root/'missing.log')
+				run.assert_not_called()
+				suite.invoke(['cargo', '+1.98.1', 'fmt', '--manifest-path', manifest], root, root/'format.log')
+				self.assertIsNone(run.call_args.kwargs['env'])
+
 	def test_every_registered_recipe_propagates_package_build_failure(self):
 		for manifest, (name, commands) in suite.PACKAGE_CHECKS.items():
 			with self.subTest(manifest=manifest), tempfile.TemporaryDirectory() as tmp:
+				root = Path(tmp); header = root/'include/valgrind/callgrind.h'
+				header.parent.mkdir(parents=True); header.touch()
 				self.assertTrue(all(manifest in c for c in suite.recipes(name)))
-				with patch.object(suite.subprocess, 'run', side_effect=subprocess.CalledProcessError(101, commands[0])) as run:
+				with patch('fixed_route_gate.valgrind_root', return_value=root), patch.object(suite.subprocess, 'run', side_effect=subprocess.CalledProcessError(101, commands[0])) as run:
 					with self.assertRaises(subprocess.CalledProcessError): suite.run(name, Path(tmp))
 					self.assertEqual(run.call_count, 1)
 					self.assertTrue(run.call_args.kwargs['check'])

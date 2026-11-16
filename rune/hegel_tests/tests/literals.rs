@@ -10,7 +10,7 @@ use rune_hegel_tests::eval_result;
 fn integer_literal_roundtrip_all_bases() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("integer_literal_roundtrip_all_bases", 100, |tc| {
 		let n: i64 = tc.draw(hegel::one_of!(
 			generators::integers::<i64>(),
 			generators::sampled_from(vec![i64::MIN, i64::MIN + 1, -1, 0, 1, i64::MAX]),
@@ -48,8 +48,7 @@ fn integer_literal_roundtrip_all_bases() {
 			Ok(out) => assert_eq!(out, n, "source: {src}"),
 			Err(error) => panic!("failed to evaluate literal {src}: {error:?}"),
 		}
-	})
-	.run();
+	});
 }
 
 /// Property: rendering any finite `f64` with Rust's shortest round-trip
@@ -59,7 +58,7 @@ fn integer_literal_roundtrip_all_bases() {
 fn float_literal_roundtrip() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("float_literal_roundtrip", 100, |tc| {
 		let f: f64 = tc.draw(
 			generators::floats::<f64>()
 				.allow_nan(false)
@@ -76,8 +75,7 @@ fn float_literal_roundtrip() {
 			),
 			Err(error) => panic!("failed to evaluate float literal {src}: {error:?}"),
 		}
-	})
-	.run();
+	});
 }
 
 /// Escape a string so it can be embedded in a double-quoted Rune string
@@ -110,7 +108,7 @@ fn escape_rune_string(s: &str, force_unicode_escapes: bool) -> String {
 fn string_literal_roundtrip() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("string_literal_roundtrip", 100, |tc| {
 		let s: String = tc.draw(generators::text());
 		let force_unicode_escapes = tc.draw(generators::booleans());
 
@@ -120,8 +118,7 @@ fn string_literal_roundtrip() {
 			Ok(out) => assert_eq!(out, s, "source: {src}"),
 			Err(error) => panic!("failed to evaluate string literal {src}: {error:?}"),
 		}
-	})
-	.run();
+	});
 }
 
 /// Property: any char, escaped and embedded as a Rune char literal, evaluates
@@ -130,7 +127,7 @@ fn string_literal_roundtrip() {
 fn char_literal_roundtrip() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("char_literal_roundtrip", 100, |tc| {
 		let c: char = tc.draw(
 			hegel::one_of!(
 				generators::integers::<u32>().max_value(0x7F),
@@ -154,6 +151,5 @@ fn char_literal_roundtrip() {
 			Ok(out) => assert_eq!(out, c, "source: {src}"),
 			Err(error) => panic!("failed to evaluate char literal {src}: {error:?}"),
 		}
-	})
-	.run();
+	});
 }

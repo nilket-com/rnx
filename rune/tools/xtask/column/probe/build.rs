@@ -1,6 +1,5 @@
 fn main() {
-	let include = std::env::var("VALGRIND_INCLUDE")
-		.unwrap_or_else(|_| "/usr/include".into());
+	let include = std::env::var("VALGRIND_INCLUDE").unwrap_or_else(|_| "/usr/include".into());
 	cc::Build::new()
 		.file("measure.c")
 		.include(include)

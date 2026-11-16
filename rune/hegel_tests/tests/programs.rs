@@ -20,7 +20,7 @@ use rune_hegel_tests::{eval_result, program, render_source, run_reference, Outco
 fn programs_evaluate_as_the_reference_does() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("programs_evaluate_as_the_reference_does", 1000, |tc| {
 		let depth = tc.draw(generators::integers::<u32>().min_value(1).max_value(3));
 		let boolean = tc.draw(generators::booleans());
 		let p = tc.draw(program(depth, boolean));
@@ -50,9 +50,7 @@ fn programs_evaluate_as_the_reference_does() {
 
 		assert_eq!(ints, vars.ints(), "variables differ\nsource: {source}");
 		assert_eq!(bools, vars.bools(), "variables differ\nsource: {source}");
-	})
-	.settings(hegel::Settings::new().test_cases(1000))
-	.run();
+	});
 }
 
 fn evaluate<T>(context: &Context, source: &str) -> (T, Vec<i64>, Vec<bool>)

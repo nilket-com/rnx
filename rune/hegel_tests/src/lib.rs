@@ -1,5 +1,8 @@
 use core::mem::replace;
 
+mod property;
+pub use property::{property, Case, GATE_SEED};
+
 use rune::runtime::FromValue;
 use rune::sync::Arc;
 use rune::{Context, Diagnostics, Hash, Options, Source, Sources, Vm};

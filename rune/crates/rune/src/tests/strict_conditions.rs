@@ -100,6 +100,50 @@ fn short_circuit_and_diverging_rhs_never_execute_unreachable_work() {
 }
 
 #[test]
+fn conditional_assignment_temporary_survives_all_exits() {
+	for (body, expected) in [
+		("let b=false; b=true && b; b", false),
+		("let b=true; b=false || b; b", true),
+		("let b=false; { b=true && b; } b", false),
+		("let b=false; b=false && { return true; }; b", false),
+		("let b=false; b=true && { return false; }; b", false),
+		("let b=true; b=false || { return true; }; b", true),
+		("let b=false; b={ return true; } && b; b", true),
+		("let b=false; b=true && (true && b); b", false),
+		("let b=true; b=false || (false || b); b", true),
+		("let b=false; b=loop { break true && b; }; b", false),
+		("let b=true; b=loop { break false || b; }; b", true),
+		("loop { break true && false; }", false),
+		("let b=false; b='out: { break 'out true && b; }; b", false),
+	] {
+		let (result, _, _) = execute(body);
+		assert_eq!(
+			from_value::<bool>(result.unwrap()).unwrap(),
+			expected,
+			"{body}"
+		);
+	}
+	type_error(
+		"let b=false; b=true && mark(w, 1); b",
+		"mark(w, 1)",
+		1,
+		TypeInfo::named::<i64>(),
+	);
+	type_error("let b=false; b=1 && b; b", "1", 0, TypeInfo::named::<i64>());
+	// A diagnostic while assembling the RHS must release every queued owner.
+	for body in [
+		"let b=false; b=true && unknown; b",
+		"let b=false; b=true && (false || unknown); b",
+	] {
+		let context = Context::with_default_modules().unwrap();
+		let mut sources = crate::tests::sources(&format!("pub fn main(){{{body}}}"));
+		let mut diagnostics = Diagnostics::new();
+		assert!(crate::tests::vm(&context, &mut sources, &mut diagnostics, false).is_err());
+		assert!(diagnostics.has_error());
+	}
+}
+
+#[test]
 fn assertions_patterns_and_bitwise_not_keep_their_intended_meaning() {
 	for body in ["assert!(1)", "assert!(0)"] {
 		let (result, _, source) = execute(body);

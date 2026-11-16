@@ -8,7 +8,7 @@ use rune_hegel_tests::try_compile;
 fn compile_never_panics_on_arbitrary_text() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("compile_never_panics_on_arbitrary_text", 100, |tc| {
 		let source: String = tc.draw(hegel::one_of!(
 			generators::text().boxed(),
 			// Strings built from raw codepoints, hitting control characters and
@@ -24,8 +24,7 @@ fn compile_never_panics_on_arbitrary_text() {
 		let script = tc.draw(generators::booleans());
 
 		try_compile(&context, &source, script);
-	})
-	.run();
+	});
 }
 
 fn token_vocabulary() -> Vec<&'static str> {
@@ -139,7 +138,7 @@ fn compile_never_panics_on_token_soup() {
 	let context = Context::with_default_modules().expect("failed to build context");
 	let vocabulary = token_vocabulary();
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("compile_never_panics_on_token_soup", 100, |tc| {
 		let count = tc.draw(generators::integers::<usize>().max_value(60));
 		let mut source = String::new();
 
@@ -152,8 +151,7 @@ fn compile_never_panics_on_token_soup() {
 
 		let script = tc.draw(generators::booleans());
 		try_compile(&context, &source, script);
-	})
-	.run();
+	});
 }
 
 fn nested_source(shape: &str, depth: usize) -> String {
@@ -195,7 +193,7 @@ fn nested_source(shape: &str, depth: usize) -> String {
 fn nested_expressions_compile_without_crashing() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("nested_expressions_compile_without_crashing", 100, |tc| {
 		let depth = tc.draw(generators::integers::<usize>().min_value(1).max_value(2000));
 		let shape = tc.draw(generators::sampled_from(vec![
 			"paren", "array", "block", "neg", "object", "call",
@@ -203,6 +201,5 @@ fn nested_expressions_compile_without_crashing() {
 
 		let source = nested_source(shape, depth);
 		try_compile(&context, &source, true);
-	})
-	.run();
+	});
 }

@@ -1299,6 +1299,9 @@ fn step<'a>(fmt: &mut Formatter<'a>, cx: &mut Cx<'a>, step: Step<'a>) -> Result<
 				let p = buf.stream();
 				p.expect(K![mod])?.fmt(fmt)?;
 				fmt.ws()?;
+				if !matches!(p.peek(), K![ident]) {
+					return Err(p.expected("module name"));
+				}
 				p.pump()?.fmt(fmt)?;
 				p.eat(Block)
 			};
@@ -1687,6 +1690,10 @@ fn step<'a>(fmt: &mut Formatter<'a>, cx: &mut Cx<'a>, step: Step<'a>) -> Result<
 							}
 						}
 
+						// A comment before the opening brace is not an object
+						// member. Let writing the brace collect it before deciding
+						// whether the body needs an expanded layout.
+						p.expect(K!['{'])?.fmt(fmt)?;
 						let mut count = 0;
 						let mut expanded = fmt.source.is_at_least(p.span(), 80)?;
 
@@ -1699,7 +1706,6 @@ fn step<'a>(fmt: &mut Formatter<'a>, cx: &mut Cx<'a>, step: Step<'a>) -> Result<
 							expanded |= matches!(node.kind(), Kind::Comment) || count >= 6;
 						}
 
-						p.expect(K!['{'])?.fmt(fmt)?;
 						expanded
 					};
 

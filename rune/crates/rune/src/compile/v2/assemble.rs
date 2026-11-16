@@ -1441,10 +1441,11 @@ enum Step<'a, 'hir> {
 		a: Any<'a, 'hir>,
 		b: Any<'a, 'hir>,
 	},
-	/// Supply a temporary for a conditional expression whose result is discarded.
-	ConditionalDiscard {
+	/// Own a conditional's temporary until its join, then optionally assign it.
+	ConditionalOutput {
 		span: &'hir dyn Spanned,
 		value: Any<'a, 'hir>,
+		assign: bool,
 	},
 	/// `<lhs> && <rhs>` or `<lhs> || <rhs>`, waiting for the left-hand side.
 	///
@@ -1538,7 +1539,7 @@ impl<'a, 'hir> Step<'a, 'hir> {
 			| Step::FieldAccess { addr, .. } => addr,
 			Step::IndexTarget { target, .. } => target,
 			Step::IndexIndex { index, .. } => index,
-			Step::ConditionalDiscard { value, .. } => value,
+			Step::ConditionalOutput { value, .. } => value,
 			Step::BinaryLhs { a, .. } => a,
 			Step::BinaryRhs { b, .. } => b,
 			Step::ConditionalLhs { .. } | Step::ConditionalRhs { .. } | Step::Format { .. } => {
@@ -1585,7 +1586,7 @@ impl<'a, 'hir> Step<'a, 'hir> {
 				index.free()?;
 				target.free()
 			}
-			Step::ConditionalDiscard { value, .. } => value.free(),
+			Step::ConditionalOutput { value, .. } => value.free(),
 			Step::BinaryLhs { a, b, .. } | Step::BinaryRhs { a, b, .. } => {
 				a.free()?;
 				b.free()
@@ -2559,9 +2560,22 @@ where
 					// variable over rather than writing anything, so leaving it
 					// to the sides would have the other one write into whichever
 					// variable this one named.
-					if needs.try_alloc_output()?.is_none() {
+					let assign = match needs.try_alloc_addr()? {
+						Some(addr) if addr.is_temporary() => None,
+						Some(_) => Some(true),
+						None => Some(false),
+					};
+
+					if let Some(assign) = assign {
 						let value = cx.scopes.alloc_any(span)?;
-						descend!(Step::ConditionalDiscard { span, value }, current_expr);
+						descend!(
+							Step::ConditionalOutput {
+								span,
+								value,
+								assign
+							},
+							current_expr
+						);
 					}
 					descend!(Step::ConditionalLhs { hir, span }, cx.exprs.get(hir.lhs));
 				}
@@ -5083,8 +5097,23 @@ where
 			b.free()?;
 			Asm::new(span, ())
 		}
-		Step::ConditionalDiscard { span, value } => {
-			value.free()?;
+		Step::ConditionalOutput {
+			span,
+			value,
+			assign,
+		} => {
+			// Resolve the result before freeing, including when emitting the
+			// assignment fails. Neither error path may strand the owned slot.
+			let assigned = if assign && !diverging {
+				value
+					.addr()
+					.and_then(|addr| needs.assign_addr(cx, addr.addr()))
+			} else {
+				Ok(())
+			};
+			let freed = value.free();
+			assigned?;
+			freed?;
 			if diverging {
 				Asm::diverge(span)
 			} else {

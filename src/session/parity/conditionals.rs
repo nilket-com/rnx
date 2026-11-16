@@ -17,6 +17,32 @@ const CASES: &[(&str, &str)] = &[
 	("if-let match", "let a=if let Some(x)=Some(7){x}; a"),
 	("if-let miss", "let a=if let Some(x)=None{x}; a"),
 ];
+
+#[test]
+fn conditional_assignment_keeps_its_operands() {
+	for op in ["&&", "||"] {
+		for lhs in [false, true] {
+			for initial in [false, true] {
+				let expected = if op == "&&" {
+					lhs && initial
+				} else {
+					lhs || initial
+				};
+				for input in [
+					format!("let b={initial}; b={lhs}{op}b; b"),
+					format!("let b={initial}; let update=||{{b={lhs}{op}b;b}}; update()"),
+					format!("let obj=#{{b:{initial}}}; obj.b={lhs}{op}obj.b; obj.b"),
+				] {
+					let (old, new) = pair(&input);
+					let expected = json!({"outcome":"ok", "value":expected.to_string()});
+					assert_eq!(old, expected, "legacy {input}");
+					assert_eq!(new, expected, "execution {input}");
+				}
+			}
+		}
+	}
+}
+
 fn pair(source: &str) -> (Value, Value) {
 	let mut old = Session::new(context()).unwrap();
 	let mut new = DomainSession::for_frontend(

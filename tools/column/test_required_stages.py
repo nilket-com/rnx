@@ -33,6 +33,26 @@ class Coverage(unittest.TestCase):
 		with self.assertRaisesRegex(ValueError, 'package unregistered/Cargo.toml: declare'):
 			required(['Cargo.toml'], [{'unregistered/Cargo.toml': []}])
 
+	def test_active_tools_have_real_graph_selected_quality_recipes(self):
+		from pathlib import Path
+		import accept
+		from package_gates import quality
+		from suite_stage import recipes
+		canonical = dict(accept.commands(Path('output')))
+		for manifest in ('rune/tools/xtask/column/probe/Cargo.toml',
+			'rune/tools/xtask/measure/harness/Cargo.toml', 'rune/tools/xtask/Cargo.toml'):
+			with self.subTest(manifest=manifest):
+				selected = set(required([manifest], [{manifest: []}, {manifest: []}]))
+				tests, formatting, lint = quality(manifest)
+				self.assertTrue(set((*tests, formatting, lint)) <= selected)
+				for stage in (*tests, formatting, lint):
+					self.assertIn(stage, canonical)
+					self.assertTrue(all(manifest in command for command in recipes(stage)))
+				for command in recipes(tests[0]):
+					self.assertEqual(command[:3], ['cargo', '+1.98.1',
+						'test' if manifest == 'rune/tools/xtask/Cargo.toml' else 'check'])
+					self.assertTrue({'--locked', '--all-targets', '--all-features'} <= set(command))
+
 	def test_every_registered_package_source_has_format_and_lint(self):
 		from package_gates import PACKAGES, quality
 		for manifest in list(PACKAGES) + ['rune/crates/rune/Cargo.toml', 'rune/crates/rune-alloc/Cargo.toml']:
@@ -44,9 +64,9 @@ class Coverage(unittest.TestCase):
 					self.assertTrue(set((*tests, formatting, lint)) <= set(stages))
 
 	def test_longest_owner_and_unregistered_source_fail_closed(self):
-		manifests = ['Cargo.toml','rune/tools/xtask/Cargo.toml','rune/tools/xtask/measure/harness/Cargo.toml','ci/execute_guard/Cargo.toml']
-		for path, package in [('rune/tools/xtask/src/main.rs','rune/tools/xtask/Cargo.toml'),
-			('rune/tools/xtask/measure/harness/src/main.rs','rune/tools/xtask/measure/harness/Cargo.toml'),
+		manifests = ['Cargo.toml','rune/tools/unregistered/Cargo.toml','rune/tools/xtask/measure/unregistered/Cargo.toml','ci/execute_guard/Cargo.toml']
+		for path, package in [('rune/tools/unregistered/src/main.rs','rune/tools/unregistered/Cargo.toml'),
+			('rune/tools/xtask/measure/unregistered/src/main.rs','rune/tools/xtask/measure/unregistered/Cargo.toml'),
 			('ci/execute_guard/src/main.rs','ci/execute_guard/Cargo.toml')]:
 			with self.subTest(path=path), self.assertRaisesRegex(ValueError, package+': declare.*format and lint'):
 				required([path], manifests=manifests)

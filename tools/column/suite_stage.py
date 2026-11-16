@@ -1,6 +1,7 @@
 """Required package suites: explicit recipes, live nonempty discovery and receipts."""
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -54,8 +55,15 @@ def executed(text):
 
 
 def invoke(command, cwd, log):
+	environment = None
+	if 'rune/tools/xtask/column/probe/Cargo.toml' in command and 'fmt' not in command:
+		from fixed_route_gate import valgrind_root
+		include = valgrind_root()/'include'
+		if not (include/'valgrind/callgrind.h').is_file():
+			raise ValueError('column probe requires Valgrind include/valgrind/callgrind.h')
+		environment = dict(os.environ, VALGRIND_INCLUDE=str(include))
 	with log.open('x') as stream:
-		subprocess.run(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT, check=True, timeout=10800)
+		subprocess.run(command, cwd=cwd, env=environment, stdout=stream, stderr=subprocess.STDOUT, check=True, timeout=10800)
 	return log.read_text()
 
 

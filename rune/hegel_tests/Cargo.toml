@@ -6,6 +6,14 @@ publish = false
 
 [workspace]
 
+[features]
+# Explicit opt-in for the documented development sweep, never used by a gate.
+explore = []
+
 [dependencies]
 rune = { path = "../crates/rune", features = ["fmt"] }
-hegeltest = "0.28.2"
+hegeltest = "=0.28.8"
+sha2 = "0.10"
+
+[dev-dependencies]
+syn = { version = "2", features = ["full", "visit"] }

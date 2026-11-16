@@ -18,7 +18,7 @@ use rune_hegel_tests::{
 fn arithmetic_matches_checked_i64_reference() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("arithmetic_matches_checked_i64_reference", 100, |tc| {
 		let depth = tc.draw(generators::integers::<u32>().max_value(4));
 		let e = tc.draw(expr(depth, true, ALL_OPS.to_vec()));
 
@@ -47,15 +47,14 @@ fn arithmetic_matches_checked_i64_reference() {
 				panic!("expected VM error for {reference:?}, got {result:?}\nsource: {src}")
 			}
 		}
-	})
-	.run();
+	});
 }
 
 #[test]
 fn shift_ops_match_checked_reference() {
 	let context = Context::with_default_modules().expect("failed to build context");
 
-	hegel::Hegel::new(|tc| {
+	rune_hegel_tests::property("shift_ops_match_checked_reference", 100, |tc| {
 		let value = tc.draw(literal_gen());
 		let shift: i64 = tc.draw(hegel::one_of!(
 			generators::integers::<i64>().min_value(0).max_value(70),
@@ -85,6 +84,5 @@ fn shift_ops_match_checked_reference() {
 			(None, Err(EvalError::Vm)) => {}
 			(None, result) => panic!("expected VM error, got {result:?}\nsource: {src}"),
 		}
-	})
-	.run();
+	});
 }
