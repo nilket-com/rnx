@@ -68,7 +68,8 @@ def main():
 		subprocess.run(["git", "archive", BASE], cwd=ROOT, stdout=stream, check=True)
 	with tarfile.open(archive) as packed:
 		packed.extractall(base, filter="data")
-	env = dict(os.environ, CARGO_BUILD_JOBS="4")
+	from host_budget import build_jobs
+	env = dict(os.environ, CARGO_BUILD_JOBS=str(build_jobs()))
 	sets = {}
 	for role, directory in (("published", base), ("candidate", ROOT)):
 		env["CARGO_TARGET_DIR"] = str(ROOT / "target" / ("column-clippy-" + ("adapter-" if args.adapter else "") + role))

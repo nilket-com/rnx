@@ -32,7 +32,8 @@ def main():
 	args = parser.parse_args()
 	out = args.out.resolve()
 	out.mkdir(parents=True, exist_ok=False)
-	env = dict(os.environ, CARGO_BUILD_JOBS='4', PYTHONDONTWRITEBYTECODE='1', RUSTUP_AUTO_INSTALL='0')
+	from host_budget import build_jobs
+	env = dict(os.environ, CARGO_BUILD_JOBS=str(build_jobs()), PYTHONDONTWRITEBYTECODE='1', RUSTUP_AUTO_INSTALL='0')
 	env.pop('CARGO_TARGET_DIR', None)
 	offline = dict(env, CARGO_NET_OFFLINE='true')
 	started = time.monotonic()

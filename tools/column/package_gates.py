@@ -26,7 +26,7 @@ PACKAGES = {
 	'Cargo.toml': (('root-tests', 'inventory', 'cross'), 'format', 'clippy'),
 	'tools/project/Cargo.toml': (('project-suite', 'cross'), 'project-format', 'project-clippy'),
 	'jupyter/Cargo.toml': (('jupyter-tests', 'jupyter-kernel'), 'jupyter-format', 'jupyter-clippy'),
-	**{f'adapters/{n}/Cargo.toml': ((f'suite-adapter-{n}',), 'adapter-format' if n == 'polars' else f'format-adapter-{n}', f'clippy-adapter-{n}') for n in ('candle', 'polars', 'postgres')},
+	**{f'adapters/{n}/Cargo.toml': (('polars-suite' if n == 'polars' else f'suite-adapter-{n}',), 'adapter-format' if n == 'polars' else f'format-adapter-{n}', f'clippy-adapter-{n}') for n in ('candle', 'polars', 'postgres')},
 }
 for _manifest, (_stage, _commands) in (PACKAGE_CHECKS | DEMO_CHECKS).items():
 	_format, _lint = 'format-' + _stage, 'lint-' + _stage

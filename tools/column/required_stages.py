@@ -21,7 +21,8 @@ def direct(paths, manifests=None):
 		if p.startswith('adapters/'):
 			name = p.split('/')[1]
 			if name not in {'candle', 'polars', 'postgres'}: quality(f'adapters/{name}/Cargo.toml')
-			stages.update(('suite-adapter-' + name, 'clippy-adapter-' + name))
+			# The Polars package suite is polars-suite; it needs the generated inventories.
+			stages.update(('polars-suite' if name == 'polars' else 'suite-adapter-' + name, 'clippy-adapter-' + name))
 		if p.startswith('jupyter/'): stages.update(('jupyter-format', 'jupyter-clippy', 'jupyter-tests', 'jupyter-kernel'))
 		if p.startswith('tools/project/'): stages.update(('project-suite', 'project-clippy', 'cross'))
 		if p.startswith('tools/verify/') or p == 'tools/verify.py': stages.add('cross')

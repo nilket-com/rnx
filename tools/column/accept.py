@@ -24,7 +24,6 @@ MANIFESTS = ["Cargo.toml", "tools/project/Cargo.toml", "adapters/candle/Cargo.to
 # Selection closes transitively over this relation and preserves command order.
 PREREQUISITES = {
 	'polars-suite': ('polars-inventories',),
-	'suite-adapter-polars': ('polars-inventories',),
 	'production-cli-controls': ('production-cli-build',),
 }
 
@@ -82,12 +81,12 @@ def commands(out, root=ROOT):
 	for manifest in MANIFESTS[-3:]:
 		steps.append(("check-" + manifest.replace("/", "-"), cargo + ["check", "--locked", "--all-targets", "--manifest-path", manifest]))
 	steps += [
-		("cross", ["python3", "-B", "tools/verify.py", "cross", "--suite", "all", "--jobs", "4", "--out", str(cross_out)]),
+		("cross", ["python3", "-B", "tools/verify.py", "cross", "--suite", "all", "--out", str(cross_out)]),
 		("production-cli-build", cargo + ["build", "--locked", "--release", "--manifest-path", "adapters/polars/Cargo.toml", "--bin", "rnx-polars"]),
 		("production-cli-controls", ["python3", "-B", "tools/column/cli.py", "--binary", str(root / "adapters/polars/target/release/rnx-polars"), "--out", str(out / "cli")]),
 	]
 	for name in ('rune-suite', 'rune-clippy', 'project-suite', 'project-clippy',
-		'suite-adapter-candle', 'suite-adapter-polars', 'suite-adapter-postgres',
+		'suite-adapter-candle', 'suite-adapter-postgres',
 		'clippy-adapter-candle', 'clippy-adapter-polars', 'clippy-adapter-postgres'):
 		steps.append((name, ['python3', '-B', 'tools/column/suite_stage.py', '--stage', name, '--out', str(out/name)]))
 	from suite_stage import PACKAGE_CHECKS

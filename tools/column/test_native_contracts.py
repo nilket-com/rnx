@@ -86,3 +86,43 @@ class Coverage(unittest.TestCase):
 
 
 if __name__ == '__main__': unittest.main()
+
+
+def _timed_case(c, binary, receipt, root, bulk):
+	import time
+	started = time.monotonic(); time.sleep(0.3)
+	row = dict(name=c['name'], status='FAIL' if c['name'] == 'broken' else 'PASS',
+		started=started, ended=time.monotonic(), pid=os.getpid())
+	return row
+
+
+class Concurrency(unittest.TestCase):
+	def setUp(self):
+		# Fake cases never lease a real final's jobserver they happen to inherit.
+		ambient = patch.dict(os.environ)
+		ambient.start(); self.addCleanup(ambient.stop)
+		for key in ('MAKEFLAGS', 'CARGO_MAKEFLAGS', 'RNX_FINAL_STAGE_TOKENS'): os.environ.pop(key, None)
+
+	def cases(self):
+		names = ['a', 'alone', 'b', 'broken', 'c', 'd']
+		return [dict(name=n, exclusive=n == 'alone') for n in names]
+
+	def run_all(self, width):
+		with patch.object(contracts, 'run_case', _timed_case), patch('host_budget.case_width', return_value=width):
+			return contracts.run_cases(self.cases(), None, None, None, None)
+
+	def test_exclusive_case_runs_alone_and_the_rest_overlap(self):
+		rows = self.run_all(4)
+		self.assertEqual([r['name'] for r in rows], [c['name'] for c in self.cases()])
+		by = {r['name']: r for r in rows}
+		alone = by.pop('alone')
+		for other in by.values():
+			self.assertTrue(other['started'] >= alone['ended'] or other['ended'] <= alone['started'], other['name'])
+		shared = sorted(by.values(), key=lambda r: r['started'])
+		self.assertTrue(any(b['started'] < a['ended'] for a, b in zip(shared, shared[1:])), 'no shared cases overlapped')
+		self.assertGreater(len({r['pid'] for r in shared}), 1)
+
+	def test_every_case_runs_when_one_fails(self):
+		rows = self.run_all(2)
+		self.assertEqual({r['name']: r['status'] for r in rows}['broken'], 'FAIL')
+		self.assertEqual(sum(r['status'] == 'PASS' for r in rows), 5)

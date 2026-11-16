@@ -8,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+
+import stage_fakes
 from unittest.mock import patch
 
 import child_result as child
@@ -124,7 +126,7 @@ class FinalOrderControls(unittest.TestCase):
 					os.kill(os.getpid(),signal.SIGTERM);os.kill(os.getpid(),signal.SIGINT)
 				if fail_release:raise OSError('release failed')
 				return actual(owner)
-			with patch.object(final,'disk_check'),patch.object(final.child,'head',return_value='c'),patch.object(final.gate,'select',return_value=s),patch.object(final.gate,'check_selection'),patch.object(final.child,'run',side_effect=execute),patch.object(final.gate,'finalize',side_effect=finalize),patch.object(Owners,'release',release_checked):
+			with patch.object(final,'disk_check'),patch.object(final.child,'head',return_value='c'),patch.object(final.gate,'select',return_value=s),patch.object(final.gate,'check_selection'),patch.object(final.child,'run',side_effect=execute),patch.object(final.gate,'finalize',side_effect=finalize),patch.object(Owners,'release',release_checked),stage_fakes.inline(final):
 				r=final.run(root,out,names=names)
 			self.assertFalse(r['complete_final'])
 			self.assertEqual(r['publication_eligible'],names is None and not (fail_stage or fail_release or interrupted))
@@ -235,7 +237,7 @@ class ReviewControls(unittest.TestCase):
 				self.assertIn(str(root/'ci/disk_space.py'),call.call_args.args[0]);self.assertTrue(call.call_args.kwargs['check'])
 			owner=Owners(root/'registry',out);rows=[]
 			try:
-				with patch.object(final.gate,'check_selection',side_effect=[None,ValueError('dirty after stage')]),patch.object(final.child,'run',return_value=SimpleNamespace(returncode=0,validation={},declared_output={'archive':'a'})):
+				with patch.object(final.gate,'check_selection',side_effect=[None,ValueError('dirty after stage')]),patch.object(final.child,'run',return_value=SimpleNamespace(returncode=0,validation={},declared_output={'archive':'a'})),stage_fakes.inline(final):
 					with self.assertRaisesRegex(ValueError,'dirty after'):
 						final.run_stages(root,out,{'stages':[['stage',['command']]]},owner,{}, {},rows)
 				self.assertEqual(rows[0]['declared_output'],{'archive':'a'})

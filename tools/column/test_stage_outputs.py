@@ -59,6 +59,39 @@ class StageOutputs(unittest.TestCase):
 			self.assertEqual(Path(receipt['archive']).read_bytes(), encoded)
 			self.assertEqual(git('status', '--porcelain'), b'')
 
+	def test_an_owned_report_leaves_the_tracked_report_untouched(self):
+		from stage_outputs import owned_report
+		with tempfile.TemporaryDirectory() as directory:
+			root = Path(directory)
+			def git(*args):
+				return subprocess.check_output(['git', *args], cwd=root, stderr=subprocess.DEVNULL)
+			git('init')
+			p = root / ORACLE
+			p.parent.mkdir(parents=True)
+			original = json.dumps(self.report()).encode()
+			p.write_bytes(original)
+			(root / '.gitignore').write_text('target/\n')
+			git('add', '.')
+			git('-c', 'user.name=Test', '-c', 'user.email=test@invalid', '-c', 'commit.gpgsign=false', 'commit', '-m', 'fixture')
+			out = root / 'target'
+			out.mkdir()
+			actual = copy.deepcopy(self.report())
+			actual['results'][0].update(status='row_order_differs', detail='2,1')
+			actual['tally'] = {'row_order_differs': 1}
+			owned_report(out).write_bytes(json.dumps(actual).encode())
+			receipt = finish_stage(root, 'polars-suite', out)
+			self.assertEqual(p.read_bytes(), original)
+			self.assertEqual(receipt['archive'], str(owned_report(out)))
+			self.assertEqual(git('status', '--porcelain'), b'')
+			# An owned report never excuses a tracked change beside it.
+			p.write_bytes(b'{}')
+			with self.assertRaisesRegex(AssertionError, 'unexpected source mutation'):
+				finish_stage(root, 'polars-suite', out)
+			bad = copy.deepcopy(actual); bad['results'][0]['status'] = 'mismatch'
+			p.write_bytes(original); owned_report(out).write_bytes(json.dumps(bad).encode())
+			with self.assertRaises(AssertionError):
+				finish_stage(root, 'polars-suite', out)
+
 
 if __name__ == '__main__':
 	unittest.main()

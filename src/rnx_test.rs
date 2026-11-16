@@ -79,6 +79,11 @@ pub(crate) fn install(context: &mut Context) -> crate::Result<Vec<crate::host::H
 	module.function("test_broken", || Broken).build()?;
 	module.function("test_loud", || Loud).build()?;
 	async fn pending(ms: u64) -> u64 {
+		// Test readiness: written from inside the awaited operation, after the
+		// caller armed its interrupt, so a test signals this await and not startup.
+		if let Some(path) = std::env::var_os("RNX_TEST_PENDING_READY") {
+			let _ = std::fs::write(path, ms.to_string());
+		}
 		tokio::time::sleep(std::time::Duration::from_millis(ms)).await;
 		ms
 	}

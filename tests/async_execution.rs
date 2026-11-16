@@ -50,13 +50,38 @@ fn rnx(args: &[&str], stdin: Option<&str>) -> Ran {
 	}
 }
 
+/// When a test sends `SIGINT`.
+enum Signal {
+	/// After a fixed delay: for inputs that run until interrupted.
+	After(Duration),
+	/// Once the first `rnx_test::test_pending` await is running, which it
+	/// reports from inside the operation; startup has its own bound.
+	WhenPending,
+}
+
 /// Start rnx, send it `SIGINT` after `after`, and collect what it did. The
 /// wait is bounded: a run that ignores the interrupt is killed and reported
 /// as such rather than hanging the suite.
 fn interrupted(args: &[&str], stdin: Option<&str>, after: Duration) -> Ran {
+	interrupt(args, stdin, Signal::After(after))
+}
+
+/// As [`interrupted`], signalling the pending await rather than a moment.
+fn interrupted_when_pending(args: &[&str], stdin: Option<&str>) -> Ran {
+	interrupt(args, stdin, Signal::WhenPending)
+}
+
+fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 	let start = Instant::now();
+	let ready = std::env::temp_dir().join(format!(
+		"rnx-0032-ready-{}-{}",
+		std::process::id(),
+		NEXT.fetch_add(1, Ordering::Relaxed)
+	));
+	let _ = std::fs::remove_file(&ready);
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.args(args)
+		.env("RNX_TEST_PENDING_READY", &ready)
 		.stdin(if stdin.is_some() {
 			Stdio::piped()
 		} else {
@@ -73,7 +98,28 @@ fn interrupted(args: &[&str], stdin: Option<&str>, after: Duration) -> Ran {
 		pipe.write_all(text.as_bytes()).unwrap();
 		pipe.flush().unwrap();
 	}
-	std::thread::sleep(after);
+	match signal {
+		Signal::After(after) => std::thread::sleep(after),
+		Signal::WhenPending => {
+			let deadline = Instant::now() + Duration::from_secs(60);
+			while !ready.exists()
+				&& Instant::now() < deadline
+				&& child.try_wait().unwrap().is_none()
+			{
+				std::thread::sleep(Duration::from_millis(10));
+			}
+			if !ready.exists() {
+				let _ = child.kill();
+				let done = child.wait_with_output().unwrap();
+				panic!(
+					"rnx did not reach its pending await within 60 seconds of starting; no SIGINT sent\nstdout: {}\nstderr: {}",
+					String::from_utf8_lossy(&done.stdout),
+					String::from_utf8_lossy(&done.stderr)
+				);
+			}
+			let _ = std::fs::remove_file(&ready);
+		}
+	}
 	let sent = Command::new("kill")
 		.arg("-INT")
 		.arg(child.id().to_string())
@@ -98,6 +144,8 @@ fn interrupted(args: &[&str], stdin: Option<&str>, after: Duration) -> Ran {
 		);
 	}
 	let done = child.wait_with_output().unwrap();
+	// A later pending await may have written it again.
+	let _ = std::fs::remove_file(&ready);
 	Ran {
 		stdout: String::from_utf8_lossy(&done.stdout).into_owned(),
 		stderr: String::from_utf8_lossy(&done.stderr).into_owned(),
@@ -253,11 +301,7 @@ fn ctrl_c_ends_a_run_pending_on_a_future() {
 		"pending.rn",
 		"pub async fn main(_) { rnx_test::test_pending(10000).await }",
 	);
-	let ran = interrupted(
-		&["run", path.to_str().unwrap()],
-		None,
-		Duration::from_millis(300),
-	);
+	let ran = interrupted_when_pending(&["run", path.to_str().unwrap()], None);
 	assert_eq!(
 		ran.code,
 		Some(130),
@@ -286,22 +330,14 @@ fn a_run_in_a_loop_is_bounded_by_its_budget_as_it_always_was() {
 
 #[test]
 fn ctrl_c_ends_an_eval_pending_on_a_future() {
-	let ran = interrupted(
-		&["eval", "rnx_test::test_pending(10000).await"],
-		None,
-		Duration::from_millis(300),
-	);
+	let ran = interrupted_when_pending(&["eval", "rnx_test::test_pending(10000).await"], None);
 	assert_eq!(ran.code, Some(130), "{}", ran.stderr);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 }
 
 #[test]
 fn ctrl_c_ends_a_session_input_pending_on_a_future_and_the_next_input_runs() {
-	let ran = interrupted(
-		&["repl"],
-		Some("rnx_test::test_pending(10000).await\n"),
-		Duration::from_millis(400),
-	);
+	let ran = interrupted_when_pending(&["repl"], Some("rnx_test::test_pending(10000).await\n"));
 	// The session stays up after the interrupt; it ended because its input
 	// pipe was closed once the interrupt had landed. Nothing pending was
 	// left: had the future outlived the input, the exit would have waited.
@@ -317,13 +353,20 @@ fn ctrl_c_ends_a_session_input_pending_on_a_future_and_the_next_input_runs() {
 }
 
 #[test]
+#[should_panic(expected = "did not reach its pending await")]
+fn an_input_that_never_awaits_the_fixture_is_never_signalled() {
+	// Readiness comes from inside the pending operation, never from time or
+	// the banner: an input that never reaches it fails before any SIGINT.
+	interrupted_when_pending(&["eval", "1 + 1"], None);
+}
+
+#[test]
 fn after_an_interrupted_input_the_next_input_runs_to_completion() {
 	// Two inputs on the pipe before the interrupt: the first is pending when
 	// SIGINT arrives, and the second must then run and answer.
-	let ran = interrupted(
+	let ran = interrupted_when_pending(
 		&["repl"],
 		Some("rnx_test::test_pending(10000).await\nrnx_test::test_pending(10).await + 1\n"),
-		Duration::from_millis(400),
 	);
 	assert_eq!(
 		ran.code,

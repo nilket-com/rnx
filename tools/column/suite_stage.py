@@ -34,6 +34,7 @@ def recipes(stage, root=ROOT):
 	if stage.startswith(('suite-adapter-', 'clippy-adapter-')):
 		name = stage.split('-')[-1]
 		if name not in {'polars', 'postgres', 'candle'}: raise ValueError('unknown adapter')
+		if stage == 'suite-adapter-polars': raise ValueError('the Polars package suite is polars-suite')
 		manifest = 'adapters/' + name + '/Cargo.toml'
 	elif stage in {'project-suite', 'project-clippy'}:
 		manifest = 'tools/project/Cargo.toml'
@@ -131,12 +132,6 @@ def main():
 		r['status'] = 'PASS'
 	except Exception: r['error'] = traceback.format_exc()
 	finally:
-		if a.stage == 'suite-adapter-polars':
-			try:
-				from stage_outputs import finish_stage
-				r['declared_output'] = finish_stage(ROOT, 'polars-suite', out)
-			except Exception:
-				r.update(status='FAIL', output_error=traceback.format_exc())
 		r['artifacts'] = {str(p): child.digest(p) for p in out.glob('*.log')}
 		if r.get('declared_output'):
 			p = r['declared_output']['archive']; r['artifacts'][p] = child.digest(p)

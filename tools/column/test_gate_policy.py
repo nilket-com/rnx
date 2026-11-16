@@ -1,9 +1,12 @@
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+
+import stage_fakes
 from unittest.mock import patch
 
 import gate_policy as g
@@ -74,15 +77,25 @@ class Gates(unittest.TestCase):
 
 	def test_consumer_selection_closes_over_producers(self):
 		self.write('tools/a.py', 'a'); self.commit('impl: adr 9999 controls')
-		m = g.select(self.root, self.root/'runs', ['suite-adapter-polars'])
+		m = g.select(self.root, self.root/'runs', ['polars-suite'])
 		names = [n for n, _ in m['stages']]
-		self.assertLess(names.index('polars-inventories'), names.index('suite-adapter-polars'))
+		self.assertLess(names.index('polars-inventories'), names.index('polars-suite'))
 		self.assertEqual(g.close_prerequisites([('a', []), ('b', []), ('c', [])], {'c'}, {'c': ('b',), 'b': ('a',)}), {'a', 'b', 'c'})
 
 	def test_missing_or_late_producer_fails_closed(self):
 		for commands in [[('consumer', [])], [('consumer', []), ('producer', [])]]:
 			with self.subTest(commands=commands), self.assertRaisesRegex(ValueError, 'consumer.*producer'):
 				g.close_prerequisites(commands, {'consumer'}, {'consumer': ('producer',)})
+
+	def test_docs_scope_selects_only_the_stages_that_read_plans(self):
+		# The record changes runtime code, which requires many stages; a docs
+		# successor proves those through the final it extends.
+		self.write('adapters/polars/src/example.rs','change');self.commit('impl: adr 9999 controls')
+		self.assertGreater(len(g.select(self.root,self.root/'runs',scope='required')['stages']),len(g.READS_PLANS))
+		docs=g.select(self.root,self.root/'runs',scope='docs')
+		self.assertEqual([n for n,_ in docs['stages']],list(g.READS_PLANS))
+		self.assertFalse(docs['publication_eligible'])
+		g.check_selection(docs,self.root,final=True)
 
 	def test_required_complete_explicit_scopes(self):
 		self.write('adapters/polars/src/example.rs','change');self.commit('impl: adr 9999 controls')
@@ -92,11 +105,11 @@ class Gates(unittest.TestCase):
 		explicit=g.select(self.root,self.root/'runs',names,scope='explicit')
 		self.assertEqual(explicit['stages'],required['stages'])
 		self.assertFalse(explicit['publication_eligible']);self.assertTrue(required['publication_eligible'])
-		with patch('fixed_route_gate.valgrind_root'):
+		with patch('fixed_route_gate.valgrind_root'),patch('jupyter_controls.client_python'):
 			complete=g.select(self.root,self.root/'runs',scope='complete')
 		import accept
 		self.assertEqual(complete['stages'],[list(x) for x in accept.commands(self.root/'runs',root=self.root)])
-		with patch('fixed_route_gate.valgrind_root'):
+		with patch('fixed_route_gate.valgrind_root'),patch('jupyter_controls.client_python'):
 			for value in (required,explicit,complete):g.check_selection(value,self.root,final=True)
 		bad=copy.deepcopy(required);bad['scope']='explicit'
 		with self.assertRaises(ValueError):g.check_selection(bad,self.root,final=True)
@@ -139,11 +152,21 @@ class Gates(unittest.TestCase):
 			g.child.atomic_json(path/'RESULT.json',row)
 			return SimpleNamespace(returncode=1,validation={'path':str(path/'RESULT.json'),'sha256':g.child.digest(path/'RESULT.json')})
 		with patch.object(final,'disk_check'), patch.object(final.child,'head',return_value='candidate'), patch.object(final.gate,'select',return_value=selection), \
-			patch.object(final.gate,'check_selection'), patch.object(final.child,'run',side_effect=fail):
+			patch.object(final.gate,'check_selection'), patch.object(final.child,'run',side_effect=fail), stage_fakes.inline(final):
 			self.assertEqual(final.run(self.root,out)['status'],'FAIL')
 		self.assertEqual(calls,[['producer']])
 		self.assertEqual(json.loads((out/'RELEASE.json').read_text())['status'],'PASS')
 		self.assertIn('producer',json.loads((out/'RESULT.json').read_text())['error'])
+
+	def test_prerequisites_follow_the_selected_stages(self):
+		self.write('adapters/polars/src/example.rs','change');self.commit('impl: adr 9999 controls')
+		missing=ValueError('Valgrind missing')
+		with patch.dict(os.environ,{'RNX_JUPYTER_PYTHON':str(self.root/'absent')}),patch('fixed_route_gate.valgrind_root',side_effect=missing):
+			self.assertEqual([n for n,_ in g.select(self.root,self.root/'runs',scope='docs')['stages']],['commit-discipline'])
+			with self.assertRaisesRegex(ValueError,'RNX_JUPYTER_PYTHON'):
+				g.select(self.root,self.root/'runs',['jupyter-kernel'],scope='explicit')
+			with self.assertRaisesRegex(ValueError,'Valgrind'):
+				g.select(self.root,self.root/'runs',['package-column-probe'],scope='explicit')
 
 
 if __name__ == '__main__':unittest.main()

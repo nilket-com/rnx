@@ -10,14 +10,19 @@ import child_result as child
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def client_python():
+	python = Path(os.environ.get('RNX_JUPYTER_PYTHON', str(ROOT/'target/jupyter-client/bin/python')))
+	if not python.is_file(): raise ValueError('set RNX_JUPYTER_PYTHON to the pinned Jupyter client environment')
+	return python
+
+
 def main():
 	p = argparse.ArgumentParser(description=__doc__)
 	p.add_argument('--out', type=Path, required=True)
 	a = p.parse_args(); out = a.out.resolve(); out.mkdir(parents=True, exist_ok=False)
 	r = dict(status='FAIL', checks=[])
 	try:
-		python = Path(os.environ.get('RNX_JUPYTER_PYTHON', str(ROOT/'target/jupyter-client/bin/python')))
-		if not python.is_file(): raise ValueError('set RNX_JUPYTER_PYTHON to the pinned Jupyter client environment')
+		python = client_python()
 		commands = [
 			['cargo','+1.98.1','build','--locked','--bin','rnx'],
 			['cargo','+1.98.1','build','--locked','--manifest-path','jupyter/Cargo.toml','--bin','rnx-jupyter'],
@@ -25,7 +30,7 @@ def main():
 		]
 		for i, command in enumerate(commands):
 			with (out/f'{i}.log').open('x') as log:
-				done = child.run(command,root=ROOT,cwd=ROOT,env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1',CARGO_BUILD_JOBS='4'),stdout=log,stderr=subprocess.STDOUT,directory=out/f'{i}-child',timeout=1800)
+				done = child.run(command,root=ROOT,cwd=ROOT,env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1',CARGO_BUILD_JOBS=str(__import__('host_budget').build_jobs())),stdout=log,stderr=subprocess.STDOUT,directory=out/f'{i}-child',timeout=1800)
 			r['checks'].append(dict(command=command,validation=done.validation))
 			if done.returncode: raise RuntimeError(f'stage {i} failed')
 		r['status']='PASS'

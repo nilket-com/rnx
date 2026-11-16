@@ -42,7 +42,9 @@ def main():
 	parser.add_argument("--fixtures-root", type=Path, help="override the checked-in test input root")
 	parser.add_argument("--out", type=Path)
 	available_cpus = len(os.sched_getaffinity(0))
-	parser.add_argument("--jobs", type=int, default=min(8, available_cpus))
+	sys.path.insert(0, str(Path(__file__).resolve().parent / "column"))
+	from host_budget import build_jobs
+	parser.add_argument("--jobs", type=int, default=min(build_jobs(), available_cpus))
 	parser.add_argument("--registration-fixture", type=Path)
 	args = parser.parse_args()
 	if not shutil.which("bwrap"):

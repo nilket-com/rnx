@@ -6,6 +6,8 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
+
+import stage_fakes
 from unittest.mock import patch
 
 import child_result as child
@@ -170,7 +172,7 @@ class FailureControls(unittest.TestCase):
 			child.atomic_json(d/'CHILD.json',dict(receipt=str(semantic)))
 			child.atomic_json(d/'RESULT.json',dict(status='FAIL',error='child exit is nonzero'))
 			return SimpleNamespace(returncode=1,validation={'path':str(d/'RESULT.json'),'sha256':child.digest(d/'RESULT.json')})
-		with patch.object(final,'disk_check'),patch.object(final,'tools_identity',return_value={}),patch.object(final.child,'head',return_value='c'),patch.object(final.gate,'select',return_value=selection),patch.object(final.gate,'check_selection'),patch.object(final.child,'run',side_effect=execute),patch.object(final,'compact',return_value={}):
+		with patch.object(final,'disk_check'),patch.object(final,'tools_identity',return_value={}),patch.object(final.child,'head',return_value='c'),patch.object(final.gate,'select',return_value=selection),patch.object(final.gate,'check_selection'),patch.object(final.child,'run',side_effect=execute),patch.object(final,'compact',return_value={}),stage_fakes.inline(final):
 			if drop_retention:
 				with patch.object(final,'copy_bundle',return_value=None),patch.object(final,'retain',return_value=None):
 					result = final.run(root,out,names=['broken'])

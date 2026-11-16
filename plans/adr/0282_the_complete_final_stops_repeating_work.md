@@ -1,6 +1,6 @@
 # ADR 0282: the complete final stops repeating work
 
-Status: Proposed
+Status: Implemented
 
 Base: published bbf0a941b6eac2cf21c55b04346b56bcecc39358 (ADR 0281).
 
@@ -38,30 +38,39 @@ repeated work, not testing:
    untracked file or a mode-only edit reaches the dirty-state identity at
    the next such change rather than at once. Inside a final the tree is
    clean and fixed, so there the identity is exact; outside one, the
-   blind spot is a dirty marker that can lag a build behind.
+   blind spot is a dirty marker that can lag a build behind. Every
+   watched path exists: Cargo treats a missing one as always out of
+   date. The branch's loose reference and `packed-refs` exist only in
+   some states, so the loose reference's directory is watched as well.
 2. A test stage compiles once: its discovery and run invocations share
    one build, and the second compiles nothing.
 3. The Polars package suite runs once. The stage that remains carries
    every check either stage made.
-4. The native contract cases run concurrently under one CPU and memory
-   budget derived from the detected host. A case the manifest marks
+4. The native contract cases run concurrently, as many at once as the
+   detected CPUs and the memory the final may use (decision 5) allow. A case the manifest marks
    `exclusive` runs with no other case running. Every case runs whatever
    another returns, so every failure is reported. Every check the serial
    runner makes stays: the case catalogue, selected and passed counts,
    contract row markers, empty stderr where required, and the
    row-differences file. One runner executes the manifest.
-5. No build in the final sets a fixed job count: Cargo's jobs are the
-   smaller of the detected cores and available memory over a per-job
-   allowance. The count stays out of each stage's recorded command, so
-   revalidation does not depend on the memory free at the time.
+5. No build in the final sets a fixed job count, except the fixed-route
+   screen's paired build, whose four jobs are part of its pinned
+   measurement recipe. Cargo's jobs are the smaller of the detected
+   CPUs and the memory the final may use over a per-job allowance; that
+   memory is the smaller of the host's available memory and the headroom
+   under every limit of the final's control groups, less a reserve. Too
+   little memory for one job fails the stage. The count stays out of
+   each stage's recorded command, so revalidation does not depend on
+   the memory free at the time.
 6. A docs-only amend does not rerun the final. A docs successor takes a
    passed complete final, checks that it still revalidates, and that the
-   amend has the same parent and changes only files under `plans/`. It
-   then runs only the stages that read the plans (commit discipline) and
-   records both. Revalidating the successor revalidates the earlier
+   amend has the same parent and changes only files under `plans/`,
+   with renames counted as a deletion and an addition. It then runs only
+   the stages that read the plans (commit discipline), without the
+   stages the record itself requires, and records both. Revalidating the successor revalidates the earlier
    final, the plans run and the docs-only diff.
-7. The complete final fails when its wall time exceeds 60 minutes on
-   this host.
+7. The complete final fails when its wall time, finalization and
+   release included, exceeds 60 minutes on this host.
 8. Stages run concurrently. Each stage declares what it writes: every
    Cargo target directory and profile its builds use, resolved from its
    manifests and any target override, and the builds its tests start. A
@@ -131,7 +140,14 @@ repeated work, not testing:
 - Two consecutive builds of rnx with the default features: the second
   compiles nothing, and after one tracked file is touched exactly one
   build recompiles rnx (shown in the packet). No build script deletes a
-  file (committed control, with a planted negative control).
+  file (committed control, with a planted negative control). Every
+  watched path exists with a loose branch and no `packed-refs`, with a
+  packed branch and no loose reference, and with a deleted tracked file
+  (committed control).
+- Job and case widths: an idle host is bounded by its CPUs, and a
+  control group with 6 GiB of headroom on a host with 60 GiB free bounds
+  both widths below the host's; too little memory for one worker is
+  refused (committed controls).
 - The complete final passes on the candidate under 60 minutes; the
   packet shows each stage's duration against the last full pass.
 - A failing contract case while others run: every case still runs and
@@ -139,9 +155,13 @@ repeated work, not testing:
   overlaps another, and the others do overlap (committed control from
   the cases' timeline).
 - A docs successor accepts an amend that changes only `plans/` and
-  refuses one that changes any other path, one with a different parent,
-  and an unchanged commit (committed controls).
-- A planted 61-minute wall time fails the final (committed control).
+  refuses one that changes any other path, a file moved into or out of
+  `plans/`, one with a different parent, and an unchanged commit. On a
+  record that changes runtime code, the successor's selection is commit
+  discipline alone (committed controls).
+- A complete final whose stages end at 59 minutes passes when its
+  release is instant and fails when release takes two minutes
+  (committed control).
 - Scheduling: stages that share no resource overlap; stages that share
   one never overlap and keep selection order; a declared producer ends
   before its consumer starts; the fixed-route screen overlaps nothing; an
@@ -180,3 +200,61 @@ repeated work, not testing:
 
 Reusing stage results across code changes (each stage keyed by the
 files it reads), and porting the controller to Rust; each follows.
+
+## Results
+
+rnx's build scripts rerun when the checkout's HEAD, its branch reference,
+that reference's directory, `packed-refs` or a tracked file changes, and
+at no other time; each watched path exists, so a build with no change
+compiles nothing. No build script deletes a file, which a committed check
+enforces. The Polars package suite runs once, as `polars-suite`, and
+selection maps the Polars adapter to it. The native contract cases marked
+`exclusive` run alone; the rest run in worker processes, as many as half
+the CPUs and the final's memory allow, and every case runs before the
+unchanged catalogue check reads them in manifest order. Cargo's job count
+in the final follows the detected CPUs and the smaller of the host's
+available memory and its control groups' headroom, and is not part of
+any recorded command; the fixed-route screen's paired build keeps its
+pinned four jobs. A docs successor accepts an amend to a passed complete
+final that has the same parent and changes only files under `plans/`,
+counting renames as both paths, runs commit discipline alone on it, and
+revalidates with the earlier final. A complete final whose run,
+finalization and release take longer than 60 minutes fails.
+
+Stages run concurrently, each in a forked worker whose main thread
+supervises its child. Each stage's resources are the Cargo target
+directories and profiles its builds write, resolved by `cargo metadata`
+from its commands and from the declared targets of the wrapper stages;
+selection refuses a stage it cannot resolve. The Polars suite's
+resources include the builds its tests start, and the inventories' the
+documentation builds. A stage starts once every
+earlier stage sharing a resource has finished; commit discipline and the
+fetches run first, and the fixed-route screen runs with nothing beside
+it; a stage also waits for its declared producers to pass. A fifo jobserver
+holds the final's job count in tokens, the CPUs and memory allowing a
+quarter of the memory to stay free, and the acceptance receipt records
+that count with the control group's memory events: the controller takes each stage's
+tokens whole before it starts, one or its widest test run's threads
+(four where a command names none), and Cargo and rustc draw further jobs
+from the same pool; a stage wider than the budget is refused before any
+stage starts. The native contract cases run on their stage's idle
+tokens and the pool, and an `exclusive` case holds every token. Python
+test suites and the fixed-route screen run outside the pool. Inside a
+final, job and case widths come from that pool rather than a new memory
+reading. The first failure stops admission, and a failed stage is collected
+before each new start;
+running stages finish with their receipts, rows return in selection
+order, and that failure stays the cause; a signal drains every running
+stage before release. The Polars suite writes its oracle report to an
+owned path named by `RNX_ORACLE_RESULTS`, so no stage writes tracked
+source, and git runs without optional locks (`GIT_OPTIONAL_LOCKS=0`)
+throughout the final, so no status refreshes the index under a stage
+that fingerprints `.git`. The tests that interrupt a pending await
+signal it once the fixture reports, from inside that await, that it is
+running; an input that never reaches it fails before any signal. Selection checks Valgrind and the Jupyter client only when a
+selected stage uses them. Each stage starts only when the free disk
+covers a floor plus the declared bulk of every unfinished stage and the
+growth of the Cargo target directories they write, estimated from the
+measured warm configuration, and the
+acceptance receipt records that estimate, the filesystem and the lowest
+free space seen.

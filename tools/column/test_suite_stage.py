@@ -40,26 +40,6 @@ class DeclaredOutput(unittest.TestCase):
 			log.write_text((json.dumps(row)+'\n')*2)
 			self.assertTrue(diagnostics(log, root)-baseline)
 
-	def exercise(self, test_failure=False, cleanup_failure=False):
-		with tempfile.TemporaryDirectory() as tmp:
-			out=Path(tmp)/'out';events=[]
-			def run(*args):
-				events.append('test')
-				if test_failure:raise RuntimeError('test failed')
-				return []
-			def finish(*args):
-				events.append('restore')
-				if cleanup_failure:raise ValueError('unexpected mutation')
-				return None
-			def publish(path,result):
-				events.append('publish');self.assertEqual(events,['test','restore','publish'])
-				self.assertEqual(result['status'],'FAIL' if test_failure or cleanup_failure else 'PASS')
-			with patch('sys.argv',['suite','--stage','suite-adapter-polars','--out',str(out)]),patch.object(suite,'run',side_effect=run),patch('stage_outputs.finish_stage',side_effect=finish),patch.object(suite.child,'publish',side_effect=publish):
-				self.assertEqual(suite.main(),bool(test_failure or cleanup_failure))
-
-	def test_cleanup_before_receipt(self):self.exercise()
-	def test_failure_remains_failure(self):self.exercise(test_failure=True)
-	def test_cleanup_rejection_fails(self):self.exercise(cleanup_failure=True)
 
 class PackageChecks(unittest.TestCase):
 	def test_probe_build_and_lint_use_configured_headers_and_refuse_missing_headers(self):

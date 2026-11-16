@@ -53,7 +53,8 @@ def build(root, bulk, m):
 	features = [l['features'] for l in m['libraries'] if {'execution', 'serde'} <= set(l['features'].split(',')) and not l.get('selector')]
 	if len(features) != 1: raise ValueError('native contracts require one declared execution-serde library recipe')
 	with OwnedBuild(bulk, 'build-target') as owner:
-		env = dict(os.environ, CARGO_TARGET_DIR=str(owner.path), CARGO_BUILD_JOBS='4')
+		from host_budget import build_jobs
+		env = dict(os.environ, CARGO_TARGET_DIR=str(owner.path), CARGO_BUILD_JOBS=str(build_jobs()))
 		command = ['cargo', '+1.98.1', 'test', '--locked', '-p', 'rune', '--profile', 'engine-dev',
 			'--lib', '--features', features[0], '--no-run', '--message-format=json']
 		text = checked(command, root, bulk/'build.log', env=env, timeout=3600)
@@ -149,6 +150,62 @@ def run_case(c, binary, receipt, root, bulk):
 	return r
 
 
+def run_cases(cases, binary, receipt, root, bulk):
+	"""Run every case: each exclusive one alone, then the rest concurrently.
+
+	Each concurrent case runs in a worker process, whose main thread owns the
+	supervised wait and its signal handlers. Every case runs whatever another
+	returns, so the catalogue reports every failure, as a serial run did."""
+	import multiprocessing
+	from concurrent.futures import ProcessPoolExecutor
+	from host_budget import case_width
+	from stage_scheduler import Client
+	rows = {}
+	client = Client.from_environment()
+	for c in cases:
+		# Under a final's jobserver an exclusive case holds every token: this
+		# stage's own idle slot, and the rest taken here, so no build or case runs with it.
+		if c.get('exclusive'): rows[c['name']] = with_tokens((client.capacity-client.held) if client else 0, c, binary, receipt, root, bulk)
+	held = client.held if client else 1
+	if client: client.close()
+	shared = [c for c in cases if not c.get('exclusive')]
+	if shared:
+		width = min(case_width(), len(shared))
+		# The stage's own slots, idle now that its builds are done, as a pipe of tokens.
+		own = os.pipe(); os.write(own[1], b'+'*held); os.set_blocking(own[0], False)
+		try:
+			with ProcessPoolExecutor(max_workers=width, mp_context=multiprocessing.get_context('fork')) as pool:
+				futures = {c['name']: pool.submit(with_slot, own, c, binary, receipt, root, bulk) for c in shared}
+				for name, future in futures.items(): rows[name] = future.result()
+		finally:
+			for fd in own: os.close(fd)
+	return [rows[c['name']] for c in cases]
+
+
+def with_tokens(count, c, binary, receipt, root, bulk):
+	"""Run one case holding count tokens of the final's jobserver, if there is one."""
+	from stage_scheduler import Client
+	client = Client.from_environment()
+	if client is None or count == 0:
+		if client: client.close()
+		return run_case(c, binary, receipt, root, bulk)
+	tokens = client.acquire(count)
+	try: return run_case(c, binary, receipt, root, bulk)
+	finally:
+		client.release(tokens); client.close()
+
+
+def with_slot(own, c, binary, receipt, root, bulk):
+	"""Run one shared case on the stage's own slot or one pool token."""
+	from stage_scheduler import Client
+	client = Client.from_environment()
+	if client is None: return run_case(c, binary, receipt, root, bulk)
+	fd, token = client.acquire_one(own)
+	try: return run_case(c, binary, receipt, root, bulk)
+	finally:
+		os.write(own[1] if fd == own[0] else client.fd, token); client.close()
+
+
 def run(root, out):
 	from final_evidence import assigned_root
 	from ir_resources import resources
@@ -156,12 +213,14 @@ def run(root, out):
 	bulk = assigned_root('RNX_FINAL_CONTRACT_ROOT', out/'contract-payload')
 	bulk.mkdir(exist_ok=True)
 	m = manifest(root); source = child.source(root); started = time.monotonic()
+	from host_budget import inherited_width
+	# Inside a final the jobserver's tokens bound memory; a live reading would
+	# count the neighbors' builds that those tokens already admit.
 	available = resources()
-	if min(available['mem_available_bytes'], available.get('ancestor_headroom_bytes') or 2**63) < 4*1024**3:
+	if inherited_width() is None and min(available['mem_available_bytes'], available.get('ancestor_headroom_bytes') or 2**63) < 4*1024**3:
 		raise ValueError('native contract admission needs 4 GiB memory headroom')
 	binary, receipt = build(root, bulk, m)
-	# Sequential supervised waits also honor every exclusive manifest case.
-	rows = [run_case(c, binary, receipt, root, bulk) for c in m['cases']]
+	rows = run_cases(m['cases'], binary, receipt, root, bulk)
 	if child.source(root) != source: raise ValueError('source changed during native contracts')
 	r = dict(status='FAIL', manifest_sha256=child.digest(root/MANIFEST), source=source,
 		binary_sha256=child.digest(binary), cases=rows, seconds=time.monotonic()-started)

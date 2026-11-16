@@ -297,11 +297,7 @@ fn main() {
 		return;
 	}
 	let out = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
-	// Cargo mtime tracking does not detect chmod. A missing private output asks
-	// Cargo to rerun this scan on every stock build, including mode-only edits.
-	let marker = out.join("coordinate-rescan-required");
-	let _ = fs::remove_file(&marker);
-	println!("cargo:rerun-if-changed={}", marker.display());
+	// The scan reruns when identity::emit's watched sources change.
 	let root = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
 	let url = std::env::var("CARGO_PKG_REPOSITORY").unwrap_or_default();
 	let rev = revision(&root).unwrap_or_else(|_| "unknown".into());

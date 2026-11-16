@@ -70,8 +70,12 @@ def close_prerequisites(commands, selected, prerequisites):
 	return selected
 
 
+# Only these stages read the plans; every other stage's inputs exclude them.
+READS_PLANS = ('commit-discipline',)
+
+
 def publication_eligible(scope):
-	if scope not in {'required', 'complete', 'explicit'}: raise ValueError('unknown final scope')
+	if scope not in {'required', 'complete', 'explicit', 'docs'}: raise ValueError('unknown final scope')
 	return scope in {'required', 'complete'}
 
 
@@ -83,13 +87,24 @@ def select(root, out, names=None, candidate='HEAD', scope=None):
 	scope = scope or ('complete' if names is None else 'explicit')
 	publication_eligible(scope)
 	if scope != 'explicit' and names is not None: raise ValueError('named list requires explicit scope')
-	names = list(dict(commands)) if scope == 'complete' else ([] if scope == 'required' else list(names or []))
+	names = {'complete': list(dict(commands)), 'required': [], 'docs': list(READS_PLANS)}.get(scope, list(names or []))
 	if len(names) != len(set(names)): raise ValueError('duplicate stage selection')
 	if set(names) - dict(commands).keys(): raise ValueError('unknown selected stage')
-	selected = close_prerequisites(commands, set(names) | set(info['required']), accept.PREREQUISITES)
-	if 'fixed-route' in selected:
+	# A docs successor's diff touches only plans, so the record's required
+	# stages are already proved by the final it extends.
+	required = set() if scope == 'docs' else set(info['required'])
+	selected = close_prerequisites(commands, set(names) | required, accept.PREREQUISITES)
+	# Refuse a missing prerequisite before any expensive selected stage, and
+	# only for the stages that use it.
+	if selected & {'fixed-route', 'package-column-probe', 'lint-package-column-probe'}:
 		from fixed_route_gate import valgrind_root
-		valgrind_root()  # Refuse before any expensive selected stage.
+		valgrind_root()
+	if 'jupyter-kernel' in selected:
+		from jupyter_controls import client_python
+		client_python()
+	from stage_scheduler import declared
+	for name, command in commands:
+		if name in selected: declared(name, command)
 	return {'schema': 1, 'scope': scope, 'publication_eligible': publication_eligible(scope), 'record': info, 'policy': policy_digest(), 'source': child.source(root),
 		'root': str(root), 'out': str(out), 'stages': [[n, c] for n, c in commands if n in selected]}
 
