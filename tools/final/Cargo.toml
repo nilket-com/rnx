@@ -1,0 +1,17 @@
+[package]
+name = "rnx-final"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.95"
+publish = false
+description = "Runs rnx's final: selection, concurrent stages under one budget, receipts, release and revalidation."
+
+[dependencies]
+anyhow = "1.0.71"
+libc = "0.2.177"
+regex = "1.8.1"
+job-budget = { path = "../../rune/tools/budget" }
+serde = { version = "1.0.163", features = ["derive"] }
+# Receipts carry Python-written floats; they must read back exactly.
+serde_json = { version = "1.0.96", features = ["float_roundtrip"] }
+sha2 = "0.11.0"

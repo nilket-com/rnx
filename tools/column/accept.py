@@ -51,6 +51,8 @@ def commands(out, root=ROOT):
 	cargo = ["cargo", "+1.98.1"]
 	steps = [("commit-discipline", ["python3", "-B", "ci/preflight.py"])]
 	steps += [("fetch-" + m.replace("/", "-"), cargo + ["fetch", "--locked", "--manifest-path", m]) for m in MANIFESTS]
+	# Every tracked Python file is listed, and the list only shrinks.
+	steps.append(("python-list", cargo + ["run", "--locked", "--release", "-p", "rnx-final", "--", "python-list"]))
 	steps += [
 		("controller-controls", ["python3", "-B", "-m", "unittest", "discover", "-s", "tools/column", "-p", "test_*.py", "-v"]),
 		("polars-inventory-preflight", ["python3", "-B", "tools/column/inventories.py", "--preflight", "--out", str(out / "polars-inventory-preflight")]),
@@ -74,6 +76,12 @@ def commands(out, root=ROOT):
 		('jupyter-tests', cargo + ['test', '--locked', '--manifest-path', 'jupyter/Cargo.toml', '--features', 'transport-probe']),
 		('jupyter-kernel', ['python3', '-B', 'tools/column/jupyter_controls.py', '--out', str(out/'jupyter-kernel')]),
 	]
+	for stage, manifest in (('budget', 'rune/tools/budget/Cargo.toml'), ('final', 'tools/final/Cargo.toml')):
+		steps += [
+			('budget-controls' if stage == 'budget' else 'final-controls', cargo + ['test', '--locked', '--manifest-path', manifest]),
+			('format-' + stage, cargo + ['fmt', '--manifest-path', manifest, '--check']),
+			('clippy-' + stage, cargo + ['clippy', '--locked', '--manifest-path', manifest, '--all-targets', '--', '-D', 'warnings']),
+		]
 	for adapter in ("candle", "polars", "postgres"):
 		steps.append(("adapter-" + adapter, cargo + ["test", "--locked", "--manifest-path", f"adapters/{adapter}/Cargo.toml", "--test", "execution_routing", "--", "--test-threads=1"]))
 	steps.append(("polars-inventories", ["python3", "-B", "tools/column/inventories.py", "--out", str(out / "polars-inventories")]))

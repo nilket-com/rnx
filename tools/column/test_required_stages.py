@@ -64,19 +64,19 @@ class Coverage(unittest.TestCase):
 					self.assertTrue(set((*tests, formatting, lint)) <= set(stages))
 
 	def test_longest_owner_and_unregistered_source_fail_closed(self):
-		manifests = ['Cargo.toml','rune/tools/unregistered/Cargo.toml','rune/tools/xtask/measure/unregistered/Cargo.toml','ci/execute_guard/Cargo.toml']
+		manifests = ['Cargo.toml','rune/tools/unregistered/Cargo.toml','rune/tools/xtask/measure/unregistered/Cargo.toml','ci/unregistered_guard/Cargo.toml']
 		for path, package in [('rune/tools/unregistered/src/main.rs','rune/tools/unregistered/Cargo.toml'),
 			('rune/tools/xtask/measure/unregistered/src/main.rs','rune/tools/xtask/measure/unregistered/Cargo.toml'),
-			('ci/execute_guard/src/main.rs','ci/execute_guard/Cargo.toml')]:
+			('ci/unregistered_guard/src/main.rs','ci/unregistered_guard/Cargo.toml')]:
 			with self.subTest(path=path), self.assertRaisesRegex(ValueError, package+': declare.*format and lint'):
 				required([path], manifests=manifests)
 
 	def test_documentation_does_not_gain_quality_stages(self):
-		self.assertEqual(required(['README.md','plans/adr/example.md']), ['commit-discipline','controller-controls'])
+		self.assertEqual(required(['README.md','plans/adr/example.md']), ['commit-discipline','controller-controls','python-list'])
 		stages = required(['rune/crates/rune/README.md'])
 		self.assertNotIn('format',stages)
 		self.assertIn('rune-clippy',stages)  # Existing conservative selection stays.
-		self.assertEqual(required(['ci/execute_guard/README.md'],manifests=['Cargo.toml','ci/execute_guard/Cargo.toml']), ['commit-discipline','controller-controls'])
+		self.assertEqual(required(['ci/unregistered_guard/README.md'],manifests=['Cargo.toml','ci/unregistered_guard/Cargo.toml']), ['commit-discipline','controller-controls','python-list'])
 
 	def test_graph_selection_is_closed_under_quality_and_removed_owner(self):
 		from package_gates import PACKAGES, quality
@@ -84,8 +84,8 @@ class Coverage(unittest.TestCase):
 			selected = set(required([manifest],[{manifest:[]},{}]))
 			tests, formatting, lint = quality(manifest)
 			self.assertTrue(set((*tests,formatting,lint)) <= selected)
-		with self.assertRaisesRegex(ValueError,'ci/execute_guard/Cargo.toml: declare'):
-			required(['ci/execute_guard/Cargo.toml'],[{'ci/execute_guard/Cargo.toml':[]},{}])
+		with self.assertRaisesRegex(ValueError,'ci/unregistered_guard/Cargo.toml: declare'):
+			required(['ci/unregistered_guard/Cargo.toml'],[{'ci/unregistered_guard/Cargo.toml':[]},{}])
 
 	def test_new_quality_commands_are_canonical_and_formats_precede_compilation(self):
 		import accept

@@ -29,7 +29,7 @@ publish = false
 [workspace]
 resolver = "3"
 default-members = ["."]
-members = ["rune/crates/rune", "rune/crates/rune-alloc", "rune/crates/rune-alloc-macros", "rune/crates/rune-cli", "rune/crates/rune-core", "rune/crates/rune-languageserver", "rune/crates/rune-macros", "rune/crates/rune-modules", "rune/crates/rune-tracing", "rune/crates/rune-tracing-macros", "rune/crates/rune-wasm", "rune/tools/builder", "rune/tools/generate", "rune/tools/site", "rune/tools/xtask", "rune/examples", "rune/benches", "rune/no-std"]
+members = ["rune/crates/rune", "rune/crates/rune-alloc", "rune/crates/rune-alloc-macros", "rune/crates/rune-cli", "rune/crates/rune-core", "rune/crates/rune-languageserver", "rune/crates/rune-macros", "rune/crates/rune-modules", "rune/crates/rune-tracing", "rune/crates/rune-tracing-macros", "rune/crates/rune-wasm", "rune/tools/builder", "rune/tools/generate", "rune/tools/site", "rune/tools/xtask", "rune/tools/budget", "tools/final", "rune/examples", "rune/benches", "rune/no-std"]
 exclude = ["tools/project"]
 
 [features]

@@ -33,7 +33,7 @@ class Gates(unittest.TestCase):
 	def test_conservative_paths_and_both_rename_sides(self):
 		for name in ['src/new.rs','tests/a.rs']:
 			self.assertTrue({'root-tests','inventory','cross'} <= set(g.required([name])))
-		self.assertEqual(set(g.required(['tools/column/foo.py'])),{'commit-discipline','controller-controls'})
+		self.assertEqual(set(g.required(['tools/column/foo.py'])),{'commit-discipline','controller-controls','python-list'})
 		with self.assertRaises(ValueError):g.required(['Cargo.toml'])
 		(self.root/'src/a.rs').rename(self.root/'renamed.rs');self.commit('impl: adr 9999 controls')
 		r=g.record(self.root);self.assertEqual(r['baseline'],self.baseline)
@@ -42,7 +42,7 @@ class Gates(unittest.TestCase):
 	def test_auto_add_cross_and_reject_omission_or_spoof(self):
 		self.write('src/a.rs','changed');self.commit('impl: adr 9999 controls')
 		m=g.select(self.root,self.root/'runs',['format'])
-		self.assertEqual({n for n,_ in m['stages']},{'format','clippy','cross','root-tests','inventory','commit-discipline','controller-controls'})
+		self.assertEqual({n for n,_ in m['stages']},{'format','clippy','cross','root-tests','inventory','commit-discipline','controller-controls','python-list'})
 		cross=dict(m['stages'])['cross']
 		self.assertTrue(Path(cross[cross.index('--out')+1]).is_relative_to(self.root/'target/rnx-verify'))
 		g.check_selection(m,self.root,final=True)

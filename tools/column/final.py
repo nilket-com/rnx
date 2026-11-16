@@ -1,6 +1,8 @@
 """Canonical final: live validation, durable acceptance, then named-root release."""
 import argparse
 import fcntl
+import hashlib
+import re
 import json
 import os
 from pathlib import Path
@@ -84,6 +86,35 @@ def fresh_violation(root, fresh):
 			if (root/manifest).parent.joinpath('target').exists():
 				return 'fresh acceptance refuses preexisting native target: '+manifest
 	return None
+
+
+def environment_digests(env, out, owner_id, cross_dir):
+	"""Each declared variable's digest, its value with this final's own paths
+	and job count substituted, so two finals' stage environments compare
+	without any value being kept (ADR 0283 parity)."""
+	rows = {}
+	for key in sorted(child.environment(env)['keys']):
+		value = env[key]
+		if cross_dir: value = value.replace(str(cross_dir), '<CROSS>')
+		value = value.replace(str(out), '<OUT>')
+		if owner_id: value = value.replace(owner_id, '<OWNER>')
+		if key == 'CARGO_BUILD_JOBS': value = '<TOKENS>'
+		elif key.endswith('MAKEFLAGS'): value = re.sub(r'(^|\s)-j\d+', r'\1-j<TOKENS>', value)
+		rows[key] = hashlib.sha256(value.encode()).hexdigest()
+	return rows
+
+
+def retain_semantic(out, evidence, owner):
+	"""Producer receipts inside owned roots outlive release, for parity."""
+	roots = [Path(e['path']) for e in owner.row['roots']]
+	for name, ref in sorted(evidence.items()):
+		binding = json.loads(Path(ref['path']).read_text()).get('producer')
+		if not binding: continue
+		receipt = Path(binding['receipt'])
+		if not any(receipt.is_relative_to(root) for root in roots): continue
+		if child.digest(receipt) != binding['sha256']: raise ValueError('producer receipt changed: ' + name)
+		(out/'retained').mkdir(exist_ok=True)
+		shutil.copyfile(receipt, out/'retained'/(name + '-RESULT.json'))
 
 
 class StageFailed(RuntimeError):
@@ -177,6 +208,7 @@ def run_stages(root, out, selection, owner, environment, evidence, rows, disk=No
 	disk.update(floor_bytes=DISK_FLOOR_BYTES, estimate_bytes=DISK_FLOOR_BYTES+declared(range(len(stages))),
 		binding=str(root), lowest_free_bytes=None)
 	pending, running, finished, succeeded, done_rows = list(range(len(stages))), {}, set(), set(), {}
+	environments = {}
 	failed = None
 	def complete(index):
 		nonlocal failed
@@ -217,6 +249,8 @@ def run_stages(root, out, selection, owner, environment, evidence, rows, disk=No
 					name, command = stages[index]
 					gate.check_selection(selection,root,final=True)
 					env = stage_environment(root, out, name, command, owner, environment, pool, weights[index])
+					cross = next((Path(command[i+1]).parent for i, a in enumerate(command[:-1]) if a == '--out' and 'rnx-verify' in command[i+1]), None)
+					environments[name] = environment_digests(env, out, owner.id, cross)
 					def execute(name=name, command=command, env=env):
 						with (out/(name+'.log')).open('x') as log:
 							return child.run(command,cwd=root,root=root,env=env,stdout=log,stderr=subprocess.STDOUT,
@@ -242,9 +276,11 @@ def run_stages(root, out, selection, owner, environment, evidence, rows, disk=No
 			for sig, handler in previous.items(): signal.signal(sig, handler)
 			rows.extend(done_rows[i] for i in sorted(done_rows))
 			pool.close()
+			child.atomic_json(out/'ENVIRONMENTS.json', environments)
 		raise
 	rows.extend(done_rows[i] for i in sorted(done_rows))
 	pool.close()
+	child.atomic_json(out/'ENVIRONMENTS.json', environments)
 	if failed is not None: raise failed
 
 
@@ -272,6 +308,7 @@ def terminal(out, owner, selection, evidence, tools, acceptance, environment):
 		child.atomic_json(out/'ACCEPTANCE.json',acceptance)
 		child.atomic_json(out/'MANIFEST.json',manifest)
 		if owner:
+			retain_semantic(out, evidence, owner)
 			release = owner.release()
 			release.update(acceptance_sha256=child.digest(out/'ACCEPTANCE.json'),
 				manifest_sha256=child.digest(out/'MANIFEST.json'))
@@ -364,7 +401,7 @@ def run(root, out, names=None, remote_context=None, fresh=False, scope=None):
 				acceptance_scope=acceptance['acceptance_scope'],complete_final=scope=='complete' and acceptance['status']==release['status']=='PASS',
 				publication_eligible=gate.publication_eligible(scope) and acceptance['status']==release['status']=='PASS',
 				free_bytes_before=free_before,free_bytes_after=shutil.disk_usage(root).free,
-				records={n:child.digest(out/(n+'.json')) for n in ('ACCEPTANCE','MANIFEST','RELEASE') if (out/(n+'.json')).exists()})
+				records={n:child.digest(out/(n+'.json')) for n in ('ACCEPTANCE','MANIFEST','RELEASE','ENVIRONMENTS') if (out/(n+'.json')).exists()})
 			if failed_row:
 				r['failed_stage'] = failed_row['name']
 				if failed_row.get('failure'): r['failure'] = failed_row['failure']

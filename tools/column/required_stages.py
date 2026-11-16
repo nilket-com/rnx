@@ -12,7 +12,7 @@ def graph_change(paths):
 
 
 def direct(paths, manifests=None):
-	stages = {'commit-discipline', 'controller-controls'}
+	stages = {'commit-discipline', 'controller-controls', 'python-list'}
 	for p in paths:
 		if p.startswith(('src/', 'tests/')): stages.update(('root-tests', 'inventory', 'cross'))
 		if p.startswith('rune/crates/'):
@@ -104,5 +104,7 @@ def required(paths, graphs=None, manifests=None):
 			stages.add('check-' + manifest.replace('/', '-'))
 		elif manifest.startswith(('ci/', 'rune/tools/')):
 			stages.add('controller-controls')
+		elif manifest == 'tools/final/Cargo.toml':
+			pass  # The final controller: its quality stages, added above.
 		else: raise ValueError('affected package needs a registered suite: ' + manifest)
 	return sorted(stages)

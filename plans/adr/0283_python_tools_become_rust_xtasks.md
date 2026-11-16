@@ -1,6 +1,6 @@
 # ADR 0283: Python tools become Rust xtasks
 
-Status: Proposed
+Status: Implemented
 
 Base: published 515e5211ba38ceb7506c82bd844df3e80e686a8b (ADR 0282).
 
@@ -102,7 +102,7 @@ one area at a time.
    final's unit, and otherwise refuses.
 7. Both controllers gain the same stages. The budget library and the
    Rust controller are registered packages, so their tests
-   (`package-budget`, `final-controls`), formats and lints run in every
+   (`budget-controls`, `final-controls`), formats and lints run in every
    complete final and whenever their sources change; `python-list`, the
    check of decision 9, runs in every required and complete selection.
    The Python controller runs them as it runs any stage, so it checks the

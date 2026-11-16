@@ -785,6 +785,9 @@ fn scratch_repository(tag: &str) -> std::path::PathBuf {
 		"tools/build_identity.rs",
 		"tools/project/Cargo.toml",
 		"tools/project/src",
+		// A workspace member (ADR 0283): metadata fails without its manifest.
+		"tools/final/Cargo.toml",
+		"tools/final/src",
 		"scripts",
 		"third-party",
 		"THIRD-PARTY-NOTICES.md",

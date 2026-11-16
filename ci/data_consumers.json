@@ -1066,10 +1066,20 @@
       "max_bytes": 86749,
       "reason": "Historical scorer inputs are still imported by discovered controller tests; retire tests/scorers/pins only as a reviewed unit."
     },
+    "tools/final/CONTROLS.txt": {
+      "class": "source-configuration",
+      "max_bytes": 65536,
+      "reason": "ADR 0283 policy: each Python final control and its Rust pair; read by tools/final/tests/controls.rs."
+    },
     "tools/project/resolved-graph.json": {
       "class": "reviewed-retention",
       "max_bytes": 17111,
       "reason": "ADR 0240 conservative retention: No confirmed consumer classification; absence of literal references is not absence of an indirect reader."
+    },
+    "tools/python-files.txt": {
+      "class": "source-configuration",
+      "max_bytes": 65536,
+      "reason": "ADR 0283 policy: every tracked Python file and its disposition; read by tools/final/src/pylist.rs, which allows it only to shrink."
     },
     "tools/verify/fixtures/census/CASES.json": {
       "class": "reviewed-retention",

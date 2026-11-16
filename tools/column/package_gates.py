@@ -11,6 +11,8 @@ PACKAGE_CHECKS = {
 	'rune/tools/xtask/measure/harness/Cargo.toml': ('package-measure-harness', [['cargo', '+1.98.1', 'check', '--locked', '--all-targets', '--all-features', '--manifest-path', 'rune/tools/xtask/measure/harness/Cargo.toml']]),
 	'rune/tools/xtask/Cargo.toml': ('package-xtask', [['cargo', '+1.98.1', 'test', '--locked', '--all-targets', '--all-features', '--manifest-path', 'rune/tools/xtask/Cargo.toml']]),
 	'tools/polars-gen/Cargo.toml': ('package-polars-gen', [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', 'tools/polars-gen/Cargo.toml', '--all-targets']]),
+	**{m: ('package-' + m.split('/')[-2].replace('_', '-'), [['cargo', '+1.98.1', 'check', '--locked', '--manifest-path', m, '--all-targets']])
+		for m in ('ci/execute_guard/Cargo.toml', 'rune/tools/builder/Cargo.toml', 'rune/tools/generate/Cargo.toml', 'rune/tools/site/Cargo.toml')},
 }
 DEMO_CHECKS = {
 	m: ('check-' + m.replace('/', '-'), [['cargo', '+1.98.1', 'check', '--locked', '--all-targets', '--manifest-path', m]])
@@ -27,6 +29,9 @@ PACKAGES = {
 	'tools/project/Cargo.toml': (('project-suite', 'cross'), 'project-format', 'project-clippy'),
 	'jupyter/Cargo.toml': (('jupyter-tests', 'jupyter-kernel'), 'jupyter-format', 'jupyter-clippy'),
 	**{f'adapters/{n}/Cargo.toml': (('polars-suite' if n == 'polars' else f'suite-adapter-{n}',), 'adapter-format' if n == 'polars' else f'format-adapter-{n}', f'clippy-adapter-{n}') for n in ('candle', 'polars', 'postgres')},
+	# New in ADR 0283: no baseline to compare lints with, so they deny warnings.
+	'rune/tools/budget/Cargo.toml': (('budget-controls',), 'format-budget', 'clippy-budget'),
+	'tools/final/Cargo.toml': (('final-controls',), 'format-final', 'clippy-final'),
 }
 for _manifest, (_stage, _commands) in (PACKAGE_CHECKS | DEMO_CHECKS).items():
 	_format, _lint = 'format-' + _stage, 'lint-' + _stage
