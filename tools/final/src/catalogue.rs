@@ -481,14 +481,6 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 			]),
 		),
 		(
-			"pin-controls".into(),
-			strings(&["python3", "-I", "-B", "tools/test_verify_pins.py"]),
-		),
-		(
-			"engine-source-controls".into(),
-			strings(&["python3", "-B", "tools/test_engine_source.py"]),
-		),
-		(
 			"census-refresh-controls".into(),
 			strings(&["python3", "-B", "tools/test_refresh_census.py"]),
 		),
@@ -739,8 +731,9 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 	}
 	steps.push((
 		"cross".into(),
-		python(&[
-			"tools/verify.py",
+		strings(&[
+			crate::stage::PROGRAM,
+			"stage",
 			"cross",
 			"--suite",
 			"all",
@@ -800,8 +793,8 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 	// Every package format check precedes compilation, lint and tests.
 	let position = steps
 		.iter()
-		.position(|(name, _)| name == "pin-controls")
-		.expect("pin-controls is listed");
+		.position(|(name, _)| name == "census-refresh-controls")
+		.expect("census-refresh-controls is listed");
 	let quality: Vec<Stage> = formats().iter().map(|(name, _)| suite(name)).collect();
 	steps.splice(position..position, quality);
 	let position = steps
@@ -864,11 +857,8 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 		if p.starts_with("tools/project/") {
 			add(&["project-suite", "project-clippy", "cross"]);
 		}
-		if p.starts_with("tools/verify/") || p == "tools/verify.py" {
+		if p.starts_with("tools/verify/") || p == "tools/final/src/cross.rs" {
 			add(&["cross"]);
-		}
-		if p == "tools/engine_source.py" || p == "tools/test_engine_source.py" {
-			add(&["engine-source-controls"]);
 		}
 		if p == "tools/refresh_census.py" || p == "tools/test_refresh_census.py" {
 			add(&["census-refresh-controls"]);

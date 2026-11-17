@@ -35,14 +35,16 @@ impl Fixture {
 		for (path, bytes) in [
 			(rnx.join("src/lib.rs"), entry),
 			(rnx.join("src/verification/observer.rs"), "actual observer"),
-			(rnx.join("tools/verify.py"), "launcher only"),
+			(rnx.join("tools/final/src/cross.rs"), "launcher only"),
+			(dir.join("launcher"), "launcher binary"),
 			(rnx.join("tools/project/Cargo.toml"), "project manifest"),
 			(rune.join("crates/rune/src/lib.rs"), "Rune source"),
 		] {
 			fs::create_dir_all(path.parent().unwrap()).unwrap();
 			fs::write(path, bytes).unwrap();
 		}
-		let request = json!({"rnx_root":rnx,"controller_root":rnx,"rune_root":rune,"rune_path":rune,"rune_rev":null,"registration_fixture":null,"out":out,"original_manifest":manifest,"original_lock":lock});
+		let launcher = dir.join("launcher");
+		let request = json!({"rnx_root":rnx,"controller_root":rnx,"rune_root":rune,"rune_path":rune,"rune_rev":null,"registration_fixture":null,"out":out,"original_manifest":manifest,"original_lock":lock,"launcher":{"path":launcher,"sha256":hash(&launcher).unwrap()}});
 		Self { dir, request }
 	}
 	fn path(&self, key: &str) -> PathBuf {
@@ -273,7 +275,7 @@ fn explicit_control_needs_matching_root_and_identical_observers() {
 	)
 	.unwrap();
 	fs::write(
-		other.path("rnx_root").join("tools/verify.py"),
+		other.path("rnx_root").join("tools/final/src/cross.rs"),
 		"different launcher",
 	)
 	.unwrap();

@@ -163,6 +163,26 @@ fn source(root: &Path, rnx: bool, request: &Value) -> Result<Value> {
 	};
 	Ok(json!({"root":root,"head":head,"files":files}))
 }
+/// The launcher the request names, the cross stage's running executable:
+/// an absolute path that is no link and still holds the recorded digest.
+fn launcher(request: &Value) -> Result<Value> {
+	let path = Path::new(
+		request["launcher"]["path"]
+			.as_str()
+			.ok_or("missing request launcher path")?,
+	);
+	let expected = request["launcher"]["sha256"]
+		.as_str()
+		.ok_or("missing request launcher sha256")?;
+	need(path.is_absolute(), "launcher path is not absolute")?;
+	no_link(path)?;
+	need(path.is_file(), "launcher is not a regular file")?;
+	need(
+		hash(path)? == expected,
+		"launcher differs from its request digest",
+	)?;
+	Ok(json!({"path":path,"sha256":expected}))
+}
 fn registration(request: &Value) -> Result<Value> {
 	let rnx = fs::canonicalize(field(request, "rnx_root")?)?;
 	let controller = fs::canonicalize(field(request, "controller_root")?)?;
@@ -196,9 +216,10 @@ fn registration(request: &Value) -> Result<Value> {
 			.find("pub use rune;")
 			.ok_or("missing verifier root boundary")?
 			+ start;
-		no_link(&root.join("tools/verify.py"))?;
+		let launcher = root.join("tools/final/src/cross.rs");
+		no_link(&launcher)?;
 		Ok(
-			json!({"files":files,"launcher_sha256":hash(&root.join("tools/verify.py"))?,"entry":&lib[start..end]}),
+			json!({"files":files,"launcher_source_sha256":hash(&launcher)?,"entry":&lib[start..end]}),
 		)
 	};
 	let actual = wiring(&rnx)?;
@@ -206,9 +227,81 @@ fn registration(request: &Value) -> Result<Value> {
 		actual == wiring(&controller)?,
 		"control changed checked-in observer/controller wiring",
 	)?;
-	Ok(json!({"label":label,"controller_root":controller,"rnx_root":rnx,"wiring":actual}))
+	Ok(
+		json!({"label":label,"controller_root":controller,"rnx_root":rnx,"wiring":actual,"launcher":launcher(request)?}),
+	)
 }
 
+/// The launcher binding's controls, run by the production verifier itself:
+/// a registration fixture refuses a missing launcher, a wrong digest, a
+/// different binary at the named path, a linked launcher, and a changed
+/// `cross.rs` under an unchanged launcher.
+pub(super) fn launcher_self_check() -> Result<Value> {
+	let dir = std::env::temp_dir().join(format!(
+		"rnx-launcher-self-check-{}-{}",
+		std::process::id(),
+		std::time::SystemTime::now()
+			.duration_since(std::time::UNIX_EPOCH)?
+			.as_nanos()
+	));
+	fs::create_dir(&dir)?;
+	let checked = launcher_controls(&dir);
+	fs::remove_dir_all(&dir)?;
+	checked
+}
+fn launcher_controls(dir: &Path) -> Result<Value> {
+	let entry =
+		"#[cfg(all(test, feature = \"cross-verification\"))]\nmod verification;\npub use rune;\n";
+	let (actual, fixture) = (dir.join("actual"), dir.join("fixture"));
+	for root in [&actual, &fixture] {
+		for (name, text) in [
+			("src/lib.rs", entry),
+			("src/verification/observer.rs", "observer"),
+			("tools/final/src/cross.rs", "launcher source"),
+		] {
+			let path = root.join(name);
+			fs::create_dir_all(path.parent().ok_or("fixture path without parent")?)?;
+			fs::write(path, text)?;
+		}
+	}
+	let program = dir.join("launcher");
+	fs::write(&program, "launcher binary")?;
+	let request = |path: &Path, sha256: &str| json!({"rnx_root":fixture,"controller_root":actual,"registration_fixture":fixture,"launcher":{"path":path,"sha256":sha256}});
+	let digest = hash(&program)?;
+	registration(&request(&program, &digest))?;
+	let mut refused = serde_json::Map::new();
+	let mut refuse = |label: &str, request: &Value| -> Result<()> {
+		let message = match registration(request) {
+			Ok(_) => return Err(format!("launcher self-check accepted: {label}").into()),
+			Err(error) => error.to_string(),
+		};
+		refused.insert(label.into(), json!(message));
+		Ok(())
+	};
+	let mut missing = request(&program, &digest);
+	missing
+		.as_object_mut()
+		.ok_or("request is not an object")?
+		.remove("launcher");
+	refuse("missing launcher", &missing)?;
+	refuse("wrong digest", &request(&program, &"0".repeat(64)))?;
+	let link = dir.join("linked-launcher");
+	std::os::unix::fs::symlink(&program, &link)?;
+	refuse("linked launcher", &request(&link, &digest))?;
+	fs::write(&program, "another binary")?;
+	refuse("different binary", &request(&program, &digest))?;
+	fs::write(&program, "launcher binary")?;
+	registration(&request(&program, &digest))?;
+	fs::write(
+		fixture.join("tools/final/src/cross.rs"),
+		"changed launcher source",
+	)?;
+	refuse(
+		"changed cross.rs, same launcher",
+		&request(&program, &digest),
+	)?;
+	Ok(json!({"status":"PASS","accepted":"matching launcher","refused":refused}))
+}
 fn dependencies(request: &Value) -> Result<Value> {
 	let out = Path::new(field(request, "out")?);
 	let root = fs::canonicalize(field(request, "rune_root")?)?;

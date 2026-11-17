@@ -56,11 +56,9 @@ fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 		],
 		JUPYTER => &[("Cargo.toml", "debug"), ("jupyter/Cargo.toml", "debug")],
 		CLI => &[("adapters/polars/Cargo.toml", "release")],
-		"tools/verify.py"
+		CROSS
 		| "tools/column/fixed_route_gate.py"
 		| "ci/preflight.py"
-		| "tools/test_verify_pins.py"
-		| "tools/test_engine_source.py"
 		| "tools/test_refresh_census.py" => &[],
 		_ => return None,
 	})
@@ -116,6 +114,7 @@ pub fn script(command: &[String]) -> Option<&str> {
 			Some("cli") => Some(CLI),
 			Some("jupyter") => Some(JUPYTER),
 			Some("inventories") => Some(INVENTORIES),
+			Some("cross") => Some(CROSS),
 			_ => None,
 		};
 	}
@@ -131,6 +130,7 @@ pub const CLIPPY: &str = "rnx-final stage clippy";
 pub const CLI: &str = "rnx-final stage cli";
 pub const JUPYTER: &str = "rnx-final stage jupyter";
 pub const INVENTORIES: &str = "rnx-final stage inventories";
+pub const CROSS: &str = "rnx-final stage cross";
 
 fn is_cargo(command: &[String]) -> bool {
 	Path::new(&command[0])
@@ -330,7 +330,7 @@ pub fn weight(_name: &str, command: &[String], root: &Path) -> Result<usize> {
 				},
 			)
 		}
-		Some("tools/verify.py") => Ok(TEST_THREADS),
+		Some(CROSS) => Ok(TEST_THREADS),
 		_ => Ok(1),
 	}
 }
@@ -445,14 +445,8 @@ pub fn stage_environment(
 ) -> Vec<(String, String)> {
 	if ALONE_STAGES.contains(&name)
 		|| is_unittest(command)
-		|| matches!(
-			script(command),
-			Some(
-				"tools/test_verify_pins.py"
-					| "tools/test_engine_source.py"
-					| "tools/test_refresh_census.py"
-			)
-		) {
+		|| matches!(script(command), Some("tools/test_refresh_census.py"))
+	{
 		return vec![];
 	}
 	let flags = pool.flags();

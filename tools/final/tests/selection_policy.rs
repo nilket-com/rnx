@@ -460,9 +460,9 @@ fn every_stage_that_must_be_a_producer_runs_one() {
 			.filter(|(name, command)| selection::requires_producer(name) && command[0] == "python3")
 			.map(|(name, command)| serde_json::json!([name, command]))
 			.collect();
-	// cross and fixed-route.
+	// fixed-route; cross runs as a Rust stage mode (ADR 0294).
 	assert!(
-		required.len() == 2,
+		required.len() == 1,
 		"{} Python producer stages",
 		required.len()
 	);

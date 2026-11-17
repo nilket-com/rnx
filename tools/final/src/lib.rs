@@ -9,6 +9,7 @@ pub mod compare_oracle;
 pub mod compare_route;
 pub mod contracts;
 pub mod controller;
+pub mod cross;
 pub mod evidence;
 pub mod failure;
 pub mod guardian;

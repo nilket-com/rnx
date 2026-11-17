@@ -45,21 +45,21 @@ fn cases() -> (String, String) {
 
 const SECRET: &str = "planted-cross-secret-0292";
 
-/// The launcher's receipt for `payload`, written by `verify.terminal_receipt`
-/// itself, after a launcher failure (`failed`) or a pass.
+/// The launcher's receipt for `payload`, written by the stage's own
+/// `cross::terminal_receipt`, after a launcher failure (`failed`) or a pass.
 fn launcher_receipt(payload: &Path, failed: bool) -> Value {
-	let script = format!(
-		"import importlib.util, json, sys\nfrom pathlib import Path\nsys.path.insert(0, {column:?})\nspec = importlib.util.spec_from_file_location('verify_launcher', {verify:?})\nverify = importlib.util.module_from_spec(spec); spec.loader.exec_module(verify)\nimport child_result\nfailure = RuntimeError('cross verification failed') if {failed} else None\nresult = verify.terminal_receipt(Path({payload:?}), failure, {{'status': 'PASS'}})\nchild_result.atomic_json(Path({payload:?}) / 'RESULT.json', result)\n",
-		column = root().join("tools/column").to_string_lossy(),
-		verify = root().join("tools/verify.py").to_string_lossy(),
-		failed = if failed { "True" } else { "False" },
-		payload = payload.to_string_lossy(),
-	);
-	let status = std::process::Command::new("/usr/bin/python3")
-		.args(["-B", "-c", &script])
-		.status()
-		.unwrap();
-	assert!(status.success());
+	let failure = rnx_final::cross::Failure {
+		repr: "RuntimeError('cross verification failed')".into(),
+		notes: vec![],
+	};
+	let result = rnx_final::cross::terminal_receipt(
+		payload,
+		&root().join(rnx_final::cross::CENSUS_PLAN),
+		failed.then_some(&failure),
+		json!({"status": "PASS"}),
+	)
+	.unwrap();
+	rnx_final::receipt::atomic_json(&payload.join("RESULT.json"), &result).unwrap();
 	serde_json::from_slice(&std::fs::read(payload.join("RESULT.json")).unwrap()).unwrap()
 }
 

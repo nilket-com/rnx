@@ -110,7 +110,7 @@ The Rust controller (`tools/final`) selects a record's stages from its plan
 and implementation commits, computing the whole record diff from the plan's
 parent; callers cannot choose a narrower baseline. Changes under `src/`,
 `rune/crates/`, `tools/project/` or `tools/verify/`, or to root or Rune Cargo
-manifests and locks or `tools/verify.py`, require `cross`; renames count both
+manifests and locks or `tools/final/src/cross.rs`, require `cross`; renames count both
 names. It runs each stage through the child protocol below and finalizes the
 candidate, current source, policy, canonical commands, required stages, log
 hashes and child receipts. `gate_policy.record` remains only as the record

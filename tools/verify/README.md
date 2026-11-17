@@ -1,28 +1,30 @@
 # Cross-repository correctness verification
 
-The launcher builds a dev-only Rust controller against rnx's locked Rune source
+The launcher, `rnx-final stage cross` (`tools/final/src/cross.rs`), builds a dev-only Rust controller against rnx's locked Rune source
 without changing the production pin or active lock. Rust performs live stock
 and execution observations, classifications, comparisons and source/binary checks.
 
 ```
-python3 tools/verify.py cross --suite all
+cargo run --locked -p rnx-final -- stage cross --suite all
 ```
 
 Before launching, the runner checks every live product Cargo.lock, fork-Git
 manifest pin, and both RUNE_VERSION constants against the root Rune revision.
 It records the checked paths in `PIN-CONSISTENCY.json`. Historical `probes/`
 graphs keep their independent source pins; generated `target/` files are excluded.
-Run the guard's live-tree and drift controls with:
+Run the guard's live-tree and drift controls, and the launcher's, with:
 
 ```
-python3 -I -B tools/test_verify_pins.py
+cargo test --locked -p rnx-final --test cross
 ```
 
-By default Cargo resolves the pinned Rune Git dependency, checked-in fixtures are
-used, and output goes to a new directory under `target/rnx-verify`. For an explicit
-cross-revision check, use `--rune-rev REV --rune-repo /absolute/rune-git`, or use
-`--rune-path /absolute/rune` for an existing tree. `--fixtures-root` and `--out`
-override the defaults. Every output directory must be new. Failed attempts retain their
+By default the canonical monorepo engine under `rune/` is bound, checked-in
+fixtures are used, and output goes to a new directory under `target/rnx-verify`.
+The historical engine overrides (`--rune-rev`, `--rune-repo`, a `--rune-path`
+other than `rune/`) are refused: they need a standalone historical checkout.
+`--fixtures-root` and `--out` override the defaults; an `--out` inside the
+checkout must be under the ignored `target/rnx-verify`, and none may be inside
+the Rune tree. Inside a final, the output is the assigned payload directory. Every output directory must be new. Failed attempts retain their
 raw files. The default eight build jobs are an allocation, not a scheduler:
 callers must keep concurrent allocations within the correctness host's budget.
 
@@ -34,7 +36,7 @@ pins still apply; a changed registration cannot pass as equivalent. There is
 no automatic copied-harness fallback.
 
 This runner requires Linux, bubblewrap (`bwrap`), GNU `timeout`, `sha256sum`,
-`readelf`, Git, Python 3.12 or later, Rust 1.98.1, and already available offline
+`readelf`, Git, Rust 1.98.1, and already available offline
 Cargo dependencies. The runner records the bubblewrap version and fails if it
 cannot create the required private namespace. Enrollment gives every child a
 private filesystem tree at the historical logical path using a bind mount.

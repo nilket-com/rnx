@@ -994,7 +994,7 @@ pub fn called_process_error(command: &[String], code: i32) -> anyhow::Error {
 
 /// A process that could not start, named by its program and the OS error
 /// only: never the command's environment, which may hold secrets.
-fn spawn_error(program: &str, error: &std::io::Error) -> anyhow::Error {
+pub fn spawn_error(program: &str, error: &std::io::Error) -> anyhow::Error {
 	anyhow::anyhow!("spawn {program}: {error}")
 }
 
@@ -1424,6 +1424,9 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 		.iter()
 		.map(|a| a.to_string_lossy().into_owned())
 		.collect();
+	if args.first().map(String::as_str) == Some("cross") {
+		return crate::cross::main(&args[1..], root, &std::env::vars().collect());
+	}
 	let value = |flag: &str| {
 		args.iter()
 			.position(|a| a == flag)

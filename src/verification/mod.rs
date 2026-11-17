@@ -26,6 +26,10 @@ fn write_new(path: &Path, value: &Value) -> Result<()> {
 fn controller(path: &str) -> Result<()> {
 	let request: Value = serde_json::from_slice(&fs::read(path)?)?;
 	let output = Path::new(request["out"].as_str().ok_or("missing output root")?);
+	write_new(
+		&output.join("LAUNCHER-SELF-CHECK.json"),
+		&binding::launcher_self_check()?,
+	)?;
 	let before = binding::before(&request)?;
 	let args = vec![
 		"--fixtures-root".to_owned(),

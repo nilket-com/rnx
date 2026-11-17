@@ -283,15 +283,15 @@ fn a_route_must_be_declared_by_its_entry_point() {
 	// In this checkout: stages that do not run a file, and the wrong entry points.
 	let e = Entrypoints::load(&real, false).unwrap();
 	for (path, route) in [
-		("tools/test_engine_source.py", "final pin-controls"),
-		("tools/test_engine_source.py", "final no-such-stage"),
+		("tools/test_refresh_census.py", "final benchmark-protocol"),
+		("tools/test_refresh_census.py", "final no-such-stage"),
 		(
 			"tools/column/compare/test_compare.py",
 			"final controller-controls",
 		),
-		("tools/test_engine_source.py", "final controller-controls"),
+		("tools/test_refresh_census.py", "final controller-controls"),
 		("ci/test_unrun.py", "preflight"),
-		("tools/test_engine_source.py", "preflight"),
+		("tools/test_refresh_census.py", "preflight"),
 		(
 			"rune/tools/xtask/column/test_cli_cache.py",
 			"workflow supplemental",
@@ -305,8 +305,8 @@ fn a_route_must_be_declared_by_its_entry_point() {
 	}
 	assert!(
 		e.error(
-			"tools/test_engine_source.py",
-			"final engine-source-controls"
+			"tools/test_refresh_census.py",
+			"final census-refresh-controls"
 		)
 		.is_none()
 	);

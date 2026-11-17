@@ -678,23 +678,23 @@ fn plant_census(payload: &Path, first: &str, second: &str, stderr_bytes: usize) 
 	Ok(())
 }
 
-/// The launcher's receipt for `payload`, written by `verify.terminal_receipt`.
+/// The launcher's receipt for `payload`, written by the stage's own
+/// `cross::terminal_receipt`.
 fn census_receipt(payload: &Path) -> Result<PathBuf> {
 	let root = Path::new(env!("CARGO_MANIFEST_DIR"))
 		.join("../..")
 		.canonicalize()?;
-	let script = format!(
-		"import importlib.util, sys\nfrom pathlib import Path\nsys.path.insert(0, {column:?})\nspec = importlib.util.spec_from_file_location('verify_launcher', {verify:?})\nverify = importlib.util.module_from_spec(spec); spec.loader.exec_module(verify)\nimport child_result\nresult = verify.terminal_receipt(Path({payload:?}), RuntimeError('cross verification failed'), {{'status': 'PASS'}})\nchild_result.atomic_json(Path({payload:?}) / 'RESULT.json', result)\n",
-		column = root.join("tools/column").to_string_lossy(),
-		verify = root.join("tools/verify.py").to_string_lossy(),
-		payload = payload.to_string_lossy(),
-	);
-	anyhow::ensure!(
-		std::process::Command::new("/usr/bin/python3")
-			.args(["-B", "-c", &script])
-			.status()?
-			.success()
-	);
+	let failure = rnx_final::cross::Failure {
+		repr: "RuntimeError('cross verification failed')".into(),
+		notes: vec![],
+	};
+	let result = rnx_final::cross::terminal_receipt(
+		payload,
+		&root.join(rnx_final::cross::CENSUS_PLAN),
+		Some(&failure),
+		json!({"status": "PASS"}),
+	)?;
+	rnx_final::receipt::atomic_json(&payload.join("RESULT.json"), &result)?;
 	Ok(payload.join("RESULT.json"))
 }
 

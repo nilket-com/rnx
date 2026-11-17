@@ -37,7 +37,6 @@
 			"cross": [
 				"cross"
 			],
-			"engine-source-controls": [],
 			"fetch-Cargo.toml": [],
 			"fetch-adapters-candle-Cargo.toml": [],
 			"fetch-adapters-polars-Cargo.toml": [],
@@ -135,7 +134,6 @@
 			"package-polars-gen": [],
 			"package-site": [],
 			"package-xtask": [],
-			"pin-controls": [],
 			"polars-inventories": [],
 			"polars-inventory-preflight": [],
 			"polars-suite": [],
@@ -528,23 +526,6 @@
 					"format-check-servers-http-postgres-Cargo.toml",
 					"--out",
 					"<OUT>/format-check-servers-http-postgres-Cargo.toml"
-				]
-			],
-			[
-				"pin-controls",
-				[
-					"python3",
-					"-I",
-					"-B",
-					"tools/test_verify_pins.py"
-				]
-			],
-			[
-				"engine-source-controls",
-				[
-					"python3",
-					"-B",
-					"tools/test_engine_source.py"
 				]
 			],
 			[
@@ -1107,9 +1088,8 @@
 			[
 				"cross",
 				[
-					"python3",
-					"-B",
-					"tools/verify.py",
+					"rnx-final",
+					"stage",
 					"cross",
 					"--suite",
 					"all",
@@ -1433,6 +1413,10 @@
 		{
 			"change": "polars-inventory-preflight and polars-inventories run as the controller's stage mode, [rnx-final, stage, inventories, --preflight, --out, OUT] and [rnx-final, stage, inventories, --out, OUT] in place of [python3, -B, tools/column/inventories.py, --preflight, --out, OUT] and [python3, -B, tools/column/inventories.py, --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
 			"record": "0293"
+		},
+		{
+			"change": "the cross stage runs as the controller's stage mode, [rnx-final, stage, cross, --suite, all, --out, OUT] in place of [python3, -B, tools/verify.py, cross, --suite, all, --out, OUT], and the pin-controls (python3 -I -B tools/test_verify_pins.py) and engine-source-controls (python3 -B tools/test_engine_source.py) stages are removed, their checks now Rust tests in the final-controls route; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
+			"record": "0294"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

@@ -951,7 +951,7 @@ fn python_suites_and_the_screen_get_no_jobserver() {
 	for name in [
 		"controller-controls",
 		"benchmark-protocol",
-		"pin-controls",
+		"census-refresh-controls",
 		"fixed-route",
 	] {
 		assert!(

@@ -59,19 +59,17 @@ const COLUMN_PRODUCERS: [&str; 20] = [
 	"miri_exact",
 	"repl_session_controls",
 ];
-const OTHER_PRODUCERS: [&str; 5] = [
-	"tools/verify.py",
+const OTHER_PRODUCERS: [&str; 4] = [
 	"rune/tools/xtask/column/ck1.py",
 	"rune/tools/xtask/column/measure.py",
 	"rune/tools/xtask/column/cli_capture.py",
 	"rune/tools/xtask/supplemental/run.py",
 ];
-const LEAVES: [&str; 7] = [
+const LEAVES: [&str; 6] = [
 	"ci/preflight.py",
 	"ci/disk_space.py",
 	"ci/hygiene.py",
 	"ci/commit_subjects.py",
-	"tools/test_verify_pins.py",
 	"rune/tools/xtask/column/records.py",
 	"rune/tools/xtask/column/dependencies.py",
 ];
@@ -242,9 +240,10 @@ pub fn contract(command: &[String], cwd: &Path, root: &Path) -> Result<&'static 
 			command.get(1).map(String::as_str),
 			command.get(2).map(String::as_str),
 		) {
-			(Some("stage"), Some("suite" | "clippy" | "cli" | "jupyter" | "inventories")) => {
-				Ok("producer")
-			}
+			(
+				Some("stage"),
+				Some("suite" | "clippy" | "cli" | "jupyter" | "inventories" | "cross"),
+			) => Ok("producer"),
 			_ => Err(value_error(&format!(
 				"unregistered rnx-final child: {command:?}"
 			))),

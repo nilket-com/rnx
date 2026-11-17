@@ -300,14 +300,10 @@ tools/column/test_score_0215.py	port	final controller-controls
 tools/column/test_simd_hot_loop.py	port	final controller-controls
 tools/column/test_simd_shape.py	port	final controller-controls
 tools/column/test_valgrind_resolution.py	port	final controller-controls
-tools/engine_source.py	port
 tools/profile_recipes.py	port
 tools/project/scripts/notices.py	port
 tools/refresh_census.py	port
 tools/routing-bench/run.py	port
 tools/routing-bench/test_protocol.py	port	final benchmark-protocol
-tools/test_engine_source.py	port	final engine-source-controls
 tools/test_refresh_census.py	port	final census-refresh-controls
-tools/test_verify_pins.py	port	final pin-controls
-tools/verify.py	port
 tools/verify/fixtures/census/journey_mock.py	port

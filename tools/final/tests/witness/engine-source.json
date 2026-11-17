@@ -1,0 +1,250 @@
+{
+ "expected": {
+  "lock: canonical": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "lock: duplicate": {
+   "error": "ValueError",
+   "message": "<LOCK>: duplicate engine package"
+  },
+  "lock: empty": {
+   "ok": []
+  },
+  "lock: external source": {
+   "error": "ValueError",
+   "message": "<LOCK>: external engine source in lock"
+  },
+  "lock: no engine": {
+   "ok": []
+  },
+  "lock: two engines": {
+   "ok": [
+    "rune",
+    "rune-core"
+   ]
+  },
+  "manifest: build dependency git": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: canonical path": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "manifest: canonical path escapes through a link": {
+   "error": "ValueError",
+   "message": "canonical engine path escapes imported source"
+  },
+  "manifest: dev dependency canonical": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "manifest: git source": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: missing path": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: missing canonical engine path"
+  },
+  "manifest: no engine dependency": {
+   "ok": []
+  },
+  "manifest: patch table canonical": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "manifest: patch table git": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: path escape": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: engine dependency path differs from canonical source"
+  },
+  "manifest: registry source": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: registry-index source": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: renamed package": {
+   "ok": [
+    "rune-core"
+   ]
+  },
+  "manifest: target table git": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: version string only": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: workspace dependencies canonical": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "manifest: workspace dependencies git": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: external engine dependency rune"
+  },
+  "manifest: workspace inherited": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: engine dependencies require explicit canonical paths"
+  },
+  "manifest: wrong engine crate": {
+   "error": "ValueError",
+   "message": "<ROOT>/Cargo.toml: engine dependency path differs from canonical source"
+  },
+  "metadata: canonical": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "metadata: crate not canonical": {
+   "error": "ValueError",
+   "message": "resolved Rune manifest is not canonical"
+  },
+  "metadata: duplicate": {
+   "error": "ValueError",
+   "message": "external or duplicate resolved engine source"
+  },
+  "metadata: empty graph": {
+   "error": "ValueError",
+   "message": "resolved graph has no canonical Rune"
+  },
+  "metadata: escapes the subtree": {
+   "error": "ValueError",
+   "message": "resolved engine manifest escapes canonical subtree"
+  },
+  "metadata: external": {
+   "error": "ValueError",
+   "message": "external or duplicate resolved engine source"
+  },
+  "metadata: no rune": {
+   "error": "ValueError",
+   "message": "resolved graph has no canonical Rune"
+  },
+  "metadata: non-engine ignored": {
+   "ok": [
+    "rune"
+   ]
+  },
+  "metadata: with tool outside crates": {
+   "ok": [
+    "rune",
+    "rune-tool"
+   ]
+  },
+  "request: missing rune_path": {
+   "error": "ValueError",
+   "message": "missing request rune_path"
+  },
+  "request: null rune_path": {
+   "error": "ValueError",
+   "message": "missing request rune_path"
+  },
+  "tree: historical exclusion": {
+   "ok": {
+    "locks": [
+     "Cargo.lock",
+     "tools/project/Cargo.lock"
+    ],
+    "manifests": [],
+    "mode": "canonical-path"
+   }
+  },
+  "tree: linked directory not followed": {
+   "ok": {
+    "locks": [
+     "Cargo.lock",
+     "tools/project/Cargo.lock"
+    ],
+    "manifests": [],
+    "mode": "canonical-path"
+   }
+  },
+  "tree: manifest checked": {
+   "error": "ValueError",
+   "message": "<ROOT>/adapters/x/Cargo.toml: external engine dependency rune"
+  },
+  "tree: missing tools/project lock": {
+   "error": "ValueError",
+   "message": "missing canonical engine lock graph: tools/project/Cargo.lock"
+  },
+  "tree: nested probes not excluded": {
+   "error": "ValueError",
+   "message": "<ROOT>/adapters/probes/Cargo.lock: external engine source in lock"
+  },
+  "tree: new external lock": {
+   "error": "ValueError",
+   "message": "<ROOT>/adapters/new/Cargo.lock: external engine source in lock"
+  },
+  "tree: required locks only": {
+   "ok": {
+    "locks": [
+     "Cargo.lock",
+     "tools/project/Cargo.lock"
+    ],
+    "manifests": [],
+    "mode": "canonical-path"
+   }
+  },
+  "tree: the published checkout": {
+   "ok": {
+    "locks": [
+     "Cargo.lock",
+     "adapters/candle/Cargo.lock",
+     "adapters/polars/Cargo.lock",
+     "adapters/postgres/Cargo.lock",
+     "demos/candle/Cargo.lock",
+     "demos/polars/Cargo.lock",
+     "rune/hegel_tests/Cargo.lock",
+     "rune/tools/xtask/column/probe/Cargo.lock",
+     "rune/tools/xtask/measure/harness/Cargo.lock",
+     "servers/http-postgres/Cargo.lock",
+     "tools/project/Cargo.lock"
+    ],
+    "manifests": [
+     "Cargo.toml",
+     "rune/benches/Cargo.toml",
+     "rune/crates/rune/Cargo.toml",
+     "rune/crates/rune-alloc/Cargo.toml",
+     "rune/crates/rune-alloc-macros/Cargo.toml",
+     "rune/crates/rune-cli/Cargo.toml",
+     "rune/crates/rune-core/Cargo.toml",
+     "rune/crates/rune-languageserver/Cargo.toml",
+     "rune/crates/rune-macros/Cargo.toml",
+     "rune/crates/rune-modules/Cargo.toml",
+     "rune/crates/rune-tracing/Cargo.toml",
+     "rune/crates/rune-tracing-macros/Cargo.toml",
+     "rune/crates/rune-wasm/Cargo.toml",
+     "rune/examples/Cargo.toml",
+     "rune/hegel_tests/Cargo.toml",
+     "rune/no-std/Cargo.toml",
+     "rune/tools/xtask/column/probe/Cargo.toml",
+     "rune/tools/xtask/measure/harness/Cargo.toml",
+     "tools/project/Cargo.toml"
+    ],
+    "mode": "canonical-path"
+   }
+  }
+ },
+ "method": "engine_source.check_manifest, check_lock, check_metadata and check_tree, and verify.validate_request, over planted trees under a scratch base: each is ok with the returned value, or error with the exception class and message. Every planted engine tree has rune/crates/rune and rune/crates/rune-core manifests; manifest cases add other/Cargo.toml (package rune) for the escape; 'canonical path escapes through a link' replaces rune/crates/rune with a link to <OUTSIDE>/crates/rune; tree cases write the two required locks (one canonical rune entry each) plus the shown extra files; 'linked directory not followed' links a directory holding an external lock. 'the published checkout' is check_tree over the checkout itself.",
+ "substitutions": {
+  "<ESCAPE>": "a manifest outside the engine",
+  "<LOCK>": "the planted lock",
+  "<OUTSIDE>": "a directory outside it",
+  "<ROOT>": "the planted tree"
+ },
+ "witness": "152b0c07861f3c76695091ab6f7ea50fd44b3461"
+}

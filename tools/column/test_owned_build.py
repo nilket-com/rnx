@@ -77,10 +77,6 @@ class OwnershipControls(unittest.TestCase):
 			verify_copy(owned.path,binary,sha,receipt)
 			owned.keep([binary,receipt])
 		self.assertEqual(digest(binary),sha)
-		# The actual launcher ordering is exercised by the real cross gate.
-		text=(Path(__file__).parents[1]/'verify.py').read_text()
-		self.assertLess(text.index('--host-check'),text.index("rename(output/'CONTROLLER-RESULT.json')"))
-		self.assertLess(text.index("rename(output/'CONTROLLER-RESULT.json')"),text.index("result['cleanup']"))
 
 	def test_sigterm_launcher_reaches_child_and_grandchild(self):
 		import os, signal, subprocess, sys

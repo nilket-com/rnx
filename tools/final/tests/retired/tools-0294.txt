@@ -1,0 +1,8 @@
+# ADR 0294: the cross launcher, its pin-check helper and their two tests,
+# replaced by the Rust stage mode `rnx-final stage cross` and its controls
+# in tools/final/tests/cross.rs. tools/final/tests/deleted.rs requires none
+# to be tracked and no current file to run or name one.
+tools/verify.py
+tools/test_verify_pins.py
+tools/engine_source.py
+tools/test_engine_source.py
