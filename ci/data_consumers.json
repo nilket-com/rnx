@@ -1072,8 +1072,26 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 25195,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture."
+      "max_bytes": 25707,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture."
+    },
+    "tools/final/tests/witness/cli-controls.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/programs.rs"
+      },
+      "max_bytes": 21576,
+      "reason": "ADR 0291 witness fixture: the Python CLI and Jupyter stage programs' children, verdicts and receipts generated once at 427d0e32 from controlled values (method recorded inside); the Rust stage modes are compared against it."
+    },
+    "tools/final/tests/witness/jupyter-controls.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/programs.rs"
+      },
+      "max_bytes": 6188,
+      "reason": "ADR 0291 witness fixture: the Python CLI and Jupyter stage programs' children, verdicts and receipts generated once at 427d0e32 from controlled values (method recorded inside); the Rust stage modes are compared against it."
     },
     "tools/final/tests/witness/native-build.json": {
       "class": "live-fixture",
@@ -1135,8 +1153,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 79555,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture."
+      "max_bytes": 80027,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture."
     },
     "tools/final/tests/witness/suite-recipes.json": {
       "class": "live-fixture",

@@ -54,10 +54,8 @@ fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 			("tools/polars-gen/Cargo.toml", "debug"),
 			("target/0072", ""),
 		],
-		"tools/column/jupyter_controls.py" => {
-			&[("Cargo.toml", "debug"), ("jupyter/Cargo.toml", "debug")]
-		}
-		"tools/column/cli.py" => &[("adapters/polars/Cargo.toml", "release")],
+		JUPYTER => &[("Cargo.toml", "debug"), ("jupyter/Cargo.toml", "debug")],
+		CLI => &[("adapters/polars/Cargo.toml", "release")],
 		"tools/verify.py"
 		| "tools/column/fixed_route_gate.py"
 		| "ci/preflight.py"
@@ -115,6 +113,8 @@ pub fn script(command: &[String]) -> Option<&str> {
 		return match command.get(2).map(String::as_str) {
 			Some("suite") => Some(SUITE),
 			Some("clippy") => Some(CLIPPY),
+			Some("cli") => Some(CLI),
+			Some("jupyter") => Some(JUPYTER),
 			_ => None,
 		};
 	}
@@ -127,6 +127,8 @@ pub fn script(command: &[String]) -> Option<&str> {
 /// The Rust stage modes, as the scheduler names them.
 pub const SUITE: &str = "rnx-final stage suite";
 pub const CLIPPY: &str = "rnx-final stage clippy";
+pub const CLI: &str = "rnx-final stage cli";
+pub const JUPYTER: &str = "rnx-final stage jupyter";
 
 fn is_cargo(command: &[String]) -> bool {
 	Path::new(&command[0])

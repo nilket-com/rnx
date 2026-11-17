@@ -144,7 +144,7 @@ rune/tools/xtask/supplemental/test_runner.py	port	workflow supplemental
 servers/http-postgres/scripts/third-party-notices.py	port
 tests/fixtures/dep_engine.py	port
 tests/process_interrupt.py	port
-tests/test_jupyter_execution.py	jupyter	final jupyter-kernel via tools/column/jupyter_controls.py
+tests/test_jupyter_execution.py	jupyter	final jupyter-kernel
 tests/worker_checks.py	port
 tests/worker_execution.py	port
 tests/worker_parent.py	port
@@ -156,7 +156,6 @@ tools/column/boolean_limits.py	port
 tools/column/boolean_pins.py	port
 tools/column/boolean_vectors.py	port
 tools/column/child_result.py	port
-tools/column/cli.py	port
 tools/column/cli_symbols.py	port
 tools/column/compare/calibrate.py	port
 tools/column/compare/durable.py	port
@@ -210,7 +209,6 @@ tools/column/ir_launch.py	port
 tools/column/ir_pool.py	port
 tools/column/ir_resources.py	port
 tools/column/json_parse_cost.py	port
-tools/column/jupyter_controls.py	port
 tools/column/launch.py	port
 tools/column/masked_float_identity.py	port
 tools/column/masked_float_instances.py	port
@@ -255,7 +253,6 @@ tools/column/test_boolean_vectors.py	port	final controller-controls
 tools/column/test_build_rerun.py	port	final controller-controls
 tools/column/test_child_result.py	port	final controller-controls
 tools/column/test_cli_symbols.py	port	final controller-controls
-tools/column/test_column_protocol.py	port	final controller-controls
 tools/column/test_drift_band.py	port	final controller-controls
 tools/column/test_executor_identity.py	port	final controller-controls
 tools/column/test_f64_output_edges.py	port	final controller-controls

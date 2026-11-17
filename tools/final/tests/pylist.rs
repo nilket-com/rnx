@@ -197,11 +197,10 @@ fn a_route_must_be_declared_by_its_entry_point() {
 		.canonicalize()
 		.unwrap();
 	let commands = rnx_final::catalogue::commands(&real.join("target/unused"), &real).unwrap();
-	let jupyter = "tools/column/jupyter_controls.py";
 	let run = format!("{SUPPLEMENTAL}/run.py");
 	let copy = |edit: &dyn Fn(&str, String) -> String| -> PathBuf {
 		let root = std::env::temp_dir().join(format!("rnx-final-routes-{}", invocation_id()));
-		for file in [PREFLIGHT, MEASURE_CHECKS, run.as_str(), jupyter] {
+		for file in [PREFLIGHT, MEASURE_CHECKS, run.as_str()] {
 			let target = root.join(file);
 			std::fs::create_dir_all(target.parent().unwrap()).unwrap();
 			let text = std::fs::read_to_string(real.join(file)).unwrap();
@@ -220,7 +219,7 @@ fn a_route_must_be_declared_by_its_entry_point() {
 			.unwrap();
 		e.error(path, route).is_none()
 	};
-	let cases: [(&str, &str, &str, &str, &str); 8] = [
+	let cases: [(&str, &str, &str, &str, &str); 5] = [
 		(
 			PREFLIGHT,
 			"ci/test_disk_space.py",
@@ -256,29 +255,6 @@ fn a_route_must_be_declared_by_its_entry_point() {
 			"\tcontrols = execute([sys.executable, '-m', 'unittest', 'discover', '-s', str(HERE), '-p', 'test_*.py'], attempt, env, root, 120, label='controls')",
 			"comment",
 		),
-		(
-			jupyter,
-			"tests/test_jupyter_execution.py",
-			"final jupyter-kernel via tools/column/jupyter_controls.py",
-			"\t\t\t[str(python),'-B','tests/test_jupyter_execution.py',str(ROOT/'jupyter/target/debug/rnx-jupyter'),str(ROOT/'target/debug/rnx')],",
-			"comment",
-		),
-		(
-			jupyter,
-			"tests/test_jupyter_execution.py",
-			"final jupyter-kernel via tools/column/jupyter_controls.py",
-			"'tests/test_jupyter_execution.py'",
-			"'tests/other.py'",
-		),
-		// The command gone from the declaration the wrapper runs, the path
-		// kept in a list it never runs.
-		(
-			jupyter,
-			"tests/test_jupyter_execution.py",
-			"final jupyter-kernel via tools/column/jupyter_controls.py",
-			"\t\t\t[str(python),'-B','tests/test_jupyter_execution.py',str(ROOT/'jupyter/target/debug/rnx-jupyter'),str(ROOT/'target/debug/rnx')],\n",
-			"unused",
-		),
 	];
 	for (file, path, route, old, new) in cases {
 		// Unchanged, the route holds in the copy.
@@ -290,10 +266,6 @@ fn a_route_must_be_declared_by_its_entry_point() {
 				return text;
 			}
 			assert!(text.contains(old), "{f} lacks the planted line: {old}");
-			if new == "unused" {
-				return text.replacen(old, "", 1)
-					+ "\nunused = ['tests/test_jupyter_execution.py']\n";
-			}
 			let replacement = if new == "comment" {
 				let comment = if f.ends_with(".rs") { "//" } else { "#" };
 				format!("{comment} {}", old.trim_start())
@@ -385,4 +357,113 @@ fn discovery_ignores_python_path_and_site_setup() {
 	let _ = std::fs::remove_dir_all(&fake);
 	assert_eq!(plain["test_callgrind_n1_cold.py"], Ok(10));
 	assert_eq!(planted, plain);
+}
+
+/// A test run by a Rust stage mode holds its route only through the
+/// children that stage declares, the declaration its runner iterates: the
+/// test child removed or replaced, the stage's command removed or changed,
+/// or the path only among the stage's own arguments, each breaks it.
+#[test]
+fn a_rust_stage_route_holds_only_through_its_declared_children() {
+	use rnx_final::catalogue::Command;
+	use rnx_final::routes::Entrypoints;
+	let real = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("../..")
+		.canonicalize()
+		.unwrap();
+	let (path, route) = ("tests/test_jupyter_execution.py", "final jupyter-kernel");
+	let commands = rnx_final::catalogue::commands(&real.join("target/unused"), &real).unwrap();
+	let holds = |commands: Vec<(String, Command)>, children: fn(&[String]) -> Vec<Command>| {
+		let mut e = Entrypoints::load_with(&real, commands, false).unwrap();
+		e.children = children;
+		e.error(path, route).is_none()
+	};
+	assert!(holds(commands.clone(), rnx_final::stage::declared_children));
+	fn without(command: &[String]) -> Vec<Command> {
+		let mut c = rnx_final::stage::declared_children(command);
+		c.retain(|child| !child.iter().any(|a| a == "tests/test_jupyter_execution.py"));
+		c
+	}
+	fn replaced(command: &[String]) -> Vec<Command> {
+		rnx_final::stage::declared_children(command)
+			.into_iter()
+			.map(|child| {
+				child
+					.into_iter()
+					.map(|a| {
+						if a == "tests/test_jupyter_execution.py" {
+							"tests/other.py".into()
+						} else {
+							a
+						}
+					})
+					.collect()
+			})
+			.collect()
+	}
+	assert!(!holds(commands.clone(), without), "the test child removed");
+	assert!(
+		!holds(commands.clone(), replaced),
+		"the test child replaced"
+	);
+	let removed: Vec<_> = commands
+		.iter()
+		.filter(|(n, _)| n != "jupyter-kernel")
+		.cloned()
+		.collect();
+	assert!(
+		!holds(removed, rnx_final::stage::declared_children),
+		"the stage removed"
+	);
+	let changed: Vec<_> = commands
+		.iter()
+		.map(|(n, c)| {
+			let mut c = c.clone();
+			if n == "jupyter-kernel" {
+				c[2] = "cli".into();
+			}
+			(n.clone(), c)
+		})
+		.collect();
+	assert!(
+		!holds(changed, rnx_final::stage::declared_children),
+		"the stage's command changed"
+	);
+	// The stage discriminator wrong or missing: no Jupyter stage runs.
+	for prefix in [
+		vec!["rnx-final", "not-stage", "jupyter"],
+		vec!["rnx-final", "jupyter"],
+	] {
+		let wrong: Vec<_> = commands
+			.iter()
+			.map(|(n, c)| {
+				let mut c = c.clone();
+				if n == "jupyter-kernel" {
+					let rest = c[3..].to_vec();
+					c = prefix.iter().map(|s| s.to_string()).collect();
+					c.extend(rest);
+				}
+				(n.clone(), c)
+			})
+			.collect();
+		assert!(
+			!holds(wrong, rnx_final::stage::declared_children),
+			"{prefix:?}"
+		);
+	}
+	// The path among the stage's own arguments, its children without it.
+	let metadata: Vec<_> = commands
+		.iter()
+		.map(|(n, c)| {
+			let mut c = c.clone();
+			if n == "jupyter-kernel" {
+				c.push(path.into());
+			}
+			(n.clone(), c)
+		})
+		.collect();
+	assert!(
+		!holds(metadata, without),
+		"the path only in the stage's arguments"
+	);
 }

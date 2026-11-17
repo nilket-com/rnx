@@ -1,0 +1,9 @@
+# ADR 0291: the CLI and Jupyter stage programs, replaced by the Rust
+# stage modes `rnx-final stage cli` and `rnx-final stage jupyter`, and the
+# test whose one control was the CLI checker's planted evidence, now
+# tools/final/tests/programs.rs.
+# tools/final/tests/deleted.rs requires none to be tracked and no current
+# file to run or name one.
+tools/column/cli.py
+tools/column/jupyter_controls.py
+tools/column/test_column_protocol.py

@@ -486,9 +486,9 @@ pub fn clippy(
 	)
 }
 
-/// Cargo's jobs for a Clippy comparison: inside a final its jobserver's
+/// Cargo's jobs for a stage's builds: inside a final its jobserver's
 /// width, else what the host's CPUs and memory admit.
-fn build_jobs(env: &Environment) -> Result<usize> {
+pub fn build_jobs(env: &Environment) -> Result<usize> {
 	if let Some(width) = env
 		.get("MAKEFLAGS")
 		.and_then(|f| job_budget::fifo::inherited_width(f))
@@ -497,6 +497,418 @@ fn build_jobs(env: &Environment) -> Result<usize> {
 	}
 	let observation = job_budget::memory::observe(&job_budget::memory::Sources::default())?;
 	job_budget::memory::build_jobs(&observation)
+}
+
+/// An `AssertionError` as Python's `repr` and `str` write it.
+fn assertion(message: &str) -> anyhow::Error {
+	anyhow::Error::new(crate::child::Raised {
+		class: "AssertionError",
+		repr: if message.is_empty() {
+			"AssertionError()".into()
+		} else {
+			format!(
+				"AssertionError({})",
+				crate::failure::python_repr(&json!(message))
+			)
+		},
+		message: message.into(),
+	})
+}
+
+/// The release CLI's routing and fuel contract over one run's output, as
+/// `cli.validate` held it.
+pub fn validate_cli(
+	code: i32,
+	stdout: &str,
+	stderr: &str,
+	exhausted: bool,
+	stock: bool,
+) -> Result<()> {
+	let check = |ok: bool, message: &str| if ok { Ok(()) } else { Err(assertion(message)) };
+	check(
+		stderr.contains("rnx: engine=legacy"),
+		"outer script did not select stock VM",
+	)?;
+	check(
+		!stderr.contains("rnx: engine=execution"),
+		"opaque script entered execution engine",
+	)?;
+	check(
+		stdout.contains("COLUMN_ENTER"),
+		"never reached the map call",
+	)?;
+	check(
+		!stdout.contains("COLUMN_CAUGHT"),
+		"fuel halt became a catchable Result",
+	)?;
+	if exhausted {
+		check(code != 0, "fuel exhaustion returned success")?;
+		check(
+			!stdout.contains("COLUMN_OK"),
+			"completed despite insufficient fuel",
+		)?;
+		check(
+			stderr.contains("work units") && stderr.contains("--budget"),
+			"missing CLI fuel diagnostic",
+		)?;
+	} else {
+		check(code == 0, "successful control failed")?;
+		check(
+			stdout.contains("COLUMN_OK"),
+			"output equality/length checks never completed",
+		)?;
+		check(
+			stdout.contains("completed=true; rows=10000; valid_rows=10000;"),
+			"",
+		)?;
+		if stock {
+			check(stdout.contains("path=scalar-fallback;"), "")?;
+			check(stdout.contains("attempts=0; replays=0;"), "")?;
+		} else {
+			check(
+				stdout.contains("path=avx2;") || stdout.contains("path=scalar-primitives;"),
+				"",
+			)?;
+			check(stdout.contains("attempts=1; replays=0; refusal=None"), "")?;
+		}
+	}
+	Ok(())
+}
+
+/// The checker's own controls: two runs it must pass, and planted evidence
+/// it must refuse, as `cli.controls` held them.
+pub fn cli_controls() -> Result<()> {
+	let good = "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None";
+	let legacy = "rnx: engine=legacy refusal=HostContract";
+	validate_cli(0, good, legacy, false, false)?;
+	validate_cli(
+		1,
+		"COLUMN_ENTER",
+		&format!("{legacy} 2000 work units exceeded; --budget N raises it"),
+		true,
+		false,
+	)?;
+	let planted: [(i32, String, String, bool); 6] = [
+		(0, good.into(), "rnx: engine=execution".into(), false),
+		(
+			0,
+			good.replace("rows=10000", "rows=0"),
+			legacy.into(),
+			false,
+		),
+		(
+			0,
+			good.replace("COLUMN_OK", "SKIPPED"),
+			legacy.into(),
+			false,
+		),
+		(
+			0,
+			good.replace("path=avx2", "path=scalar-fallback"),
+			legacy.into(),
+			false,
+		),
+		(
+			0,
+			"COLUMN_ENTER\nCOLUMN_CAUGHT fuel".into(),
+			legacy.into(),
+			true,
+		),
+		(
+			1,
+			String::new(),
+			format!("{legacy}work units --budget"),
+			true,
+		),
+	];
+	for (code, stdout, stderr, exhausted) in planted {
+		if validate_cli(code, &stdout, &stderr, exhausted, false).is_ok() {
+			bail!(assertion("invalid CLI evidence passed the checker"));
+		}
+	}
+	Ok(())
+}
+
+/// How the CLI stage runs the binary, so a control can answer for it.
+pub trait CliRun {
+	/// Run `command` in `cwd` within `limit`; its exit, stdout and stderr.
+	fn run(
+		&mut self,
+		command: &[String],
+		cwd: &Path,
+		limit: Duration,
+	) -> Result<(i32, String, String)>;
+}
+
+/// The binary run for real, with the stage's environment, its output
+/// captured through files in `out`.
+pub struct LiveCli {
+	pub env: Environment,
+	pub out: PathBuf,
+}
+
+impl CliRun for LiveCli {
+	fn run(
+		&mut self,
+		command: &[String],
+		cwd: &Path,
+		limit: Duration,
+	) -> Result<(i32, String, String)> {
+		let id = crate::receipt::invocation_id();
+		let (stdout, stderr) = (
+			self.out.join(format!(".{id}.stdout")),
+			self.out.join(format!(".{id}.stderr")),
+		);
+		let mut child = std::process::Command::new(&command[0]);
+		child
+			.args(&command[1..])
+			.current_dir(cwd)
+			.env_clear()
+			.envs(&self.env)
+			.stdin(std::process::Stdio::null())
+			.stdout(std::fs::File::create_new(&stdout)?)
+			.stderr(std::fs::File::create_new(&stderr)?);
+		let result = wait(child, limit).and_then(|code| {
+			Ok((
+				code,
+				text_mode(&std::fs::read(&stdout)?)?,
+				text_mode(&std::fs::read(&stderr)?)?,
+			))
+		});
+		let _ = std::fs::remove_file(&stdout);
+		let _ = std::fs::remove_file(&stderr);
+		result
+	}
+}
+
+/// A child's output as Python's `subprocess.run(text=True)` reads it:
+/// strict UTF-8, and universal newlines (`\r\n` and `\r` become `\n`).
+pub fn text_mode(bytes: &[u8]) -> Result<String> {
+	let text = std::str::from_utf8(bytes).map_err(|e| {
+		crate::child::raise(
+			"UnicodeDecodeError",
+			&format!(
+				"'utf-8' codec can't decode byte at position {}",
+				e.valid_up_to()
+			),
+		)
+	})?;
+	Ok(text.replace("\r\n", "\n").replace('\r', "\n"))
+}
+
+/// `rnx-final stage cli`: the release CLI over both fixtures, both engines
+/// and both budgets, each run held to the contract, and the binary
+/// unchanged throughout. The receipt, without its seconds; the error, if
+/// any, is also written as `TRACEBACK.txt`.
+pub fn cli(binary: &Path, out: &Path, root: &Path, run: &mut dyn CliRun) -> Result<Value> {
+	let mut result = json!({"status": "FAIL", "cases": []});
+	let outcome = (|| -> Result<()> {
+		cli_controls()?;
+		let binary = std::fs::canonicalize(binary)
+			.map_err(|e| crate::child::raise("FileNotFoundError", &e.to_string()))?;
+		result["binary"] = json!(binary.to_string_lossy());
+		result["binary_sha256"] = json!(digest(&binary)?);
+		for engine in ["default", "legacy"] {
+			for stock in [false, true] {
+				let fixture =
+					std::fs::canonicalize(root.join("tools/column/fixtures").join(if stock {
+						"cli-stock.rn"
+					} else {
+						"cli-map.rn"
+					}))?;
+				for work in [2000u64, 1_000_000] {
+					let name = format!(
+						"{engine}-{}-{work}",
+						if stock { "stock" } else { "primitives" }
+					);
+					let mut command: Vec<String> = vec![
+						binary.to_string_lossy().into_owned(),
+						"run".into(),
+						"--debug-engine".into(),
+						"--budget".into(),
+						work.to_string(),
+					];
+					if engine == "legacy" {
+						command.push("--engine=legacy".into());
+					}
+					command.push(fixture.to_string_lossy().into_owned());
+					let (code, stdout, stderr) =
+						run.run(&command, root, Duration::from_secs(120))?;
+					std::fs::write(out.join(format!("{name}.stdout")), &stdout)?;
+					std::fs::write(out.join(format!("{name}.stderr")), &stderr)?;
+					result["cases"].as_array_mut().unwrap().push(
+						json!({"name": name, "command": command, "exit": code, "fixture_sha256": digest(&fixture)?}),
+					);
+					validate_cli(code, &stdout, &stderr, work == 2000, stock)?;
+				}
+			}
+		}
+		if json!(digest(&binary)?) != result["binary_sha256"] {
+			bail!(assertion(""));
+		}
+		result["status"] = json!("PASS");
+		Ok(())
+	})();
+	if let Err(error) = outcome {
+		result["error"] = json!(format!("{error}"));
+		let last = match error.downcast_ref::<crate::child::Raised>() {
+			Some(r) if r.message.is_empty() => r.class.to_string(),
+			Some(r) => format!("{}: {}", r.class, r.message),
+			None => format!("{error:#}"),
+		};
+		std::fs::write(out.join("TRACEBACK.txt"), format!("{last}\n"))?;
+	}
+	Ok(result)
+}
+
+/// The Jupyter stage's children, in the order its runner runs them: the
+/// declaration the route checker reads, with inert paths there.
+pub fn jupyter_children(python: &str, root: &Path) -> Vec<Command> {
+	let text = |p: &Path| p.to_string_lossy().into_owned();
+	vec![
+		["cargo", "+1.98.1", "build", "--locked", "--bin", "rnx"]
+			.iter()
+			.map(|s| s.to_string())
+			.collect(),
+		[
+			"cargo",
+			"+1.98.1",
+			"build",
+			"--locked",
+			"--manifest-path",
+			"jupyter/Cargo.toml",
+			"--bin",
+			"rnx-jupyter",
+		]
+		.iter()
+		.map(|s| s.to_string())
+		.collect(),
+		vec![
+			python.to_owned(),
+			"-B".into(),
+			"tests/test_jupyter_execution.py".into(),
+			text(&root.join("jupyter/target/debug/rnx-jupyter")),
+			text(&root.join("target/debug/rnx")),
+		],
+	]
+}
+
+/// The children a Rust stage mode runs, as it declares them, with inert
+/// paths: what a test route through that stage is checked against.
+pub fn declared_children(command: &[String]) -> Vec<Command> {
+	match command.get(2).map(String::as_str) {
+		Some("jupyter")
+			if command[0] == PROGRAM && command.get(1).map(String::as_str) == Some("stage") =>
+		{
+			jupyter_children("<pinned-python>", Path::new("<root>"))
+		}
+		_ => Vec::new(),
+	}
+}
+
+/// How the Jupyter stage runs a child under the producer protocol.
+pub trait ChildRun {
+	/// Run `command` in `root`, its output in the new file `log`, with its
+	/// receipt directory `directory`, within `limit`.
+	fn run(
+		&mut self,
+		command: &[String],
+		root: &Path,
+		env: &Environment,
+		log: &Path,
+		directory: &Path,
+		limit: Duration,
+	) -> Result<crate::child::Done>;
+}
+
+/// The children run by the controller's Rust child runner, under this
+/// executable as their guardian.
+pub struct LiveChild {
+	pub groups: PathBuf,
+}
+
+impl ChildRun for LiveChild {
+	fn run(
+		&mut self,
+		command: &[String],
+		root: &Path,
+		env: &Environment,
+		log: &Path,
+		directory: &Path,
+		limit: Duration,
+	) -> Result<crate::child::Done> {
+		let guardian = std::fs::canonicalize("/proc/self/exe")?;
+		crate::child::run(crate::child::Run {
+			command,
+			cwd: root,
+			root,
+			env,
+			log,
+			timeout: Some(limit),
+			directory,
+			groups: &self.groups,
+			guardian: &guardian,
+			after: None,
+			stop: None,
+		})
+	}
+}
+
+/// `rnx-final stage jupyter`: the two builds and the pinned client's
+/// installed-kernelspec contract, in order, each a child with its own
+/// receipt, as `jupyter_controls.main` ran them.
+pub fn jupyter(
+	out: &Path,
+	root: &Path,
+	env: &Environment,
+	jobs: &dyn Fn(&Environment) -> Result<usize>,
+	run: &mut dyn ChildRun,
+) -> Value {
+	let mut r = json!({"status": "FAIL", "checks": []});
+	let outcome = (|| -> Result<()> {
+		let python = env
+			.get("RNX_JUPYTER_PYTHON")
+			.map(PathBuf::from)
+			.unwrap_or_else(|| root.join("target/jupyter-client/bin/python"));
+		if !python.is_file() {
+			bail!(value_error(
+				"set RNX_JUPYTER_PYTHON to the pinned Jupyter client environment"
+			));
+		}
+		let mut child_env = env.clone();
+		child_env.insert("PYTHONDONTWRITEBYTECODE".into(), "1".into());
+		// One budget decision, which every child reuses.
+		child_env.insert("CARGO_BUILD_JOBS".into(), jobs(env)?.to_string());
+		for (i, command) in jupyter_children(&python.to_string_lossy(), root)
+			.into_iter()
+			.enumerate()
+		{
+			let done = run.run(
+				&command,
+				root,
+				&child_env,
+				&out.join(format!("{i}.log")),
+				&out.join(format!("{i}-child")),
+				Duration::from_secs(1800),
+			)?;
+			r["checks"]
+				.as_array_mut()
+				.unwrap()
+				.push(json!({"command": command, "validation": done.validation}));
+			if done.returncode != 0 {
+				bail!(crate::child::raise(
+					"RuntimeError",
+					&format!("stage {i} failed")
+				));
+			}
+		}
+		r["status"] = json!("PASS");
+		Ok(())
+	})();
+	if let Err(error) = outcome {
+		r["error"] = json!(format!("{error:#}"));
+	}
+	r
 }
 
 /// A suite stage's receipt, as `suite_stage.main` wrote it: its rows,
@@ -643,6 +1055,44 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 				)));
 			}
 			Ok(0)
+		}
+		Some("cli") => {
+			let binary = PathBuf::from(value("--binary").context("the CLI stage needs --binary")?);
+			std::fs::create_dir_all(out.parent().context("--out has no parent")?)?;
+			std::fs::create_dir(&out)?;
+			let started = std::time::Instant::now();
+			let mut result = cli(
+				&binary,
+				&out,
+				root,
+				&mut LiveCli {
+					env: env.clone(),
+					out: out.clone(),
+				},
+			)?;
+			result["seconds"] = json!(started.elapsed().as_secs_f64());
+			publish(&out.join("RESULT.json"), &result, &env)?;
+			Ok(if result["status"] == "PASS" { 0 } else { 1 })
+		}
+		Some("jupyter") => {
+			std::fs::create_dir_all(out.parent().context("--out has no parent")?)?;
+			std::fs::create_dir(&out)?;
+			let groups = match env.get("RNX_FINAL_GROUPS").filter(|g| !g.is_empty()) {
+				Some(g) => PathBuf::from(g),
+				None => {
+					let g = out.join("groups");
+					std::fs::create_dir(&g)?;
+					g
+				}
+			};
+			let r = jupyter(&out, root, &env, &build_jobs, &mut LiveChild { groups });
+			publish(&out.join("RESULT.json"), &r, &env)?;
+			println!(
+				"{} {}",
+				r["status"].as_str().unwrap_or("FAIL"),
+				out.join("RESULT.json").display()
+			);
+			Ok(if r["status"] == "PASS" { 0 } else { 1 })
 		}
 		Some(other) => bail!(value_error(&format!("unknown stage mode: {other}"))),
 		None => bail!(value_error("a stage needs a mode")),

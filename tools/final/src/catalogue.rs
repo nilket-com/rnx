@@ -644,8 +644,10 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		),
 		(
 			"jupyter-kernel".into(),
-			python(&[
-				"tools/column/jupyter_controls.py",
+			strings(&[
+				crate::stage::PROGRAM,
+				"stage",
+				"jupyter",
 				"--out",
 				&out_text("jupyter-kernel"),
 			]),
@@ -757,8 +759,10 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 	let binary = root.join("adapters/polars/target/release/rnx-polars");
 	steps.push((
 		"production-cli-controls".into(),
-		python(&[
-			"tools/column/cli.py",
+		strings(&[
+			crate::stage::PROGRAM,
+			"stage",
+			"cli",
 			"--binary",
 			&binary.to_string_lossy(),
 			"--out",

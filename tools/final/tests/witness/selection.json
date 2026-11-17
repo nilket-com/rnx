@@ -924,9 +924,9 @@
 					[
 						"jupyter-kernel",
 						[
-							"python3",
-							"-B",
-							"tools/column/jupyter_controls.py",
+							"rnx-final",
+							"stage",
+							"jupyter",
 							"--out",
 							"<OUT>/jupyter-kernel"
 						]
@@ -1141,9 +1141,9 @@
 					[
 						"production-cli-controls",
 						[
-							"python3",
-							"-B",
-							"tools/column/cli.py",
+							"rnx-final",
+							"stage",
+							"cli",
 							"--binary",
 							"<ROOT>/adapters/polars/target/release/rnx-polars",
 							"--out",
@@ -2292,9 +2292,9 @@
 					[
 						"jupyter-kernel",
 						[
-							"python3",
-							"-B",
-							"tools/column/jupyter_controls.py",
+							"rnx-final",
+							"stage",
+							"jupyter",
 							"--out",
 							"<OUT>/jupyter-kernel"
 						]
@@ -3417,9 +3417,9 @@
 					[
 						"jupyter-kernel",
 						[
-							"python3",
-							"-B",
-							"tools/column/jupyter_controls.py",
+							"rnx-final",
+							"stage",
+							"jupyter",
 							"--out",
 							"<OUT>/jupyter-kernel"
 						]
@@ -3858,6 +3858,10 @@
 		{
 			"change": "rune-suite runs as the controller's stage mode, [rnx-final, stage, suite, --stage, rune-suite, --out, OUT] in place of [python3, -B, tools/column/suite_stage.py, --stage, rune-suite, --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
 			"record": "0289"
+		},
+		{
+			"change": "jupyter-kernel and production-cli-controls run as the controller's stage modes, [rnx-final, stage, jupyter, --out, OUT] in place of [python3, -B, tools/column/jupyter_controls.py, --out, OUT] and [rnx-final, stage, cli, --binary, BINARY, --out, OUT] in place of [python3, -B, tools/column/cli.py, --binary, BINARY, --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
+			"record": "0291"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

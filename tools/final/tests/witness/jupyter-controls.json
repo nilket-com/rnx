@@ -1,0 +1,276 @@
+{
+ "expected": {
+  "inherited": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "build",
+      "--locked",
+      "--bin",
+      "rnx"
+     ],
+     "cwd": "<ROOT>",
+     "directory": "0-child",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+      "PATH": "/planted/bin",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RNX_JUPYTER_PYTHON": "<PYTHON>"
+     },
+     "env_keys": [
+      "CARGO_BUILD_JOBS",
+      "MAKEFLAGS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "RNX_JUPYTER_PYTHON"
+     ],
+     "log": "0.log",
+     "root": "<ROOT>",
+     "stderr_is_stdout": true,
+     "timeout": 1800
+    },
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "jupyter/Cargo.toml",
+      "--bin",
+      "rnx-jupyter"
+     ],
+     "cwd": "<ROOT>",
+     "directory": "1-child",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+      "PATH": "/planted/bin",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RNX_JUPYTER_PYTHON": "<PYTHON>"
+     },
+     "env_keys": [
+      "CARGO_BUILD_JOBS",
+      "MAKEFLAGS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "RNX_JUPYTER_PYTHON"
+     ],
+     "log": "1.log",
+     "root": "<ROOT>",
+     "stderr_is_stdout": true,
+     "timeout": 1800
+    },
+    {
+     "command": [
+      "<PYTHON>",
+      "-B",
+      "tests/test_jupyter_execution.py",
+      "<ROOT>/jupyter/target/debug/rnx-jupyter",
+      "<ROOT>/target/debug/rnx"
+     ],
+     "cwd": "<ROOT>",
+     "directory": "2-child",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+      "PATH": "/planted/bin",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RNX_JUPYTER_PYTHON": "<PYTHON>"
+     },
+     "env_keys": [
+      "CARGO_BUILD_JOBS",
+      "MAKEFLAGS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "RNX_JUPYTER_PYTHON"
+     ],
+     "log": "2.log",
+     "root": "<ROOT>",
+     "stderr_is_stdout": true,
+     "timeout": 1800
+    }
+   ],
+   "exit": false,
+   "files": [
+    "0.log",
+    "1.log",
+    "2.log"
+   ],
+   "receipt": {
+    "checks": [
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--bin",
+       "rnx"
+      ],
+      "validation": {
+       "planted": 1
+      }
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "jupyter/Cargo.toml",
+       "--bin",
+       "rnx-jupyter"
+      ],
+      "validation": {
+       "planted": 2
+      }
+     },
+     {
+      "command": [
+       "<PYTHON>",
+       "-B",
+       "tests/test_jupyter_execution.py",
+       "<ROOT>/jupyter/target/debug/rnx-jupyter",
+       "<ROOT>/target/debug/rnx"
+      ],
+      "validation": {
+       "planted": 3
+      }
+     }
+    ],
+    "status": "PASS"
+   },
+   "receipt_path": "RESULT.json"
+  },
+  "no-client": {
+   "calls": [],
+   "exit": true,
+   "files": [],
+   "receipt": {
+    "checks": [],
+    "error": "ValueError: set RNX_JUPYTER_PYTHON to the pinned Jupyter client environment",
+    "status": "FAIL"
+   },
+   "receipt_path": "RESULT.json"
+  },
+  "second-fails": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "build",
+      "--locked",
+      "--bin",
+      "rnx"
+     ],
+     "cwd": "<ROOT>",
+     "directory": "0-child",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+      "PATH": "/planted/bin",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RNX_JUPYTER_PYTHON": "<PYTHON>"
+     },
+     "env_keys": [
+      "CARGO_BUILD_JOBS",
+      "MAKEFLAGS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "RNX_JUPYTER_PYTHON"
+     ],
+     "log": "0.log",
+     "root": "<ROOT>",
+     "stderr_is_stdout": true,
+     "timeout": 1800
+    },
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "jupyter/Cargo.toml",
+      "--bin",
+      "rnx-jupyter"
+     ],
+     "cwd": "<ROOT>",
+     "directory": "1-child",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+      "PATH": "/planted/bin",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "RNX_JUPYTER_PYTHON": "<PYTHON>"
+     },
+     "env_keys": [
+      "CARGO_BUILD_JOBS",
+      "MAKEFLAGS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "RNX_JUPYTER_PYTHON"
+     ],
+     "log": "1.log",
+     "root": "<ROOT>",
+     "stderr_is_stdout": true,
+     "timeout": 1800
+    }
+   ],
+   "exit": true,
+   "files": [
+    "0.log",
+    "1.log"
+   ],
+   "receipt": {
+    "checks": [
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--bin",
+       "rnx"
+      ],
+      "validation": {
+       "planted": 1
+      }
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "jupyter/Cargo.toml",
+       "--bin",
+       "rnx-jupyter"
+      ],
+      "validation": {
+       "planted": 2
+      }
+     }
+    ],
+    "error": "RuntimeError: stage 1 failed",
+    "status": "FAIL"
+   },
+   "receipt_path": "RESULT.json"
+  }
+ },
+ "method": "jupyter_controls.main() with --out <OUT>, under an environment of only PATH=/planted/bin, MAKEFLAGS='-j7 --jobserver-auth=fifo:/nonexistent' and RNX_JUPYTER_PYTHON=<PYTHON> (an existing empty file; 'no-client' names <TMP>/missing/python instead), child_result.run and child_result.publish intercepted; each child answers returncode 0 and validation {planted: N}, except that 'second-fails' answers 1 for the second child. calls keeps each child's command, root, cwd, timeout, receipt directory name, log name, whether stderr joins stdout, the shown environment values and every environment key; the receipt's error is reduced to its traceback's last line.",
+ "substitutions": {
+  "<OUT>": "the stage out directory",
+  "<PYTHON>": "the planted client interpreter",
+  "<ROOT>": "the checkout",
+  "<TMP>": "the scratch directory"
+ },
+ "witness": "427d0e3242b794698957773c421970905f68a6c7"
+}

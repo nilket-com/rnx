@@ -1,0 +1,711 @@
+{
+ "expected": {
+  "runs": {
+   "bad-case": {
+    "calls": [
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt",
+     "default-primitives-1000000.stderr",
+     "default-primitives-1000000.stdout",
+     "default-primitives-2000.stderr",
+     "default-primitives-2000.stdout"
+    ],
+    "receipt": {
+     "binary": "<BINARY>",
+     "binary_sha256": "e8fa111fb0bd43f6ecbdbf5fe7295819d791fd0e4fe40bf5bd1a384c167122a8",
+     "cases": [
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "default-primitives-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "default-primitives-1000000"
+      }
+     ],
+     "error": "AssertionError('output equality/length checks never completed')",
+     "status": "FAIL"
+    },
+    "receipt_path": "RESULT.json",
+    "texts": {
+     "default-primitives-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "default-primitives-1000000.stdout": "COLUMN_ENTER\nSKIPPED path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None\n",
+     "default-primitives-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "default-primitives-2000.stdout": "COLUMN_ENTER\n"
+    },
+    "traceback_last": "AssertionError: output equality/length checks never completed"
+   },
+   "binary-changed": {
+    "calls": [
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt",
+     "default-primitives-1000000.stderr",
+     "default-primitives-1000000.stdout",
+     "default-primitives-2000.stderr",
+     "default-primitives-2000.stdout",
+     "default-stock-1000000.stderr",
+     "default-stock-1000000.stdout",
+     "default-stock-2000.stderr",
+     "default-stock-2000.stdout",
+     "legacy-primitives-1000000.stderr",
+     "legacy-primitives-1000000.stdout",
+     "legacy-primitives-2000.stderr",
+     "legacy-primitives-2000.stdout",
+     "legacy-stock-1000000.stderr",
+     "legacy-stock-1000000.stdout",
+     "legacy-stock-2000.stderr",
+     "legacy-stock-2000.stdout"
+    ],
+    "receipt": {
+     "binary": "<BINARY>",
+     "binary_sha256": "e8fa111fb0bd43f6ecbdbf5fe7295819d791fd0e4fe40bf5bd1a384c167122a8",
+     "cases": [
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "default-primitives-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "default-primitives-1000000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "default-stock-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "default-stock-1000000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "legacy-primitives-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "legacy-primitives-1000000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "legacy-stock-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "legacy-stock-1000000"
+      }
+     ],
+     "error": "AssertionError()",
+     "status": "FAIL"
+    },
+    "receipt_path": "RESULT.json",
+    "texts": {
+     "default-primitives-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "default-primitives-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None\n",
+     "default-primitives-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "default-primitives-2000.stdout": "COLUMN_ENTER\n",
+     "default-stock-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "default-stock-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=scalar-fallback; completed=true; rows=10000; valid_rows=10000; attempts=0; replays=0; refusal=None\n",
+     "default-stock-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "default-stock-2000.stdout": "COLUMN_ENTER\n",
+     "legacy-primitives-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "legacy-primitives-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None\n",
+     "legacy-primitives-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "legacy-primitives-2000.stdout": "COLUMN_ENTER\n",
+     "legacy-stock-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "legacy-stock-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=scalar-fallback; completed=true; rows=10000; valid_rows=10000; attempts=0; replays=0; refusal=None\n",
+     "legacy-stock-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "legacy-stock-2000.stdout": "COLUMN_ENTER\n"
+    },
+    "traceback_last": "AssertionError"
+   },
+   "pass": {
+    "calls": [
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-map.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "2000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     },
+     {
+      "capture_output": true,
+      "command": [
+       "<BINARY>",
+       "run",
+       "--debug-engine",
+       "--budget",
+       "1000000",
+       "--engine=legacy",
+       "<ROOT>/tools/column/fixtures/cli-stock.rn"
+      ],
+      "cwd": "<ROOT>",
+      "text": true,
+      "timeout": 120
+     }
+    ],
+    "exit": 0,
+    "files": [
+     "default-primitives-1000000.stderr",
+     "default-primitives-1000000.stdout",
+     "default-primitives-2000.stderr",
+     "default-primitives-2000.stdout",
+     "default-stock-1000000.stderr",
+     "default-stock-1000000.stdout",
+     "default-stock-2000.stderr",
+     "default-stock-2000.stdout",
+     "legacy-primitives-1000000.stderr",
+     "legacy-primitives-1000000.stdout",
+     "legacy-primitives-2000.stderr",
+     "legacy-primitives-2000.stdout",
+     "legacy-stock-1000000.stderr",
+     "legacy-stock-1000000.stdout",
+     "legacy-stock-2000.stderr",
+     "legacy-stock-2000.stdout"
+    ],
+    "receipt": {
+     "binary": "<BINARY>",
+     "binary_sha256": "e8fa111fb0bd43f6ecbdbf5fe7295819d791fd0e4fe40bf5bd1a384c167122a8",
+     "cases": [
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "default-primitives-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "default-primitives-1000000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "default-stock-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "default-stock-1000000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "legacy-primitives-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-map.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "6b27bb5a72acbb91ec27de3df31f07afe76c5940a7e8c9ab6c545ca589a4f6d1",
+       "name": "legacy-primitives-1000000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "2000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 1,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "legacy-stock-2000"
+      },
+      {
+       "command": [
+        "<BINARY>",
+        "run",
+        "--debug-engine",
+        "--budget",
+        "1000000",
+        "--engine=legacy",
+        "<ROOT>/tools/column/fixtures/cli-stock.rn"
+       ],
+       "exit": 0,
+       "fixture_sha256": "4b1478fb876ff63b35a773a10ac0663638c94daa8a9c219668caaec537cffcda",
+       "name": "legacy-stock-1000000"
+      }
+     ],
+     "status": "PASS"
+    },
+    "receipt_path": "RESULT.json",
+    "texts": {
+     "default-primitives-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "default-primitives-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None\n",
+     "default-primitives-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "default-primitives-2000.stdout": "COLUMN_ENTER\n",
+     "default-stock-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "default-stock-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=scalar-fallback; completed=true; rows=10000; valid_rows=10000; attempts=0; replays=0; refusal=None\n",
+     "default-stock-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "default-stock-2000.stdout": "COLUMN_ENTER\n",
+     "legacy-primitives-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "legacy-primitives-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None\n",
+     "legacy-primitives-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "legacy-primitives-2000.stdout": "COLUMN_ENTER\n",
+     "legacy-stock-1000000.stderr": "rnx: engine=legacy refusal=HostContract\n",
+     "legacy-stock-1000000.stdout": "COLUMN_ENTER\nCOLUMN_OK path=scalar-fallback; completed=true; rows=10000; valid_rows=10000; attempts=0; replays=0; refusal=None\n",
+     "legacy-stock-2000.stderr": "rnx: engine=legacy refusal=HostContract\nrnx: 2000 work units exceeded; --budget N raises it\n",
+     "legacy-stock-2000.stdout": "COLUMN_ENTER\n"
+    },
+    "traceback_last": null
+   }
+  },
+  "verdicts": [
+   {
+    "code": 0,
+    "exhausted": false,
+    "stderr": "rnx: engine=legacy refusal=HostContract",
+    "stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None",
+    "stock": false,
+    "verdict": "pass"
+   },
+   {
+    "code": 1,
+    "exhausted": true,
+    "stderr": "rnx: engine=legacy refusal=HostContract 2000 work units exceeded; --budget N raises it",
+    "stdout": "COLUMN_ENTER",
+    "stock": false,
+    "verdict": "pass"
+   },
+   {
+    "code": 0,
+    "exhausted": false,
+    "stderr": "rnx: engine=execution",
+    "stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None",
+    "stock": false,
+    "verdict": "AssertionError: outer script did not select stock VM"
+   },
+   {
+    "code": 0,
+    "exhausted": false,
+    "stderr": "rnx: engine=legacy refusal=HostContract",
+    "stdout": "COLUMN_ENTER\nCOLUMN_OK path=avx2; completed=true; rows=0; valid_rows=0; attempts=1; replays=0; refusal=None",
+    "stock": false,
+    "verdict": "AssertionError: "
+   },
+   {
+    "code": 0,
+    "exhausted": false,
+    "stderr": "rnx: engine=legacy refusal=HostContract",
+    "stdout": "COLUMN_ENTER\nSKIPPED path=avx2; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None",
+    "stock": false,
+    "verdict": "AssertionError: output equality/length checks never completed"
+   },
+   {
+    "code": 0,
+    "exhausted": false,
+    "stderr": "rnx: engine=legacy refusal=HostContract",
+    "stdout": "COLUMN_ENTER\nCOLUMN_OK path=scalar-fallback; completed=true; rows=10000; valid_rows=10000; attempts=1; replays=0; refusal=None",
+    "stock": false,
+    "verdict": "AssertionError: "
+   },
+   {
+    "code": 0,
+    "exhausted": true,
+    "stderr": "rnx: engine=legacy refusal=HostContract",
+    "stdout": "COLUMN_ENTER\nCOLUMN_CAUGHT fuel",
+    "stock": false,
+    "verdict": "AssertionError: fuel halt became a catchable Result"
+   },
+   {
+    "code": 1,
+    "exhausted": true,
+    "stderr": "rnx: engine=legacy refusal=HostContractwork units --budget",
+    "stdout": "",
+    "stock": false,
+    "verdict": "AssertionError: never reached the map call"
+   }
+  ]
+ },
+ "method": "verdicts: cli.validate's arguments and outcome for every call cli.controls() makes (its two passing and six planted checks). runs: cli.main() with --binary <BINARY> (b'planted binary') --out <OUT>, subprocess.run intercepted to answer each case as the contract expects (budget 2000: exit 1, 'COLUMN_ENTER', the legacy marker and the fuel diagnostic; otherwise exit 0, the legacy marker, and the avx2 or, for cli-stock.rn, scalar-fallback output), child_result.publish intercepted. 'bad-case' replaces COLUMN_OK with SKIPPED in the second run's (full-budget) stdout; 'binary-changed' rewrites the binary during the eighth run. Each run keeps the calls, the published receipt without seconds, the exit code, the out directory's files, the .stdout/.stderr texts, and TRACEBACK.txt's last line.",
+ "substitutions": {
+  "<BINARY>": "the planted binary",
+  "<OUT>": "the stage out directory",
+  "<ROOT>": "the checkout"
+ },
+ "witness": "427d0e3242b794698957773c421970905f68a6c7"
+}

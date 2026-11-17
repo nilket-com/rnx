@@ -37,13 +37,12 @@ const ENV_KEYS: [&str; 20] = [
 	"TZ",
 ];
 const ENV_PREFIXES: [&str; 2] = ["CARGO_", "RNX_"];
-const COLUMN_PRODUCERS: [&str; 23] = [
+const COLUMN_PRODUCERS: [&str; 21] = [
 	"accept",
 	"final",
 	"verify",
 	"clippy",
 	"inventories",
-	"cli",
 	"resume",
 	"recover_cross",
 	"chain",
@@ -60,7 +59,6 @@ const COLUMN_PRODUCERS: [&str; 23] = [
 	"fixed_route_gate",
 	"miri_exact",
 	"repl_session_controls",
-	"jupyter_controls",
 ];
 const OTHER_PRODUCERS: [&str; 5] = [
 	"tools/verify.py",
@@ -245,7 +243,7 @@ pub fn contract(command: &[String], cwd: &Path, root: &Path) -> Result<&'static 
 			command.get(1).map(String::as_str),
 			command.get(2).map(String::as_str),
 		) {
-			(Some("stage"), Some("suite" | "clippy")) => Ok("producer"),
+			(Some("stage"), Some("suite" | "clippy" | "cli" | "jupyter")) => Ok("producer"),
 			_ => Err(value_error(&format!(
 				"unregistered rnx-final child: {command:?}"
 			))),

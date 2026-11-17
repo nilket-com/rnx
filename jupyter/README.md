@@ -149,6 +149,6 @@ executes no script instruction.
 The installed-kernelspec acceptance uses `RNX_JUPYTER_PYTHON`, or
 `target/jupyter-client/bin/python`, with Jupyter Client installed. The fixture
 isolates Jupyter data/config/runtime directories and leaves user kernels alone.
-Run `python3 -B tools/column/jupyter_controls.py --out target/jupyter-check` from
-the repository root. The required-stage table selects this check, package tests,
+The final runs it as its `jupyter-kernel` stage (`rnx-final stage jupyter`),
+from the repository root. The required-stage table selects this check, package tests,
 formatting and Clippy for changes under `jupyter/`.

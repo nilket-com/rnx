@@ -1,7 +1,8 @@
 //! The entry points a Python test's route names, read from their active
 //! declarations: preflight's unittest commands, the measurement suite's
 //! `TESTS` list, the supplemental workflow's discovery, the catalogue's
-//! stages, and a stage script's command lists. Comments are removed first,
+//! stages, a stage script's command lists, and a Rust stage mode's
+//! declared children. Comments are removed first,
 //! so a commented-out call is no declaration; any other form is not
 //! recognized. Each `TESTS` count is held to the cases unittest discovers
 //! in that file, found once for the whole family.
@@ -29,6 +30,9 @@ pub struct Entrypoints {
 	pub discovered: BTreeMap<String, std::result::Result<u64, String>>,
 	/// The pattern of the supplemental workflow's own discovery, if declared.
 	pub supplemental: Option<String>,
+	/// The children a Rust stage mode declares, as `stage::declared_children`
+	/// gives them; a control substitutes a planted declaration.
+	pub children: fn(&[String]) -> Vec<catalogue::Command>,
 }
 
 /// Python source without its comments: whole-line and trailing `#`
@@ -135,6 +139,7 @@ impl Entrypoints {
 			tests,
 			discovered,
 			supplemental,
+			children: crate::stage::declared_children,
 		})
 	}
 
@@ -207,6 +212,11 @@ impl Entrypoints {
 					.is_some_and(|block| element.is_some_and(|e| e.is_match(&block[1])));
 				command.iter().any(|a| a == script) && declared && COMMANDS_LOOP.is_match(&active)
 			}
+			// A Rust stage mode runs the children it declares, the same
+			// declaration its runner iterates; its own arguments run nothing.
+			None if command[0] == crate::stage::PROGRAM => (self.children)(command)
+				.iter()
+				.any(|child| child.iter().any(|a| a == path)),
 			None => {
 				command.iter().any(|a| a == path)
 					|| (command.iter().any(|a| a == "discover")
