@@ -1007,11 +1007,6 @@
       "max_bytes": 56530,
       "reason": "Build, dependency, policy or executable manifest."
     },
-    "rune/tools/xtask/measure/qualifications/n3-proof.json": {
-      "class": "source-configuration",
-      "max_bytes": 22435,
-      "reason": "Pinned native qualification proof consumed and tested by n3_qualification; historical origin does not make it unused."
-    },
     "servers/http-postgres/dependency-graph.json": {
       "class": "reviewed-retention",
       "max_bytes": 323847,
@@ -1077,8 +1072,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 24405,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it."
+      "max_bytes": 25150,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture."
     },
     "tools/final/tests/witness/scheduling.json": {
       "class": "live-fixture",
@@ -1086,8 +1081,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 29702,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it."
+      "max_bytes": 30559,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture."
     },
     "tools/final/tests/witness/selection.json": {
       "class": "live-fixture",
@@ -1095,8 +1090,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 80658,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it."
+      "max_bytes": 81368,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture."
     },
     "tools/project/resolved-graph.json": {
       "class": "reviewed-retention",

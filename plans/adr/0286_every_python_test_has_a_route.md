@@ -1,6 +1,6 @@
 # ADR 0286: Every Python test has a route
 
-Status: Proposed
+Status: Implemented
 
 Base: published 0bacd2c76eb554ad5111dcb4e981e29b546bf8ab (ADR 0285).
 

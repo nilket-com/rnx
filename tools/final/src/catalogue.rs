@@ -489,6 +489,14 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 			strings(&["python3", "-I", "-B", "tools/test_verify_pins.py"]),
 		),
 		(
+			"engine-source-controls".into(),
+			strings(&["python3", "-B", "tools/test_engine_source.py"]),
+		),
+		(
+			"census-refresh-controls".into(),
+			strings(&["python3", "-B", "tools/test_refresh_census.py"]),
+		),
+		(
 			"benchmark-protocol".into(),
 			python(&[
 				"-m",
@@ -848,6 +856,12 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 		}
 		if p.starts_with("tools/verify/") || p == "tools/verify.py" {
 			add(&["cross"]);
+		}
+		if p == "tools/engine_source.py" || p == "tools/test_engine_source.py" {
+			add(&["engine-source-controls"]);
+		}
+		if p == "tools/refresh_census.py" || p == "tools/test_refresh_census.py" {
+			add(&["census-refresh-controls"]);
 		}
 	}
 	let manifests: Vec<String> = match manifests {

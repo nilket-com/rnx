@@ -1,0 +1,11 @@
+# ADR 0286: finished-record instruments and their data, retired. tools/final/tests/deleted.rs
+# requires none to be tracked and no current file to run or name one.
+rune/tools/xtask/measure/e1a_qualification.py
+rune/tools/xtask/measure/n3_qualification.py
+rune/tools/xtask/measure/qualifications/e1a.json
+rune/tools/xtask/measure/qualifications/n3-proof.json
+rune/tools/xtask/measure/qualifications/n3.json
+rune/tools/xtask/measure/test_e1a_qualification.py
+rune/tools/xtask/measure/test_n3_qualification.py
+tools/redact_metadata.py
+tools/test_redact_metadata.py

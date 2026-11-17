@@ -1,7 +1,8 @@
 //! ADR 0284's golden fixtures (`tests/witness`). Each was generated once
 //! from the published Python controller at `WITNESS`, by the method
 //! recorded in it, with placeholders for paths; tests compare against
-//! them, and they are never regenerated from this crate's own output.
+//! them, and they are never regenerated from this crate's own output. A
+//! later record that extends one says so in its `successors`.
 use serde_json::Value;
 use std::path::Path;
 
@@ -19,6 +20,14 @@ pub fn expected(name: &str, substitutions: &[(&str, &str)]) -> Value {
 		fixture["method"].as_str().is_some_and(|m| !m.is_empty()),
 		"{name}: no method"
 	);
+	// A reviewed later record may extend a fixture; each says what it added.
+	for successor in fixture["successors"].as_array().into_iter().flatten() {
+		assert!(
+			successor["record"].as_str().is_some_and(|r| r.len() == 4)
+				&& successor["change"].as_str().is_some_and(|c| c.len() > 40),
+			"{name}: a successor names its record and its change"
+		);
+	}
 	let mut text = fixture["expected"].to_string();
 	for (mark, real) in substitutions {
 		let escaped = serde_json::to_string(real).unwrap();

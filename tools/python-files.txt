@@ -1,5 +1,7 @@
 # Every tracked Python file and what becomes of it: port (to Rust), delete,
-# or jupyter (stays: real Jupyter is the system under test). Checked by
+# or jupyter (stays: real Jupyter is the system under test). A test file
+# also names its route: `final STAGE` (or `final STAGE via SCRIPT`), `preflight`,
+# `xtask measure-checks`, `workflow supplemental`, or `deferred: ` and why. Checked by
 # `rnx-final python-list`: a tracked .py missing here, or a listed path that
 # is not tracked, fails; and the list may only lose entries.
 adapters/polars/scripts/third-party-notices.py	port
@@ -10,12 +12,12 @@ ci/disk_space.py	port
 ci/history_ids.py	port
 ci/hygiene.py	port
 ci/preflight.py	port
-ci/test_archive_data.py	port
-ci/test_commit_subjects.py	port
-ci/test_disk_launchers.py	port
-ci/test_disk_space.py	port
-ci/test_history_ids.py	port
-ci/test_hygiene.py	port
+ci/test_archive_data.py	port	preflight
+ci/test_commit_subjects.py	port	preflight
+ci/test_disk_launchers.py	port	preflight
+ci/test_disk_space.py	port	preflight
+ci/test_history_ids.py	port	preflight
+ci/test_hygiene.py	port	preflight
 demos/notebooks/check.py	jupyter
 jupyter/scripts/third-party-notices.py	port
 rune/scripts/py/linked_list.py	port
@@ -31,8 +33,8 @@ rune/tools/xtask/column/dependencies.py	port
 rune/tools/xtask/column/hygiene.py	port
 rune/tools/xtask/column/measure.py	port
 rune/tools/xtask/column/records.py	port
-rune/tools/xtask/column/test_cli_cache.py	port
-rune/tools/xtask/column/test_cli_rules.py	port
+rune/tools/xtask/column/test_cli_cache.py	port	deferred: tests of the CLI capture helpers (cli_capture is a registered producer, with ck1 and the 0213/0214 scorers); their current run route is unresolved
+rune/tools/xtask/column/test_cli_rules.py	port	deferred: tests of the CLI capture helpers (cli_capture is a registered producer, with ck1 and the 0213/0214 scorers); their current run route is unresolved
 rune/tools/xtask/measure/analysis_package.py	port
 rune/tools/xtask/measure/analysis_runtime.py	port
 rune/tools/xtask/measure/analysis_sandbox.py	port
@@ -57,7 +59,6 @@ rune/tools/xtask/measure/counter_cell.py	port
 rune/tools/xtask/measure/counter_controller.py	port
 rune/tools/xtask/measure/counter_packet.py	port
 rune/tools/xtask/measure/counter_schedule.py	port
-rune/tools/xtask/measure/e1a_qualification.py	port
 rune/tools/xtask/measure/env_probe.py	port
 rune/tools/xtask/measure/gen_inputs.py	port
 rune/tools/xtask/measure/input_closure.py	port
@@ -71,7 +72,6 @@ rune/tools/xtask/measure/ledger_transition.py	port
 rune/tools/xtask/measure/measurement_readiness.py	port
 rune/tools/xtask/measure/measurement_runtime.py	port
 rune/tools/xtask/measure/milestone_registry.py	port
-rune/tools/xtask/measure/n3_qualification.py	port
 rune/tools/xtask/measure/n5_qualification.py	port
 rune/tools/xtask/measure/perf_parse.py	port
 rune/tools/xtask/measure/protocol.py	port
@@ -82,55 +82,53 @@ rune/tools/xtask/measure/role_evidence.py	port
 rune/tools/xtask/measure/seal_evidence.py	port
 rune/tools/xtask/measure/seal_store.py	port
 rune/tools/xtask/measure/source_export.py	port
-rune/tools/xtask/measure/test_analysis_package.py	port
-rune/tools/xtask/measure/test_analysis_runtime.py	port
-rune/tools/xtask/measure/test_analysis_sandbox.py	port
-rune/tools/xtask/measure/test_append_diagnostic.py	port
-rune/tools/xtask/measure/test_bootstrap.py	port
-rune/tools/xtask/measure/test_build_capsule.py	port
-rune/tools/xtask/measure/test_build_recipe.py	port
-rune/tools/xtask/measure/test_build_worker.py	port
-rune/tools/xtask/measure/test_call_diagnostic.py	port
-rune/tools/xtask/measure/test_callgrind.py	port
-rune/tools/xtask/measure/test_callgrind_cell.py	port
-rune/tools/xtask/measure/test_callgrind_controller.py	port
-rune/tools/xtask/measure/test_callgrind_guard.py	port
-rune/tools/xtask/measure/test_callgrind_n1_cold.py	port
-rune/tools/xtask/measure/test_callgrind_packet.py	port
-rune/tools/xtask/measure/test_callgrind_rules.py	port
-rune/tools/xtask/measure/test_callgrind_trend.py	port
-rune/tools/xtask/measure/test_cargo_cache.py	port
-rune/tools/xtask/measure/test_control_proof.py	port
-rune/tools/xtask/measure/test_counter_assess.py	port
-rune/tools/xtask/measure/test_counter_cell.py	port
-rune/tools/xtask/measure/test_counter_controller.py	port
-rune/tools/xtask/measure/test_counter_native_mappings.py	port
-rune/tools/xtask/measure/test_counter_packet.py	port
-rune/tools/xtask/measure/test_counter_schedule.py	port
-rune/tools/xtask/measure/test_e1a_qualification.py	port
-rune/tools/xtask/measure/test_input_closure.py	port
-rune/tools/xtask/measure/test_input_verification.py	port
-rune/tools/xtask/measure/test_k1.py	port
-rune/tools/xtask/measure/test_k1_analysis.py	port
-rune/tools/xtask/measure/test_k1_controller.py	port
-rune/tools/xtask/measure/test_k1_packet.py	port
-rune/tools/xtask/measure/test_ledger_store.py	port
-rune/tools/xtask/measure/test_ledger_transition.py	port
-rune/tools/xtask/measure/test_measurement_readiness.py	port
-rune/tools/xtask/measure/test_measurement_runtime.py	port
-rune/tools/xtask/measure/test_milestone_registry.py	port
-rune/tools/xtask/measure/test_n3_qualification.py	port
-rune/tools/xtask/measure/test_n5_qualification.py	port
-rune/tools/xtask/measure/test_perf_parse.py	port
-rune/tools/xtask/measure/test_protocol.py	port
-rune/tools/xtask/measure/test_qualification_policy.py	port
-rune/tools/xtask/measure/test_record_policy.py	port
-rune/tools/xtask/measure/test_record_store.py	port
-rune/tools/xtask/measure/test_role_evidence.py	port
-rune/tools/xtask/measure/test_seal_evidence.py	port
-rune/tools/xtask/measure/test_seal_store.py	port
-rune/tools/xtask/measure/test_source_export.py	port
-rune/tools/xtask/measure/test_tool_identity.py	port
+rune/tools/xtask/measure/test_analysis_package.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_analysis_runtime.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_analysis_sandbox.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_append_diagnostic.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_bootstrap.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_build_capsule.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_build_recipe.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_build_worker.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_call_diagnostic.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_cell.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_controller.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_guard.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_n1_cold.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_packet.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_rules.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_callgrind_trend.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_cargo_cache.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_control_proof.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_counter_assess.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_counter_cell.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_counter_controller.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_counter_native_mappings.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_counter_packet.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_counter_schedule.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_input_closure.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_input_verification.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_k1.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_k1_analysis.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_k1_controller.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_k1_packet.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_ledger_store.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_ledger_transition.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_measurement_readiness.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_measurement_runtime.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_milestone_registry.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_n5_qualification.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_perf_parse.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_protocol.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_qualification_policy.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_record_policy.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_record_store.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_role_evidence.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_seal_evidence.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_seal_store.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_source_export.py	port	xtask measure-checks
+rune/tools/xtask/measure/test_tool_identity.py	port	xtask measure-checks
 rune/tools/xtask/measure/tool_identity.py	port
 rune/tools/xtask/supplemental/admission.py	port
 rune/tools/xtask/supplemental/memory_resources.py	port
@@ -138,15 +136,15 @@ rune/tools/xtask/supplemental/partitions.py	port
 rune/tools/xtask/supplemental/receipts.py	port
 rune/tools/xtask/supplemental/run.py	port
 rune/tools/xtask/supplemental/runtime.py	port
-rune/tools/xtask/supplemental/test_admission.py	port
-rune/tools/xtask/supplemental/test_durability.py	port
-rune/tools/xtask/supplemental/test_partitions.py	port
-rune/tools/xtask/supplemental/test_receipts.py	port
-rune/tools/xtask/supplemental/test_runner.py	port
+rune/tools/xtask/supplemental/test_admission.py	port	workflow supplemental
+rune/tools/xtask/supplemental/test_durability.py	port	workflow supplemental
+rune/tools/xtask/supplemental/test_partitions.py	port	workflow supplemental
+rune/tools/xtask/supplemental/test_receipts.py	port	workflow supplemental
+rune/tools/xtask/supplemental/test_runner.py	port	workflow supplemental
 servers/http-postgres/scripts/third-party-notices.py	port
 tests/fixtures/dep_engine.py	port
 tests/process_interrupt.py	port
-tests/test_jupyter_execution.py	jupyter
+tests/test_jupyter_execution.py	jupyter	final jupyter-kernel via tools/column/jupyter_controls.py
 tests/worker_checks.py	port
 tests/worker_execution.py	port
 tests/worker_parent.py	port
@@ -171,7 +169,7 @@ tools/column/compare/matrix.py	port
 tools/column/compare/render.py	port
 tools/column/compare/rnx_worker.py	port
 tools/column/compare/semantics.py	port
-tools/column/compare/test_compare.py	port
+tools/column/compare/test_compare.py	port	deferred: the Polars, Arrow and DuckDB comparison harness needs its own environment (pyarrow), outside the dependency-free controls
 tools/column/compare/worker.py	port
 tools/column/cross_program_controls.py	port
 tools/column/cross_program_exception.py	port
@@ -257,77 +255,75 @@ tools/column/simd_hot_loop.py	port
 tools/column/simd_shape.py	port
 tools/column/stage_scheduler.py	port
 tools/column/suite_stage.py	port
-tools/column/test_anchor_cache.py	port
-tools/column/test_boolean_limits.py	port
-tools/column/test_boolean_vectors.py	port
-tools/column/test_borrowed_controls.py	port
-tools/column/test_build_rerun.py	port
-tools/column/test_child_result.py	port
-tools/column/test_cli_symbols.py	port
-tools/column/test_column_protocol.py	port
-tools/column/test_drift_band.py	port
-tools/column/test_executor_identity.py	port
-tools/column/test_f64_output_edges.py	port
-tools/column/test_f64_output_pins.py	port
-tools/column/test_f64_output_vectors.py	port
-tools/column/test_f64_plan_limits.py	port
-tools/column/test_f64_plan_loop.py	port
-tools/column/test_f64_plan_pins.py	port
-tools/column/test_f64_plan_vectors.py	port
-tools/column/test_failure_detail.py	port
-tools/column/test_final_output.py	port
-tools/column/test_fixed_route_exception.py	port
-tools/column/test_host_budget.py	port
-tools/column/test_huge_page_faults.py	port
-tools/column/test_huge_page_vectors.py	port
-tools/column/test_i64_compare_fixtures.py	port
-tools/column/test_i64_compare_identity.py	port
-tools/column/test_i64_compare_instances.py	port
-tools/column/test_i64_compare_pins.py	port
-tools/column/test_identity.py	port
-tools/column/test_inventories.py	port
-tools/column/test_ir_pool.py	port
-tools/column/test_json_parse_cost.py	port
-tools/column/test_masked_float_identity.py	port
-tools/column/test_masked_float_instances.py	port
-tools/column/test_masked_float_vectors.py	port
-tools/column/test_masked_reuse_acceptance.py	port
-tools/column/test_memory_resources.py	port
-tools/column/test_migration_rules.py	port
-tools/column/test_miri_cache.py	port
-tools/column/test_native_contracts.py	port
-tools/column/test_old_path_rules.py	port
-tools/column/test_old_path_score.py	port
-tools/column/test_owned_build.py	port
-tools/column/test_packed_equality.py	port
-tools/column/test_perf_cycles.py	port
-tools/column/test_portable_vectors.py	port
-tools/column/test_predicate_limits.py	port
-tools/column/test_predicate_pins.py	port
-tools/column/test_predicate_shape.py	port
-tools/column/test_predicate_vectors.py	port
-tools/column/test_preparation_rule.py	port
-tools/column/test_reuse_instances.py	port
-tools/column/test_reuse_vectors.py	port
-tools/column/test_score_0213.py	port
-tools/column/test_score_0214.py	port
-tools/column/test_score_0215.py	port
-tools/column/test_simd_hot_loop.py	port
-tools/column/test_simd_shape.py	port
-tools/column/test_stage_scheduler.py	port
-tools/column/test_suite_stage.py	port
-tools/column/test_valgrind_resolution.py	port
+tools/column/test_anchor_cache.py	port	final controller-controls
+tools/column/test_boolean_limits.py	port	final controller-controls
+tools/column/test_boolean_vectors.py	port	final controller-controls
+tools/column/test_borrowed_controls.py	port	final controller-controls
+tools/column/test_build_rerun.py	port	final controller-controls
+tools/column/test_child_result.py	port	final controller-controls
+tools/column/test_cli_symbols.py	port	final controller-controls
+tools/column/test_column_protocol.py	port	final controller-controls
+tools/column/test_drift_band.py	port	final controller-controls
+tools/column/test_executor_identity.py	port	final controller-controls
+tools/column/test_f64_output_edges.py	port	final controller-controls
+tools/column/test_f64_output_pins.py	port	final controller-controls
+tools/column/test_f64_output_vectors.py	port	final controller-controls
+tools/column/test_f64_plan_limits.py	port	final controller-controls
+tools/column/test_f64_plan_loop.py	port	final controller-controls
+tools/column/test_f64_plan_pins.py	port	final controller-controls
+tools/column/test_f64_plan_vectors.py	port	final controller-controls
+tools/column/test_failure_detail.py	port	final controller-controls
+tools/column/test_final_output.py	port	final controller-controls
+tools/column/test_fixed_route_exception.py	port	final controller-controls
+tools/column/test_host_budget.py	port	final controller-controls
+tools/column/test_huge_page_faults.py	port	final controller-controls
+tools/column/test_huge_page_vectors.py	port	final controller-controls
+tools/column/test_i64_compare_fixtures.py	port	final controller-controls
+tools/column/test_i64_compare_identity.py	port	final controller-controls
+tools/column/test_i64_compare_instances.py	port	final controller-controls
+tools/column/test_i64_compare_pins.py	port	final controller-controls
+tools/column/test_identity.py	port	final controller-controls
+tools/column/test_inventories.py	port	final controller-controls
+tools/column/test_ir_pool.py	port	final controller-controls
+tools/column/test_json_parse_cost.py	port	final controller-controls
+tools/column/test_masked_float_identity.py	port	final controller-controls
+tools/column/test_masked_float_instances.py	port	final controller-controls
+tools/column/test_masked_float_vectors.py	port	final controller-controls
+tools/column/test_masked_reuse_acceptance.py	port	final controller-controls
+tools/column/test_memory_resources.py	port	final controller-controls
+tools/column/test_migration_rules.py	port	final controller-controls
+tools/column/test_miri_cache.py	port	final controller-controls
+tools/column/test_native_contracts.py	port	final controller-controls
+tools/column/test_old_path_rules.py	port	final controller-controls
+tools/column/test_old_path_score.py	port	final controller-controls
+tools/column/test_owned_build.py	port	final controller-controls
+tools/column/test_packed_equality.py	port	final controller-controls
+tools/column/test_perf_cycles.py	port	final controller-controls
+tools/column/test_portable_vectors.py	port	final controller-controls
+tools/column/test_predicate_limits.py	port	final controller-controls
+tools/column/test_predicate_pins.py	port	final controller-controls
+tools/column/test_predicate_shape.py	port	final controller-controls
+tools/column/test_predicate_vectors.py	port	final controller-controls
+tools/column/test_preparation_rule.py	port	final controller-controls
+tools/column/test_reuse_instances.py	port	final controller-controls
+tools/column/test_reuse_vectors.py	port	final controller-controls
+tools/column/test_score_0213.py	port	final controller-controls
+tools/column/test_score_0214.py	port	final controller-controls
+tools/column/test_score_0215.py	port	final controller-controls
+tools/column/test_simd_hot_loop.py	port	final controller-controls
+tools/column/test_simd_shape.py	port	final controller-controls
+tools/column/test_stage_scheduler.py	port	final controller-controls
+tools/column/test_suite_stage.py	port	final controller-controls
+tools/column/test_valgrind_resolution.py	port	final controller-controls
 tools/column/verify.py	port
 tools/engine_source.py	port
 tools/profile_recipes.py	port
 tools/project/scripts/notices.py	port
-tools/redact_metadata.py	port
 tools/refresh_census.py	port
 tools/routing-bench/run.py	port
-tools/routing-bench/test_protocol.py	port
-tools/test_engine_source.py	port
-tools/test_redact_metadata.py	port
-tools/test_refresh_census.py	port
-tools/test_verify_pins.py	port
+tools/routing-bench/test_protocol.py	port	final benchmark-protocol
+tools/test_engine_source.py	port	final engine-source-controls
+tools/test_refresh_census.py	port	final census-refresh-controls
+tools/test_verify_pins.py	port	final pin-controls
 tools/verify.py	port
 tools/verify/fixtures/census/journey_mock.py	port

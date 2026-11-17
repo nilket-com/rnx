@@ -379,3 +379,127 @@ fn only_the_reviewed_history_names_a_retired_script() {
 	}
 	let _ = std::fs::remove_dir_all(&root);
 }
+
+/// The finished-record instruments and data ADR 0286 retired.
+fn retired_0286(root: &Path) -> Vec<String> {
+	std::fs::read_to_string(root.join("tools/final/tests/retired/tools-0286.txt"))
+		.unwrap()
+		.lines()
+		.filter(|l| !l.starts_with('#') && !l.trim().is_empty())
+		.map(str::to_owned)
+		.collect()
+}
+
+/// Every current line that names a file ADR 0286 retired: by its path, by
+/// its path inside the Rune tree (without `rune/`), or, for a module, by an
+/// import of its name. Plans of either tree are history.
+fn references_0286(root: &Path, files: &[String], retired: &[String]) -> Vec<String> {
+	let mut patterns = Vec::new();
+	for path in retired {
+		patterns.push((path.clone(), Regex::new(&regex::escape(path)).unwrap()));
+		if let Some(inner) = path.strip_prefix("rune/") {
+			patterns.push((
+				path.clone(),
+				Regex::new(&format!(r"(^|[^/\w]){}", regex::escape(inner))).unwrap(),
+			));
+		}
+		if let Some(stem) = Path::new(path)
+			.file_name()
+			.and_then(|n| n.to_str())
+			.and_then(|n| n.strip_suffix(".py"))
+		{
+			let s = regex::escape(stem);
+			patterns.push((
+				path.clone(),
+				Regex::new(&format!(
+					r"(?m)(^|[;\s\x22])(import\s+([\w.]+\s*,\s*)*{s}\b|from\s+{s}\s+import\b)"
+				))
+				.unwrap(),
+			));
+		}
+	}
+	let mut found = Vec::new();
+	for file in files {
+		if file.starts_with("plans/")
+			|| file.starts_with("probes/")
+			|| file.starts_with("rune/plans/")
+			|| file.starts_with("tools/final/tests/retired/")
+			|| file == "tools/final/tests/deleted.rs"
+		{
+			continue;
+		}
+		let Ok(text) = std::fs::read_to_string(root.join(file)) else {
+			continue;
+		};
+		for (path, pattern) in &patterns {
+			if let Some(m) = pattern.find(&text) {
+				found.push(format!("{file}: {path}: {}", m.as_str().trim()));
+			}
+		}
+	}
+	found
+}
+
+#[test]
+fn no_file_retired_in_0286_is_tracked_or_named() {
+	let root = root();
+	let files = tracked(&root);
+	let retired = retired_0286(&root);
+	assert_eq!(retired.len(), 9);
+	let still: Vec<&String> = retired.iter().filter(|p| files.contains(p)).collect();
+	assert!(still.is_empty(), "still tracked: {still:?}");
+	let found = references_0286(&root, &files, &retired);
+	assert!(found.is_empty(), "{found:#?}");
+}
+
+#[test]
+fn a_reference_to_a_0286_retired_file_is_found() {
+	let root = std::env::temp_dir().join(format!(
+		"rnx-final-retired-0286-{}",
+		rnx_final::receipt::invocation_id()
+	));
+	std::fs::create_dir_all(root.join("rune/plans")).unwrap();
+	let retired = vec![
+		"rune/tools/xtask/measure/n3_qualification.py".to_string(),
+		"rune/tools/xtask/measure/qualifications/e1a.json".to_string(),
+	];
+	let cases = [
+		("a.py", "import n3_qualification\n", true),
+		("b.py", "from n3_qualification import main\n", true),
+		(
+			"c.rs",
+			"\"tools/xtask/measure/qualifications/e1a.json\"\n",
+			true,
+		),
+		(
+			"d.md",
+			"rune/tools/xtask/measure/n3_qualification.py\n",
+			true,
+		),
+		(
+			"rune/plans/e.txt",
+			"tools/xtask/measure/qualifications/e1a.json\n",
+			false,
+		),
+		("f.py", "import n3_qualification_v2\n", false),
+		(
+			"g.rs",
+			"\"mytools/xtask/measure/qualifications/e1a.json\"\n",
+			false,
+		),
+	];
+	let mut files = Vec::new();
+	for (name, text, _) in cases {
+		std::fs::write(root.join(name), text).unwrap();
+		files.push(name.to_string());
+	}
+	let found = references_0286(&root, &files, &retired);
+	for (name, _, flagged) in cases {
+		assert_eq!(
+			found.iter().any(|f| f.starts_with(&format!("{name}:"))),
+			flagged,
+			"{name}: {found:?}"
+		);
+	}
+	let _ = std::fs::remove_dir_all(&root);
+}

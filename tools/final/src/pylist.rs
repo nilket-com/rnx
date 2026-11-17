@@ -1,5 +1,7 @@
 //! Python stops growing: every tracked `.py` is on a committed list with
-//! its disposition, and the list may only lose entries.
+//! its disposition, and the list may only lose entries. Every Python test
+//! file also names its route, the entry point that runs it, which the
+//! check holds to that entry point.
 use crate::child::{git_command, value_error};
 use anyhow::{Context as _, Result, bail};
 use serde_json::{Value, json};
@@ -30,27 +32,45 @@ fn paths(bytes: &[u8]) -> Result<BTreeSet<String>> {
 
 /// path -> disposition, refusing duplicates and unknown dispositions.
 pub fn parse(text: &str) -> Result<BTreeMap<String, String>> {
+	Ok(rows(text)?
+		.into_iter()
+		.map(|(path, (disposition, _))| (path, disposition))
+		.collect())
+}
+
+/// path -> (disposition, route), the route a third column when present.
+pub fn rows(text: &str) -> Result<BTreeMap<String, (String, Option<String>)>> {
 	let mut rows = BTreeMap::new();
 	for line in text
 		.lines()
 		.filter(|l| !l.trim().is_empty() && !l.starts_with('#'))
 	{
-		let Some((path, disposition)) = line.split_once('\t') else {
+		let mut fields = line.splitn(3, '\t');
+		let (Some(path), Some(disposition)) = (fields.next(), fields.next()) else {
 			bail!(value_error(&format!("malformed list line: {line}")))
 		};
+		let route = fields.next().map(str::to_owned);
 		if !DISPOSITIONS.contains(&disposition) {
 			bail!(value_error(&format!(
 				"unknown disposition for {path}: {disposition}"
 			)));
 		}
 		if rows
-			.insert(path.to_owned(), disposition.to_owned())
+			.insert(path.to_owned(), (disposition.to_owned(), route))
 			.is_some()
 		{
 			bail!(value_error(&format!("listed twice: {path}")));
 		}
 	}
 	Ok(rows)
+}
+
+/// A Python test file: `test_*.py`.
+pub fn is_test(path: &str) -> bool {
+	Path::new(path)
+		.file_name()
+		.and_then(|n| n.to_str())
+		.is_some_and(|n| n.starts_with("test_") && n.ends_with(".py"))
 }
 
 /// The list the change started from: the nearest first-parent ancestor
@@ -80,7 +100,11 @@ fn parent_list(root: &Path, baseline: &str) -> Result<BTreeSet<String>> {
 pub fn check(root: &Path, baseline: &str) -> Result<Value> {
 	let text = std::fs::read_to_string(root.join(LIST))
 		.map_err(|_| value_error(&format!("{LIST} is missing")))?;
-	let listed = parse(&text)?;
+	let all = rows(&text)?;
+	let listed: BTreeMap<String, String> = all
+		.iter()
+		.map(|(p, (d, _))| (p.clone(), d.clone()))
+		.collect();
 	let tracked: BTreeSet<String> =
 		paths(&git(root, &["ls-files", "-z", "*.py"])?.context("git ls-files failed")?)?;
 	let names: BTreeSet<String> = listed.keys().cloned().collect();
@@ -107,12 +131,39 @@ pub fn check(root: &Path, baseline: &str) -> Result<Value> {
 			join(&added)
 		)));
 	}
+	// Every test file names its route, and only test files do; each route
+	// is held to its entry point's active declarations.
+	let measure = all
+		.values()
+		.any(|(_, r)| r.as_deref() == Some("xtask measure-checks"));
+	let entrypoints = crate::routes::Entrypoints::load(root, measure)?;
+	let mut errors = Vec::new();
+	for (path, (_, route)) in &all {
+		match (is_test(path), route) {
+			(true, Some(route)) => errors.extend(entrypoints.error(path, route)),
+			(true, None) => errors.push(format!("{path}: a test file names its route")),
+			(false, Some(_)) => errors.push(format!("{path}: only a test file has a route")),
+			(false, None) => {}
+		}
+	}
+	if !errors.is_empty() {
+		bail!(value_error(&format!("test routes: {}", errors.join("; "))));
+	}
+	let mut routes = BTreeMap::new();
+	for route in all.values().filter_map(|(_, r)| r.as_ref()) {
+		let kind = match route.split_once(' ') {
+			Some(("final", _)) => "final",
+			Some(("deferred:", _)) => "deferred",
+			_ => route.as_str(),
+		};
+		*routes.entry(kind.to_owned()).or_insert(0) += 1;
+	}
 	let mut counts = BTreeMap::new();
 	for disposition in listed.values() {
 		*counts.entry(disposition.clone()).or_insert(0) += 1;
 	}
 	Ok(
-		json!({"status": "PASS", "files": listed.len(), "removed": parent.len() - names.len(), "dispositions": counts}),
+		json!({"status": "PASS", "files": listed.len(), "removed": parent.len() - names.len(), "dispositions": counts, "test_routes": routes}),
 	)
 }
 

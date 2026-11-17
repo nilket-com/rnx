@@ -61,7 +61,9 @@ fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 		"tools/verify.py"
 		| "tools/column/fixed_route_gate.py"
 		| "ci/preflight.py"
-		| "tools/test_verify_pins.py" => &[],
+		| "tools/test_verify_pins.py"
+		| "tools/test_engine_source.py"
+		| "tools/test_refresh_census.py" => &[],
 		_ => return None,
 	})
 }
@@ -396,8 +398,14 @@ pub fn stage_environment(
 ) -> Vec<(String, String)> {
 	if ALONE_STAGES.contains(&name)
 		|| is_unittest(command)
-		|| script(command) == Some("tools/test_verify_pins.py")
-	{
+		|| matches!(
+			script(command),
+			Some(
+				"tools/test_verify_pins.py"
+					| "tools/test_engine_source.py"
+					| "tools/test_refresh_census.py"
+			)
+		) {
 		return vec![];
 	}
 	let flags = pool.flags();

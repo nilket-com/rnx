@@ -11,6 +11,7 @@
 			"async-test-support": [],
 			"benchmark-protocol": [],
 			"budget-controls": [],
+			"census-refresh-controls": [],
 			"check-demos-candle-Cargo.toml": [],
 			"check-demos-polars-Cargo.toml": [],
 			"check-servers-http-postgres-Cargo.toml": [],
@@ -36,6 +37,7 @@
 			"cross": [
 				"cross"
 			],
+			"engine-source-controls": [],
 			"fetch-Cargo.toml": [],
 			"fetch-adapters-candle-Cargo.toml": [],
 			"fetch-adapters-polars-Cargo.toml": [],
@@ -535,6 +537,22 @@
 					"-I",
 					"-B",
 					"tools/test_verify_pins.py"
+				]
+			],
+			[
+				"engine-source-controls",
+				[
+					"python3",
+					"-B",
+					"tools/test_engine_source.py"
+				]
+			],
+			[
+				"census-refresh-controls",
+				[
+					"python3",
+					"-B",
+					"tools/test_refresh_census.py"
 				]
 			],
 			[
@@ -1395,5 +1413,11 @@
 		"<ROOT>": "the checkout",
 		"<TAG>": "the first 16 hex digits of the sha256 of the resolved final directory path (verified when generated)"
 	},
+	"successors": [
+		{
+			"change": "adds the stages engine-source-controls (python3 -B tools/test_engine_source.py) and census-refresh-controls (python3 -B tools/test_refresh_census.py) right after pin-controls, each scheduled as pin-controls is: no Cargo resources, weight 1, no bulk root, no jobserver environment. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
+			"record": "0286"
+		}
+	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
 }

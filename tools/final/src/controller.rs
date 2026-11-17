@@ -169,35 +169,22 @@ pub fn disk_free(path: &Path) -> Result<u64> {
 	Ok(stat.f_bavail as u64 * stat.f_frsize as u64)
 }
 
-/// The shared 20 GiB admission of every build launcher, written as
-/// ci/disk_space.py writes it.
+/// The shared 20 GiB admission of every build launcher: the final's root,
+/// its directory and any `CARGO_TARGET_DIR`. The Python launchers ask
+/// `ci/disk_space.py`, which a control holds to this rule.
 pub fn disk_check(root: &Path, out: &Path, environment: &Environment) -> Result<()> {
-	let mut paths = vec![root.to_owned(), out.to_owned()];
-	if let Some(target) = environment
-		.get("CARGO_TARGET_DIR")
-		.filter(|t| !t.is_empty())
-	{
-		paths.push(PathBuf::from(target));
-	}
-	let mut rows = Vec::new();
-	let mut pass = true;
-	for path in paths {
-		let mut existing = std::fs::canonicalize(&path).unwrap_or(path.clone());
-		while !existing.exists() {
-			existing = existing
-				.parent()
-				.context("no existing ancestor")?
-				.to_owned();
-		}
-		let free = disk_free(&existing)?;
-		pass &= free >= DISK_FLOOR_BYTES;
-		rows.push(format!("    {{\n      \"path\": {},\n      \"free_bytes\": {free},\n      \"minimum_free_bytes\": {DISK_FLOOR_BYTES}\n    }}", crate::pyjson::compact(&json!(existing.to_string_lossy()))?));
-	}
-	let text = format!(
-		"{{\n  \"status\": \"{}\",\n  \"filesystems\": [\n{}\n  ]\n}}\n",
-		if pass { "PASS" } else { "FAIL" },
-		rows.join(",\n")
-	);
+	disk_check_with(root, out, environment, &disk_free)
+}
+
+/// `disk_check` with the free-space reading given, as a control replaces it.
+pub fn disk_check_with(
+	root: &Path,
+	out: &Path,
+	environment: &Environment,
+	free: &dyn Fn(&Path) -> Result<u64>,
+) -> Result<()> {
+	let (pass, text) =
+		disk_observation(&disk_paths(root, out, environment), DISK_FLOOR_BYTES, free)?;
 	std::fs::OpenOptions::new()
 		.write(true)
 		.create_new(true)
@@ -207,6 +194,50 @@ pub fn disk_check(root: &Path, out: &Path, environment: &Environment) -> Result<
 		return Err(raise_called_process("ci/disk_space.py"));
 	}
 	Ok(())
+}
+
+/// The paths a launch is admitted for: the given ones, then a nonempty
+/// `CARGO_TARGET_DIR`.
+pub fn disk_paths(root: &Path, out: &Path, environment: &Environment) -> Vec<PathBuf> {
+	let mut paths = vec![root.to_owned(), out.to_owned()];
+	if let Some(target) = environment
+		.get("CARGO_TARGET_DIR")
+		.filter(|t| !t.is_empty())
+	{
+		paths.push(PathBuf::from(target));
+	}
+	paths
+}
+
+/// Each path's filesystem, judged at its nearest existing ancestor, against
+/// the floor: whether every one has room, and the record as
+/// `ci/disk_space.py` prints it. `free` reads a filesystem's free bytes.
+pub fn disk_observation(
+	paths: &[PathBuf],
+	floor: u64,
+	free: &dyn Fn(&Path) -> Result<u64>,
+) -> Result<(bool, String)> {
+	anyhow::ensure!(floor > 0, "positive disk reserve required");
+	let mut rows = Vec::new();
+	let mut pass = !paths.is_empty();
+	for path in paths {
+		let mut existing = std::fs::canonicalize(path).unwrap_or(path.clone());
+		while !existing.exists() {
+			existing = existing
+				.parent()
+				.context("no existing ancestor")?
+				.to_owned();
+		}
+		let bytes = free(&existing)?;
+		pass &= bytes >= floor;
+		rows.push(format!("    {{\n      \"path\": {},\n      \"free_bytes\": {bytes},\n      \"minimum_free_bytes\": {floor}\n    }}", crate::pyjson::compact(&json!(existing.to_string_lossy()))?));
+	}
+	let text = format!(
+		"{{\n  \"status\": \"{}\",\n  \"filesystems\": [\n{}\n  ]\n}}\n",
+		if pass { "PASS" } else { "FAIL" },
+		rows.join(",\n")
+	);
+	Ok((pass, text))
 }
 
 fn raise_called_process(what: &str) -> anyhow::Error {

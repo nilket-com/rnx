@@ -15,6 +15,7 @@ pub mod outputs;
 pub mod pyjson;
 pub mod pylist;
 pub mod receipt;
+pub mod routes;
 pub mod scheduler;
 pub mod selection;
 pub mod types;
