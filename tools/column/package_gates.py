@@ -1,5 +1,6 @@
-"""Declared package quality recipes; engine-family lint coverage stays explicit."""
-from pathlib import Path
+"""Package check, format and lint recipes, as suite_stage runs them.
+
+Which of them a final requires is the Rust controller's rule (tools/final)."""
 
 # Existing target/toolchain recipes, shared by package checks and their lint twins.
 PACKAGE_CHECKS = {
@@ -23,16 +24,6 @@ FORMATS = {
 	**{'format-adapter-' + n: ['cargo', '+1.98.1', 'fmt', '--manifest-path', f'adapters/{n}/Cargo.toml', '--all', '--check'] for n in ('candle', 'postgres')},
 }
 LINTS = {}
-# manifest -> (test/check stages, format stage, lint stage)
-PACKAGES = {
-	'Cargo.toml': (('root-tests', 'inventory', 'cross'), 'format', 'clippy'),
-	'tools/project/Cargo.toml': (('project-suite', 'cross'), 'project-format', 'project-clippy'),
-	'jupyter/Cargo.toml': (('jupyter-tests', 'jupyter-kernel'), 'jupyter-format', 'jupyter-clippy'),
-	**{f'adapters/{n}/Cargo.toml': (('polars-suite' if n == 'polars' else f'suite-adapter-{n}',), 'adapter-format' if n == 'polars' else f'format-adapter-{n}', f'clippy-adapter-{n}') for n in ('candle', 'polars', 'postgres')},
-	# New in ADR 0283: no baseline to compare lints with, so they deny warnings.
-	'rune/tools/budget/Cargo.toml': (('budget-controls',), 'format-budget', 'clippy-budget'),
-	'tools/final/Cargo.toml': (('final-controls',), 'format-final', 'clippy-final'),
-}
 for _manifest, (_stage, _commands) in (PACKAGE_CHECKS | DEMO_CHECKS).items():
 	_format, _lint = 'format-' + _stage, 'lint-' + _stage
 	FORMATS[_format] = ['cargo', '+1.98.1', 'fmt', '--manifest-path', _manifest, '--all', '--check']
@@ -43,24 +34,4 @@ for _manifest, (_stage, _commands) in (PACKAGE_CHECKS | DEMO_CHECKS).items():
 		if _command[2] == 'test': _l.append('--tests')
 		_lints.append(_l)
 	LINTS[_lint] = _lints
-	PACKAGES[_manifest] = ((_stage,), _format, _lint)
 
-
-def quality(manifest):
-	if manifest.startswith('rune/crates/'):
-		# Deliberately the existing Rune-family feature matrix, not primary-package
-		# lint of every upstream workspace member.
-		return (('rune-suite', 'cross'), 'format', 'rune-clippy')
-	if manifest not in PACKAGES:
-		raise ValueError(f'package {manifest}: declare its test/check, format and lint recipes in package_gates.py')
-	return PACKAGES[manifest]
-
-
-def source_owner(path, manifests):
-	owners = [m for m in manifests if Path(path).is_relative_to(Path(m).parent)]
-	if not owners: return None
-	manifest = max(owners, key=lambda m: len(Path(m).parts))
-	relative = Path(path).relative_to(Path(manifest).parent)
-	if relative.name == 'build.rs' or relative.parts[0] in {'src', 'tests', 'examples', 'benches'} or (len(relative.parts) == 1 and relative.suffix == '.rs'):
-		return manifest
-	return None

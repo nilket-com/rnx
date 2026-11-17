@@ -25,26 +25,17 @@ The launcher propagates PATH and SSH_AUTH_SOCK, sets MemoryMax to the JSON
 Receipts are read after exit; no polling or progress watcher is needed. Source
 and tools must remain fixed for the entire run.
 
-After source review and signed implementation, launch fresh acceptance:
+Remote acceptance on a separate verifier host is retired (ADR 0284); a new
+launcher needs its own record and an end-to-end check on that host.
+`child_result.validate_remote` still validates the historical remote finals.
+
+The stage list belongs to the Rust final controller
+(`tools/final/src/catalogue.rs`). All selected Clippy checks precede tests and
+release builds; any failure stops admission. A final starts from its entry,
+inside its own systemd unit:
 
 ```sh
-python3 -B tools/column/accept_remote.py --host "$VERIFIER_HOST" --remote-root "$VERIFIER_ROOT" --memory-bytes 25769803776 --out target/0205/fresh-unique
-```
-
-This requires a clean signed checkout, its signed parent, SSH agent and BatchMode
-access. It bundles the actual commit, verifies signatures under `rnxverify`,
-checks fresh workspace target directories, and blocks on the remote service's
-exit. `ACCEPTANCE.json` is the remote terminal receipt; `RESULT.json` records its
-hash, candidate, memory ceiling and terminal state. Failed runs retain their
-logs and artifacts and require a new output name.
-
-`accept.py` owns the gate list. It preserves the prior 23 acceptance gates and
-adds the column controls, adapter Clippy, full Polars suite and production CLI
-controls. All selected Clippy checks precede tests and release builds; any
-failure stops subsequent stages. Inspect the exact plan without starting jobs:
-
-```sh
-python3 -B tools/column/accept.py --candidate COMMIT --out /unused/acceptance --plan
+sh tools/final/final.sh --complete --out target/RECORD/FINAL
 ```
 
 Clippy compares diagnostics against published rnx `c32a6ba` with the same recipe.
@@ -52,10 +43,6 @@ The reviewed existing `erasing_op` diagnostic remains counted at warning level
 in both adapter recipes; new or changed diagnostics fail. New column modules
 deny all warnings, apart from their reviewed, narrow error-size allowances.
 
-`chain.py` remains the driver for reproducing the Rune prerequisite's pinned
-four-build comparison (used for B2's passing existing-path chain). It is retained
-for that workflow and is not invoked by rnx's `accept.py`; its manifest is not a
-replacement for rnx's fresh acceptance list.
 Performance evidence additionally needs the declared measurement lease,
 affinity, readiness, thermal and PMU checks; a successful functional receipt
 alone makes no performance claim.
@@ -102,13 +89,6 @@ and checks generated bindings with Cargo offline. Missing or incomplete
 documentation, provenance/feature mismatches, changed locks and binding drift
 fail the stage; ignored inventories from another checkout are never copied.
 
-`resume.py --root ORIGINAL_FRESH_SOURCE --prior ORIGINAL_RESULT --inventories
-INVENTORY_RESULT --out NEW_OUTPUT` supports the reviewed missing-inventory
-recovery only. It verifies the unchanged original source/controller and command
-plan, hashes the earlier passed logs, verifies the generated inventories, then
-reruns the failed full Polars suite and every remaining gate. The original FAIL
-receipt is preserved. A changed product requires a new fresh acceptance run.
-
 Record 0205 review seq26301 accepts the observed legacy callback inlining drift
 as `ACCEPTED_ATTRIBUTED`, not a raw PASS. Raw comparisons still use `<= 0` and
 remain in the receipt. The publication review must separately bind this sole
@@ -124,61 +104,29 @@ source identity. Every other mutation remains a failure; test exit codes remain
 unchanged. The shared helper has negative controls for source edits, wrong
 stages and invalid outcomes.
 
-For the reviewed successful-suite recovery, `resume.py --completed-suite
-PREVIOUS_RESUME_RESULT --reviewed-oracle-sha256 EXACT_REVIEWED_HASH` additionally
-binds the suite's exit-zero result, source and prior receipt; archives its report;
-hashes its logs; and resumes at the next stage. It cannot reuse a failing suite.
-Backlog: the generated oracle should write reports under `target/` or an explicit
-regeneration flag, and unordered reports should not be committed as runtime
-snapshots. That generator change is outside record 0205.
-
-The reviewed cross-harness recovery uses `recover_cross.py --prior
-FAILED_CROSS_RESUME --completed-suite REVIEWED_POLARS_RESULT --identity-pair
-SAME_DIRECTORY_PAIR_RESULT --out NEW_OUTPUT`.
-It checks the exact one-line `cfg(test)` amendment, hashes the earlier passed
-logs and declared oracle output, runs current prerequisites and ordinary column
-unit tests, and verifies the saved paired binaries against their hashes and
-identical nonempty `.text` and `.rodata` sections. The baseline and candidate
-must be built sequentially in one directory on one host with the same locked
-production recipe. Cross-host whole-file hash equality is not a sound identity
-test. It then
-runs the full cross suite and the clean-clone inventory producer. No failed
-cross result is reused. Ordinary unit tests remain enabled; the custom
-`harness = false` cross executable excludes only their otherwise-unused helpers.
-For a subsequent tooling-only amendment, `--verified-prerequisites RESULT` can
-reuse that paired candidate's successful prerequisites and production CLI run;
-the receipt and every stage log are hashed, and current tooling controls still
-run in the final clean clone. Any product change invalidates this reuse.
-
 Gate tools write terminal receipts and exit nonzero on failure. External launchers
 may notify after exit; no messaging service is required by these tools.
 
 ## Record acceptance (ADR 0232)
 
-`gate_policy.py select --out target/RECORD/SELECTION.json --stages STAGES`
-selects canonical stages from `accept.py`. It computes the entire plan/impl
-record diff from the plan's parent; callers cannot choose a narrower baseline.
-Changes under `src/`, `rune/crates/`, `tools/project/`, or `tools/verify/`, or to root/Rune Cargo
-manifests and locks or `tools/verify.py`, automatically require `cross`.
-Renames consider both names. Selection during development is allowed, but final
-acceptance requires the clean, signed-for-review implementation checkout.
-
-Run selected commands through `child_result.run`, retaining each returned
-`validation` reference keyed by stage name in an evidence JSON object. Then run
-`gate_policy.py finalize --selection SELECTION --evidence EVIDENCE --out FINAL`.
-Finalization checks the candidate, current source, policy, canonical commands,
-required stages, log hashes and child receipts. `accept.py` does this for its
-full suite; a proportional chain must declare `acceptance_scope: "final"` and
-supply its selection. Development controls alone are not publication evidence.
-The final PASS is the documented publication gate: this is not a Git push hook
-and does not intercept arbitrary pushes.
+The Rust controller (`tools/final`) selects a record's stages from its plan
+and implementation commits, computing the whole record diff from the plan's
+parent; callers cannot choose a narrower baseline. Changes under `src/`,
+`rune/crates/`, `tools/project/` or `tools/verify/`, or to root or Rune Cargo
+manifests and locks or `tools/verify.py`, require `cross`; renames count both
+names. It runs each stage through the child protocol below and finalizes the
+candidate, current source, policy, canonical commands, required stages, log
+hashes and child receipts. `gate_policy.record` remains only as the record
+identity that stage programs read. Development controls alone are not
+publication evidence, and the final PASS is the documented publication gate,
+not a Git push hook.
 
 Receipt-producing Python children are explicitly registered in `child_result.py`.
 They must publish their semantic result with `publish`, or bind an existing
 controller-owned result with `bind` (the Rust cross controller). Raw command
 adapters have an explicit allowlist and retain exit status plus durable logs;
 an unknown producer cannot silently become a raw command. Producers require an
-explicit `--out`; for `chain.py` it must equal the `--config` directory.
+explicit `--out`.
 A fresh invocation context binds source content, executable bits, candidate,
 command and declared recipe environment. Only allowlisted key names and a digest
 are stored, never environment values; terminal/session/SSH variables are excluded.
@@ -190,9 +138,9 @@ An explicit producer `--resume` may replace a prior PASS only after archiving
 its exact original bytes; a completed FAIL is not reusable evidence. The resumed
 producer remains responsible for validating each reused stage. Parent evidence
 also verifies the original logs and context. Historical receipts without this
-binding cannot be retroactively promoted to final acceptance. Remote acceptance
-binds a fresh invocation, candidate, source and bootstrap recipe and requires
-remote finalization. Existing measurement-specific binary/profile checks remain
+binding cannot be retroactively promoted to final acceptance. Historical remote
+acceptances bound a fresh invocation, candidate, source and bootstrap recipe
+and required remote finalization. Existing measurement-specific binary/profile checks remain
 in force alongside these controller contracts.
 
 The aggregate column tool-test command is:

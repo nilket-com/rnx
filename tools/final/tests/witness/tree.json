@@ -1,0 +1,14 @@
+{
+	"expected": {
+		"allocated_bytes": 8192,
+		"entries": 6,
+		"logical_bytes": 161,
+		"reused_file_digests": 0,
+		"sha256": "d1ea5891c21a7aeeadd8ab7a3bd9dff1a4a109bd166f517d184508614f7a46a6"
+	},
+	"method": "final_evidence.tree(root) without its seconds, for a root holding a/b/file ('contents'), é (empty), Z ('z') and a/link -> ../elsewhere",
+	"substitutions": {
+		"<ROOT>": "the payload root"
+	},
+	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
+}

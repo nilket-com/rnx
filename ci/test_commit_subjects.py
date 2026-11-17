@@ -284,11 +284,13 @@ class Sequence(Fixture, unittest.TestCase):
 
 class Integration(unittest.TestCase):
 	def test_host_preflight_is_first(self):
+		# The stage list is the Rust controller's; its committed witness
+		# fixture (tools/final/tests/witness) pins the order, and the Rust
+		# catalogue is held to that fixture.
 		root = Path(__file__).resolve().parents[1]
-		sys.path.insert(0, str(root / "tools/column"))
-		import accept
-		self.assertEqual(accept.commands(root / "target/unused")[0],
-			("commit-discipline", ["python3", "-B", "ci/preflight.py"]))
+		catalogue = json.loads((root / "tools/final/tests/witness/catalogue.json").read_text())
+		self.assertEqual(catalogue["expected"]["stages"][0],
+			["commit-discipline", ["python3", "-B", "ci/preflight.py"]])
 
 	def test_measurement_preflight_precedes_admission(self):
 		import ast

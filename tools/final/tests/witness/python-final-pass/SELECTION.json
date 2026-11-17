@@ -1,0 +1,26 @@
+{
+  "out": "/fixture/final",
+  "policy": "p",
+  "publication_eligible": true,
+  "record": {
+    "baseline": "b",
+    "candidate": "c",
+    "paths": [],
+    "phase": "impl",
+    "plan": "p",
+    "record": "9999",
+    "required": []
+  },
+  "root": "/fixture",
+  "schema": 1,
+  "scope": "required",
+  "source": "s",
+  "stages": [
+    [
+      "stage",
+      [
+        "command"
+      ]
+    ]
+  ]
+}

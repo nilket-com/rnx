@@ -18,3 +18,7 @@ pub mod receipt;
 pub mod scheduler;
 pub mod selection;
 pub mod types;
+
+#[cfg(test)]
+#[path = "../tests/common/witness.rs"]
+mod witness;

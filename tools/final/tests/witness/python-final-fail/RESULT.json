@@ -1,0 +1,35 @@
+{
+  "acceptance_scope": "required",
+  "candidate": "c",
+  "checks": [
+    {
+      "exit": 1,
+      "name": "stage"
+    }
+  ],
+  "complete_final": false,
+  "diagnostics_error": null,
+  "error": "producer returned FAIL without an error message",
+  "failed_stage": "stage",
+  "failure": {
+    "error": "producer returned FAIL without an error message",
+    "path": "/tmp/rnx-0284-fixture/fail/final/FAILURE.json",
+    "sha256": "b67aac194d5a67e2f2e635907fd4260661c1546104e6ce3bdc83f0010fddaa21",
+    "stage": "stage"
+  },
+  "finalization": null,
+  "free_bytes_after": 29744414720,
+  "free_bytes_before": 29744455680,
+  "manifest_error": null,
+  "publication_eligible": false,
+  "records": {
+    "ACCEPTANCE": "91a4344a76c236cb1146fffe361596b1748ea6e53ece07aca5a0b9380fc406a8",
+    "ENVIRONMENTS": "cd5168ee7581c819902773abb324de01eeab8bc409ccb65efe5419574cb9521d",
+    "MANIFEST": "8de0d769db359f1702eddbf6f042c1cd2e02bb7eb7a05b6614b2b2e106587fd8",
+    "RELEASE": "0428d980ecbb88fd42bff81acb50b0b02ec9720b125d63f6ee9fea9daf521f6b"
+  },
+  "release_error": null,
+  "remote_context": null,
+  "seconds": 0.008883935995982029,
+  "status": "FAIL"
+}

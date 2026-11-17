@@ -1,0 +1,1467 @@
+{
+	"expected": {
+		"producers": [
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[
+				71
+			],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[
+				77
+			],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[],
+			[]
+		],
+		"rows": [
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "commit-discipline",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-tools-project-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-adapters-candle-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-adapters-polars-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-adapters-postgres-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-demos-candle-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-demos-polars-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "fetch-servers-http-postgres-Cargo.toml",
+				"resources": [
+					"first"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "python-list",
+				"resources": [
+					"<ROOT>/target/release"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {},
+				"name": "controller-controls",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "polars-inventory-preflight",
+				"resources": [
+					"<ROOT>/target/0072",
+					"<ROOT>/target/column-inventory-extract/debug",
+					"<ROOT>/tools/polars-gen/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "adapter-format",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "project-format",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-adapter-candle",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-adapter-postgres",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-no-std",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-examples",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-benches",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-hegel",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-column-probe",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-measure-harness",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-xtask",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-polars-gen",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-execute-guard",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-builder",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-generate",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-package-site",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-check-demos-candle-Cargo.toml",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-check-demos-polars-Cargo.toml",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-check-servers-http-postgres-Cargo.toml",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {},
+				"name": "pin-controls",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {},
+				"name": "benchmark-protocol",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy",
+				"resources": [
+					"<ROOT>/target/column-clippy-candidate/debug",
+					"<ROOT>/target/column-clippy-published/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "adapter-clippy",
+				"resources": [
+					"<ROOT>/target/column-clippy-adapter-candidate/debug",
+					"<ROOT>/target/column-clippy-adapter-published/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-no-std",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-examples",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-benches",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-hegel",
+				"resources": [
+					"<ROOT>/rune/hegel_tests/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-column-probe",
+				"resources": [
+					"<ROOT>/rune/tools/xtask/column/probe/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-measure-harness",
+				"resources": [
+					"<ROOT>/rune/tools/xtask/measure/harness/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-xtask",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-polars-gen",
+				"resources": [
+					"<ROOT>/tools/polars-gen/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-execute-guard",
+				"resources": [
+					"<ROOT>/ci/execute_guard/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-builder",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-generate",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-package-site",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-check-demos-candle-Cargo.toml",
+				"resources": [
+					"<ROOT>/demos/candle/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-check-demos-polars-Cargo.toml",
+				"resources": [
+					"<ROOT>/demos/polars/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "lint-check-servers-http-postgres-Cargo.toml",
+				"resources": [
+					"<ROOT>/servers/http-postgres/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "inventory",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "column-host",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "column-adapter-unit",
+				"resources": [
+					"<ROOT>/adapters/polars/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "column-adapter-integration",
+				"resources": [
+					"<ROOT>/adapters/polars/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "root-tests",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "async-test-support",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 1073741824,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "generated-projects",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "jupyter-format",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "jupyter-clippy",
+				"resources": [
+					"<ROOT>/jupyter/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "jupyter-tests",
+				"resources": [
+					"<ROOT>/jupyter/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "jupyter-kernel",
+				"resources": [
+					"<ROOT>/jupyter/target/debug",
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "budget-controls",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-budget",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-budget",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "final-controls",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-final",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-final",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "adapter-candle",
+				"resources": [
+					"<ROOT>/adapters/candle/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "adapter-polars",
+				"resources": [
+					"<ROOT>/adapters/polars/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "adapter-postgres",
+				"resources": [
+					"<ROOT>/adapters/postgres/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "polars-inventories",
+				"resources": [
+					"<ROOT>/target/0072",
+					"<ROOT>/target/column-inventory-extract/debug",
+					"<ROOT>/tools/polars-gen/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "polars-suite",
+				"resources": [
+					"<ROOT>/adapters/polars/target/debug",
+					"<ROOT>/target/0073"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "check-demos-candle-Cargo.toml",
+				"resources": [
+					"<ROOT>/demos/candle/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "check-demos-polars-Cargo.toml",
+				"resources": [
+					"<ROOT>/demos/polars/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "check-servers-http-postgres-Cargo.toml",
+				"resources": [
+					"<ROOT>/servers/http-postgres/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 1073741824,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "cross",
+				"resources": [],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "production-cli-build",
+				"resources": [
+					"<ROOT>/adapters/polars/target/release"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "production-cli-controls",
+				"resources": [
+					"<ROOT>/adapters/polars/target/release"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 6442450944,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "rune-suite",
+				"resources": [
+					"<ROOT>/target/engine-dev"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "rune-clippy",
+				"resources": [
+					"<ROOT>/target/engine-dev"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "project-suite",
+				"resources": [
+					"<ROOT>/tools/project/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "project-clippy",
+				"resources": [
+					"<ROOT>/tools/project/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "suite-adapter-candle",
+				"resources": [
+					"<ROOT>/adapters/candle/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "suite-adapter-postgres",
+				"resources": [
+					"<ROOT>/adapters/postgres/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-adapter-candle",
+				"resources": [
+					"<ROOT>/adapters/candle/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-adapter-polars",
+				"resources": [
+					"<ROOT>/adapters/polars/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 2147483648,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-adapter-postgres",
+				"resources": [
+					"<ROOT>/adapters/postgres/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-no-std",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-examples",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-benches",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-hegel",
+				"resources": [
+					"<ROOT>/rune/hegel_tests/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-column-probe",
+				"resources": [
+					"<ROOT>/rune/tools/xtask/column/probe/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-measure-harness",
+				"resources": [
+					"<ROOT>/rune/tools/xtask/measure/harness/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-xtask",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-polars-gen",
+				"resources": [
+					"<ROOT>/tools/polars-gen/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-execute-guard",
+				"resources": [
+					"<ROOT>/ci/execute_guard/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-builder",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-generate",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "package-site",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 1073741824,
+				"environment": {},
+				"name": "fixed-route",
+				"resources": [
+					"alone"
+				],
+				"weight": 1
+			}
+		]
+	},
+	"method": "for each accept.commands(<OUT>, root=<ROOT>) stage: stage_scheduler resources (sorted), weight, declared_bulk and stage_environment with a pool whose environment is MAKEFLAGS=CARGO_MAKEFLAGS=FLAGS and 7 tokens; and producers(stages)",
+	"substitutions": {
+		"<OUT>": "a final directory named FINAL-x",
+		"<ROOT>": "the checkout"
+	},
+	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
+}

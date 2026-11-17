@@ -1,0 +1,18 @@
+{
+  "acceptance_sha256": "15651249c7d29705d2e7facd80f6455b15203602500ebb8ab1a31e0e9b910766",
+  "ledger_sha256": "848f7353de9f510d89ffa331d4b209792df32613d8b0789a0ba5b8b613af4b04",
+  "manifest_sha256": "60a37a059e06599be003f38bdac520a3c76f546b139d41a16df53bf7c3b231ef",
+  "roots": [
+    {
+      "device": 38,
+      "inode": 29511776,
+      "parent": "/tmp/rnx-0284-fixture/pass/target/routing-cli",
+      "parent_device": 38,
+      "parent_inode": 29511774,
+      "path": "/tmp/rnx-0284-fixture/pass/target/routing-cli/956b700f395144998cca367ab5291149-stage",
+      "stage": "stage",
+      "state": "released"
+    }
+  ],
+  "status": "PASS"
+}

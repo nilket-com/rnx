@@ -1,0 +1,48 @@
+{
+  "acceptance_scope": "required",
+  "candidate": "c",
+  "policy": "p",
+  "roots": [
+    {
+      "owner": {
+        "device": 38,
+        "inode": 29511803,
+        "parent": "/tmp/rnx-0284-fixture/fail/target/routing-cli",
+        "parent_device": 38,
+        "parent_inode": 29511801,
+        "path": "/tmp/rnx-0284-fixture/fail/target/routing-cli/6f790970ee6d4178b7c5f7a293f79384-stage",
+        "stage": "stage",
+        "state": "owned"
+      },
+      "payload": {
+        "allocated_bytes": 4096,
+        "entries": 1,
+        "logical_bytes": 4,
+        "reused_file_digests": 0,
+        "seconds": 7.166099385358393e-05,
+        "sha256": "f0b99c37a0bc3924d7fd53c0533db4d2cd4e23be4bc8685ce54f073a04638545"
+      }
+    }
+  ],
+  "schema": 1,
+  "selection_sha256": "d8c8cd72700d5f2c68daa554f8d3e2c78c10e98b9decbde40435b146998b4b87",
+  "source": "s",
+  "stages": [
+    {
+      "artifact_set_sha256": "9df962cc4ff5c9ab8195ab794563ed430a8883fd6b4cc34f2cd8cf0724ee3a51",
+      "cleanup_seconds": 0,
+      "command_template": [
+        "command"
+      ],
+      "environment_names": [],
+      "exit": 1,
+      "name": "stage",
+      "receipt_sha256": "9d62278269c9f81a95e18309a7857be70501a37efc824fa52c26eb181e48f8d4",
+      "seconds": 0.0,
+      "status": "FAIL"
+    }
+  ],
+  "tools": {
+    "controller": "python"
+  }
+}

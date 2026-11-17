@@ -1,19 +1,22 @@
-//! The selection receipt matches the Python controller's for every scope,
-//! except the controller's own policy identity.
+//! The selection receipt of every scope matches the Python controller's at
+//! ADR 0284's witness revision, except the controller's own policy
+//! identity and the working tree's source digest, which the retained Python
+//! stage protocol computes for this tree.
+mod common;
+use common::witness::{WITNESS, expected};
 use rnx_final::selection;
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
 use std::path::Path;
 
 #[test]
-fn selections_match_the_python_controller() {
+fn selections_match_the_witness() {
 	let root = Path::new(env!("CARGO_MANIFEST_DIR"))
 		.join("../..")
 		.canonicalize()
 		.unwrap();
 	let out = std::env::temp_dir().join("rnx-final-selection/FINAL-x");
-	// Tools as a complete final's launch names them; both controllers see them.
-	let mut environment: BTreeMap<String, String> = std::env::vars().collect();
+	// Tools as a complete final's launch names them.
 	let tools = std::env::temp_dir().join(format!(
 		"rnx-final-selection-tools-{}",
 		rnx_final::receipt::invocation_id()
@@ -29,56 +32,57 @@ fn selections_match_the_python_controller() {
 		.unwrap();
 		std::fs::write(tools.join("python"), "").unwrap();
 	}
-	environment.insert(
-		"RNX_VALGRIND_ROOT".into(),
-		tools.join("valgrind").to_string_lossy().into_owned(),
-	);
-	environment.insert(
-		"RNX_JUPYTER_PYTHON".into(),
-		tools.join("python").to_string_lossy().into_owned(),
-	);
-	let script = "import json, sys\nfrom pathlib import Path\nimport gate_policy as g\na = json.loads(sys.argv[1])\nr = g.select(Path(a['root']), Path(a['out']), a['names'], scope=a['scope'])\nr['policy'] = 'controller'\nprint(json.dumps(r))";
-	for (scope, names) in [
-		("complete", None),
-		("required", None),
-		("docs", None),
+	let environment: BTreeMap<String, String> = [
+		("PATH".to_string(), std::env::var("PATH").unwrap()),
 		(
-			"explicit",
-			Some(vec!["polars-suite".to_string(), "format".into()]),
+			"RNX_VALGRIND_ROOT".into(),
+			tools.join("valgrind").to_string_lossy().into_owned(),
 		),
-	] {
-		let input = json!({"root": root, "out": out, "names": names, "scope": scope});
-		let output = std::process::Command::new("python3")
-			.args(["-B", "-c", script, &input.to_string()])
-			.env_clear()
-			.envs(&environment)
-			.current_dir(root.join("tools/column"))
-			.output()
-			.unwrap();
-		assert!(
-			output.status.success(),
-			"{scope}: {}",
-			String::from_utf8_lossy(&output.stderr)
-		);
-		let expected: Value = serde_json::from_slice(&output.stdout).unwrap();
+		(
+			"RNX_JUPYTER_PYTHON".into(),
+			tools.join("python").to_string_lossy().into_owned(),
+		),
+	]
+	.into();
+	let tag = {
+		use sha2::Digest as _;
+		let resolved = std::fs::canonicalize(&out).unwrap_or_else(|_| out.clone());
+		rnx_final::pyjson::hex(&sha2::Sha256::digest(resolved.to_string_lossy().as_bytes()))
+	};
+	let fixture = expected(
+		"selection",
+		&[
+			("<OUT>", &out.to_string_lossy()),
+			("<ROOT>", &root.to_string_lossy()),
+			("<TOOLS>", &tools.to_string_lossy()),
+			("<TAG>", &tag[..16]),
+		],
+	);
+	let source = python_source(&root);
+	let scopes = fixture.as_object().unwrap();
+	assert_eq!(scopes.len(), 4);
+	for (scope, case) in scopes {
+		let names: Option<Vec<String>> = serde_json::from_value(case["names"].clone()).unwrap();
+		let mut want = case["expected"].clone();
+		want["source"] = json!(source);
 		let mut actual = selection::select(
 			&root,
 			&out,
 			names.as_deref(),
-			"HEAD",
+			WITNESS,
 			Some(scope),
 			&environment,
 		)
 		.unwrap();
 		actual["policy"] = json!("controller");
-		assert_eq!(actual, expected, "{scope}");
+		assert_eq!(actual, want, "{scope}");
 	}
 	// The explicit selection closed over its producer.
 	let explicit = selection::select(
 		&root,
 		&out,
 		Some(&["polars-suite".to_string()]),
-		"HEAD",
+		WITNESS,
 		Some("explicit"),
 		&environment,
 	)
@@ -90,4 +94,22 @@ fn selections_match_the_python_controller() {
 			.iter()
 			.any(|s| s[0] == "polars-inventories")
 	);
+	let _ = std::fs::remove_dir_all(&tools);
+}
+
+/// The working tree's source digest as the Python stage protocol computes it.
+fn python_source(root: &Path) -> Value {
+	let script = "import json, sys; from pathlib import Path; import child_result; print(json.dumps(child_result.source(Path(sys.argv[1]))))";
+	let output = std::process::Command::new("python3")
+		.args(["-B", "-c", script])
+		.arg(root)
+		.current_dir(root.join("tools/column"))
+		.output()
+		.unwrap();
+	assert!(
+		output.status.success(),
+		"{}",
+		String::from_utf8_lossy(&output.stderr)
+	);
+	serde_json::from_slice(&output.stdout).unwrap()
 }

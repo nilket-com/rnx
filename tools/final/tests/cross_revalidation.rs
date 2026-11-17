@@ -1,6 +1,10 @@
-//! Each controller revalidates the other's final as it stands: a passed one
-//! passes; a failed one, a tampered one and one whose release is incomplete
-//! are refused by both.
+//! The Rust controller revalidates a final as it stands, its own and one the
+//! retired Python controller wrote (committed copies from ADR 0284's witness
+//! revision, `tests/witness/python-final-*`): a passed one passes; a failed
+//! one, a tampered one and one whose release is incomplete or rootless are
+//! refused. The Python controller revalidated Rust finals until ADR 0284;
+//! ADR 0283's accepted revalidation in both directions is that direction's
+//! last witness.
 mod common;
 use anyhow::Result;
 use rnx_final::child::Done;
@@ -12,13 +16,6 @@ use serde_json::{Map, Value, json};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
-
-fn column() -> PathBuf {
-	Path::new(env!("CARGO_MANIFEST_DIR"))
-		.join("../../tools/column")
-		.canonicalize()
-		.unwrap()
-}
 
 struct Dir(PathBuf);
 impl Drop for Dir {
@@ -121,59 +118,31 @@ fn rust_final(root: &Path, fail: bool) -> PathBuf {
 	root.join("final")
 }
 
-/// A final by the Python controller, its stage faked as its own controls do.
+/// A final the Python controller wrote at the witness revision, its stage
+/// faked as its own controls did; revalidation does not depend on where it
+/// lies.
 fn python_final(root: &Path, fail: bool) -> PathBuf {
-	let script = r#"
-import sys, json
-from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import patch
-import child_result as child, final, stage_fakes
-root, fail = Path(sys.argv[1]), sys.argv[2] == '1'
-s = {'schema': 1, 'scope': 'required', 'publication_eligible': True, 'record': {'candidate': 'c', 'baseline': 'b', 'plan': 'p', 'record': '9999', 'phase': 'impl', 'paths': [], 'required': []}, 'source': 's', 'policy': 'p', 'root': '/fixture', 'out': '/fixture/final', 'stages': [['stage', ['command']]]}
-finalization = {'schema': 1, 'status': 'PASS', 'candidate': 'c', 'scope': 'required', 'publication_eligible': True, 'source': 's', 'selection': 'x', 'evidence': {}, 'durations': {}}
-def execute(command, **kw):
-    p = Path(kw['env']['RNX_FINAL_ROUTING_ROOT']); (p/'payload').write_text('data')
-    d = kw['directory']; d.mkdir()
-    child.atomic_json(d/'RESULT.json', dict(schema=1, status='FAIL' if fail else 'PASS', command=['command'], process_exit=int(fail), seconds=0.0, cleanup_seconds=0, cleanup=[], context={'schema': 1, 'invocation': 'i', 'root': '/fixture', 'cwd': '/fixture', 'command': ['command'], 'candidate': 'c', 'source': 's', 'environment': {'keys': [], 'sha256': 'x'}, 'kind': 'leaf'}, artifacts={str(p/'payload'): child.digest(p/'payload')}))
-    return SimpleNamespace(returncode=int(fail), validation={'path': str(d/'RESULT.json'), 'sha256': child.digest(d/'RESULT.json')})
-with patch.object(final, 'disk_check'), patch.object(final, 'tools_identity', return_value={'controller': 'python'}), patch.object(final.child, 'head', return_value='c'), \
-        patch.object(final.gate, 'select', return_value=s), patch.object(final.gate, 'check_selection'), patch.object(final.gate, 'finalize', return_value=finalization), \
-        patch.object(final.child, 'run', side_effect=execute), stage_fakes.inline(final):
-    final.run(root, root/'final')
-"#;
-	let output = std::process::Command::new("python3")
-		.args(["-B", "-c", script])
-		.arg(root)
-		.arg(if fail { "1" } else { "0" })
-		.current_dir(column())
-		.output()
-		.unwrap();
-	assert!(
-		output.status.success(),
-		"{}",
-		String::from_utf8_lossy(&output.stderr)
-	);
-	root.join("final")
+	let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("tests/witness")
+		.join(if fail {
+			"python-final-fail"
+		} else {
+			"python-final-pass"
+		});
+	let out = root.join("final");
+	copy_tree(&source, &out);
+	out
 }
 
-fn python_revalidate(out: &Path) -> Result<Value, String> {
-	let script = "import sys, json; from pathlib import Path; from final_evidence import revalidate\ntry: print(json.dumps(revalidate(Path(sys.argv[1]))))\nexcept Exception as e: print(json.dumps({'refused': repr(e)}))";
-	let output = std::process::Command::new("python3")
-		.args(["-B", "-c", script])
-		.arg(out)
-		.current_dir(column())
-		.output()
-		.unwrap();
-	assert!(
-		output.status.success(),
-		"{}",
-		String::from_utf8_lossy(&output.stderr)
-	);
-	let value: Value = serde_json::from_slice(&output.stdout).unwrap();
-	match value.get("refused") {
-		Some(r) => Err(r.as_str().unwrap().to_owned()),
-		None => Ok(value),
+fn copy_tree(from: &Path, to: &Path) {
+	std::fs::create_dir_all(to).unwrap();
+	for entry in std::fs::read_dir(from).unwrap().flatten() {
+		let target = to.join(entry.file_name());
+		if entry.file_type().unwrap().is_dir() {
+			copy_tree(&entry.path(), &target);
+		} else {
+			std::fs::copy(entry.path(), &target).unwrap();
+		}
 	}
 }
 
@@ -213,28 +182,17 @@ fn unrelease(out: &Path) {
 }
 
 #[test]
-fn each_controller_revalidates_the_others_final() {
+fn each_writers_passed_final_revalidates() {
 	for (writer, make) in [
 		("rust", rust_final as fn(&Path, bool) -> PathBuf),
 		("python", python_final),
 	] {
 		let d = dir();
 		let out = make(&d.0, false);
-		let (by_python, by_rust) = (python_revalidate(&out), rust_revalidate(&out));
 		assert_eq!(
-			by_python.as_ref().map(|v| v["status"].clone()),
+			rust_revalidate(&out).map(|v| v["status"].clone()),
 			Ok(json!("PASS")),
-			"{writer} final, Python revalidation"
-		);
-		assert_eq!(
-			by_rust.as_ref().map(|v| v["status"].clone()),
-			Ok(json!("PASS")),
-			"{writer} final, Rust revalidation"
-		);
-		assert_eq!(
-			by_python.unwrap(),
-			by_rust.unwrap(),
-			"{writer}: the two revalidations differ"
+			"{writer} final"
 		);
 		// The writer's own identity stays in the manifest; nothing is relabeled.
 		let manifest: Value =
@@ -244,7 +202,7 @@ fn each_controller_revalidates_the_others_final() {
 }
 
 #[test]
-fn both_controllers_refuse_failed_tampered_and_unreleased_finals() {
+fn failed_tampered_unreleased_and_rootless_finals_are_refused() {
 	for (writer, make) in [
 		("rust", rust_final as fn(&Path, bool) -> PathBuf),
 		("python", python_final),
@@ -259,12 +217,8 @@ fn both_controllers_refuse_failed_tampered_and_unreleased_finals() {
 				_ => {}
 			}
 			assert!(
-				python_revalidate(&out).is_err(),
-				"{writer} {case} final passed Python revalidation"
-			);
-			assert!(
 				rust_revalidate(&out).is_err(),
-				"{writer} {case} final passed Rust revalidation"
+				"{writer} {case} final passed revalidation"
 			);
 		}
 	}

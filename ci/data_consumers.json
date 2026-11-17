@@ -1071,6 +1071,33 @@
       "max_bytes": 65536,
       "reason": "ADR 0283 policy: each Python final control and its Rust pair; read by tools/final/tests/controls.rs."
     },
+    "tools/final/tests/witness/catalogue.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/common/witness.rs"
+      },
+      "max_bytes": 24405,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it."
+    },
+    "tools/final/tests/witness/scheduling.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/common/witness.rs"
+      },
+      "max_bytes": 29702,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it."
+    },
+    "tools/final/tests/witness/selection.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/common/witness.rs"
+      },
+      "max_bytes": 80658,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it."
+    },
     "tools/project/resolved-graph.json": {
       "class": "reviewed-retention",
       "max_bytes": 17111,

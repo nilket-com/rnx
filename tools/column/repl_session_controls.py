@@ -1,13 +1,14 @@
-"""ADR 0242: persistent-session controls and path-selected final gates."""
+"""ADR 0242: persistent-session development and Miri controls.
+
+The path-selected gates run in a Rust final of the explicit stages
+(tools/final/final.sh)."""
 import argparse
-import json
 import os
 from pathlib import Path
 import subprocess
 import traceback
 
 import child_result as child
-import gate_policy
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -22,17 +23,13 @@ def commands(scope, out):
 			('repl-cli', cargo + ['--test', 'repl_execution', '--', '--test-threads=4']),
 			('inventory', cargo + ['--features', 'project-sources', '--lib', 'routing_inventory', '--', '--test-threads=4']),
 		]
-	if scope == 'miri':
-		return [('ownership-miri', ['python3', '-B', 'tools/column/miri_exact.py', '--package', 'rune',
-			'--inventory', 'tools/column/repl_session_miri.json', '--out', str(out/'miri')])]
-	selection = gate_policy.select(ROOT, out, ['format', 'clippy', 'async-test-support', 'generated-projects'])
-	child.atomic_json(out/'SELECTION.json', selection)
-	return selection['stages']
+	return [('ownership-miri', ['python3', '-B', 'tools/column/miri_exact.py', '--package', 'rune',
+		'--inventory', 'tools/column/repl_session_miri.json', '--out', str(out/'miri')])]
 
 
 def main():
 	p = argparse.ArgumentParser(description=__doc__)
-	p.add_argument('--scope', choices=('development', 'miri', 'final'), required=True)
+	p.add_argument('--scope', choices=('development', 'miri'), required=True)
 	p.add_argument('--out', type=Path, required=True)
 	a = p.parse_args(); out = a.out.resolve(); out.mkdir(parents=True, exist_ok=False)
 	r = dict(status='FAIL', scope=a.scope, checks=[])
@@ -48,9 +45,6 @@ def main():
 			child.atomic_json(out/(name+'-stage.json'), row); r['checks'].append(row)
 			if done.returncode: raise RuntimeError(name+' failed; no later stage launched')
 		if child.source(ROOT) != source or child.head(ROOT) != candidate: raise ValueError('source changed')
-		if a.scope == 'final':
-			selection = json.loads((out/'SELECTION.json').read_text())
-			r['finalization'] = gate_policy.finalize(selection, {c['name']:c['validation'] for c in r['checks']}, ROOT)
 		r['status'] = 'PASS'
 	except Exception:
 		r['error'] = traceback.format_exc()

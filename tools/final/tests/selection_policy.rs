@@ -460,11 +460,21 @@ fn every_stage_that_must_be_a_producer_runs_one() {
 			);
 		}
 	}
-	// The same holds for the Python controller's catalogue and rule.
-	let script = "import json, sys\nfrom pathlib import Path\nimport accept, gate_policy as g, child_result as c\nfrom package_gates import FORMATS, LINTS\nroot = Path(sys.argv[1])\nbad = []\nfor name, command in accept.commands(root/'target/unused', root=root):\n    need = name in FORMATS or name in LINTS or name in {'polars-inventories', 'cross', 'fixed-route', 'rune-suite', 'rune-clippy', 'project-suite', 'project-clippy'} or name.startswith(('suite-adapter-', 'clippy-adapter-', 'package-'))\n    if need and c.contract(command, root, root) != 'producer': bad.append(name)\nprint(json.dumps(bad))";
+	// The Python stage protocol, which checks the producers' receipts at
+	// run time, classifies each of them as a producer too.
+	let required: Vec<serde_json::Value> =
+		rnx_final::catalogue::commands(&root.join("target/unused"), &root)
+			.unwrap()
+			.into_iter()
+			.filter(|(name, _)| selection::requires_producer(name))
+			.map(|(name, command)| serde_json::json!([name, command]))
+			.collect();
+	assert!(required.len() > 20, "{} producer stages", required.len());
+	let script = "import json, sys\nfrom pathlib import Path\nimport child_result as c\nroot = Path(sys.argv[1])\nprint(json.dumps([n for n, command in json.loads(sys.argv[2]) if c.contract(command, root, root) != 'producer']))";
 	let output = std::process::Command::new("python3")
 		.args(["-B", "-c", script])
 		.arg(&root)
+		.arg(serde_json::Value::Array(required).to_string())
 		.current_dir(root.join("tools/column"))
 		.output()
 		.unwrap();
@@ -474,4 +484,73 @@ fn every_stage_that_must_be_a_producer_runs_one() {
 		String::from_utf8_lossy(&output.stderr)
 	);
 	assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "[]");
+}
+
+/// The finalizer holds the suite's native contract cases to the manifest,
+/// then goes on to check the stages after it (formerly the Python control
+/// test_native_contracts.Coverage, which finalized through gate_policy).
+#[test]
+fn the_finalizer_checks_native_contracts_and_the_stages_after_them() {
+	let g = Gates::new();
+	let real = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("../..")
+		.join(selection::NATIVE_MANIFEST);
+	let text = std::fs::read_to_string(&real).unwrap();
+	g.write(selection::NATIVE_MANIFEST, &text);
+	g.write("src/a.rs", "changed");
+	g.commit("impl: adr 9999 controls");
+	let m = g
+		.select(Some(&["rune-suite", "fixed-route"]), "explicit")
+		.unwrap();
+	let names = stage_names(&m);
+	let suite = names.iter().position(|n| n == "rune-suite").unwrap();
+	assert!(
+		suite + 1 < names.len(),
+		"a stage follows the suite: {names:?}"
+	);
+	let manifest: Value = serde_json::from_str(&text).unwrap();
+	let cases: Vec<Value> = manifest["cases"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.map(|c| {
+			json!({"name": c["name"], "specification": rnx_final::pyjson::identity(c).unwrap(), "status": "PASS", "exit": 0,
+				"selected": [c["selector"]], "passed": 1, "contract_rows": c.get("rows")})
+		})
+		.collect();
+	let receipt = std::env::temp_dir().join(format!("rnx-final-suite-{}.json", invocation_id()));
+	let evidence: Map<String, Value> = names.iter().map(|n| (n.clone(), json!({}))).collect();
+	for missing in [false, true] {
+		let shown = if missing {
+			&cases[..cases.len() - 1]
+		} else {
+			&cases[..]
+		};
+		std::fs::write(
+			&receipt,
+			json!({"contracts": {"manifest_sha256": rnx_final::receipt::digest(&g.0.join(selection::NATIVE_MANIFEST)).unwrap(), "cases": shown}}).to_string(),
+		)
+		.unwrap();
+		let rows: Mutex<Vec<Value>> = Mutex::new(
+			m["stages"]
+				.as_array()
+				.unwrap()
+				.iter()
+				.map(|s| json!({"command": s[1], "context": {"command": s[1], "kind": "producer", "candidate": m["record"]["candidate"]}, "producer": {"receipt": receipt}}))
+				.collect(),
+		);
+		let check =
+			|_: &Value, _: &Value| -> anyhow::Result<Value> { Ok(rows.lock().unwrap().remove(0)) };
+		let result = finalize_with(&m, &evidence, &g.0, &g.env(), &check);
+		if missing {
+			let error = result.unwrap_err().to_string();
+			assert!(error.contains("catalogue differs"), "{error}");
+		} else {
+			let result = result.unwrap();
+			assert_eq!(result["status"], "PASS");
+			assert!(rows.lock().unwrap().is_empty(), "every stage was checked");
+			assert!(result["durations"].get(names.last().unwrap()).is_some());
+		}
+	}
+	let _ = std::fs::remove_file(&receipt);
 }

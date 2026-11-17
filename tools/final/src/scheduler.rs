@@ -409,50 +409,28 @@ pub fn stage_environment(
 	]
 }
 
-/// The Python controller stays for one record as the witness; until it goes,
-/// both schedulers must give every stage the same lanes, weight, bulk and
-/// pool environment.
+/// Each stage's resources, weight, bulk roots, environment and producers
+/// against the Python controller's at ADR 0284's witness revision.
 #[cfg(test)]
 mod witness {
 	use super::*;
-	use serde_json::{Value, json};
+	use serde_json::json;
 
 	#[test]
-	fn every_stage_is_scheduled_as_the_python_controller_schedules_it() {
+	fn every_stage_is_scheduled_as_the_witness_schedules_it() {
 		let root = Path::new(env!("CARGO_MANIFEST_DIR"))
 			.join("../..")
 			.canonicalize()
 			.unwrap();
 		let out = std::env::temp_dir().join("rnx-final-witness/FINAL-x");
 		let stages = catalogue::commands(&out, &root).unwrap();
-		let script = r#"
-import json, sys
-from pathlib import Path
-import accept, stage_scheduler as s
-out, root = Path(sys.argv[1]), Path(sys.argv[2])
-stages = accept.commands(out, root=root)
-targets = s.Targets(root)
-class FakePool:
-    def environment(self): return {'MAKEFLAGS': 'FLAGS', 'CARGO_MAKEFLAGS': 'FLAGS'}
-rows = []
-for name, command in stages:
-    rows.append(dict(name=name, resources=sorted(s.resources(name, command, root, targets)), weight=s.weight(name, command, root),
-        bulk=s.declared_bulk(name), environment=s.stage_environment(name, command, FakePool(), 7)))
-print(json.dumps(dict(rows=rows, producers=[list(p) for p in s.producers(stages)])))
-"#;
-		let output = std::process::Command::new("python3")
-			.args(["-B", "-c", script])
-			.arg(&out)
-			.arg(&root)
-			.current_dir(root.join("tools/column"))
-			.output()
-			.unwrap();
-		assert!(
-			output.status.success(),
-			"{}",
-			String::from_utf8_lossy(&output.stderr)
+		let expected = crate::witness::expected(
+			"scheduling",
+			&[
+				("<OUT>", &out.to_string_lossy()),
+				("<ROOT>", &root.to_string_lossy()),
+			],
 		);
-		let expected: Value = serde_json::from_slice(&output.stdout).unwrap();
 		let targets = Targets::new(&root);
 		let pool_dir = std::env::temp_dir().join(format!(
 			"rnx-final-witness-pool-{}",

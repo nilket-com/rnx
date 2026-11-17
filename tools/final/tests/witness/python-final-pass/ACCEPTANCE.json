@@ -1,0 +1,56 @@
+{
+  "acceptance_scope": "required",
+  "candidate": "c",
+  "checks": [
+    {
+      "exit": 0,
+      "name": "stage",
+      "validation": {
+        "path": "/tmp/rnx-0284-fixture/pass/final/stage-child/RESULT.json",
+        "sha256": "3c813c7f474474817fd9a02b04c2a9413d57fea421e4f9d37fea1b229763385b"
+      }
+    }
+  ],
+  "disk": {
+    "binding": "/tmp/rnx-0284-fixture/pass",
+    "estimate_bytes": 21474836480,
+    "floor_bytes": 21474836480,
+    "lowest_free_bytes": 29744476160
+  },
+  "finalization": {
+    "candidate": "c",
+    "durations": {},
+    "evidence": {},
+    "publication_eligible": true,
+    "schema": 1,
+    "scope": "required",
+    "selection": "x",
+    "source": "s",
+    "status": "PASS"
+  },
+  "memory": {
+    "events_after": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "events_before": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "tokens": "13"
+  },
+  "mode": "ordinary",
+  "recovered": [],
+  "seconds": 0.0053121999953873456,
+  "status": "PASS"
+}

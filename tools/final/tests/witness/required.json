@@ -1,0 +1,549 @@
+{
+	"expected": {
+		"cases": [
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"plans/adr/0001_x.md"
+				]
+			},
+			{
+				"expected": [
+					"clippy",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format",
+					"inventory",
+					"python-list",
+					"root-tests"
+				],
+				"graphs": false,
+				"paths": [
+					"src/lib.rs"
+				]
+			},
+			{
+				"expected": [
+					"clippy",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format",
+					"inventory",
+					"python-list",
+					"root-tests"
+				],
+				"graphs": false,
+				"paths": [
+					"tests/async_execution.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"fixed-route",
+					"format",
+					"python-list",
+					"rune-clippy",
+					"rune-suite"
+				],
+				"graphs": false,
+				"paths": [
+					"rune/crates/rune/src/lib.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format",
+					"python-list",
+					"rune-clippy",
+					"rune-suite"
+				],
+				"graphs": false,
+				"paths": [
+					"rune/crates/rune/tests/x.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"python-list",
+					"rune-clippy",
+					"rune-suite"
+				],
+				"graphs": false,
+				"paths": [
+					"rune/crates/rune-core/README.md"
+				]
+			},
+			{
+				"expected": [
+					"adapter-format",
+					"clippy-adapter-polars",
+					"commit-discipline",
+					"controller-controls",
+					"polars-suite",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"adapters/polars/src/lib.rs"
+				]
+			},
+			{
+				"expected": [
+					"clippy-adapter-candle",
+					"commit-discipline",
+					"controller-controls",
+					"format-adapter-candle",
+					"python-list",
+					"suite-adapter-candle"
+				],
+				"graphs": false,
+				"paths": [
+					"adapters/candle/tests/x.rs"
+				]
+			},
+			{
+				"expected": [
+					"clippy-adapter-postgres",
+					"commit-discipline",
+					"controller-controls",
+					"format-adapter-postgres",
+					"python-list",
+					"suite-adapter-postgres"
+				],
+				"graphs": false,
+				"paths": [
+					"adapters/postgres/build.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"jupyter-clippy",
+					"jupyter-format",
+					"jupyter-kernel",
+					"jupyter-tests",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"jupyter/src/main.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"project-clippy",
+					"project-format",
+					"project-suite",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"tools/project/src/lib.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"tools/verify.py"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"tools/verify/x.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"format-package-no-std",
+					"lint-package-no-std",
+					"package-no-std",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"rune/no-std/examples/minimal.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"format-package-xtask",
+					"lint-package-xtask",
+					"package-xtask",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"rune/tools/xtask/src/main.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"format-package-polars-gen",
+					"lint-package-polars-gen",
+					"package-polars-gen",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"tools/polars-gen/src/main.rs"
+				]
+			},
+			{
+				"expected": [
+					"clippy-final",
+					"commit-discipline",
+					"controller-controls",
+					"final-controls",
+					"format-final",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"tools/final/src/controller.rs"
+				]
+			},
+			{
+				"expected": [
+					"budget-controls",
+					"clippy-budget",
+					"commit-discipline",
+					"controller-controls",
+					"format-budget",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"rune/tools/budget/src/fifo.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"python-list"
+				],
+				"graphs": true,
+				"paths": [
+					"tools/final/Cargo.toml"
+				]
+			},
+			{
+				"expected": [
+					"check-demos-polars-Cargo.toml",
+					"commit-discipline",
+					"controller-controls",
+					"format-check-demos-polars-Cargo.toml",
+					"lint-check-demos-polars-Cargo.toml",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"demos/polars/src/main.rs"
+				]
+			},
+			{
+				"expected": [
+					"check-servers-http-postgres-Cargo.toml",
+					"commit-discipline",
+					"controller-controls",
+					"format-check-servers-http-postgres-Cargo.toml",
+					"lint-check-servers-http-postgres-Cargo.toml",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"servers/http-postgres/src/main.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"python-list"
+				],
+				"graphs": false,
+				"paths": [
+					"tools/column/final.py",
+					"ci/preflight.py"
+				]
+			},
+			{
+				"expected": [
+					"adapter-format",
+					"check-demos-polars-Cargo.toml",
+					"clippy",
+					"clippy-adapter-candle",
+					"clippy-adapter-polars",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"fixed-route",
+					"format",
+					"format-adapter-candle",
+					"format-check-demos-polars-Cargo.toml",
+					"format-package-no-std",
+					"format-package-xtask",
+					"inventory",
+					"jupyter-clippy",
+					"jupyter-format",
+					"jupyter-kernel",
+					"jupyter-tests",
+					"lint-check-demos-polars-Cargo.toml",
+					"lint-package-no-std",
+					"lint-package-xtask",
+					"package-no-std",
+					"package-xtask",
+					"polars-suite",
+					"project-clippy",
+					"project-format",
+					"project-suite",
+					"python-list",
+					"root-tests",
+					"rune-clippy",
+					"rune-suite",
+					"suite-adapter-candle"
+				],
+				"graphs": true,
+				"paths": [
+					"Cargo.toml"
+				]
+			},
+			{
+				"expected": [
+					"adapter-format",
+					"check-demos-polars-Cargo.toml",
+					"clippy",
+					"clippy-adapter-candle",
+					"clippy-adapter-polars",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"fixed-route",
+					"format",
+					"format-adapter-candle",
+					"format-check-demos-polars-Cargo.toml",
+					"format-package-no-std",
+					"format-package-xtask",
+					"inventory",
+					"jupyter-clippy",
+					"jupyter-format",
+					"jupyter-kernel",
+					"jupyter-tests",
+					"lint-check-demos-polars-Cargo.toml",
+					"lint-package-no-std",
+					"lint-package-xtask",
+					"package-no-std",
+					"package-xtask",
+					"polars-suite",
+					"project-clippy",
+					"project-format",
+					"project-suite",
+					"python-list",
+					"root-tests",
+					"rune-clippy",
+					"rune-suite",
+					"suite-adapter-candle"
+				],
+				"graphs": true,
+				"paths": [
+					"Cargo.lock"
+				]
+			},
+			{
+				"expected": [
+					"adapter-format",
+					"check-demos-polars-Cargo.toml",
+					"clippy",
+					"clippy-adapter-candle",
+					"clippy-adapter-polars",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"fixed-route",
+					"format",
+					"format-adapter-candle",
+					"format-check-demos-polars-Cargo.toml",
+					"format-package-no-std",
+					"inventory",
+					"jupyter-clippy",
+					"jupyter-format",
+					"jupyter-kernel",
+					"jupyter-tests",
+					"lint-check-demos-polars-Cargo.toml",
+					"lint-package-no-std",
+					"package-no-std",
+					"polars-suite",
+					"project-clippy",
+					"project-format",
+					"project-suite",
+					"python-list",
+					"root-tests",
+					"rune-clippy",
+					"rune-suite",
+					"suite-adapter-candle"
+				],
+				"graphs": true,
+				"paths": [
+					"rune/crates/rune/Cargo.toml"
+				]
+			},
+			{
+				"expected": [
+					"adapter-format",
+					"check-demos-polars-Cargo.toml",
+					"clippy-adapter-polars",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format-check-demos-polars-Cargo.toml",
+					"lint-check-demos-polars-Cargo.toml",
+					"polars-suite",
+					"python-list"
+				],
+				"graphs": true,
+				"paths": [
+					"adapters/polars/Cargo.toml"
+				]
+			},
+			{
+				"expected": [
+					"adapter-format",
+					"check-demos-polars-Cargo.toml",
+					"clippy",
+					"clippy-adapter-candle",
+					"clippy-adapter-polars",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format",
+					"format-adapter-candle",
+					"format-check-demos-polars-Cargo.toml",
+					"inventory",
+					"jupyter-clippy",
+					"jupyter-format",
+					"jupyter-kernel",
+					"jupyter-tests",
+					"lint-check-demos-polars-Cargo.toml",
+					"polars-suite",
+					"python-list",
+					"root-tests",
+					"suite-adapter-candle"
+				],
+				"graphs": true,
+				"paths": [
+					"jupyter/Cargo.toml",
+					"src/main.rs"
+				]
+			},
+			{
+				"expected": [
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format-package-xtask",
+					"lint-package-xtask",
+					"package-xtask",
+					"python-list"
+				],
+				"graphs": true,
+				"paths": [
+					"rune/tools/xtask/Cargo.toml"
+				]
+			},
+			{
+				"expected": [
+					"check-demos-polars-Cargo.toml",
+					"commit-discipline",
+					"controller-controls",
+					"cross",
+					"format-check-demos-polars-Cargo.toml",
+					"lint-check-demos-polars-Cargo.toml",
+					"python-list"
+				],
+				"graphs": true,
+				"paths": [
+					"demos/polars/Cargo.toml"
+				]
+			},
+			{
+				"expected": {
+					"error": "package adapters/duckdb/Cargo.toml: declare its test/check, format and lint recipes in <RECIPES>"
+				},
+				"graphs": false,
+				"paths": [
+					"adapters/duckdb/src/lib.rs"
+				]
+			}
+		],
+		"graph": {
+			"Cargo.toml": [
+				"rune/crates/rune/Cargo.toml"
+			],
+			"adapters/candle/Cargo.toml": [
+				"Cargo.toml"
+			],
+			"adapters/polars/Cargo.toml": [
+				"Cargo.toml"
+			],
+			"demos/polars/Cargo.toml": [
+				"adapters/polars/Cargo.toml"
+			],
+			"jupyter/Cargo.toml": [
+				"Cargo.toml"
+			],
+			"rune/crates/rune/Cargo.toml": [],
+			"rune/no-std/Cargo.toml": [
+				"rune/crates/rune/Cargo.toml"
+			],
+			"rune/tools/xtask/Cargo.toml": [],
+			"tools/project/Cargo.toml": [
+				"rune/crates/rune/Cargo.toml"
+			]
+		}
+	},
+	"method": "required_stages.required(paths, graphs), graphs being [graph, graph] when a path is Cargo.lock or a Cargo.toml and None otherwise; a ValueError as {\"error\": message}",
+	"substitutions": {
+		"<RECIPES>": "the file that declares the package recipes (package_gates.py at the witness)"
+	},
+	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
+}

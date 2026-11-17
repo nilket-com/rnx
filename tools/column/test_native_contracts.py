@@ -37,28 +37,6 @@ class Coverage(unittest.TestCase):
 				'contract_rows': self.rows[0]['contract_rows']+1, 'specification': 'different'}[mutation]
 			with self.subTest(mutation=mutation), self.assertRaises(ValueError): contracts.catalogue(self.m, rows)
 
-	def test_finalizer_checks_contracts_and_continues_to_the_following_stage(self):
-		import gate_policy as gate
-		root = Path(__file__).resolve().parents[2]
-		with tempfile.TemporaryDirectory() as tmp:
-			receipt = Path(tmp)/'RESULT.json'
-			selection = dict(source='source', scope='complete', record={'candidate':'candidate'},
-				stages=[['rune-suite',['suite']], ['later-stage',['later']]])
-			evidence = {name:{} for name, _ in selection['stages']}
-			for missing in (False, True):
-				cases = self.rows[:-1] if missing else self.rows
-				receipt.write_text(json.dumps({'contracts':dict(manifest_sha256=child.digest(root/contracts.MANIFEST), cases=cases)}))
-				rows = [dict(command=command, context=dict(command=command, kind='producer', candidate='candidate'),
-					producer={'receipt':str(receipt)}) for _, command in selection['stages']]
-				with patch.object(gate, 'check_selection'), patch.object(gate.child, 'evidence', side_effect=rows) as read:
-					if missing:
-						with self.assertRaisesRegex(ValueError, 'catalogue differs'): gate.finalize(selection, evidence, root)
-					else:
-						result = gate.finalize(selection, evidence, root)
-						self.assertEqual(result['status'], 'PASS')
-						self.assertEqual(read.call_count, 2)
-						self.assertIn('later-stage', result['durations'])
-
 	def test_manifest_case_keeps_ignored_policy_and_declared_fixture_environment(self):
 		with tempfile.TemporaryDirectory() as tmp:
 			root = Path(tmp); binary = root/'binary'; binary.write_bytes(b'fixture')

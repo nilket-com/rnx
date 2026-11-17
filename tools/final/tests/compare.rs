@@ -270,25 +270,12 @@ fn missing_evidence_after_release_and_a_broken_binding_fail() {
 	);
 }
 
+/// The environment digests match the Python controller's at ADR 0284's
+/// witness revision, for the same declared and undeclared variables.
 #[test]
-fn the_rust_and_python_environment_digests_agree() {
-	let env: Environment = [
-		("CARGO_BUILD_JOBS", "11"),
-		(
-			"CARGO_MAKEFLAGS",
-			"-j11 --jobserver-auth=fifo:/o/final/jobserver.fifo",
-		),
-		(
-			"RNX_FINAL_ROUTING_ROOT",
-			"/r/target/routing-cli/0123456789abcdef0123456789abcdef-x",
-		),
-		("RNX_FINAL_CROSS_ROOT", "/r/target/rnx-verify/final-aa"),
-		("RUSTFLAGS", "-D warnings"),
-		("HOME", "/h"),
-	]
-	.iter()
-	.map(|(k, v)| (k.to_string(), v.to_string()))
-	.collect();
+fn the_environment_digests_match_the_witness() {
+	let fixture = common::witness::expected("environment-digests", &[]);
+	let env: Environment = serde_json::from_value(fixture["environment"].clone()).unwrap();
 	let rust = controller::environment_digests(
 		&env,
 		Path::new("/o/final"),
@@ -296,21 +283,9 @@ fn the_rust_and_python_environment_digests_agree() {
 		Some(Path::new("/r/target/rnx-verify/final-aa")),
 	)
 	.unwrap();
-	let script = "import json, sys; from pathlib import Path; import final; a = json.loads(sys.argv[1]); print(json.dumps(final.environment_digests(a, Path('/o/final'), '0123456789abcdef0123456789abcdef', Path('/r/target/rnx-verify/final-aa'))))";
-	let column = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/column");
-	let output = std::process::Command::new("python3")
-		.args(["-B", "-c", script, &json!(env).to_string()])
-		.current_dir(column)
-		.output()
-		.unwrap();
-	assert!(
-		output.status.success(),
-		"{}",
-		String::from_utf8_lossy(&output.stderr)
-	);
-	let python: std::collections::BTreeMap<String, String> =
-		serde_json::from_slice(&output.stdout).unwrap();
-	assert_eq!(rust, python);
+	let witness: std::collections::BTreeMap<String, String> =
+		serde_json::from_value(fixture["digests"].clone()).unwrap();
+	assert_eq!(rust, witness);
 	assert!(
 		!rust.contains_key("HOME"),
 		"an undeclared variable was recorded"

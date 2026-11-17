@@ -1,0 +1,5 @@
+{
+  "error": "producer returned FAIL without an error message",
+  "error_truncated": false,
+  "status": "FAIL"
+}

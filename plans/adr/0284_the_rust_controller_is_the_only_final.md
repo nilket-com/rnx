@@ -1,6 +1,6 @@
 # ADR 0284: The Rust controller is the only final
 
-Status: Proposed
+Status: Implemented
 
 Base: published 2b7323ae20325370e9d57d3862f5ebc1d9e51ad8 (ADR 0283).
 
@@ -100,6 +100,7 @@ a test of retained code stays and runs.
 | `resume.py` | `tools/column/README.md`; producer registration; two tests in `test_column_protocol.py` | deleted with those tests: resumed a published, failed inventory run |
 | `recover_cross.py` | `tools/column/README.md`; producer registration; one test in `test_column_protocol.py` | deleted with that test: finished a published cross-harness acceptance |
 | `repl_session_controls.py` | ADR 0242 recipes | `development` and `miri` stay; `final` scope deleted |
+| `accept_remote.py` | `tools/column/README.md`; producer registration | deleted, found in source review: its remote run started `accept.py`, and the Rust entry has no remote mode; a new launcher needs its own record and a check on the verifier host. `child_result.validate_remote` stays for historical remote finals |
 
 The producer registrations of deleted programs stay in the Rust
 contract table, so receipts they wrote remain readable.

@@ -1,0 +1,30 @@
+{
+  "artifacts": {
+    "/tmp/rnx-0284-fixture/pass/target/routing-cli/956b700f395144998cca367ab5291149-stage/payload": "3a6eb0790f39ac87c94f3856b2dd2c5d110e6811602261a9a923d3bb23adc8b7"
+  },
+  "cleanup": [],
+  "cleanup_seconds": 0,
+  "command": [
+    "command"
+  ],
+  "context": {
+    "candidate": "c",
+    "command": [
+      "command"
+    ],
+    "cwd": "/fixture",
+    "environment": {
+      "keys": [],
+      "sha256": "x"
+    },
+    "invocation": "i",
+    "kind": "leaf",
+    "root": "/fixture",
+    "schema": 1,
+    "source": "s"
+  },
+  "process_exit": 0,
+  "schema": 1,
+  "seconds": 0.0,
+  "status": "PASS"
+}

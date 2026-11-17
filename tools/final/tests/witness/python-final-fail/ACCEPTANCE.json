@@ -1,0 +1,58 @@
+{
+  "acceptance_scope": "required",
+  "candidate": "c",
+  "checks": [
+    {
+      "exit": 1,
+      "failure": {
+        "error": "producer returned FAIL without an error message",
+        "path": "/tmp/rnx-0284-fixture/fail/final/FAILURE.json",
+        "sha256": "b67aac194d5a67e2f2e635907fd4260661c1546104e6ce3bdc83f0010fddaa21",
+        "stage": "stage"
+      },
+      "name": "stage",
+      "validation": {
+        "path": "/tmp/rnx-0284-fixture/fail/final/stage-child/RESULT.json",
+        "sha256": "9d62278269c9f81a95e18309a7857be70501a37efc824fa52c26eb181e48f8d4"
+      }
+    }
+  ],
+  "disk": {
+    "binding": "/tmp/rnx-0284-fixture/fail",
+    "estimate_bytes": 21474836480,
+    "floor_bytes": 21474836480,
+    "lowest_free_bytes": 29744447488
+  },
+  "error": "producer returned FAIL without an error message",
+  "failed_stage": "stage",
+  "failure": {
+    "error": "producer returned FAIL without an error message",
+    "path": "/tmp/rnx-0284-fixture/fail/final/FAILURE.json",
+    "sha256": "b67aac194d5a67e2f2e635907fd4260661c1546104e6ce3bdc83f0010fddaa21",
+    "stage": "stage"
+  },
+  "memory": {
+    "events_after": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "events_before": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "tokens": "13"
+  },
+  "mode": "ordinary",
+  "seconds": 0.006084364998969249,
+  "status": "FAIL"
+}

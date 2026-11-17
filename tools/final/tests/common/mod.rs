@@ -1,6 +1,9 @@
 //! Complete receipts for the controls' fake stages and selections, so the
 //! fakes pass the same receipt types real stages do.
 #![allow(dead_code)]
+#[path = "witness.rs"]
+pub mod witness;
+
 use serde_json::{Value, json};
 
 /// A selection as select() writes one, with the given scope and stages.

@@ -1,4 +1,4 @@
-//! The final's arguments, as `final.py` takes them.
+//! The final's arguments.
 use anyhow::{Context as _, Result, bail};
 use std::ffi::OsString;
 use std::path::PathBuf;

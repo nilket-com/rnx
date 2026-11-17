@@ -1,0 +1,32 @@
+{
+  "diagnostic_only": true,
+  "error": "producer returned FAIL without an error message",
+  "error_truncated": false,
+  "files": [
+    {
+      "bytes": 113,
+      "kind": "receipt",
+      "path": "failure/00-receipt.json",
+      "projected": true,
+      "sha256": "dd4270b6fa2be7dbd854cd39d3ff9fba3675285ba357a76d0905d8a1a3441731",
+      "source_bytes": 614,
+      "source_name": "RESULT.json",
+      "source_sha256": "9d62278269c9f81a95e18309a7857be70501a37efc824fa52c26eb181e48f8d4",
+      "truncated": false
+    },
+    {
+      "bytes": 0,
+      "kind": "log",
+      "path": "failure/01-child.log",
+      "projected": false,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source_bytes": 0,
+      "source_name": "stage.log",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "truncated": false
+    }
+  ],
+  "omitted": [],
+  "schema": 1,
+  "stage": "stage"
+}

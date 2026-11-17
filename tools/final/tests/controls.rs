@@ -1,6 +1,9 @@
-//! Every control of the Python controller is listed once in CONTROLS.txt,
-//! with a Rust test that exists or a stated reason it stays with the Python
-//! stage programs.
+//! Every control of the Python final controller is listed once in
+//! CONTROLS.txt, with the Rust test that ports it or a stated reason it
+//! stays with the Python stage programs. A row whose Python control was
+//! deleted with that controller (ADR 0284) has a third column, `removed: `
+//! and why; its Rust pair must still exist and its Python control must be
+//! gone. Every Python control still present is listed and not removed.
 use std::collections::BTreeSet;
 use std::path::Path;
 
@@ -29,8 +32,10 @@ fn root() -> std::path::PathBuf {
 fn python_controls() -> BTreeSet<String> {
 	let mut controls = BTreeSet::new();
 	for module in MODULES {
-		let text =
-			std::fs::read_to_string(root().join(format!("tools/column/{module}.py"))).unwrap();
+		let Ok(text) = std::fs::read_to_string(root().join(format!("tools/column/{module}.py")))
+		else {
+			continue;
+		};
 		let mut class = None;
 		for line in text.lines() {
 			if let Some(rest) = line.strip_prefix("class ") {
@@ -50,16 +55,41 @@ fn python_controls() -> BTreeSet<String> {
 fn every_python_control_has_a_rust_pair_or_a_reason() {
 	let table = std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("CONTROLS.txt"))
 		.unwrap();
+	let controls = python_controls();
 	let mut listed = BTreeSet::new();
+	let mut removed = 0;
 	for line in table
 		.lines()
 		.filter(|l| !l.starts_with('#') && !l.trim().is_empty())
 	{
-		let (control, pair) = line.split_once('\t').expect("control<TAB>pair");
+		let mut fields = line.split('\t');
+		let (control, pair) = (
+			fields.next().unwrap(),
+			fields.next().expect("control<TAB>pair"),
+		);
+		let gone = fields.next();
+		assert!(fields.next().is_none(), "{control}: too many columns");
 		assert!(
 			listed.insert(control.to_owned()),
 			"{control} is listed twice"
 		);
+		match gone {
+			Some(reason) => {
+				assert!(
+					reason.starts_with("removed: ") && reason.len() > 20,
+					"{control}: a removal states why"
+				);
+				assert!(
+					!controls.contains(control),
+					"{control} is marked removed but still exists"
+				);
+				removed += 1;
+			}
+			None => assert!(
+				controls.contains(control),
+				"{control} no longer exists; mark it removed"
+			),
+		}
 		if pair.starts_with("stays: ") || pair.starts_with("not portable: ") {
 			assert!(pair.len() > 20, "{control}: a reason, not a label");
 			continue;
@@ -74,20 +104,11 @@ fn every_python_control_has_a_rust_pair_or_a_reason() {
 			"{control}: no test {test} in {file}"
 		);
 	}
-	let controls = python_controls();
 	let unpaired: Vec<&String> = controls.difference(&listed).collect();
-	let stale: Vec<&String> = listed.difference(&controls).collect();
 	assert!(
 		unpaired.is_empty(),
 		"Python controls without a pair: {unpaired:?}"
 	);
-	assert!(
-		stale.is_empty(),
-		"listed controls that no longer exist: {stale:?}"
-	);
-	assert!(
-		controls.len() >= 130,
-		"the module list lost controls: {}",
-		controls.len()
-	);
+	assert!(listed.len() >= 130, "the table lost rows: {}", listed.len());
+	assert!(removed > 0 || listed.len() == controls.len());
 }

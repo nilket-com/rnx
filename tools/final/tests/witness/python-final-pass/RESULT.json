@@ -1,0 +1,38 @@
+{
+  "acceptance_scope": "required",
+  "candidate": "c",
+  "checks": [
+    {
+      "exit": 0,
+      "name": "stage"
+    }
+  ],
+  "complete_final": false,
+  "diagnostics_error": null,
+  "error": null,
+  "finalization": {
+    "candidate": "c",
+    "durations": {},
+    "evidence": {},
+    "publication_eligible": true,
+    "schema": 1,
+    "scope": "required",
+    "selection": "x",
+    "source": "s",
+    "status": "PASS"
+  },
+  "free_bytes_after": 29744455680,
+  "free_bytes_before": 29744484352,
+  "manifest_error": null,
+  "publication_eligible": true,
+  "records": {
+    "ACCEPTANCE": "15651249c7d29705d2e7facd80f6455b15203602500ebb8ab1a31e0e9b910766",
+    "ENVIRONMENTS": "1de3e76ef9af92e740c3bb749356e7f7e396204d17a03aabcb097c243299816c",
+    "MANIFEST": "60a37a059e06599be003f38bdac520a3c76f546b139d41a16df53bf7c3b231ef",
+    "RELEASE": "41f7099896ffe69be8dbd26ff6e093e48a5afddff405f991a102e7b814b888ea"
+  },
+  "release_error": null,
+  "remote_context": null,
+  "seconds": 0.007994970990694128,
+  "status": "PASS"
+}

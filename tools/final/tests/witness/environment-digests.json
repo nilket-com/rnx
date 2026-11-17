@@ -1,0 +1,22 @@
+{
+	"expected": {
+		"digests": {
+			"CARGO_BUILD_JOBS": "885b4e6c5cff6e36dabc964cb5f831744f9f2ffa6b8ad48a22d121dcfba60631",
+			"CARGO_MAKEFLAGS": "28ee753d40403d18c56c75b70f0587133d5fddb638f79d7b8a212d3a9dcf7137",
+			"RNX_FINAL_CROSS_ROOT": "9a05cdcf824caa00b0356521354d23c479e6c5b87026bbfb3fd6fad66bf6a19f",
+			"RNX_FINAL_ROUTING_ROOT": "73db045ac5fd94e2419198d019a9d8148cd26068f570c33cc3b4850278000369",
+			"RUSTFLAGS": "17cda3ab319b1f03057d7ee84d9c960429519d569e81b26f62a6cfb6333034c7"
+		},
+		"environment": {
+			"CARGO_BUILD_JOBS": "11",
+			"CARGO_MAKEFLAGS": "-j11 --jobserver-auth=fifo:/o/final/jobserver.fifo",
+			"HOME": "/h",
+			"RNX_FINAL_CROSS_ROOT": "/r/target/rnx-verify/final-aa",
+			"RNX_FINAL_ROUTING_ROOT": "/r/target/routing-cli/0123456789abcdef0123456789abcdef-x",
+			"RUSTFLAGS": "-D warnings"
+		}
+	},
+	"method": "final.environment_digests(environment, Path('/o/final'), '0123456789abcdef0123456789abcdef', Path('/r/target/rnx-verify/final-aa'))",
+	"substitutions": {},
+	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
+}

@@ -1,0 +1,12 @@
+{
+	"expected": {
+		"bytes": 261741,
+		"files": 17,
+		"sha256": "8a140b3166fba900a358b9e9e9d6e28a03a487f35e6750b016b469c749f012e7"
+	},
+	"method": "final.diagnostics(out, rows, failure, {'RNX_SECRET': secret}) with secret VERY_PRIVATE_ENV_SENTINEL_0260, failure the same, and rows for two roots <DIR>/one and <DIR>/two of stage same-stage, each holding 0.stderr..19.stderr of (secret + ' x' * 1000 + newline) * 20; <DIR> is /tmp/rnx-0284-d/ and 8 hex digits, since the excerpts share a byte budget that the path's length enters; expected is the sha256 and byte length of the DIAGNOSTICS.json text with <DIR> substituted, and its file count",
+	"substitutions": {
+		"<DIR>": "/tmp/rnx-0284-d/ followed by 8 hex digits"
+	},
+	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
+}

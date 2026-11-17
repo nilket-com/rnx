@@ -302,8 +302,6 @@ tests/worker_checks.py	port
 tests/worker_execution.py	port
 tests/worker_parent.py	port
 tools/archive_data.py	port
-tools/column/accept.py	port
-tools/column/accept_remote.py	port
 tools/column/anchor_cache.py	port
 tools/column/boolean_capture.py	port
 tools/column/boolean_large.py	port
@@ -311,7 +309,6 @@ tools/column/boolean_limits.py	port
 tools/column/boolean_pins.py	port
 tools/column/boolean_vectors.py	port
 tools/column/borrowed_controls.py	port
-tools/column/chain.py	port
 tools/column/child_result.py	port
 tools/column/cli.py	port
 tools/column/cli_symbols.py	port
@@ -348,7 +345,6 @@ tools/column/f64_plan_pins.py	port
 tools/column/f64_plan_shape.py	port
 tools/column/f64_plan_vectors.py	port
 tools/column/failure_detail.py	port
-tools/column/final.py	port
 tools/column/final_child.py	port
 tools/column/final_evidence.py	port
 tools/column/fixed_route_exception.py	port
@@ -401,11 +397,8 @@ tools/column/predicate_pins.py	port
 tools/column/predicate_shape.py	port
 tools/column/predicate_vectors.py	port
 tools/column/preparation_rule.py	port
-tools/column/recover_cross.py	port
 tools/column/repl_session_controls.py	port
-tools/column/required_stages.py	port
 tools/column/resumable_controls.py	port
-tools/column/resume.py	port
 tools/column/reuse_instances.py	port
 tools/column/reuse_vectors.py	port
 tools/column/score_0213.py	port
@@ -413,8 +406,6 @@ tools/column/score_0214.py	port
 tools/column/score_0215.py	port
 tools/column/simd_hot_loop.py	port
 tools/column/simd_shape.py	port
-tools/column/stage_fakes.py	port
-tools/column/stage_outputs.py	port
 tools/column/stage_scheduler.py	port
 tools/column/suite_stage.py	port
 tools/column/test_anchor_cache.py	port
@@ -435,11 +426,8 @@ tools/column/test_f64_plan_loop.py	port
 tools/column/test_f64_plan_pins.py	port
 tools/column/test_f64_plan_vectors.py	port
 tools/column/test_failure_detail.py	port
-tools/column/test_final_evidence.py	port
 tools/column/test_final_output.py	port
-tools/column/test_final_successor.py	port
 tools/column/test_fixed_route_exception.py	port
-tools/column/test_gate_policy.py	port
 tools/column/test_host_budget.py	port
 tools/column/test_huge_page_faults.py	port
 tools/column/test_huge_page_vectors.py	port
@@ -470,7 +458,6 @@ tools/column/test_predicate_pins.py	port
 tools/column/test_predicate_shape.py	port
 tools/column/test_predicate_vectors.py	port
 tools/column/test_preparation_rule.py	port
-tools/column/test_required_stages.py	port
 tools/column/test_reuse_instances.py	port
 tools/column/test_reuse_vectors.py	port
 tools/column/test_score_0213.py	port
@@ -478,7 +465,6 @@ tools/column/test_score_0214.py	port
 tools/column/test_score_0215.py	port
 tools/column/test_simd_hot_loop.py	port
 tools/column/test_simd_shape.py	port
-tools/column/test_stage_outputs.py	port
 tools/column/test_stage_scheduler.py	port
 tools/column/test_suite_stage.py	port
 tools/column/test_valgrind_resolution.py	port

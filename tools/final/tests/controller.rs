@@ -333,9 +333,20 @@ fn snapshot_errors_do_not_skip_release_and_a_passing_manifest_failure_keeps_bulk
 	}
 }
 
+fn sha256_hex(bytes: &[u8]) -> String {
+	use sha2::Digest as _;
+	rnx_final::pyjson::hex(&sha2::Sha256::digest(bytes))
+}
+
 #[test]
 fn diagnostics_redact_values_and_share_a_stage_budget() {
-	let dir = Dir::new();
+	// The excerpts share a byte budget that the roots' path length enters, so
+	// the roots sit at the witness's path length: /tmp/rnx-0284-d/ and 8 hex.
+	let dir = {
+		let path = PathBuf::from(format!("/tmp/rnx-0284-d/{}", &invocation_id()[..8]));
+		std::fs::create_dir_all(&path).unwrap();
+		Dir(path)
+	};
 	let secret = "VERY_PRIVATE_ENV_SENTINEL_0260";
 	let mut entries = Vec::new();
 	for name in ["one", "two"] {
@@ -368,29 +379,13 @@ fn diagnostics_redact_values_and_share_a_stage_budget() {
 		.as_array()
 		.unwrap()
 		.clone();
-	// The Python controller computes the same general diagnostics.
-	let script = "import json, sys; sys.path.insert(0, sys.argv[3]); import final; a = json.loads(sys.argv[1]); from pathlib import Path; final.diagnostics(Path(sys.argv[2]), a, a and 'VERY_PRIVATE_ENV_SENTINEL_0260', {'RNX_SECRET': 'VERY_PRIVATE_ENV_SENTINEL_0260'})";
-	let python_out = dir.0.join("python");
-	std::fs::create_dir(&python_out).unwrap();
-	let column = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/column");
-	let rows: Vec<Value> = entries
-		.iter()
-		.map(|e| json!({"path": e.path, "stage": e.stage}))
-		.collect();
-	let output = std::process::Command::new("python3")
-		.args(["-B", "-c", script, &json!(rows).to_string()])
-		.arg(&python_out)
-		.arg(&column)
-		.output()
-		.unwrap();
-	assert!(
-		output.status.success(),
-		"{}",
-		String::from_utf8_lossy(&output.stderr)
-	);
+	// The Python controller at ADR 0284's witness revision wrote these same
+	// bytes for the same roots and failure, the roots' directory aside.
+	let witness = common::witness::expected("diagnostics", &[]);
+	let normalized = text.replace(&*dir.0.to_string_lossy(), "<DIR>");
 	assert_eq!(
-		std::fs::read(python_out.join("DIAGNOSTICS.json")).unwrap(),
-		std::fs::read(dir.0.join("DIAGNOSTICS.json")).unwrap()
+		json!({"sha256": sha256_hex(normalized.as_bytes()), "bytes": normalized.len(), "files": files.len()}),
+		witness
 	);
 	assert!(files.len() > 1);
 }

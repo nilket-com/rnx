@@ -46,29 +46,6 @@ def build_jobs(observation=None):
 # A final's stages run beside each other: page cache, test children and the
 # controllers count against the same control group, and a group pushed to its
 # high limit is throttled until wall-clock-bounded tests miss their deadlines.
-FINAL_RESERVE_SHARE = 0.25
-
-
-def final_jobs(observation=None):
-	"""The whole final's job tokens: build_jobs with a quarter of its memory held back."""
-	o = observation if observation is not None else resources()
-	limit = min(o['mem_available_bytes'], o['ancestor_headroom_bytes'])
-	reserve = max(RESERVE_BYTES, int(limit * FINAL_RESERVE_SHARE))
-	workers, _ = memory.capacity(len(o['cpu_ids']), o['mem_available_bytes'], o['ancestor_headroom_bytes'],
-		reserve, JOB_MEMORY_BYTES, observation=o)
-	return workers
-
-
-def memory_events():
-	"""This process's control group memory.events counters (high, max, oom...), if readable."""
-	try:
-		line = next(l for l in open('/proc/self/cgroup').read().splitlines() if l.startswith('0::'))
-		text = open('/sys/fs/cgroup' + line[3:] + '/memory.events').read()
-		return {k: int(v) for k, v in (row.split() for row in text.splitlines())}
-	except (OSError, StopIteration, ValueError):
-		return None
-
-
 def case_width(observation=None):
 	"""Concurrent single-threaded cases: half the CPUs leave room for their children."""
 	return _workers(lambda cpus: max(1, cpus // 2), CASE_MEMORY_BYTES, observation)

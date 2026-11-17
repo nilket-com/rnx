@@ -94,8 +94,8 @@ pub struct Root {
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Ledger {
-	/// 1 is the Python controller's; this controller writes 2, which the
-	/// Python recovery refuses rather than misreading.
+	/// 1 is what the retired Python controller wrote, still read for its
+	/// finals; this controller writes 2.
 	pub schema: u64,
 	pub invocation: String,
 	pub out: String,

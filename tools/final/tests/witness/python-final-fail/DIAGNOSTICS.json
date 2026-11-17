@@ -1,0 +1,5 @@
+{
+  "error": "producer returned FAIL without an error message",
+  "files": [],
+  "release_point": "explicit abandon; no automatic retention sweep"
+}

@@ -1,5 +1,5 @@
-//! Parity between two finals of one candidate, run by different
-//! controllers. Every receipt is read as its type and compared whole,
+//! Reproducibility between two finals of one candidate: two Rust finals,
+//! or a Rust final and one the retired Python controller wrote. Every receipt is read as its type and compared whole,
 //! after substituting each final's own paths; only the run-specific paths
 //! listed here are excluded, each by its exact place in its receipt. A
 //! missing receipt, a broken binding or any other difference fails.

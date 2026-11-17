@@ -359,7 +359,8 @@ fn walk(path: &Path, out: &mut Vec<PathBuf>) {
 
 /// Each declared variable's digest, its value with this final's own paths
 /// and job count substituted, so two finals' stage environments compare
-/// without any value being kept. The Python controller computes the same.
+/// without any value being kept, as the retired Python controller computed
+/// them (ADR 0284's witness fixture).
 pub fn environment_digests(
 	env: &Environment,
 	out: &Path,

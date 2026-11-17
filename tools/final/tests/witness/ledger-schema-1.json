@@ -1,0 +1,33 @@
+{
+	"expected": {
+		"groups": "<REGISTRY>/<ID>.groups",
+		"invocation": "<ID>",
+		"out": "<OUT>",
+		"roots": [
+			{
+				"device": "<DEVICE>",
+				"inode": "<INODE>",
+				"parent": "<PARENT>",
+				"parent_device": "<PARENT_DEVICE>",
+				"parent_inode": "<PARENT_INODE>",
+				"path": "<PARENT>/<ID>-stage",
+				"stage": "stage",
+				"state": "owned"
+			}
+		],
+		"schema": 1,
+		"status": "active"
+	},
+	"method": "final_evidence.Owners(registry, out).assign(parent, 'stage') with the owner then gone, and the ledger <REGISTRY>/<ID>.owner.json as it stood; paths, the invocation and each device and inode number are placeholders",
+	"substitutions": {
+		"<DEVICE>": "the root's device",
+		"<ID>": "the owner invocation",
+		"<INODE>": "the root's inode",
+		"<OUT>": "the final directory",
+		"<PARENT>": "the root's parent",
+		"<PARENT_DEVICE>": "the parent's device",
+		"<PARENT_INODE>": "the parent's inode",
+		"<REGISTRY>": "the owner registry"
+	},
+	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
+}

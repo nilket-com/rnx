@@ -45,25 +45,6 @@ def process_identity(pid):
 	return int(fields[2]), int(fields[19])
 
 
-def drain_recorded_groups(out):
-	for path in sorted(Path(out).glob('GROUP-*.json')):
-		row = json.loads(path.read_text())
-		if row.get('drained'): continue
-		pid = row['pid']
-		try:
-			group, started = process_identity(pid)
-			if group != pid or started != row['started']: raise ValueError('producer pid reused')
-		except FileNotFoundError:
-			# Members cannot predate their recorded group leader. Refuse ambiguity.
-			for proc in Path('/proc').iterdir():
-				if not proc.name.isdigit(): continue
-				try: group, started = process_identity(int(proc.name))
-				except (FileNotFoundError, ProcessLookupError): continue
-				if group == pid and started < row['started']: raise ValueError('producer group identity ambiguous')
-		drain_group(pid)
-		row['drained'] = True; atomic_json(path,row)
-
-
 def run_process(command, *, timeout=None, check=False, termination_grace=5, **kwargs):
 	"""Forward launcher termination and drain the isolated producer group."""
 	if threading.current_thread() is not threading.main_thread():

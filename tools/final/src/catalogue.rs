@@ -360,7 +360,7 @@ pub fn quality(manifest: &str) -> Result<Quality> {
 	}
 	packages().remove(manifest).with_context(|| {
 		format!(
-			"package {manifest}: declare its test/check, format and lint recipes in package_gates.py"
+			"package {manifest}: declare its test/check, format and lint recipes in tools/final/src/catalogue.rs"
 		)
 	})
 }
@@ -1110,11 +1110,12 @@ pub fn recipes(stage: &str, root: &Path) -> Result<Vec<Command>> {
 	])])
 }
 
-/// The Python controller stays for one record as the witness; until it goes,
-/// both copies of the catalogue must agree.
+/// The stage list, bulk roots and required stages against the Python
+/// controller's at ADR 0284's witness revision.
 #[cfg(test)]
 mod witness {
 	use super::*;
+	use crate::witness::expected;
 	use serde_json::{Value, json};
 
 	fn root() -> PathBuf {
@@ -1124,34 +1125,34 @@ mod witness {
 			.unwrap()
 	}
 
-	fn python(script: &str, input: &Value) -> Value {
-		let output = std::process::Command::new("python3")
-			.args(["-B", "-c", script, &input.to_string()])
-			.current_dir(root().join("tools/column"))
-			.output()
-			.expect("python3");
-		assert!(
-			output.status.success(),
-			"{}",
-			String::from_utf8_lossy(&output.stderr)
-		);
-		serde_json::from_slice(&output.stdout).unwrap()
-	}
-
 	#[test]
-	fn the_stage_list_matches_the_python_controller() {
+	fn the_stage_list_matches_the_witness() {
 		let out = std::env::temp_dir().join("rnx-final-witness/FINAL-x");
-		let script = "import json, sys; from pathlib import Path; import accept; a = json.loads(sys.argv[1]); print(json.dumps([[n, c] for n, c in accept.commands(Path(a[0]), root=Path(a[1]))]))";
-		let expected = python(script, &json!([out, root()]));
+		let tag = crate::pyjson::hex(&Sha256::digest(
+			std::fs::canonicalize(&out)
+				.unwrap_or_else(|_| out.clone())
+				.to_string_lossy()
+				.as_bytes(),
+		));
+		let fixture = expected(
+			"catalogue",
+			&[
+				("<OUT>", &out.to_string_lossy()),
+				("<ROOT>", &root().to_string_lossy()),
+				("<TAG>", &tag[..16]),
+			],
+		);
 		let actual: Vec<Value> = commands(&out, &root())
 			.unwrap()
 			.into_iter()
 			.map(|(n, c)| json!([n, c]))
 			.collect();
-		assert_eq!(Value::Array(actual), expected);
+		let witness = fixture["stages"].as_array().unwrap();
+		for (i, (a, w)) in actual.iter().zip(witness).enumerate() {
+			assert_eq!(a, w, "stage {i}");
+		}
+		assert_eq!(actual.len(), witness.len());
 		for (name, _) in commands(&out, &root()).unwrap() {
-			let script = "import json, sys; import accept; print(json.dumps(list(accept.BULK_ROOTS.get(json.loads(sys.argv[1]), ()))))";
-			let python_bulk = python(script, &json!(name));
 			let rust_bulk: Vec<&str> = bulk_roots(&name)
 				.into_iter()
 				.map(|b| match b {
@@ -1162,91 +1163,61 @@ mod witness {
 					Bulk::Contracts => "contracts",
 				})
 				.collect();
-			assert_eq!(json!(rust_bulk), python_bulk, "{name}");
+			assert_eq!(json!(rust_bulk), fixture["bulk"][&name], "{name}");
 		}
 	}
 
 	#[test]
-	fn required_stages_match_the_python_controller() {
-		let graph: Graph = [
-			("Cargo.toml", vec!["rune/crates/rune/Cargo.toml"]),
-			("rune/crates/rune/Cargo.toml", vec![]),
-			("adapters/polars/Cargo.toml", vec!["Cargo.toml"]),
-			("adapters/candle/Cargo.toml", vec!["Cargo.toml"]),
-			("jupyter/Cargo.toml", vec!["Cargo.toml"]),
-			(
-				"tools/project/Cargo.toml",
-				vec!["rune/crates/rune/Cargo.toml"],
-			),
-			("rune/tools/xtask/Cargo.toml", vec![]),
-			(
-				"rune/no-std/Cargo.toml",
-				vec!["rune/crates/rune/Cargo.toml"],
-			),
-			(
-				"demos/polars/Cargo.toml",
-				vec!["adapters/polars/Cargo.toml"],
-			),
-		]
-		.into_iter()
-		.map(|(k, v)| (k.to_string(), v.into_iter().map(String::from).collect()))
-		.collect();
-		let cases: Vec<Vec<&str>> = vec![
-			vec!["plans/adr/0001_x.md"],
-			vec!["src/lib.rs"],
-			vec!["tests/async_execution.rs"],
-			vec!["rune/crates/rune/src/lib.rs"],
-			vec!["rune/crates/rune/tests/x.rs"],
-			vec!["rune/crates/rune-core/README.md"],
-			vec!["adapters/polars/src/lib.rs"],
-			vec!["adapters/candle/tests/x.rs"],
-			vec!["adapters/postgres/build.rs"],
-			vec!["jupyter/src/main.rs"],
-			vec!["tools/project/src/lib.rs"],
-			vec!["tools/verify.py"],
-			vec!["tools/verify/x.rs"],
-			vec!["rune/no-std/examples/minimal.rs"],
-			vec!["rune/tools/xtask/src/main.rs"],
-			vec!["tools/polars-gen/src/main.rs"],
-			vec!["tools/final/src/controller.rs"],
-			vec!["rune/tools/budget/src/fifo.rs"],
-			vec!["tools/final/Cargo.toml"],
-			vec!["demos/polars/src/main.rs"],
-			vec!["servers/http-postgres/src/main.rs"],
-			vec!["tools/column/final.py", "ci/preflight.py"],
-			vec!["Cargo.toml"],
-			vec!["Cargo.lock"],
-			vec!["rune/crates/rune/Cargo.toml"],
-			vec!["adapters/polars/Cargo.toml"],
-			vec!["jupyter/Cargo.toml", "src/main.rs"],
-			vec!["rune/tools/xtask/Cargo.toml"],
-			vec!["demos/polars/Cargo.toml"],
-		];
-		let script = "import json, sys; import required_stages as r; a = json.loads(sys.argv[1])\ntry: print(json.dumps(r.required(a['paths'], a['graphs'])))\nexcept ValueError as e: print(json.dumps({'error': str(e)}))";
-		for paths in cases {
-			let paths: Vec<String> = paths.into_iter().map(String::from).collect();
+	fn required_stages_match_the_witness() {
+		let fixture = expected("required", &[("<RECIPES>", "tools/final/src/catalogue.rs")]);
+		let graph: Graph = serde_json::from_value(fixture["graph"].clone()).unwrap();
+		let cases = fixture["cases"].as_array().unwrap();
+		assert_eq!(cases.len(), 30);
+		for case in cases {
+			let paths: Vec<String> = serde_json::from_value(case["paths"].clone()).unwrap();
+			assert_eq!(graph_change(&paths), case["graphs"] == true, "{paths:?}");
 			let graphs = graph_change(&paths).then(|| vec![graph.clone(), graph.clone()]);
-			let expected = python(script, &json!({"paths": paths, "graphs": graphs}));
 			let actual = match required(&paths, graphs.as_deref(), None) {
 				Ok(stages) => json!(stages),
 				Err(error) => json!({"error": error.to_string()}),
 			};
-			assert_eq!(actual, expected, "{paths:?}");
+			assert_eq!(actual, case["expected"], "{paths:?}");
 		}
-		// An unregistered adapter is refused by both.
-		let paths = vec!["adapters/duckdb/src/lib.rs".to_string()];
-		let expected = python(script, &json!({"paths": paths, "graphs": null}));
+		// An unregistered adapter is refused.
 		assert!(
-			expected["error"]
-				.as_str()
-				.unwrap()
-				.contains("declare its test/check")
-		);
-		assert!(
-			required(&paths, None, None)
+			required(&["adapters/duckdb/src/lib.rs".to_string()], None, None)
 				.unwrap_err()
 				.to_string()
 				.contains("declare its test/check")
 		);
+	}
+
+	/// The fresh catalogue keeps the inherited gates and orders the early
+	/// lints first (formerly a Python control of `accept.commands`).
+	#[test]
+	fn the_catalogue_keeps_inherited_gates_and_early_lints() {
+		let steps = commands(Path::new("/unused/acceptance"), &root()).unwrap();
+		let names: Vec<&str> = steps.iter().map(|(n, _)| n.as_str()).collect();
+		let index = |n: &str| {
+			names
+				.iter()
+				.position(|x| *x == n)
+				.unwrap_or_else(|| panic!("{n}"))
+		};
+		let unique: std::collections::BTreeSet<&&str> = names.iter().collect();
+		assert_eq!(unique.len(), names.len(), "duplicate stage");
+		assert_eq!(names[0], "commit-discipline");
+		assert!(index("format") < index("clippy"));
+		assert!(index("polars-inventories") + 1 == index("polars-suite"));
+		for name in [
+			"format",
+			"clippy",
+			"root-tests",
+			"async-test-support",
+			"generated-projects",
+			"cross",
+		] {
+			index(name);
+		}
 	}
 }

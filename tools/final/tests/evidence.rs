@@ -282,9 +282,10 @@ fn an_interrupted_retirement_is_recoverable() {
 	assert_eq!(std::fs::read_dir(&f.registry).unwrap().count(), 0);
 }
 
-/// The payload identity is the one Python's tree() computes.
+/// The payload identity is the one the Python controller's tree() computed
+/// at ADR 0284's witness revision for the same payload.
 #[test]
-fn tree_identity_matches_python() {
+fn tree_identity_matches_the_witness() {
 	let _turn = forks();
 	let (f, mut owner) = Fixture::new();
 	let p = owner.assign(&f.root, "bulk", None).unwrap();
@@ -293,23 +294,9 @@ fn tree_identity_matches_python() {
 	std::fs::write(p.join("é"), "").unwrap();
 	std::fs::write(p.join("Z"), "z").unwrap();
 	std::os::unix::fs::symlink("../elsewhere", p.join("a/link")).unwrap();
-	let script = "import json, sys; from pathlib import Path; from final_evidence import tree; r = tree(Path(sys.argv[1])); r.pop('seconds'); print(json.dumps(r))";
-	let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/column");
-	let output = std::process::Command::new("python3")
-		.args(["-B", "-c", script])
-		.arg(&p)
-		.current_dir(root)
-		.output()
-		.unwrap();
-	assert!(
-		output.status.success(),
-		"{}",
-		String::from_utf8_lossy(&output.stderr)
-	);
-	let expected: Value = serde_json::from_slice(&output.stdout).unwrap();
 	let mut actual = tree(&p, &Map::new()).unwrap();
 	actual.as_object_mut().unwrap().remove("seconds");
-	assert_eq!(actual, expected);
+	assert_eq!(actual, common::witness::expected("tree", &[]));
 }
 
 /// A Python stage program's own process group, recorded through its
@@ -457,4 +444,54 @@ fn named_admission_numbers_survive_a_real_payload_release() {
 	)
 	.unwrap();
 	assert_eq!(projection["admission"], numbers);
+}
+
+/// A ledger the Python controller wrote (schema 1, as ADR 0284's witness
+/// fixture records its shape) for an owner that died is still recovered:
+/// its root is released and the ledger retired.
+#[test]
+fn a_python_schema_one_ledger_is_recovered() {
+	use std::os::unix::fs::MetadataExt as _;
+	let _turn = forks();
+	let root = std::env::temp_dir().join(format!("rnx-final-schema-one-{}", invocation_id()));
+	let (registry, out, parent) = (root.join("registry"), root.join("out"), root.join("parent"));
+	let id = &invocation_id()[..32];
+	for d in [&registry, &out, &parent] {
+		std::fs::create_dir_all(d).unwrap();
+	}
+	std::fs::create_dir(registry.join(format!("{id}.groups"))).unwrap();
+	let bulk = parent.join(format!("{id}-stage"));
+	std::fs::create_dir(&bulk).unwrap();
+	std::fs::write(bulk.join("payload"), "data").unwrap();
+	let (b, p) = (
+		std::fs::metadata(&bulk).unwrap(),
+		std::fs::metadata(&parent).unwrap(),
+	);
+	let template = common::witness::expected(
+		"ledger-schema-1",
+		&[
+			("<REGISTRY>", &registry.to_string_lossy()),
+			("<OUT>", &out.to_string_lossy()),
+			("<PARENT>", &parent.to_string_lossy()),
+			("<ID>", id),
+		],
+	);
+	let mut ledger = template.clone();
+	for (key, value) in [
+		("device", b.dev()),
+		("inode", b.ino()),
+		("parent_device", p.dev()),
+		("parent_inode", p.ino()),
+	] {
+		ledger["roots"][0][key] = json!(value);
+	}
+	assert_eq!(ledger["schema"], 1);
+	let path = registry.join(format!("{id}.owner.json"));
+	atomic_json(&path, &ledger).unwrap();
+	// The Python owner held this lock while alive; it is gone.
+	std::fs::write(registry.join(format!("{id}.owner.lock")), "").unwrap();
+	recover(&registry, no_drain).unwrap();
+	assert!(!bulk.exists(), "the schema-1 root was released");
+	assert!(!path.exists(), "the schema-1 ledger was retired");
+	let _ = std::fs::remove_dir_all(&root);
 }

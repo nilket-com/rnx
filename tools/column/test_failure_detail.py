@@ -7,8 +7,8 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 
-import stage_fakes
 from unittest.mock import patch
+import shutil
 
 import child_result as child
 import failure_detail as detail
@@ -40,14 +40,12 @@ class FailureControls(unittest.TestCase):
 		self.assertTrue(all(f['bytes']<=detail.FILE_CAP for f in index['files']))
 
 	def test_sanitizer_keeps_numbers_paths_versions_and_option_prose(self):
-		import final
 		home = str(Path.home())
 		env = dict(SHLVL='1', X='0', HOME=home, USER='me', TOKEN='s3cr3t-abcdef',
 			PATH='/usr/bin:/opt/bin', TOOL_PATH='/opt/bin', COUNT='123456789', LC_TEST='long-locale')
 		inputs = ['InsufficientMemory: host_available_bytes=41000000000, workers=0, reserve_bytes=2147483648',
 			f'File "{home}/work/rnx/tools/a.py", line 1, in x',
 			'exit 1 with rust 1.98.1; run cargo test --locked again; s3cr3t-abcdef']
-		self.assertIs(final.redact, detail.sanitize)
 		for text in inputs:
 			self.assertEqual(detail.sanitize(text, env), text.replace(env['TOKEN'], '<redacted>'))
 		self.assertEqual(detail.sanitize('/opt/bin 123456789 long-locale', env), '/opt/bin 123456789 long-locale')
@@ -57,7 +55,6 @@ class FailureControls(unittest.TestCase):
 				self.assertEqual(detail.sanitize(text, {}), f'failed with {flag}{separator}<redacted>; run --locked again')
 
 	def test_secret_split_at_each_excerpt_boundary_leaves_no_fragment(self):
-		import final
 		source = self.root/'source'; source.mkdir(); out = self.root/'retained'; out.mkdir()
 		secret = 'BOUNDARY_PRIVATE_SENTINEL_0271_NEVER_RETAIN'
 		data = bytearray(b'a\n'*(3*detail.FILE_CAP//2))
@@ -68,29 +65,19 @@ class FailureControls(unittest.TestCase):
 		text = ''.join(p.read_text() for p in out.rglob('*') if p.is_file())
 		self.assertNotIn(secret[:10], text); self.assertNotIn(secret[10:], text)
 		self.assertIn('<truncated>', text)
-		# The final's older general diagnostic stream uses the same safe excerpts.
-		data = bytearray(b'a\n'*(3*32768//2))
-		for offset in (32768//2-10, len(data)-32768//2-10): data[offset:offset+len(secret)] = secret.encode()
-		log.write_bytes(data)
-		final.diagnostics(out,[dict(stage='capture',path=str(source))],'workers=0',{'TOKEN':secret,'X':'0'})
-		text = (out/'DIAGNOSTICS.json').read_text()
-		self.assertNotIn(secret[:10],text); self.assertNotIn(secret[10:],text)
-		self.assertIn('workers=0',text)
 
 	def test_named_admission_numbers_survive_real_payload_release(self):
-		from final_evidence import Owners
 		from ir_resources import fixed_budget, memory
 		observation = dict(cpu_ids=[0], mem_available_bytes=41000000000, ancestor_headroom_bytes=1073741824,
 			binding_cgroup='/fixture/capture', binding_limit='memory.high')
 		with self.assertRaises(memory.InsufficientMemory) as caught: fixed_budget(observation)
 		error = caught.exception
-		out = self.root/'final'; owner = Owners(self.root/'owners', out); self.addCleanup(owner.close)
-		bulk = owner.assign(self.root, 'capture')
+		out = self.root/'final'; out.mkdir(); bulk = self.root/'capture'; bulk.mkdir()
 		child.atomic_json(bulk/'RESULT.json', dict(status='FAIL',error=str(error),admission=error.numbers))
 		(bulk/'child.log').write_text(str(error)+'\n')
 		detail.retain(out, 'capture', receipt=bulk/'RESULT.json', roots=[bulk],
 			environment=dict(SHLVL='1', X='0', HOME=str(Path.home()), TOKEN='s3cr3t-abcdef'))
-		self.assertEqual(owner.release()['status'], 'PASS'); self.assertFalse(bulk.exists())
+		shutil.rmtree(bulk)  # The payload is released; the retained failure stays.
 		index = json.loads((out/'FAILURE.json').read_text())
 		for key, number in error.numbers.items(): self.assertIn(f'{key}={number}', index['error'])
 		projection = json.loads((out/index['files'][0]['path']).read_text())
@@ -150,56 +137,12 @@ class FailureControls(unittest.TestCase):
 		text = json.dumps(detail.projection(row,{}))
 		self.assertIn('growth_pass=False',text); self.assertNotIn('B1',text)
 
-	def exercise_release(self, nested, *, drop_retention=False):
-		import final
-		from final_evidence import Owners
-		root = self.root/('nested' if nested else 'direct'); root.mkdir()
-		out = root/'final'
-		selection = dict(scope='explicit',record={'candidate':'c'},source='s',policy='p',stages=[['broken',['command']]])
-		def execute(command, **kw):
-			bulk = Path(kw['env']['RNX_FINAL_ROUTING_ROOT'])
-			case = bulk/'case'; case.mkdir()
-			child.atomic_json(case/'RESULT.json',dict(status='FAIL',error='THE ACTUAL CHILD CAUSE'))
-			(case/'child.log').write_text('THE FAILING CHILD LOG\n')
-			semantic = bulk/'RESULT.json'
-			if nested:
-				child.atomic_json(semantic,dict(status='FAIL',error='wrapper failed',records=[str(case/'RESULT.json')]))
-				reference = detail.retain(bulk,'capture',receipt=semantic,roots=[bulk],environment={})
-				child.atomic_json(semantic,dict(status='FAIL',failure=reference,error='wrapper failed'))
-			else: child.atomic_json(semantic,dict(status='FAIL',error='THE ACTUAL CHILD CAUSE'))
-			kw['stdout'].write('THE FAILING CHILD LOG\n'); kw['stdout'].flush()
-			d = kw['directory']; d.mkdir()
-			child.atomic_json(d/'CHILD.json',dict(receipt=str(semantic)))
-			child.atomic_json(d/'RESULT.json',dict(status='FAIL',error='child exit is nonzero'))
-			return SimpleNamespace(returncode=1,validation={'path':str(d/'RESULT.json'),'sha256':child.digest(d/'RESULT.json')})
-		with patch.object(final,'disk_check'),patch.object(final,'tools_identity',return_value={}),patch.object(final.child,'head',return_value='c'),patch.object(final.gate,'select',return_value=selection),patch.object(final.gate,'check_selection'),patch.object(final.child,'run',side_effect=execute),patch.object(final,'compact',return_value={}),stage_fakes.inline(final):
-			if drop_retention:
-				with patch.object(final,'copy_bundle',return_value=None),patch.object(final,'retain',return_value=None):
-					result = final.run(root,out,names=['broken'])
-			else: result = final.run(root,out,names=['broken'])
-		self.assertEqual(result['status'],'FAIL'); self.assertEqual(result['failed_stage'],'broken')
-		self.assertFalse(result['publication_eligible']); self.assertFalse(result['complete_final'])
-		self.assertFalse(list((root/'target/routing-cli').iterdir()))
-		self.assertTrue((out/'FAILURE.json').is_file(),'failure evidence was released')
-		self.assertEqual('THE ACTUAL CHILD CAUSE',result['error'])
-		acceptance = json.loads((out/'ACCEPTANCE.json').read_text()); self.assertEqual(acceptance['failed_stage'],'broken')
-		text = ''.join(p.read_text() for p in (out/'failure').iterdir())
-		self.assertIn('THE FAILING CHILD LOG',text)
-		self.assertEqual(json.loads((out/'RELEASE.json').read_text())['status'],'PASS')
-
-	def test_direct_failure_survives_release(self): self.exercise_release(False)
-	def test_nested_failure_survives_release(self): self.exercise_release(True)
-	def test_dropped_retention_mutation_is_detected(self):
-		with self.assertRaisesRegex(AssertionError,'failure evidence was released'): self.exercise_release(True,drop_retention=True)
-
 	def real_failure_after_release(self, producer=False, *, tail_only=False):
-		from final_evidence import Owners
 		# The real producer binds its receipt against this throwaway checkout.
 		subprocess.run(['git','init','-q',str(self.root)],check=True)
 		(self.root/'.gitignore').write_text('*\n')
 		out = self.root/('final-cross' if producer else 'final-test')
-		owner = Owners(self.root/'owners',out); self.addCleanup(owner.close)
-		bulk = owner.assign(self.root,'payload')
+		bulk = self.root/'payload'; bulk.mkdir()
 		secret = 'PLANTED_MIDDLE_CAUSE_SECRET_0276'
 		script = self.root/'fixture.py'
 		if producer:
@@ -216,7 +159,7 @@ class FailureControls(unittest.TestCase):
 				result = child.run(command,cwd=self.root,root=self.root,env=dict(os.environ,RNX_FIXTURE_SECRET=secret),stdout=log,stderr=subprocess.STDOUT,directory=out/'attempt')
 		row = json.loads(Path(result.validation['path']).read_text())
 		self.assertEqual(row['status'],'FAIL'); self.assertNotEqual(result.returncode,0)
-		self.assertEqual(owner.release()['status'],'PASS'); self.assertFalse(bulk.exists())
+		shutil.rmtree(bulk)  # The payload is released; the retained failure stays.
 		failure = json.loads(Path(row['failure']['path']).read_text())
 		expected = 'cross verification: census fixture identity mismatch: src/time.rs' if producer else 'thread "middle_failure" panicked at src/fixture.rs:12:3:'
 		self.assertEqual(failure['error'],expected)
