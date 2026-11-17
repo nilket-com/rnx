@@ -203,7 +203,6 @@ tools/column/i64_compare_identity.py	port
 tools/column/i64_compare_instances.py	port
 tools/column/i64_compare_pins.py	port
 tools/column/identity.py	port
-tools/column/inventories.py	port
 tools/column/ir_accounting.py	port
 tools/column/ir_launch.py	port
 tools/column/ir_pool.py	port
@@ -273,7 +272,6 @@ tools/column/test_i64_compare_identity.py	port	final controller-controls
 tools/column/test_i64_compare_instances.py	port	final controller-controls
 tools/column/test_i64_compare_pins.py	port	final controller-controls
 tools/column/test_identity.py	port	final controller-controls
-tools/column/test_inventories.py	port	final controller-controls
 tools/column/test_ir_pool.py	port	final controller-controls
 tools/column/test_json_parse_cost.py	port	final controller-controls
 tools/column/test_masked_float_identity.py	port	final controller-controls

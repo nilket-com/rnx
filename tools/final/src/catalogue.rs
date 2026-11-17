@@ -460,8 +460,10 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		),
 		(
 			"polars-inventory-preflight".into(),
-			python(&[
-				"tools/column/inventories.py",
+			strings(&[
+				crate::stage::PROGRAM,
+				"stage",
+				"inventories",
 				"--preflight",
 				"--out",
 				&out_text("polars-inventory-preflight"),
@@ -702,8 +704,10 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 	}
 	steps.push((
 		"polars-inventories".into(),
-		python(&[
-			"tools/column/inventories.py",
+		strings(&[
+			crate::stage::PROGRAM,
+			"stage",
+			"inventories",
 			"--out",
 			&out_text("polars-inventories"),
 		]),

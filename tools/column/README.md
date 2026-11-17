@@ -79,9 +79,10 @@ profiles. All `test_*.py` controls run before expensive acceptance stages.
 Fresh acceptance generates the three Polars 0.55.2 documentation inventories
 (`adapter-json`, `adapter`, `adapter-narrow`) immediately before the full Polars
 suite. Install the pinned `nightly-2026-09-20` toolchain in the verifier
-environment first. `inventories.py` uses the existing producer's exact feature
-selection and committed locks for explicit fetches, then documents, extracts
-and checks generated bindings with Cargo offline. Missing or incomplete
+environment first. The `polars-inventories` stage (`rnx-final stage
+inventories`) uses the existing producer's exact feature selection and
+committed locks for explicit fetches, then documents, extracts and checks
+generated bindings with Cargo offline. Missing or incomplete
 documentation, provenance/feature mismatches, changed locks and binding drift
 fail the stage; ignored inventories from another checkout are never copied.
 

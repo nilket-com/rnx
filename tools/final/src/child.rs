@@ -37,12 +37,11 @@ const ENV_KEYS: [&str; 20] = [
 	"TZ",
 ];
 const ENV_PREFIXES: [&str; 2] = ["CARGO_", "RNX_"];
-const COLUMN_PRODUCERS: [&str; 21] = [
+const COLUMN_PRODUCERS: [&str; 20] = [
 	"accept",
 	"final",
 	"verify",
 	"clippy",
-	"inventories",
 	"resume",
 	"recover_cross",
 	"chain",
@@ -243,7 +242,9 @@ pub fn contract(command: &[String], cwd: &Path, root: &Path) -> Result<&'static 
 			command.get(1).map(String::as_str),
 			command.get(2).map(String::as_str),
 		) {
-			(Some("stage"), Some("suite" | "clippy" | "cli" | "jupyter")) => Ok("producer"),
+			(Some("stage"), Some("suite" | "clippy" | "cli" | "jupyter" | "inventories")) => {
+				Ok("producer")
+			}
 			_ => Err(value_error(&format!(
 				"unregistered rnx-final child: {command:?}"
 			))),

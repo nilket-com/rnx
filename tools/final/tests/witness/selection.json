@@ -291,9 +291,9 @@
 					[
 						"polars-inventory-preflight",
 						[
-							"python3",
-							"-B",
-							"tools/column/inventories.py",
+							"rnx-final",
+							"stage",
+							"inventories",
 							"--preflight",
 							"--out",
 							"<OUT>/polars-inventory-preflight"
@@ -1053,9 +1053,9 @@
 					[
 						"polars-inventories",
 						[
-							"python3",
-							"-B",
-							"tools/column/inventories.py",
+							"rnx-final",
+							"stage",
+							"inventories",
 							"--out",
 							"<OUT>/polars-inventories"
 						]
@@ -2376,9 +2376,9 @@
 					[
 						"polars-inventories",
 						[
-							"python3",
-							"-B",
-							"tools/column/inventories.py",
+							"rnx-final",
+							"stage",
+							"inventories",
 							"--out",
 							"<OUT>/polars-inventories"
 						]
@@ -3501,9 +3501,9 @@
 					[
 						"polars-inventories",
 						[
-							"python3",
-							"-B",
-							"tools/column/inventories.py",
+							"rnx-final",
+							"stage",
+							"inventories",
 							"--out",
 							"<OUT>/polars-inventories"
 						]
@@ -3862,6 +3862,10 @@
 		{
 			"change": "jupyter-kernel and production-cli-controls run as the controller's stage modes, [rnx-final, stage, jupyter, --out, OUT] in place of [python3, -B, tools/column/jupyter_controls.py, --out, OUT] and [rnx-final, stage, cli, --binary, BINARY, --out, OUT] in place of [python3, -B, tools/column/cli.py, --binary, BINARY, --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
 			"record": "0291"
+		},
+		{
+			"change": "polars-inventory-preflight and polars-inventories run as the controller's stage mode, [rnx-final, stage, inventories, --preflight, --out, OUT] and [rnx-final, stage, inventories, --out, OUT] in place of [python3, -B, tools/column/inventories.py, --preflight, --out, OUT] and [python3, -B, tools/column/inventories.py, --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
+			"record": "0293"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

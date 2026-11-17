@@ -1,0 +1,4635 @@
+{
+ "expected": {
+  "runs": {
+   "dirty-tree": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt"
+    ],
+    "receipt": {
+     "checks": [],
+     "error": "AssertionError()",
+     "inventories": [],
+     "status": "FAIL",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": "AssertionError"
+   },
+   "extract-fails": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-0.stderr",
+      "stdout": "fetch-tool-0.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-1.stderr",
+      "stdout": "fetch-tool-1.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-json.stderr",
+      "stdout": "fetch-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter.stderr",
+      "stdout": "fetch-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-narrow.stderr",
+      "stdout": "fetch-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": "<ROOT>/target/column-inventory-extract",
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "CARGO_TARGET_DIR",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "build-extractor.stderr",
+      "stdout": "build-extractor.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-json.stderr",
+      "stdout": "document-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-json.stderr",
+      "stdout": "extract-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter.stderr",
+      "stdout": "document-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter.stderr",
+      "stdout": "extract-adapter.stdout",
+      "timeout": 10800
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt",
+     "build-extractor.stderr",
+     "build-extractor.stdout",
+     "document-adapter-json.stderr",
+     "document-adapter-json.stdout",
+     "document-adapter.stderr",
+     "document-adapter.stdout",
+     "extract-adapter-json.stderr",
+     "extract-adapter-json.stdout",
+     "extract-adapter.stderr",
+     "extract-adapter.stdout",
+     "fetch-adapter-json.stderr",
+     "fetch-adapter-json.stdout",
+     "fetch-adapter-narrow.stderr",
+     "fetch-adapter-narrow.stdout",
+     "fetch-adapter.stderr",
+     "fetch-adapter.stdout",
+     "fetch-tool-0.stderr",
+     "fetch-tool-0.stdout",
+     "fetch-tool-1.stderr",
+     "fetch-tool-1.stdout",
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-0"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-1"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "build-extractor"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json"
+       ],
+       "exit": 0,
+       "name": "document-adapter-json"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter"
+       ],
+       "exit": 0,
+       "name": "document-adapter"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+       ],
+       "exit": 1,
+       "name": "extract-adapter"
+      }
+     ],
+     "error": "AssertionError(('extract-adapter', 1))",
+     "inventories": [
+      {
+       "cfg": "adapter-json",
+       "pins_sha256": "221d9823314fb88d71129fce24fed04007a917cd123dbee902c61d17152e5e50",
+       "sha256": "122352da587a9cbf352897acaa12b4f9bc38d9fd3c3eec45a04f40b22007d125"
+      }
+     ],
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "FAIL",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": "AssertionError: ('extract-adapter', 1)"
+   },
+   "git-fails": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt"
+    ],
+    "receipt": {
+     "checks": [],
+     "error": "CalledProcessError(128, ['git', 'rev-parse', 'HEAD'])",
+     "inventories": [],
+     "status": "FAIL",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": "subprocess.CalledProcessError: Command '['git', 'rev-parse', 'HEAD']' returned non-zero exit status 128."
+   },
+   "head-changes": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-0.stderr",
+      "stdout": "fetch-tool-0.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-1.stderr",
+      "stdout": "fetch-tool-1.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-json.stderr",
+      "stdout": "fetch-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter.stderr",
+      "stdout": "fetch-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-narrow.stderr",
+      "stdout": "fetch-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": "<ROOT>/target/column-inventory-extract",
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "CARGO_TARGET_DIR",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "build-extractor.stderr",
+      "stdout": "build-extractor.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-json.stderr",
+      "stdout": "document-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-json.stderr",
+      "stdout": "extract-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter.stderr",
+      "stdout": "document-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter.stderr",
+      "stdout": "extract-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-narrow.stderr",
+      "stdout": "document-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-narrow.stderr",
+      "stdout": "extract-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "run",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml",
+       "--",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+       "<ROOT>/adapters/polars",
+       "--buckets",
+       "mechanical,conversion,option_struct,callback,generic_fn,generic",
+       "--release",
+       "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+       "--check"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "generated-bindings-check.stderr",
+      "stdout": "generated-bindings-check.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt",
+     "build-extractor.stderr",
+     "build-extractor.stdout",
+     "document-adapter-json.stderr",
+     "document-adapter-json.stdout",
+     "document-adapter-narrow.stderr",
+     "document-adapter-narrow.stdout",
+     "document-adapter.stderr",
+     "document-adapter.stdout",
+     "extract-adapter-json.stderr",
+     "extract-adapter-json.stdout",
+     "extract-adapter-narrow.stderr",
+     "extract-adapter-narrow.stdout",
+     "extract-adapter.stderr",
+     "extract-adapter.stdout",
+     "fetch-adapter-json.stderr",
+     "fetch-adapter-json.stdout",
+     "fetch-adapter-narrow.stderr",
+     "fetch-adapter-narrow.stdout",
+     "fetch-adapter.stderr",
+     "fetch-adapter.stdout",
+     "fetch-tool-0.stderr",
+     "fetch-tool-0.stdout",
+     "fetch-tool-1.stderr",
+     "fetch-tool-1.stdout",
+     "generated-bindings-check.stderr",
+     "generated-bindings-check.stdout",
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-0"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-1"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "build-extractor"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json"
+       ],
+       "exit": 0,
+       "name": "document-adapter-json"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter"
+       ],
+       "exit": 0,
+       "name": "document-adapter"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow"
+       ],
+       "exit": 0,
+       "name": "document-adapter-narrow"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "run",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml",
+        "--",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+        "<ROOT>/adapters/polars",
+        "--buckets",
+        "mechanical,conversion,option_struct,callback,generic_fn,generic",
+        "--release",
+        "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+        "--check"
+       ],
+       "exit": 0,
+       "name": "generated-bindings-check"
+      }
+     ],
+     "error": "AssertionError()",
+     "inventories": [
+      {
+       "cfg": "adapter-json",
+       "pins_sha256": "221d9823314fb88d71129fce24fed04007a917cd123dbee902c61d17152e5e50",
+       "sha256": "122352da587a9cbf352897acaa12b4f9bc38d9fd3c3eec45a04f40b22007d125"
+      },
+      {
+       "cfg": "adapter",
+       "pins_sha256": "f578308988f65faf70444adceb19f73761266f1985ae9fbac94ec18d3d2d42a6",
+       "sha256": "c42d445f122cfe41bd14182fcc7a2dfb43ebc11d41a5decc08af427836cf8ea7"
+      },
+      {
+       "cfg": "adapter-narrow",
+       "pins_sha256": "d5fb062a9ebbbb8bd13f60402a605caaf67e93460127e9915ae3c8bf47396d07",
+       "sha256": "f4dcb02fdd4173f7def0d85ba39341d5b173bcc1d16d41cd7d2ad62eff1217e2"
+      }
+     ],
+     "locks_sha256": {
+      "probes/0072/extract/Cargo.lock": "964b58ba62081fe848cd9a44c0c97e2dc4487a4cdf96a4cfb435f9b44d352c1a",
+      "probes/0072/inventory/locks/0.55.2-adapter-json.lock": "bda34cef5459c8fa6f33eef0d6fa44e27ccafe6b2854b2dd8bf3d6ad4eaa92e3",
+      "probes/0072/inventory/locks/0.55.2-adapter-narrow.lock": "cf4fe07c07842930bae2f30b8534130b81b1052ddba8447fa3796b6e0782de1e",
+      "probes/0072/inventory/locks/0.55.2-adapter.lock": "db3a2f3e83988fc75ba095bd027402245aba5bf4d00dec8e4af43e4d248e48fa",
+      "tools/polars-gen/Cargo.lock": "81b83077163cc0d49d3259a65fa0816418ea5cb4269623887812b4e3674f73e3"
+     },
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "FAIL",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": "AssertionError"
+   },
+   "inherited-offline": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-0.stderr",
+      "stdout": "fetch-tool-0.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-1.stderr",
+      "stdout": "fetch-tool-1.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-json.stderr",
+      "stdout": "fetch-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter.stderr",
+      "stdout": "fetch-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-narrow.stderr",
+      "stdout": "fetch-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": "<ROOT>/target/column-inventory-extract",
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "CARGO_TARGET_DIR",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "build-extractor.stderr",
+      "stdout": "build-extractor.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-json.stderr",
+      "stdout": "document-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-json.stderr",
+      "stdout": "extract-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter.stderr",
+      "stdout": "document-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter.stderr",
+      "stdout": "extract-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-narrow.stderr",
+      "stdout": "document-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-narrow.stderr",
+      "stdout": "extract-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "run",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml",
+       "--",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+       "<ROOT>/adapters/polars",
+       "--buckets",
+       "mechanical,conversion,option_struct,callback,generic_fn,generic",
+       "--release",
+       "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+       "--check"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "generated-bindings-check.stderr",
+      "stdout": "generated-bindings-check.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     }
+    ],
+    "exit": 0,
+    "files": [
+     "build-extractor.stderr",
+     "build-extractor.stdout",
+     "document-adapter-json.stderr",
+     "document-adapter-json.stdout",
+     "document-adapter-narrow.stderr",
+     "document-adapter-narrow.stdout",
+     "document-adapter.stderr",
+     "document-adapter.stdout",
+     "extract-adapter-json.stderr",
+     "extract-adapter-json.stdout",
+     "extract-adapter-narrow.stderr",
+     "extract-adapter-narrow.stdout",
+     "extract-adapter.stderr",
+     "extract-adapter.stdout",
+     "fetch-adapter-json.stderr",
+     "fetch-adapter-json.stdout",
+     "fetch-adapter-narrow.stderr",
+     "fetch-adapter-narrow.stdout",
+     "fetch-adapter.stderr",
+     "fetch-adapter.stdout",
+     "fetch-tool-0.stderr",
+     "fetch-tool-0.stdout",
+     "fetch-tool-1.stderr",
+     "fetch-tool-1.stdout",
+     "generated-bindings-check.stderr",
+     "generated-bindings-check.stdout",
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-0"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-1"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "build-extractor"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json"
+       ],
+       "exit": 0,
+       "name": "document-adapter-json"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter"
+       ],
+       "exit": 0,
+       "name": "document-adapter"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow"
+       ],
+       "exit": 0,
+       "name": "document-adapter-narrow"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "run",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml",
+        "--",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+        "<ROOT>/adapters/polars",
+        "--buckets",
+        "mechanical,conversion,option_struct,callback,generic_fn,generic",
+        "--release",
+        "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+        "--check"
+       ],
+       "exit": 0,
+       "name": "generated-bindings-check"
+      }
+     ],
+     "inventories": [
+      {
+       "cfg": "adapter-json",
+       "pins_sha256": "221d9823314fb88d71129fce24fed04007a917cd123dbee902c61d17152e5e50",
+       "sha256": "122352da587a9cbf352897acaa12b4f9bc38d9fd3c3eec45a04f40b22007d125"
+      },
+      {
+       "cfg": "adapter",
+       "pins_sha256": "f578308988f65faf70444adceb19f73761266f1985ae9fbac94ec18d3d2d42a6",
+       "sha256": "c42d445f122cfe41bd14182fcc7a2dfb43ebc11d41a5decc08af427836cf8ea7"
+      },
+      {
+       "cfg": "adapter-narrow",
+       "pins_sha256": "d5fb062a9ebbbb8bd13f60402a605caaf67e93460127e9915ae3c8bf47396d07",
+       "sha256": "f4dcb02fdd4173f7def0d85ba39341d5b173bcc1d16d41cd7d2ad62eff1217e2"
+      }
+     ],
+     "locks_sha256": {
+      "probes/0072/extract/Cargo.lock": "964b58ba62081fe848cd9a44c0c97e2dc4487a4cdf96a4cfb435f9b44d352c1a",
+      "probes/0072/inventory/locks/0.55.2-adapter-json.lock": "bda34cef5459c8fa6f33eef0d6fa44e27ccafe6b2854b2dd8bf3d6ad4eaa92e3",
+      "probes/0072/inventory/locks/0.55.2-adapter-narrow.lock": "cf4fe07c07842930bae2f30b8534130b81b1052ddba8447fa3796b6e0782de1e",
+      "probes/0072/inventory/locks/0.55.2-adapter.lock": "db3a2f3e83988fc75ba095bd027402245aba5bf4d00dec8e4af43e4d248e48fa",
+      "tools/polars-gen/Cargo.lock": "81b83077163cc0d49d3259a65fa0816418ea5cb4269623887812b4e3674f73e3"
+     },
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "PASS",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": null
+   },
+   "lock-changes": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-0.stderr",
+      "stdout": "fetch-tool-0.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-1.stderr",
+      "stdout": "fetch-tool-1.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-json.stderr",
+      "stdout": "fetch-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter.stderr",
+      "stdout": "fetch-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-narrow.stderr",
+      "stdout": "fetch-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": "<ROOT>/target/column-inventory-extract",
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "CARGO_TARGET_DIR",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "build-extractor.stderr",
+      "stdout": "build-extractor.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-json.stderr",
+      "stdout": "document-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-json.stderr",
+      "stdout": "extract-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter.stderr",
+      "stdout": "document-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter.stderr",
+      "stdout": "extract-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-narrow.stderr",
+      "stdout": "document-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-narrow.stderr",
+      "stdout": "extract-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "run",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml",
+       "--",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+       "<ROOT>/adapters/polars",
+       "--buckets",
+       "mechanical,conversion,option_struct,callback,generic_fn,generic",
+       "--release",
+       "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+       "--check"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "generated-bindings-check.stderr",
+      "stdout": "generated-bindings-check.stdout",
+      "timeout": 10800
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt",
+     "build-extractor.stderr",
+     "build-extractor.stdout",
+     "document-adapter-json.stderr",
+     "document-adapter-json.stdout",
+     "document-adapter-narrow.stderr",
+     "document-adapter-narrow.stdout",
+     "document-adapter.stderr",
+     "document-adapter.stdout",
+     "extract-adapter-json.stderr",
+     "extract-adapter-json.stdout",
+     "extract-adapter-narrow.stderr",
+     "extract-adapter-narrow.stdout",
+     "extract-adapter.stderr",
+     "extract-adapter.stdout",
+     "fetch-adapter-json.stderr",
+     "fetch-adapter-json.stdout",
+     "fetch-adapter-narrow.stderr",
+     "fetch-adapter-narrow.stdout",
+     "fetch-adapter.stderr",
+     "fetch-adapter.stdout",
+     "fetch-tool-0.stderr",
+     "fetch-tool-0.stdout",
+     "fetch-tool-1.stderr",
+     "fetch-tool-1.stdout",
+     "generated-bindings-check.stderr",
+     "generated-bindings-check.stdout",
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-0"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-1"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "build-extractor"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json"
+       ],
+       "exit": 0,
+       "name": "document-adapter-json"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter"
+       ],
+       "exit": 0,
+       "name": "document-adapter"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow"
+       ],
+       "exit": 0,
+       "name": "document-adapter-narrow"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "run",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml",
+        "--",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+        "<ROOT>/adapters/polars",
+        "--buckets",
+        "mechanical,conversion,option_struct,callback,generic_fn,generic",
+        "--release",
+        "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+        "--check"
+       ],
+       "exit": 0,
+       "name": "generated-bindings-check"
+      }
+     ],
+     "error": "AssertionError('locked dependencies changed')",
+     "inventories": [
+      {
+       "cfg": "adapter-json",
+       "pins_sha256": "221d9823314fb88d71129fce24fed04007a917cd123dbee902c61d17152e5e50",
+       "sha256": "122352da587a9cbf352897acaa12b4f9bc38d9fd3c3eec45a04f40b22007d125"
+      },
+      {
+       "cfg": "adapter",
+       "pins_sha256": "f578308988f65faf70444adceb19f73761266f1985ae9fbac94ec18d3d2d42a6",
+       "sha256": "c42d445f122cfe41bd14182fcc7a2dfb43ebc11d41a5decc08af427836cf8ea7"
+      },
+      {
+       "cfg": "adapter-narrow",
+       "pins_sha256": "d5fb062a9ebbbb8bd13f60402a605caaf67e93460127e9915ae3c8bf47396d07",
+       "sha256": "f4dcb02fdd4173f7def0d85ba39341d5b173bcc1d16d41cd7d2ad62eff1217e2"
+      }
+     ],
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "FAIL",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": "AssertionError: locked dependencies changed"
+   },
+   "malformed-pins": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-0.stderr",
+      "stdout": "fetch-tool-0.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-1.stderr",
+      "stdout": "fetch-tool-1.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-json.stderr",
+      "stdout": "fetch-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter.stderr",
+      "stdout": "fetch-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-narrow.stderr",
+      "stdout": "fetch-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": "<ROOT>/target/column-inventory-extract",
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "CARGO_TARGET_DIR",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "build-extractor.stderr",
+      "stdout": "build-extractor.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-json.stderr",
+      "stdout": "document-adapter-json.stdout",
+      "timeout": 10800
+     }
+    ],
+    "exit": 1,
+    "files": [
+     "TRACEBACK.txt",
+     "build-extractor.stderr",
+     "build-extractor.stdout",
+     "document-adapter-json.stderr",
+     "document-adapter-json.stdout",
+     "fetch-adapter-json.stderr",
+     "fetch-adapter-json.stdout",
+     "fetch-adapter-narrow.stderr",
+     "fetch-adapter-narrow.stdout",
+     "fetch-adapter.stderr",
+     "fetch-adapter.stdout",
+     "fetch-tool-0.stderr",
+     "fetch-tool-0.stdout",
+     "fetch-tool-1.stderr",
+     "fetch-tool-1.stdout",
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-0"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-1"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "build-extractor"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json"
+       ],
+       "exit": 0,
+       "name": "document-adapter-json"
+      }
+     ],
+     "error": "AssertionError()",
+     "inventories": [],
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "FAIL",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": "AssertionError"
+   },
+   "pass": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-0.stderr",
+      "stdout": "fetch-tool-0.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "fetch",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-tool-1.stderr",
+      "stdout": "fetch-tool-1.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-json.stderr",
+      "stdout": "fetch-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter.stderr",
+      "stdout": "fetch-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow",
+       "--fetch-only"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": null,
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "fetch-adapter-narrow.stderr",
+      "stdout": "fetch-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "build",
+       "--locked",
+       "--manifest-path",
+       "probes/0072/extract/Cargo.toml"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": "<ROOT>/target/column-inventory-extract",
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "CARGO_TARGET_DIR",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "build-extractor.stderr",
+      "stdout": "build-extractor.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-json"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-json.stderr",
+      "stdout": "document-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-json.stderr",
+      "stdout": "extract-adapter-json.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter.stderr",
+      "stdout": "document-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter.stderr",
+      "stdout": "extract-adapter.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "bash",
+       "probes/0072/inventory/doc.sh",
+       "0.55.2",
+       "adapter-narrow"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "document-adapter-narrow.stderr",
+      "stdout": "document-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "<ROOT>/target/column-inventory-extract/debug/surface",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+       "polars",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "extract-adapter-narrow.stderr",
+      "stdout": "extract-adapter-narrow.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "cargo",
+       "+1.98.1",
+       "run",
+       "--locked",
+       "--manifest-path",
+       "tools/polars-gen/Cargo.toml",
+       "--",
+       "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+       "<ROOT>/adapters/polars",
+       "--buckets",
+       "mechanical,conversion,option_struct,callback,generic_fn,generic",
+       "--release",
+       "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+       "--check"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "generated-bindings-check.stderr",
+      "stdout": "generated-bindings-check.stdout",
+      "timeout": 10800
+     },
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     }
+    ],
+    "exit": 0,
+    "files": [
+     "build-extractor.stderr",
+     "build-extractor.stdout",
+     "document-adapter-json.stderr",
+     "document-adapter-json.stdout",
+     "document-adapter-narrow.stderr",
+     "document-adapter-narrow.stdout",
+     "document-adapter.stderr",
+     "document-adapter.stdout",
+     "extract-adapter-json.stderr",
+     "extract-adapter-json.stdout",
+     "extract-adapter-narrow.stderr",
+     "extract-adapter-narrow.stdout",
+     "extract-adapter.stderr",
+     "extract-adapter.stdout",
+     "fetch-adapter-json.stderr",
+     "fetch-adapter-json.stdout",
+     "fetch-adapter-narrow.stderr",
+     "fetch-adapter-narrow.stdout",
+     "fetch-adapter.stderr",
+     "fetch-adapter.stdout",
+     "fetch-tool-0.stderr",
+     "fetch-tool-0.stdout",
+     "fetch-tool-1.stderr",
+     "fetch-tool-1.stdout",
+     "generated-bindings-check.stderr",
+     "generated-bindings-check.stdout",
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-0"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "fetch",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "fetch-tool-1"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow",
+        "--fetch-only"
+       ],
+       "exit": 0,
+       "name": "fetch-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "probes/0072/extract/Cargo.toml"
+       ],
+       "exit": 0,
+       "name": "build-extractor"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-json"
+       ],
+       "exit": 0,
+       "name": "document-adapter-json"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-json"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter"
+       ],
+       "exit": 0,
+       "name": "document-adapter"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter"
+      },
+      {
+       "command": [
+        "bash",
+        "probes/0072/inventory/doc.sh",
+        "0.55.2",
+        "adapter-narrow"
+       ],
+       "exit": 0,
+       "name": "document-adapter-narrow"
+      },
+      {
+       "command": [
+        "<ROOT>/target/column-inventory-extract/debug/surface",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow",
+        "polars",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-narrow/result"
+       ],
+       "exit": 0,
+       "name": "extract-adapter-narrow"
+      },
+      {
+       "command": [
+        "cargo",
+        "+1.98.1",
+        "run",
+        "--locked",
+        "--manifest-path",
+        "tools/polars-gen/Cargo.toml",
+        "--",
+        "<ROOT>/probes/0072/out/0.55.2-adapter-json/result/inventory.json",
+        "<ROOT>/adapters/polars",
+        "--buckets",
+        "mechanical,conversion,option_struct,callback,generic_fn,generic",
+        "--release",
+        "<ROOT>/tools/polars-gen/releases/0.55.2-joins.toml",
+        "--check"
+       ],
+       "exit": 0,
+       "name": "generated-bindings-check"
+      }
+     ],
+     "inventories": [
+      {
+       "cfg": "adapter-json",
+       "pins_sha256": "221d9823314fb88d71129fce24fed04007a917cd123dbee902c61d17152e5e50",
+       "sha256": "122352da587a9cbf352897acaa12b4f9bc38d9fd3c3eec45a04f40b22007d125"
+      },
+      {
+       "cfg": "adapter",
+       "pins_sha256": "f578308988f65faf70444adceb19f73761266f1985ae9fbac94ec18d3d2d42a6",
+       "sha256": "c42d445f122cfe41bd14182fcc7a2dfb43ebc11d41a5decc08af427836cf8ea7"
+      },
+      {
+       "cfg": "adapter-narrow",
+       "pins_sha256": "d5fb062a9ebbbb8bd13f60402a605caaf67e93460127e9915ae3c8bf47396d07",
+       "sha256": "f4dcb02fdd4173f7def0d85ba39341d5b173bcc1d16d41cd7d2ad62eff1217e2"
+      }
+     ],
+     "locks_sha256": {
+      "probes/0072/extract/Cargo.lock": "964b58ba62081fe848cd9a44c0c97e2dc4487a4cdf96a4cfb435f9b44d352c1a",
+      "probes/0072/inventory/locks/0.55.2-adapter-json.lock": "bda34cef5459c8fa6f33eef0d6fa44e27ccafe6b2854b2dd8bf3d6ad4eaa92e3",
+      "probes/0072/inventory/locks/0.55.2-adapter-narrow.lock": "cf4fe07c07842930bae2f30b8534130b81b1052ddba8447fa3796b6e0782de1e",
+      "probes/0072/inventory/locks/0.55.2-adapter.lock": "db3a2f3e83988fc75ba095bd027402245aba5bf4d00dec8e4af43e4d248e48fa",
+      "tools/polars-gen/Cargo.lock": "81b83077163cc0d49d3259a65fa0816418ea5cb4269623887812b4e3674f73e3"
+     },
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "PASS",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": null
+   },
+   "preflight": {
+    "calls": [
+     {
+      "command": [
+       "git",
+       "rev-parse",
+       "HEAD"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "git",
+       "status",
+       "--porcelain"
+      ],
+      "cwd": "<ROOT>",
+      "kind": "check_output",
+      "text": true
+     },
+     {
+      "command": [
+       "rustup",
+       "run",
+       "nightly-2026-09-20",
+       "rustc",
+       "--version"
+      ],
+      "cwd": "<ROOT>",
+      "env": {
+       "CARGO_BUILD_JOBS": "7",
+       "CARGO_NET_OFFLINE": "true",
+       "CARGO_TARGET_DIR": null,
+       "HOME": "/planted/home",
+       "MAKEFLAGS": "-j7 --jobserver-auth=fifo:/nonexistent",
+       "PATH": "/planted/bin",
+       "PYTHONDONTWRITEBYTECODE": "1",
+       "RUSTUP_AUTO_INSTALL": "0"
+      },
+      "env_keys": [
+       "CARGO_BUILD_JOBS",
+       "CARGO_NET_OFFLINE",
+       "HOME",
+       "MAKEFLAGS",
+       "PATH",
+       "PYTHONDONTWRITEBYTECODE",
+       "RUSTUP_AUTO_INSTALL"
+      ],
+      "kind": "run",
+      "stderr": "nightly-preflight.stderr",
+      "stdout": "nightly-preflight.stdout",
+      "timeout": 10800
+     }
+    ],
+    "exit": 0,
+    "files": [
+     "nightly-preflight.stderr",
+     "nightly-preflight.stdout"
+    ],
+    "receipt": {
+     "checks": [
+      {
+       "command": [
+        "rustup",
+        "run",
+        "nightly-2026-09-20",
+        "rustc",
+        "--version"
+       ],
+       "exit": 0,
+       "name": "nightly-preflight"
+      }
+     ],
+     "inventories": [],
+     "locks_sha256": {
+      "probes/0072/extract/Cargo.lock": "964b58ba62081fe848cd9a44c0c97e2dc4487a4cdf96a4cfb435f9b44d352c1a",
+      "probes/0072/inventory/locks/0.55.2-adapter-json.lock": "bda34cef5459c8fa6f33eef0d6fa44e27ccafe6b2854b2dd8bf3d6ad4eaa92e3",
+      "probes/0072/inventory/locks/0.55.2-adapter-narrow.lock": "cf4fe07c07842930bae2f30b8534130b81b1052ddba8447fa3796b6e0782de1e",
+      "probes/0072/inventory/locks/0.55.2-adapter.lock": "db3a2f3e83988fc75ba095bd027402245aba5bf4d00dec8e4af43e4d248e48fa",
+      "tools/polars-gen/Cargo.lock": "81b83077163cc0d49d3259a65fa0816418ea5cb4269623887812b4e3674f73e3"
+     },
+     "source_commit": "1111111111111111111111111111111111111111",
+     "status": "PASS",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "receipt_path": "RESULT.json",
+    "traceback_last": null
+   }
+  },
+  "verdicts": [
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "valid",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "pass"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins crates",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: incomplete documentation"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins failed",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [
+      "polars"
+     ],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: incomplete documentation"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins cfg",
+    "pins": {
+     "cfg": "adapter",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins toolchain",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins release",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.54.4",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.54.4"
+     }
+    },
+    "label": "inventory release",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "inventory cfg",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "inventory features",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "no callables",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: empty inventory"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins without failed",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "KeyError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins without crates",
+    "pins": {
+     "cfg": "adapter-json",
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "KeyError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "pins without resolved features",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "KeyError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "release": "0.55.2"
+     }
+    },
+    "label": "both feature keys missing",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "KeyError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": null,
+      "release": "0.55.2"
+     }
+    },
+    "label": "null features, empty resolved",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "TypeError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ]
+    },
+    "label": "inventory without provenance",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "KeyError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "inventory without callables",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "KeyError"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [],
+      "release": "0.55.2"
+     }
+    },
+    "label": "empty features both sides",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "pass"
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       "json"
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "duplicate features differ",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "json",
+      "json",
+      "lazy"
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "AssertionError: "
+   },
+   {
+    "cfg": "adapter-json",
+    "inventory": {
+     "callables": [
+      {
+       "name": "example"
+      }
+     ],
+     "provenance": {
+      "cfg": "adapter-json",
+      "features": [
+       "lazy",
+       null
+      ],
+      "release": "0.55.2"
+     }
+    },
+    "label": "mixed feature members",
+    "pins": {
+     "cfg": "adapter-json",
+     "crates": [
+      "polars"
+     ],
+     "failed": [],
+     "release": "0.55.2",
+     "resolved_polars_features": [
+      "lazy",
+      null
+     ],
+     "toolchain": "nightly-2026-09-20"
+    },
+    "verdict": "TypeError"
+   }
+  ]
+ },
+ "method": "verdicts: inventories.validate_inventory('adapter-json', pins, inventory) over the test's valid case and planted variants (its pins fields crates, failed, cfg, toolchain plus release; its inventory provenance release, cfg, features; empty callables), each 'pass', 'AssertionError: ' and the message, or for any other refusal (a missing key, a null list) only Python's exception class. runs: inventories.main() with --out <OUT> (and --preflight for 'preflight'), inventories.ROOT a scratch tree <ROOT> holding copies of the five real lock files and adapters/polars/tests/generated.rs, under an environment of only PATH=/planted/bin, MAKEFLAGS='-j7 --jobserver-auth=fifo:/nonexistent', CARGO_TARGET_DIR=/planted/target, HOME=/planted/home; subprocess.run and subprocess.check_output intercepted (git rev-parse answers 40 ones; git status answers clean, or ' M dirty' for 'dirty-tree'; doc.sh without --fetch-only writes planted pins.json and polars.json; the surface extractor writes a planted inventory.json, or exits 1 for adapter in 'extract-fails'; 'lock-changes' rewrites tools/polars-gen/Cargo.lock during the --check run; 'head-changes' answers 40 twos to every git rev-parse after the first; 'inherited-offline' adds CARGO_NET_OFFLINE=true to the environment; 'malformed-pins' writes a scalar crates for adapter-json; 'git-fails' raises CalledProcessError(128, the command) from the first git rev-parse), child_result.publish intercepted. Each run keeps every call (run: command, cwd, timeout, log names, the shown environment values and every key; check_output: command, cwd, text), the receipt without seconds, the exit code, the out directory's files, and TRACEBACK.txt's last line.",
+ "substitutions": {
+  "<OUT>": "the stage out directory",
+  "<ROOT>": "the scratch tree standing for the checkout"
+ },
+ "witness": "fe95b78e3a7ae154344063645227df058a922bda"
+}

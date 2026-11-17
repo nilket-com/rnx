@@ -547,3 +547,15 @@ fn no_file_retired_in_0291_is_tracked_or_named() {
 	let found = references_retired(&root, &files, &retired);
 	assert!(found.is_empty(), "{found:#?}");
 }
+
+#[test]
+fn no_file_retired_in_0293_is_tracked_or_named() {
+	let root = root();
+	let files = tracked(&root);
+	let retired = retired_list(&root, "0293");
+	assert_eq!(retired.len(), 2);
+	let still: Vec<&String> = retired.iter().filter(|p| files.contains(p)).collect();
+	assert!(still.is_empty(), "still tracked: {still:?}");
+	let found = references_retired(&root, &files, &retired);
+	assert!(found.is_empty(), "{found:#?}");
+}

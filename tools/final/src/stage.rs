@@ -142,7 +142,7 @@ impl Invoke for Live {
 pub fn wait(mut command: std::process::Command, limit: Duration) -> Result<i32> {
 	let mut child = command
 		.spawn()
-		.with_context(|| format!("spawn {command:?}"))?;
+		.map_err(|e| spawn_error(&command.get_program().to_string_lossy(), &e))?;
 	let pinned = crate::guardian::pidfd(child.id() as i32)?;
 	if !crate::guardian::wait_exit(&pinned, Some(limit))? {
 		// SAFETY: pidfd_send_signal with a valid pidfd and no siginfo.
@@ -911,6 +911,444 @@ pub fn jupyter(
 	r
 }
 
+/// The pinned Polars inventory configurations, in order.
+pub const INVENTORY_CONFIGURATIONS: [&str; 3] = ["adapter-json", "adapter", "adapter-narrow"];
+/// The nightly toolchain that documents the pinned release.
+pub const NIGHTLY: &str = "nightly-2026-09-20";
+/// The extractor's and the generator's manifests.
+const INVENTORY_MANIFESTS: [&str; 2] = [
+	"probes/0072/extract/Cargo.toml",
+	"tools/polars-gen/Cargo.toml",
+];
+
+/// An `AssertionError` whose message is Python's `str` of a tuple or list:
+/// its repr shows the value itself, not a quoted string.
+fn assertion_value(shown: &str) -> anyhow::Error {
+	anyhow::Error::new(crate::child::Raised {
+		class: "AssertionError",
+		repr: format!("AssertionError({shown})"),
+		message: shown.into(),
+	})
+}
+
+/// A required field, as Python's `value[key]` reads it: missing is a
+/// `KeyError`.
+fn field<'a>(value: &'a Value, key: &str) -> Result<&'a Value> {
+	value
+		.get(key)
+		.ok_or_else(|| crate::child::raise("KeyError", key))
+}
+
+/// A feature list's names in sorted order, counting duplicates, for a
+/// multiset comparison; anything but a list of strings is a `TypeError`.
+fn sorted_items(value: &Value) -> Result<Vec<&str>> {
+	let not_names = || crate::child::raise("TypeError", "a feature list is not a list of names");
+	let mut names = value
+		.as_array()
+		.ok_or_else(not_names)?
+		.iter()
+		.map(|item| item.as_str().ok_or_else(not_names))
+		.collect::<Result<Vec<&str>>>()?;
+	names.sort_unstable();
+	Ok(names)
+}
+
+/// An inventory against its documentation's pins, as
+/// `inventories.validate_inventory` held it: every field required, checked
+/// in the same short-circuit order.
+pub fn validate_inventory(cfg: &str, pins: &Value, inventory: &Value) -> Result<()> {
+	let truthy = crate::failure::truthy;
+	if !(*field(pins, "release")? == "0.55.2"
+		&& *field(pins, "cfg")? == cfg
+		&& *field(pins, "toolchain")? == NIGHTLY)
+	{
+		bail!(assertion(""));
+	}
+	if !(truthy(field(pins, "crates")?) && !truthy(field(pins, "failed")?)) {
+		bail!(assertion("incomplete documentation"));
+	}
+	let provenance = field(inventory, "provenance")?;
+	if !(*field(provenance, "release")? == "0.55.2" && *field(provenance, "cfg")? == cfg) {
+		bail!(assertion(""));
+	}
+	let features = sorted_items(field(provenance, "features")?)?;
+	if features != sorted_items(field(pins, "resolved_polars_features")?)? {
+		bail!(assertion(""));
+	}
+	if !truthy(field(inventory, "callables")?) {
+		bail!(assertion("empty inventory"));
+	}
+	Ok(())
+}
+
+/// Python's `CalledProcessError` for a failed query: its repr and its
+/// traceback line, module included.
+pub fn called_process_error(command: &[String], code: i32) -> anyhow::Error {
+	let list = crate::failure::python_repr(&json!(command));
+	anyhow::Error::new(crate::child::Raised {
+		class: "subprocess.CalledProcessError",
+		repr: format!("CalledProcessError({code}, {list})"),
+		message: format!("Command '{list}' returned non-zero exit status {code}."),
+	})
+}
+
+/// A process that could not start, named by its program and the OS error
+/// only: never the command's environment, which may hold secrets.
+fn spawn_error(program: &str, error: &std::io::Error) -> anyhow::Error {
+	anyhow::anyhow!("spawn {program}: {error}")
+}
+
+/// How the inventories stage runs its named steps and git queries, so a
+/// control can answer for them.
+pub trait InventoryRun {
+	/// Run a named step with its own environment, stdout and stderr in new
+	/// files, within `limit`; its exit code.
+	fn run(
+		&mut self,
+		command: &[String],
+		cwd: &Path,
+		env: &Environment,
+		stdout: &Path,
+		stderr: &Path,
+		limit: Duration,
+	) -> Result<i32>;
+	/// A git query's output, read as text mode reads it; a failure is an error.
+	fn query(&mut self, command: &[String], cwd: &Path) -> Result<String>;
+}
+
+/// The steps and queries run for real; queries take the stage's own
+/// environment, through the controller's git command for git.
+pub struct LiveInventory {
+	pub env: Environment,
+}
+
+impl InventoryRun for LiveInventory {
+	fn run(
+		&mut self,
+		command: &[String],
+		cwd: &Path,
+		env: &Environment,
+		stdout: &Path,
+		stderr: &Path,
+		limit: Duration,
+	) -> Result<i32> {
+		let mut child = std::process::Command::new(&command[0]);
+		child
+			.args(&command[1..])
+			.current_dir(cwd)
+			.env_clear()
+			.envs(env)
+			.stdin(std::process::Stdio::null())
+			.stdout(std::fs::File::create_new(stdout)?)
+			.stderr(std::fs::File::create_new(stderr)?);
+		wait(child, limit)
+	}
+
+	fn query(&mut self, command: &[String], cwd: &Path) -> Result<String> {
+		let mut child = if command[0] == "git" {
+			crate::child::git_command()
+		} else {
+			std::process::Command::new(&command[0])
+		};
+		// The stage's environment, with the controller's lock-free git.
+		let mut env = self.env.clone();
+		env.insert("GIT_OPTIONAL_LOCKS".into(), "0".into());
+		// stderr goes to the stage's own log, as check_output left it.
+		let output = child
+			.args(&command[1..])
+			.current_dir(cwd)
+			.env_clear()
+			.envs(&env)
+			.stdin(std::process::Stdio::null())
+			.stderr(std::process::Stdio::inherit())
+			.output()
+			.map_err(|e| spawn_error(&command[0], &e))?;
+		if !output.status.success() {
+			bail!(called_process_error(
+				command,
+				output.status.code().unwrap_or(1)
+			));
+		}
+		text_mode(&output.stdout)
+	}
+}
+
+/// `rnx-final stage inventories [--preflight]`: the pinned Polars
+/// inventories prepared from source and the generated bindings checked
+/// against them, as `inventories.main` ran it. The receipt, without its
+/// seconds; on an error, `TRACEBACK.txt` holds its last line.
+pub fn inventories(
+	out: &Path,
+	root: &Path,
+	env: &Environment,
+	jobs: usize,
+	preflight: bool,
+	run: &mut dyn InventoryRun,
+) -> Result<Value> {
+	let mut base = env.clone();
+	base.insert("CARGO_BUILD_JOBS".into(), jobs.to_string());
+	base.insert("PYTHONDONTWRITEBYTECODE".into(), "1".into());
+	base.insert("RUSTUP_AUTO_INSTALL".into(), "0".into());
+	base.remove("CARGO_TARGET_DIR");
+	let mut offline = base.clone();
+	offline.insert("CARGO_NET_OFFLINE".into(), "true".into());
+	let mut result =
+		json!({"status": "FAIL", "toolchain": NIGHTLY, "checks": [], "inventories": []});
+	let strings = |items: &[&str]| -> Vec<String> { items.iter().map(|s| s.to_string()).collect() };
+	let outcome = (|| -> Result<()> {
+		let step = |run: &mut dyn InventoryRun,
+		            result: &mut Value,
+		            name: &str,
+		            command: Vec<String>,
+		            environment: &Environment|
+		 -> Result<()> {
+			let code = run.run(
+				&command,
+				root,
+				environment,
+				&out.join(format!("{name}.stdout")),
+				&out.join(format!("{name}.stderr")),
+				Duration::from_secs(10800),
+			)?;
+			result["checks"]
+				.as_array_mut()
+				.unwrap()
+				.push(json!({"name": name, "command": command, "exit": code}));
+			if code != 0 {
+				bail!(assertion_value(&format!(
+					"({}, {code})",
+					crate::failure::python_repr(&json!(name))
+				)));
+			}
+			Ok(())
+		};
+		let head = run
+			.query(&strings(&["git", "rev-parse", "HEAD"]), root)?
+			.trim()
+			.to_owned();
+		if !run
+			.query(&strings(&["git", "status", "--porcelain"]), root)?
+			.trim()
+			.is_empty()
+		{
+			bail!(assertion(""));
+		}
+		result["source_commit"] = json!(head);
+		let mut locks: Vec<String> = INVENTORY_CONFIGURATIONS
+			.iter()
+			.map(|c| format!("probes/0072/inventory/locks/0.55.2-{c}.lock"))
+			.collect();
+		locks.extend(INVENTORY_MANIFESTS.iter().map(|m| {
+			Path::new(m)
+				.with_file_name("Cargo.lock")
+				.to_string_lossy()
+				.into_owned()
+		}));
+		let mut before = Map::new();
+		for lock in &locks {
+			before.insert(lock.clone(), json!(digest(&root.join(lock))?));
+		}
+		// Toolchain installation is a prerequisite, not an implicit download.
+		step(
+			&mut *run,
+			&mut result,
+			"nightly-preflight",
+			strings(&["rustup", "run", NIGHTLY, "rustc", "--version"]),
+			&offline,
+		)?;
+		if preflight {
+			result["locks_sha256"] = Value::Object(before);
+			result["status"] = json!("PASS");
+			return Ok(());
+		}
+		for (i, manifest) in INVENTORY_MANIFESTS.iter().enumerate() {
+			step(
+				&mut *run,
+				&mut result,
+				&format!("fetch-tool-{i}"),
+				strings(&[
+					"cargo",
+					"+1.98.1",
+					"fetch",
+					"--locked",
+					"--manifest-path",
+					manifest,
+				]),
+				&base,
+			)?;
+		}
+		for cfg in INVENTORY_CONFIGURATIONS {
+			step(
+				&mut *run,
+				&mut result,
+				&format!("fetch-{cfg}"),
+				strings(&[
+					"bash",
+					"probes/0072/inventory/doc.sh",
+					"0.55.2",
+					cfg,
+					"--fetch-only",
+				]),
+				&base,
+			)?;
+		}
+		let target = root.join("target/column-inventory-extract");
+		let mut build = offline.clone();
+		build.insert(
+			"CARGO_TARGET_DIR".into(),
+			target.to_string_lossy().into_owned(),
+		);
+		step(
+			&mut *run,
+			&mut result,
+			"build-extractor",
+			strings(&[
+				"cargo",
+				"+1.98.1",
+				"build",
+				"--locked",
+				"--manifest-path",
+				INVENTORY_MANIFESTS[0],
+			]),
+			&build,
+		)?;
+		for cfg in INVENTORY_CONFIGURATIONS {
+			step(
+				&mut *run,
+				&mut result,
+				&format!("document-{cfg}"),
+				strings(&["bash", "probes/0072/inventory/doc.sh", "0.55.2", cfg]),
+				&offline,
+			)?;
+			let docs = root.join(format!("probes/0072/out/0.55.2-{cfg}"));
+			let pins: Value = serde_json::from_slice(&std::fs::read(docs.join("pins.json"))?)?;
+			let crates = field(&pins, "crates")?;
+			if !(crate::failure::truthy(crates) && !crate::failure::truthy(field(&pins, "failed")?))
+			{
+				bail!(assertion_value(&crate::failure::python_repr(
+					&pins["failed"]
+				)));
+			}
+			// Each documented crate's file, before the extractor runs: a
+			// string names no crate files (Python iterated its characters),
+			// and anything but a list of names is a TypeError.
+			let documented = match crates {
+				Value::String(_) => false,
+				Value::Array(names) => {
+					let mut all = true;
+					for name in names {
+						let name = name.as_str().ok_or_else(|| {
+							crate::child::raise("TypeError", "a crate name is not a string")
+						})?;
+						all &= docs.join(format!("{name}.json")).is_file();
+					}
+					all
+				}
+				_ => bail!(crate::child::raise("TypeError", "crates is not a list")),
+			};
+			if !documented {
+				bail!(assertion(""));
+			}
+			let surface = target.join("debug/surface");
+			step(
+				&mut *run,
+				&mut result,
+				&format!("extract-{cfg}"),
+				vec![
+					surface.to_string_lossy().into_owned(),
+					docs.to_string_lossy().into_owned(),
+					"polars".into(),
+					docs.join("result").to_string_lossy().into_owned(),
+				],
+				&offline,
+			)?;
+			let inventory = docs.join("result/inventory.json");
+			validate_inventory(
+				cfg,
+				&pins,
+				&serde_json::from_slice(&std::fs::read(&inventory)?)?,
+			)?;
+			result["inventories"].as_array_mut().unwrap().push(json!({"cfg": cfg, "sha256": digest(&inventory)?, "pins_sha256": digest(&docs.join("pins.json"))?}));
+		}
+		// The same policy and bucket selection as the full-suite drift test.
+		let tests = std::fs::read_to_string(root.join("adapters/polars/tests/generated.rs"))?;
+		let mut constants = BTreeMap::new();
+		for name in ["BUCKETS", "RELEASE_FILE"] {
+			let pattern = regex::Regex::new(&format!(r#"const {name}: &str = "([^"]+)";"#))?;
+			let found: Vec<String> = pattern
+				.captures_iter(&tests)
+				.map(|c| c[1].to_owned())
+				.collect();
+			if found.len() != 1 {
+				bail!(assertion_value(&format!(
+					"('generator test contract changed', {})",
+					crate::failure::python_repr(&json!(name))
+				)));
+			}
+			constants.insert(name, found[0].clone());
+		}
+		let text = |p: PathBuf| p.to_string_lossy().into_owned();
+		step(
+			&mut *run,
+			&mut result,
+			"generated-bindings-check",
+			vec![
+				"cargo".into(),
+				"+1.98.1".into(),
+				"run".into(),
+				"--locked".into(),
+				"--manifest-path".into(),
+				INVENTORY_MANIFESTS[1].into(),
+				"--".into(),
+				text(root.join("probes/0072/out/0.55.2-adapter-json/result/inventory.json")),
+				text(root.join("adapters/polars")),
+				"--buckets".into(),
+				constants["BUCKETS"].clone(),
+				"--release".into(),
+				text(
+					root.join("tools/polars-gen/releases")
+						.join(&constants["RELEASE_FILE"]),
+				),
+				"--check".into(),
+			],
+			&offline,
+		)?;
+		let mut after = Map::new();
+		for lock in &locks {
+			after.insert(lock.clone(), json!(digest(&root.join(lock))?));
+		}
+		if after != before {
+			bail!(assertion("locked dependencies changed"));
+		}
+		result["locks_sha256"] = Value::Object(before);
+		if run
+			.query(&strings(&["git", "rev-parse", "HEAD"]), root)?
+			.trim() != head
+		{
+			bail!(assertion(""));
+		}
+		if !run
+			.query(&strings(&["git", "status", "--porcelain"]), root)?
+			.trim()
+			.is_empty()
+		{
+			bail!(assertion(""));
+		}
+		result["status"] = json!("PASS");
+		Ok(())
+	})();
+	if let Err(error) = outcome {
+		result["error"] = json!(format!("{error}"));
+		let last = match error.downcast_ref::<crate::child::Raised>() {
+			Some(r) if r.message.is_empty() => r.class.to_string(),
+			Some(r) => format!("{}: {}", r.class, r.message),
+			None => format!("{error:#}"),
+		};
+		std::fs::write(out.join("TRACEBACK.txt"), format!("{last}\n"))?;
+	}
+	Ok(result)
+}
+
 /// A suite stage's receipt, as `suite_stage.main` wrote it: its rows,
 /// then for `rune-suite` its native contracts, which must pass; and every
 /// log in `out`, by digest. An error is the receipt's, not the caller's.
@@ -1072,6 +1510,29 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 			)?;
 			result["seconds"] = json!(started.elapsed().as_secs_f64());
 			publish(&out.join("RESULT.json"), &result, &env)?;
+			Ok(if result["status"] == "PASS" { 0 } else { 1 })
+		}
+		Some("inventories") => {
+			let preflight = args.iter().any(|a| a == "--preflight");
+			std::fs::create_dir_all(out.parent().context("--out has no parent")?)?;
+			std::fs::create_dir(&out)?;
+			let started = std::time::Instant::now();
+			let jobs = build_jobs(&env)?;
+			let mut result = inventories(
+				&out,
+				root,
+				&env,
+				jobs,
+				preflight,
+				&mut LiveInventory { env: env.clone() },
+			)?;
+			result["seconds"] = json!(started.elapsed().as_secs_f64());
+			publish(&out.join("RESULT.json"), &result, &env)?;
+			println!(
+				"{} {}",
+				result["status"].as_str().unwrap_or("FAIL"),
+				out.join("RESULT.json").display()
+			);
 			Ok(if result["status"] == "PASS" { 0 } else { 1 })
 		}
 		Some("jupyter") => {

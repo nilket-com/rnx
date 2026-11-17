@@ -1,0 +1,6 @@
+# ADR 0293: the Polars inventory stage program and its test, replaced by
+# the Rust stage mode `rnx-final stage inventories`. tools/final/tests/
+# deleted.rs requires none to be tracked and no current file to run or
+# name one.
+tools/column/inventories.py
+tools/column/test_inventories.py

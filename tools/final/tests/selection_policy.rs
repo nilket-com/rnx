@@ -460,9 +460,9 @@ fn every_stage_that_must_be_a_producer_runs_one() {
 			.filter(|(name, command)| selection::requires_producer(name) && command[0] == "python3")
 			.map(|(name, command)| serde_json::json!([name, command]))
 			.collect();
-	// polars-inventories, cross and fixed-route.
+	// cross and fixed-route.
 	assert!(
-		required.len() == 3,
+		required.len() == 2,
 		"{} Python producer stages",
 		required.len()
 	);

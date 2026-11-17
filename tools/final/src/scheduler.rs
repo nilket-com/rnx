@@ -49,7 +49,7 @@ pub fn declared_bulk(name: &str) -> u64 {
 fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 	Some(match script {
 		CLIPPY | SUITE => &[],
-		"tools/column/inventories.py" => &[
+		INVENTORIES => &[
 			("target/column-inventory-extract", "debug"),
 			("tools/polars-gen/Cargo.toml", "debug"),
 			("target/0072", ""),
@@ -115,6 +115,7 @@ pub fn script(command: &[String]) -> Option<&str> {
 			Some("clippy") => Some(CLIPPY),
 			Some("cli") => Some(CLI),
 			Some("jupyter") => Some(JUPYTER),
+			Some("inventories") => Some(INVENTORIES),
 			_ => None,
 		};
 	}
@@ -129,6 +130,7 @@ pub const SUITE: &str = "rnx-final stage suite";
 pub const CLIPPY: &str = "rnx-final stage clippy";
 pub const CLI: &str = "rnx-final stage cli";
 pub const JUPYTER: &str = "rnx-final stage jupyter";
+pub const INVENTORIES: &str = "rnx-final stage inventories";
 
 fn is_cargo(command: &[String]) -> bool {
 	Path::new(&command[0])
