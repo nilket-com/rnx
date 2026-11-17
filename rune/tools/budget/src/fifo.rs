@@ -241,6 +241,273 @@ impl Pool {
 	}
 }
 
+/// A stage's side of a final's jobserver, joined through the `MAKEFLAGS`
+/// the controller set: a permit client, never a second pool. The tokens
+/// it reads belong to the controller's [`Pool`]; every permit puts each
+/// token back where it came from.
+pub struct Client {
+	path: PathBuf,
+	capacity: usize,
+	held: usize,
+}
+
+/// The tokens the controller already holds for this stage, idle while none
+/// of its own builds run: a nonblocking pipe of one byte per token.
+pub struct Slots {
+	read: File,
+	write: File,
+}
+
+impl Slots {
+	pub fn new(count: usize) -> Result<Self> {
+		let mut fds = [0; 2];
+		// SAFETY: two valid out-pointers for pipe2.
+		if unsafe { libc::pipe2(fds.as_mut_ptr(), libc::O_NONBLOCK | libc::O_CLOEXEC) } != 0 {
+			return Err(std::io::Error::last_os_error()).context("pipe2 for the stage slots");
+		}
+		use std::os::fd::FromRawFd as _;
+		// SAFETY: pipe2 returned two fresh descriptors this value now owns.
+		let (read, write) = unsafe { (File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])) };
+		(&write)
+			.write_all(&vec![b'+'; count])
+			.context("fill the stage slots")?;
+		Ok(Self { read, write })
+	}
+}
+
+/// Tokens a [`Client`] holds: some from the stage's own slots, the rest
+/// from the pool. Dropping a permit returns each to its source, so an
+/// error, a panic or a cancelled case loses nothing.
+#[must_use = "a permit returns its tokens when dropped"]
+pub struct Permit<'a> {
+	pool: Option<File>,
+	slots: Option<&'a Slots>,
+	own: Vec<u8>,
+	pooled: Vec<u8>,
+}
+
+impl Permit<'_> {
+	pub fn count(&self) -> usize {
+		self.own.len() + self.pooled.len()
+	}
+
+	/// The tokens from the stage's own slots, and from the pool.
+	pub fn sources(&self) -> (usize, usize) {
+		(self.own.len(), self.pooled.len())
+	}
+
+	/// Return the tokens now, reporting a failed return.
+	pub fn release(mut self) -> Result<()> {
+		self.give()
+	}
+
+	fn give(&mut self) -> Result<()> {
+		let deadline = std::time::Instant::now() + RETURN_DEADLINE;
+		let mut result = Ok(());
+		if !self.own.is_empty() {
+			let slots = self.slots.expect("own tokens come from slots");
+			if let Err(error) = write_within(&slots.write, &std::mem::take(&mut self.own), deadline)
+			{
+				result = Err(error).context("return tokens to the stage slots");
+			}
+		}
+		if !self.pooled.is_empty() {
+			let pool = self
+				.pool
+				.as_ref()
+				.expect("pooled tokens come from the pool");
+			if let Err(error) = write_within(pool, &std::mem::take(&mut self.pooled), deadline) {
+				result = Err(error).context("return tokens to the jobserver");
+			}
+		}
+		result
+	}
+}
+
+impl Drop for Permit<'_> {
+	fn drop(&mut self) {
+		let _ = self.give();
+	}
+}
+
+impl Client {
+	/// The client a stage's environment names, or none outside a final:
+	/// `MAKEFLAGS` gives the fifo and its width, `RNX_FINAL_STAGE_TOKENS`
+	/// the tokens the controller holds for this stage (one by default).
+	pub fn from_environment(
+		makeflags: Option<&str>,
+		stage_tokens: Option<&str>,
+	) -> Result<Option<Self>> {
+		let flags = makeflags.unwrap_or_default();
+		let path = flags
+			.split_whitespace()
+			.find_map(|f| f.strip_prefix("--jobserver-auth=fifo:"));
+		let width = flags
+			.split_whitespace()
+			.find_map(|f| f.strip_prefix("-j"))
+			.and_then(|w| w.parse::<usize>().ok());
+		let (Some(path), Some(capacity)) = (path, width) else {
+			return Ok(None);
+		};
+		let held = match stage_tokens {
+			None => 1,
+			Some(text) => text
+				.parse()
+				.with_context(|| format!("RNX_FINAL_STAGE_TOKENS is not a count: {text}"))?,
+		};
+		ensure!(
+			held <= capacity,
+			"the stage holds {held} of {capacity} tokens"
+		);
+		Ok(Some(Self {
+			path: PathBuf::from(path),
+			capacity,
+			held,
+		}))
+	}
+
+	pub fn capacity(&self) -> usize {
+		self.capacity
+	}
+
+	pub fn held(&self) -> usize {
+		self.held
+	}
+
+	fn open(&self) -> Result<File> {
+		OpenOptions::new()
+			.read(true)
+			.write(true)
+			.custom_flags(libc::O_NONBLOCK | libc::O_CLOEXEC)
+			.open(&self.path)
+			.with_context(|| format!("open {}", self.path.display()))
+	}
+
+	/// `count` tokens from the pool, waiting until all are read; the part
+	/// already read goes back if the wait fails.
+	pub fn acquire(&self, count: usize) -> Result<Permit<'static>> {
+		let mut permit = Permit {
+			pool: Some(self.open()?),
+			slots: None,
+			own: Vec::new(),
+			pooled: Vec::with_capacity(count),
+		};
+		while permit.pooled.len() < count {
+			let pool = permit.pool.as_ref().unwrap();
+			ready(&[pool])?;
+			let mut buffer = vec![0; count - permit.pooled.len()];
+			match (&*pool).read(&mut buffer) {
+				Ok(0) => bail!("the jobserver closed"),
+				Ok(n) => permit.pooled.extend_from_slice(&buffer[..n]),
+				Err(error)
+					if matches!(error.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock) => {}
+				Err(error) => return Err(error).context("read jobserver tokens"),
+			}
+		}
+		Ok(permit)
+	}
+
+	/// One token from the stage's own slots or from the pool, whichever
+	/// frees first, so a one-token pool still runs every case on the slot
+	/// the controller holds for the stage.
+	pub fn acquire_one<'a>(&self, slots: &'a Slots) -> Result<Permit<'a>> {
+		let pool = self.open()?;
+		loop {
+			let which = ready(&[&slots.read, &pool])?;
+			let mut token = [0u8; 1];
+			let source = if which == 0 { &slots.read } else { &pool };
+			match (&*source).read(&mut token) {
+				Ok(1) => {
+					let own = which == 0;
+					return Ok(Permit {
+						pool: (!own).then_some(pool),
+						slots: own.then_some(slots),
+						own: if own { token.to_vec() } else { Vec::new() },
+						pooled: if own { Vec::new() } else { token.to_vec() },
+					});
+				}
+				Ok(_) => bail!("a jobserver source closed"),
+				Err(error)
+					if matches!(error.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock) => {}
+				Err(error) => return Err(error).context("read a jobserver token"),
+			}
+		}
+	}
+}
+
+/// The index of the first of `files` readable, after blocking until one is.
+fn ready(files: &[&File]) -> Result<usize> {
+	let mut fds: Vec<libc::pollfd> = files
+		.iter()
+		.map(|f| libc::pollfd {
+			fd: f.as_raw_fd(),
+			events: libc::POLLIN,
+			revents: 0,
+		})
+		.collect();
+	loop {
+		// SAFETY: valid pollfds for the duration of the call; no timeout.
+		if unsafe { libc::poll(fds.as_mut_ptr(), fds.len() as libc::nfds_t, -1) } < 0 {
+			let error = std::io::Error::last_os_error();
+			if error.kind() == ErrorKind::Interrupted {
+				continue;
+			}
+			return Err(error).context("poll the jobserver");
+		}
+		if let Some(i) = fds
+			.iter()
+			.position(|p| p.revents & (libc::POLLIN | libc::POLLHUP | libc::POLLERR) != 0)
+		{
+			return Ok(i);
+		}
+	}
+}
+
+/// Every byte written to `file`, across partial writes, EINTR and a full
+/// pipe, before `deadline`.
+fn write_within(
+	file: &File,
+	mut bytes: &[u8],
+	deadline: std::time::Instant,
+) -> std::io::Result<()> {
+	while !bytes.is_empty() {
+		match (&*file).write(bytes) {
+			Ok(0) => {
+				return Err(std::io::Error::new(
+					ErrorKind::WriteZero,
+					"the jobserver accepted no bytes",
+				))
+			}
+			Ok(n) => bytes = &bytes[n..],
+			Err(error) if error.kind() == ErrorKind::Interrupted => {}
+			Err(error) if error.kind() == ErrorKind::WouldBlock => {
+				let left = deadline.saturating_duration_since(std::time::Instant::now());
+				if left.is_zero() {
+					return Err(std::io::Error::new(
+						ErrorKind::TimedOut,
+						"the jobserver stayed full",
+					));
+				}
+				let mut wait = libc::pollfd {
+					fd: file.as_raw_fd(),
+					events: libc::POLLOUT,
+					revents: 0,
+				};
+				// SAFETY: one valid pollfd for the duration of the call.
+				unsafe {
+					libc::poll(
+						&mut wait,
+						1,
+						left.as_millis().clamp(1, i32::MAX as u128) as i32,
+					)
+				};
+			}
+			Err(error) => return Err(error),
+		}
+	}
+	Ok(())
+}
+
 /// The width a stage inherited from its final's jobserver, if it runs in one.
 pub fn inherited_width(makeflags: &str) -> Option<usize> {
 	if !makeflags.contains("--jobserver-auth=fifo:") {
@@ -293,6 +560,104 @@ mod tests {
 		pool.state.write(&vec![b'+'; count]).unwrap();
 		*pool.state.outstanding.lock().unwrap() -= count;
 		count
+	}
+
+	fn client(pool: &Pool, held: usize) -> Client {
+		Client::from_environment(Some(&pool.flags()), Some(&held.to_string()))
+			.unwrap()
+			.unwrap()
+	}
+
+	fn slots_left(slots: &Slots) -> usize {
+		let mut n = 0;
+		let mut byte = [0u8; 1];
+		while let Ok(1) = (&slots.read).read(&mut byte) {
+			n += 1;
+		}
+		(&slots.write).write_all(&vec![b'+'; n]).unwrap();
+		n
+	}
+
+	#[test]
+	fn a_client_is_found_only_inside_a_final() {
+		let (_dir, pool) = pool(3);
+		let c = client(&pool, 2);
+		assert_eq!((c.capacity(), c.held()), (3, 2));
+		assert!(Client::from_environment(Some("-j3"), None)
+			.unwrap()
+			.is_none());
+		assert!(Client::from_environment(None, None).unwrap().is_none());
+		assert!(Client::from_environment(Some(&pool.flags()), Some("x")).is_err());
+		assert!(Client::from_environment(Some(&pool.flags()), Some("4")).is_err());
+		assert_eq!(client(&pool, 1).held(), 1);
+		pool.close().unwrap();
+	}
+
+	/// Own tokens go back to the slots, pool tokens to the fifo; on a
+	/// release, a drop and a panic alike.
+	#[test]
+	fn every_token_returns_where_it_came_from() {
+		let (_dir, pool) = pool(2);
+		let c = client(&pool, 1);
+		let slots = Slots::new(1).unwrap();
+		let first = c.acquire_one(&slots).unwrap();
+		let second = c.acquire_one(&slots).unwrap();
+		let mut sources = [first.sources(), second.sources()];
+		sources.sort();
+		assert_eq!(sources, [(0, 1), (1, 0)]);
+		assert_eq!((available(&pool), slots_left(&slots)), (1, 0));
+		first.release().unwrap();
+		drop(second);
+		assert_eq!((available(&pool), slots_left(&slots)), (2, 1));
+		let taken = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+			let _held = c.acquire(2).unwrap();
+			assert_eq!(available(&pool), 0);
+			panic!("a failed case");
+		}));
+		assert!(taken.is_err());
+		assert_eq!(available(&pool), 2);
+		pool.close().unwrap();
+	}
+
+	/// With every pool token held elsewhere, each case still runs on the
+	/// stage's own slot.
+	#[test]
+	fn a_one_token_pool_runs_every_case_on_the_stage_slot() {
+		let (_dir, pool) = pool(1);
+		let held = pool.take(1).unwrap().unwrap();
+		let c = client(&pool, 1);
+		let slots = Slots::new(1).unwrap();
+		for _ in 0..3 {
+			let permit = c.acquire_one(&slots).unwrap();
+			assert_eq!(permit.sources(), (1, 0));
+		}
+		pool.give(held).unwrap();
+		pool.close().unwrap();
+	}
+
+	/// An exclusive acquisition waits for every token it asks for, and
+	/// holds them until it returns them.
+	#[test]
+	fn an_exclusive_acquisition_waits_for_every_token() {
+		let (_dir, pool) = pool(3);
+		let c = client(&pool, 1);
+		let lease = pool.take(1).unwrap().unwrap();
+		let (sender, receiver) = std::sync::mpsc::channel();
+		std::thread::scope(|s| {
+			s.spawn(|| {
+				let permit = c.acquire(3).unwrap();
+				sender.send(permit.count()).unwrap();
+				drop(permit);
+			});
+			// Two of three are free: the acquisition cannot complete.
+			assert!(receiver
+				.recv_timeout(std::time::Duration::from_millis(200))
+				.is_err());
+			pool.give(lease).unwrap();
+			assert_eq!(receiver.recv().unwrap(), 3);
+		});
+		assert_eq!(available(&pool), 3);
+		pool.close().unwrap();
 	}
 
 	#[test]

@@ -1,0 +1,38 @@
+{
+ "expected": {
+  "manifests": {
+   "dotdot name": "invalid manifest case",
+   "duplicate": "duplicate manifest case",
+   "empty name": "invalid manifest case",
+   "empty selector": "invalid manifest case",
+   "no cases": "empty or unknown native manifest",
+   "real": "ok",
+   "slash name": "invalid manifest case",
+   "version 2": "empty or unknown native manifest",
+   "zero timeout": "invalid manifest case"
+  },
+  "verdicts": {
+   "added to the manifest": "ValueError: native contract catalogue differs: missing=['planted-contract'] extra=[]",
+   "all": {
+    "cases": 50,
+    "ignored_selectors": 35,
+    "selectors": 42,
+    "status": "PASS"
+   },
+   "contract_rows": "ValueError: vec_local-fresh: contract row total differs",
+   "empty selected": "ValueError: vec_local-fresh: empty or partial execution",
+   "exit": "ValueError: vec_local-fresh: case failed\nmissing successful execution",
+   "extra": "ValueError: native contract catalogue differs: missing=[] extra=['planted']",
+   "failed with error": "ValueError: vec_local-fresh: case failed\nplanted error",
+   "missing ignored": "ValueError: native contract catalogue differs: missing=['vec_local-fresh'] extra=[]",
+   "missing plain": "ValueError: native contract catalogue differs: missing=['pipeline-stack2MiB'] extra=[]",
+   "passed": "ValueError: vec_local-fresh: empty or partial execution",
+   "selected": "ValueError: vec_local-fresh: exact selector differs",
+   "specification": "ValueError: vec_local-fresh: manifest case changed",
+   "status": "ValueError: vec_local-fresh: case failed\nmissing successful execution"
+  }
+ },
+ "method": "native_contracts.manifest over the checkout's manifest and planted edits of it (manifests: 'ok' or the error), and native_contracts.catalogue(manifest, rows) over passing rows built from every manifest case (selected [selector], passed 1, contract_rows its rows) and the shown mutations of them (verdicts: the returned value or 'ValueError: ' and the message). The first case is edited for the per-field mutations; contract_rows edits the first case declaring rows.",
+ "substitutions": {},
+ "witness": "837f2b5d4fbd23f123d4a0a607872b21bf584012"
+}

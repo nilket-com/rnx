@@ -1,0 +1,1216 @@
+{
+ "expected": {
+  "binary-changed": {
+   "calls": [],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {},
+    "error": "ValueError: test binary changed",
+    "name": "fixture",
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "FAIL"
+   }
+  },
+  "count-differs": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "4c0f784af9f8bdc0a4e2553fb4c4b7426571ae7fb91924f54c30f76c5e297b2e"
+    },
+    "error": "ValueError: native contract execution failed: fixture",
+    "exit": 0,
+    "name": "fixture",
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "FAIL"
+   }
+  },
+  "differences": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "DIFFERENCES.json",
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "DIFFERENCES.json": "3f4c3df46ac3812fd676477730864ce9eb3b11ef7b68b03f4da04788c99f7205",
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "error": "ValueError: nonempty row differences",
+    "error_suffix": "\n[{\"row\": 0, \"difference\": \"a != b\"}]",
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "row_differences": [
+     {
+      "difference": "a != b",
+      "row": 0
+     }
+    ],
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "FAIL"
+   }
+  },
+  "differences-missing": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": 2,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "DIFFERENCES.json",
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "DIFFERENCES.json": "31684eee2b3bcbb6c62a57a35a4fa7d62a722c8ffb494068233413f7e1356d13",
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "284743e7af784838a479d82d44336d36ed43bc2b0bb4e3512537d903b77fb282"
+    },
+    "contract_rows": 2,
+    "error": "KeyError: 'differences'",
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "117582939ee259708fb33afe5c0b69f965703031d6637ea074d7d2ef63f5b2f3",
+    "status": "FAIL"
+   }
+  },
+  "discovery-differs": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--exact",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": true,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "ec81a88eb640457ece91e36b61f2ba2f3ac0aeaf3047a27447626707062321d3"
+    },
+    "error": "ValueError: selector discovery differs",
+    "name": "fixture",
+    "selected": [
+     "fixture::contract",
+     "fixture::other"
+    ],
+    "selector": "fixture::contract",
+    "specification": "d1cb213dd7ac3f4d98707ba8660fdd126c138328166858382f79b240574cadb5",
+    "status": "FAIL"
+   }
+  },
+  "empty-discovery": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "error": "ValueError: selector discovery differs",
+    "name": "fixture",
+    "selected": [],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "FAIL"
+   }
+  },
+  "fractional-timeout": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 0.5
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 0.5
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "40f430bc7a331a957f615eb4086b4a1f2cfd88a8cec3f58527abb15fcb989b34",
+    "status": "PASS"
+   }
+  },
+  "full": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--exact",
+      "--ignored",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "bwrap",
+      "--ro-bind",
+      "/",
+      "/",
+      "--bind",
+      "<BULK>",
+      "<BULK>",
+      "--tmpfs",
+      "/tmp",
+      "--dev-bind",
+      "/dev",
+      "/dev",
+      "--proc",
+      "/proc",
+      "--",
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--exact",
+      "--ignored",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "/tmp",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_COMPARE_ENGINE": "fresh",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json",
+      "RNX_FINAL_GROUPS": "<GROUPS>"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": true,
+    "env": {
+     "GAP_COMPARE_ENGINE": "fresh"
+    },
+    "exact": true,
+    "ignored": true,
+    "name": "fixture",
+    "rows": 2,
+    "sandbox": true,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "DIFFERENCES.json",
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "DIFFERENCES.json": "c8fdbcc0cd1eeb1e382f9ce6d7825bf1dfd9c2d98a478056b70608781433bec4",
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "284743e7af784838a479d82d44336d36ed43bc2b0bb4e3512537d903b77fb282"
+    },
+    "contract_rows": 2,
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "rows_checked": 2,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "209a38ad409c294901bbfed50cf687feaa63593e7c79af0592acefce45c384f8",
+    "status": "PASS"
+   }
+  },
+  "nonempty-stderr": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": true,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "86a10149acbe95519ea3283d26d57491ede09bd3010cdb756358f66352236b79",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "error": "ValueError: nonempty contract stderr",
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "1228726a2061a369dbd48b2a7bd15afd06bfd9024e8497a7288be23b17513e0e",
+    "status": "FAIL"
+   }
+  },
+  "nonzero-exit": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "error": "ValueError: native contract execution failed: fixture",
+    "exit": 101,
+    "name": "fixture",
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "FAIL"
+   }
+  },
+  "plain": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "PASS"
+   }
+  },
+  "rows-checked-differ": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": 2,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "DIFFERENCES.json",
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "DIFFERENCES.json": "de211d293140702df0217dd3cd7d1e5a50909bc8c3a5ac78266ca28f9b81840b",
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "284743e7af784838a479d82d44336d36ed43bc2b0bb4e3512537d903b77fb282"
+    },
+    "contract_rows": 2,
+    "error": "ValueError: compared row total differs",
+    "error_suffix": "\n[]",
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "row_differences": [],
+    "rows_checked": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "117582939ee259708fb33afe5c0b69f965703031d6637ea074d7d2ef63f5b2f3",
+    "status": "FAIL"
+   }
+  },
+  "rows-differ": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": 3,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "284743e7af784838a479d82d44336d36ed43bc2b0bb4e3512537d903b77fb282"
+    },
+    "error": "ValueError: contract row total differs",
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "21c0c3e82ed07daeddeb14d0e62474d9f9b75f0f3bb00d68de48e8b34ca03ab3",
+    "status": "FAIL"
+   }
+  },
+  "rows-missing": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": 3,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "error": "ValueError: contract row total differs",
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "21c0c3e82ed07daeddeb14d0e62474d9f9b75f0f3bb00d68de48e8b34ca03ab3",
+    "status": "FAIL"
+   }
+  },
+  "stderr-allowed": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "86a10149acbe95519ea3283d26d57491ede09bd3010cdb756358f66352236b79",
+     "stdout.log": "5052ccac08fd734886a4eaec79698ac04bcf356e423406e5c9c0bfc3e9bc4c6a"
+    },
+    "exit": 0,
+    "name": "fixture",
+    "passed": 1,
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "PASS"
+   }
+  },
+  "two-result-lines": {
+   "calls": [
+    {
+     "check": true,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--list"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": null,
+     "timeout": 60
+    },
+    {
+     "check": false,
+     "command": [
+      "<BULK>/rune-tests",
+      "fixture::contract",
+      "--nocapture",
+      "--test-threads=1"
+     ],
+     "cwd": "<BULK>/fixture",
+     "env": {
+      "C10_REPLAY_OUT": "<BULK>/fixture/c10-out",
+      "C11_REPLAY_OUT": "<BULK>/fixture/c11-out",
+      "C12_OUT": "<BULK>/fixture/c12-out",
+      "C13_OUT": "<BULK>/fixture/c13-out",
+      "C14B_OUT": "<BULK>/fixture/c14b-out",
+      "C14_OUT": "<BULK>/fixture/c14-out",
+      "C15B_OUT": "<BULK>/fixture/c15b-fresh-out",
+      "C15B_STOCK_OUT": "<BULK>/fixture/c15b-out",
+      "C15C_NATIVE_RECEIPT": "<BULK>/BINARY.json",
+      "C15C_NATIVE_RECEIPT_SHA256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+      "C15C_NATIVE_SOURCE": "<ROOT>",
+      "C15C_OUT": "<BULK>/fixture/c15c-fresh-out",
+      "C15C_STOCK_OUT": "<BULK>/fixture/c15c-out",
+      "C15_OUT": "<BULK>/fixture/c15-out",
+      "GAP_OUT": "<BULK>/fixture/gap-out",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin",
+      "RNX_CONTRACT_DIFFS": "<BULK>/fixture/DIFFERENCES.json"
+     },
+     "timeout": 17
+    }
+   ],
+   "case": {
+    "empty_stderr": false,
+    "env": {},
+    "exact": false,
+    "ignored": false,
+    "name": "fixture",
+    "rows": null,
+    "sandbox": false,
+    "selector": "fixture::contract",
+    "timeout": 17
+   },
+   "files": [
+    "RESULT.json",
+    "discovery.log",
+    "stderr.log",
+    "stdout.log"
+   ],
+   "receipt_sha256": "c73defa59dd5bae3fce82e58f087d29483889fa6b50149deb76b9f7d0bf7a5ab",
+   "row": {
+    "artifacts": {
+     "discovery.log": "04035bb65291ff010a316a82009d0676e5380d1556d5e724e593840de9db0475",
+     "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+     "stdout.log": "1f81b22fecf3897193180f93bb09e86ca95a8927b39a1dfab0caa8465e73500a"
+    },
+    "error": "ValueError: native contract execution failed: fixture",
+    "exit": 0,
+    "name": "fixture",
+    "selected": [
+     "fixture::contract"
+    ],
+    "selector": "fixture::contract",
+    "specification": "8e779d1832e0863ed22d355f57753c50a02be4eb0ec97eca04f4666bea6a89e2",
+    "status": "FAIL"
+   }
+  }
+ },
+ "method": "native_contracts.run_case(case, <BULK>/rune-tests, <BULK>/BINARY.json, <ROOT>, <BULK>) for each planted case, with run_process intercepted (discovery writes the planted listing, execution the planted CONTRACT ROWS marker, result line, stderr and DIFFERENCES.json, and returns the planted code), under an environment of only PLANTED_SECRET, PATH=/planted and, for 'full', RNX_FINAL_GROUPS=<GROUPS>. The binary is b'fixture binary' and BINARY.json records its digest; 'binary-changed' rewrites the binary after. calls holds each run_process call; row the returned row without seconds, its error reduced to the raised exception's line; when Python appended the row differences to that error, they are error_suffix; files the case directory's names afterward.",
+ "substitutions": {
+  "<BULK>": "the bulk directory",
+  "<GROUPS>": "the final group directory",
+  "<ROOT>": "the checkout"
+ },
+ "witness": "837f2b5d4fbd23f123d4a0a607872b21bf584012"
+}

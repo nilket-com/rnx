@@ -1,0 +1,707 @@
+{
+ "expected": {
+  "calls": [
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "0-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "0-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "1-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "1-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,native-code,capture-io,disable-io,sha2",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "2-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,native-code,capture-io,disable-io,sha2",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "2-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::warnings::tests",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "3-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::warnings::tests",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "3-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::context::r1b_inventory",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "4-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::context::r1b_inventory",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "4-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "host_function_owned_output",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "5-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "host_function_owned_output",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "5-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "host_function_string_input",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "6-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "host_function_string_input",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "6-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "ExecutionRuntime",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "7-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "ExecutionRuntime",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "7-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "function::host::HostOutput",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "8-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "function::host::HostOutput",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "8-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_factory",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "9-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_factory",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "9-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_method",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "10-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_method",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "10-test.log"
+   }
+  ],
+  "parsers": {
+   "discovered ' x: test\\n'": [
+    " x"
+   ],
+   "discovered ''": "ValueError: empty test discovery",
+   "discovered 'a::b: test\\n'": [
+    "a::b"
+   ],
+   "discovered 'a::b: test\\nc: test\\nnot a test\\n'": [
+    "a::b",
+    "c"
+   ],
+   "executed ''": "ValueError: empty executed suite",
+   "executed 'test result: FAILED. 3 passed;'": "ValueError: empty executed suite",
+   "executed 'test result: ok. 0 passed;'": "ValueError: empty executed suite",
+   "executed 'test result: ok. 3 passed;\\ntest result: ok. 2 passed;'": 5
+  },
+  "refusals": {
+   "clippy": "only rune-suite runs here; other suite stages are the Rust stage mode",
+   "package-site": "only rune-suite runs here; other suite stages are the Rust stage mode",
+   "unknown": "only rune-suite runs here; other suite stages are the Rust stage mode"
+  },
+  "rows": [
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,serde"
+    ],
+    "discovered": [
+     "module::case"
+    ],
+    "passed": 1
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace"
+    ],
+    "discovered": [
+     "module::case"
+    ],
+    "passed": 1
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,native-code,capture-io,disable-io,sha2"
+    ],
+    "discovered": [
+     "module::case"
+    ],
+    "passed": 1
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::warnings::tests"
+    ],
+    "discovered": [
+     "module::case"
+    ],
+    "passed": 1
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--lib",
+     "--features",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::context::r1b_inventory"
+    ],
+    "discovered": [
+     "module::case"
+    ],
+    "passed": 1
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "host_function_owned_output"
+    ],
+    "discovered": [
+     "host_function_owned_output::twin0",
+     "host_function_owned_output::twin1",
+     "host_function_owned_output::twin2",
+     "host_function_owned_output::twin3"
+    ],
+    "passed": 4
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "host_function_string_input"
+    ],
+    "discovered": [
+     "host_function_string_input::twin0",
+     "host_function_string_input::twin1",
+     "host_function_string_input::twin2",
+     "host_function_string_input::twin3",
+     "host_function_string_input::twin4",
+     "host_function_string_input::twin5",
+     "host_function_string_input::twin6",
+     "host_function_string_input::twin7"
+    ],
+    "passed": 8
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "ExecutionRuntime"
+    ],
+    "discovered": [
+     "ExecutionRuntime::twin0",
+     "ExecutionRuntime::twin1"
+    ],
+    "passed": 2
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "function::host::HostOutput"
+    ],
+    "discovered": [
+     "function::host::HostOutput::twin0",
+     "function::host::HostOutput::twin1",
+     "function::host::HostOutput::twin2",
+     "function::host::HostOutput::twin3"
+    ],
+    "passed": 4
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_factory"
+    ],
+    "discovered": [
+     "opaque_factory::twin0",
+     "opaque_factory::twin1"
+    ],
+    "passed": 2
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_method"
+    ],
+    "discovered": [
+     "opaque_method::twin0",
+     "opaque_method::twin1",
+     "opaque_method::twin2",
+     "opaque_method::twin3",
+     "opaque_method::twin4"
+    ],
+    "passed": 5
+   }
+  ],
+  "twin_short": "API boundary requires both compiling and compile-fail twins"
+ },
+ "method": "suite_stage.run('rune-suite', <OUT>) with invoke intercepted: discovery of a --doc twin SEL lists TWINS[SEL] names 'SEL::twinI: test' and its execution says 'test result: ok. N passed; 0 failed;'; any other discovery lists 'module::case: test' and passes 1. calls holds each invoke (command, cwd, log name) in order; rows the returned rows. refusals: suite_stage.recipes(stage) for non-rune-suite stages; twin_short: the error when every 4-count twin's execution reports 3; parsers: suite_stage.discovered and executed over the shown texts.",
+ "substitutions": {
+  "<OUT>": "the stage out directory",
+  "<ROOT>": "the checkout"
+ },
+ "witness": "837f2b5d4fbd23f123d4a0a607872b21bf584012"
+}

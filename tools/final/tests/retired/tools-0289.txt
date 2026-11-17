@@ -1,0 +1,10 @@
+# ADR 0289: the rune-suite stage program, its native contract runner and
+# jobserver client, and their tests, replaced by the Rust stage mode.
+# tools/final/tests/deleted.rs requires none to be tracked and no current
+# file to run or name one.
+tools/column/native_contracts.py
+tools/column/stage_scheduler.py
+tools/column/suite_stage.py
+tools/column/test_native_contracts.py
+tools/column/test_stage_scheduler.py
+tools/column/test_suite_stage.py

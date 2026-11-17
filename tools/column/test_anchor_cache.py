@@ -105,11 +105,5 @@ class Anchors(unittest.TestCase):
 			with self.assertRaises(ValueError):assigned_root('ASSIGNED',self.source)
 			os.environ['ASSIGNED']=str(self.source)
 			self.assertEqual(assigned_root('ASSIGNED',self.root),self.source)
-			from suite_stage import invoke
-			manifest=self.source/'Cargo.toml';manifest.write_text('baseline source')
-			command=[sys.executable,'-c','from pathlib import Path; print(Path("Cargo.toml").read_text())']
-			self.assertIn('baseline source',invoke(command,self.source,self.root/'before.log'))
-			shutil.rmtree(self.source)
-			with self.assertRaises(FileNotFoundError):invoke(command,self.source,self.root/'after.log')
 
 if __name__=='__main__':unittest.main()

@@ -37,7 +37,7 @@ const ENV_KEYS: [&str; 20] = [
 	"TZ",
 ];
 const ENV_PREFIXES: [&str; 2] = ["CARGO_", "RNX_"];
-const COLUMN_PRODUCERS: [&str; 24] = [
+const COLUMN_PRODUCERS: [&str; 23] = [
 	"accept",
 	"final",
 	"verify",
@@ -58,7 +58,6 @@ const COLUMN_PRODUCERS: [&str; 24] = [
 	"cross_program_controls",
 	"cross_program_gate",
 	"fixed_route_gate",
-	"suite_stage",
 	"miri_exact",
 	"repl_session_controls",
 	"jupyter_controls",
@@ -88,6 +87,16 @@ const RAW_LEAVES: [&str; 7] = [
 pub struct Raised {
 	pub class: &'static str,
 	pub repr: String,
+	/// What Python's `str()` of the exception gives.
+	pub message: String,
+}
+
+/// The message of a raised error, as Python's `str(error)`; any other
+/// error in full.
+pub fn message(error: &anyhow::Error) -> String {
+	error
+		.downcast_ref::<Raised>()
+		.map_or_else(|| format!("{error:#}"), |r| r.message.clone())
 }
 
 impl std::fmt::Display for Raised {
@@ -110,6 +119,7 @@ pub fn raise(class: &'static str, message: &str) -> anyhow::Error {
 			"{class}({})",
 			failure::python_repr(&Value::String(message.into()))
 		),
+		message: message.into(),
 	})
 }
 
@@ -492,6 +502,7 @@ fn run_guarded(run: &Run, command: &[String], env: &Environment, log: &Path) -> 
 			return Err(anyhow::Error::new(Raised {
 				class: "TimeoutExpired",
 				repr: format!("TimeoutExpired({list}, {timeout})"),
+				message: format!("Command '{list}' timed out after {timeout} seconds"),
 			}));
 		}
 		return Err(raise("RuntimeError", &stopped));

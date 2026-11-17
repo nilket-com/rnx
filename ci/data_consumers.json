@@ -1072,8 +1072,53 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 24801,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture."
+      "max_bytes": 25195,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture."
+    },
+    "tools/final/tests/witness/native-build.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/contracts.rs"
+      },
+      "max_bytes": 8898,
+      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the Rust stage mode is compared against it."
+    },
+    "tools/final/tests/witness/native-cases.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/contracts.rs"
+      },
+      "max_bytes": 35343,
+      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the Rust stage mode is compared against it."
+    },
+    "tools/final/tests/witness/native-catalogue.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/contracts.rs"
+      },
+      "max_bytes": 2162,
+      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the Rust stage mode is compared against it."
+    },
+    "tools/final/tests/witness/rune-suite-receipt.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/contracts.rs"
+      },
+      "max_bytes": 1517,
+      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the Rust stage mode is compared against it."
+    },
+    "tools/final/tests/witness/rune-suite-recipes.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/contracts.rs"
+      },
+      "max_bytes": 13344,
+      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the Rust stage mode is compared against it."
     },
     "tools/final/tests/witness/scheduling.json": {
       "class": "live-fixture",
@@ -1090,8 +1135,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 79195,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture."
+      "max_bytes": 79555,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture."
     },
     "tools/final/tests/witness/suite-recipes.json": {
       "class": "live-fixture",

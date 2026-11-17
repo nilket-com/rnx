@@ -39,7 +39,7 @@ struct Fake {
 	/// A stage that borrows tokens from the pool, as Cargo's jobs do, and
 	/// returns them while it keeps running: (stage, tokens, held seconds).
 	borrow: Option<(&'static str, usize, f64)>,
-	/// A stage whose unchanged Python client runs an exclusive case.
+	/// A stage whose jobserver client runs an exclusive contract case.
 	exclusive: Option<&'static str>,
 	weights: BTreeMap<&'static str, usize>,
 	/// Remove the schedule after the stages, before finalization.
@@ -170,17 +170,25 @@ impl Hooks for Fake {
 			std::io::Write::write_all(&mut fifo, &tokens).unwrap();
 		}
 		if self.exclusive == Some(call.name.as_str()) {
-			let script = "import time, native_contracts\nfrom unittest.mock import patch\ndef case(*a): time.sleep(0.5); return {'status': 'PASS'}\nwith patch.object(native_contracts, 'run_case', side_effect=case):\n    native_contracts.with_tokens(3, {'name': 'exclusive'}, None, None, None, None)\n";
-			let column = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tools/column");
-			let status = std::process::Command::new("timeout")
-				.args(["30", "python3", "-B", "-c", script])
-				.env_clear()
-				.envs(&call.environment)
-				.current_dir(column)
-				.status();
-			if !status.as_ref().is_ok_and(|s| s.success()) {
+			// The case takes every token its stage does not hold; bounded at
+			// 30 s, so a deadlock fails instead of hanging.
+			let environment = call.environment.clone();
+			let (sender, receiver) = std::sync::mpsc::channel();
+			std::thread::spawn(move || {
+				let cases = [json!({"name": "exclusive", "exclusive": true})];
+				let done = rnx_final::contracts::run_cases(
+					&cases,
+					&|_| {
+						std::thread::sleep(Duration::from_millis(500));
+						Ok(json!({"status": "PASS"}))
+					},
+					&environment,
+				);
+				let _ = sender.send(done.is_ok());
+			});
+			if receiver.recv_timeout(Duration::from_secs(30)) != Ok(true) {
 				return Some(Err(anyhow::anyhow!(
-					"the exclusive case never got its tokens: {status:?}"
+					"the exclusive case never got its tokens"
 				)));
 			}
 		}
@@ -651,7 +659,7 @@ fn python_suites_and_the_screen_get_no_jobserver() {
 }
 
 /// The cycle a partial reservation would create: a running stage's
-/// unchanged Python client starts an exclusive case and needs every token
+/// jobserver client starts an exclusive case and needs every token
 /// its stage does not hold, while a four-wide stage waits beside it. With
 /// whole-width admission the wide stage holds nothing while it waits, so the
 /// exclusive case runs, its stage ends, and the wide stage follows. The

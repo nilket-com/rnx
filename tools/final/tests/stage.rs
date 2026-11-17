@@ -142,7 +142,11 @@ fn every_converted_suite_stage_runs_as_the_witness_ran_it() {
 	let catalogue: Vec<String> = rnx_final::catalogue::commands(&root.join("target/unused"), &root)
 		.unwrap()
 		.into_iter()
-		.filter(|(_, c)| c.get(2).map(String::as_str) == Some("suite") && c[0] == stage::PROGRAM)
+		.filter(|(n, c)| {
+			c.get(2).map(String::as_str) == Some("suite")
+				&& c[0] == stage::PROGRAM
+				&& n != "rune-suite"
+		})
 		.map(|(n, _)| n)
 		.collect();
 	assert_eq!(
@@ -364,14 +368,14 @@ fn every_registered_package_recipe_propagates_a_failed_build() {
 	}
 }
 
-/// rune-suite stays with its Python native contract cases; an unknown
-/// stage is refused.
+/// An unknown stage is refused.
 #[test]
-fn rune_suite_and_an_unknown_stage_are_refused() {
+fn an_unknown_stage_is_refused() {
 	let s = scratch();
 	let out = s.0.join("out");
 	std::fs::create_dir(&out).unwrap();
-	for name in ["rune-suite", "no-such-stage"] {
+	{
+		let name = "no-such-stage";
 		assert!(
 			stage::suite(
 				name,

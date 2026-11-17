@@ -1153,9 +1153,9 @@
 					[
 						"rune-suite",
 						[
-							"python3",
-							"-B",
-							"tools/column/suite_stage.py",
+							"rnx-final",
+							"stage",
+							"suite",
 							"--stage",
 							"rune-suite",
 							"--out",
@@ -2450,9 +2450,9 @@
 					[
 						"rune-suite",
 						[
-							"python3",
-							"-B",
-							"tools/column/suite_stage.py",
+							"rnx-final",
+							"stage",
+							"suite",
 							"--stage",
 							"rune-suite",
 							"--out",
@@ -3575,9 +3575,9 @@
 					[
 						"rune-suite",
 						[
-							"python3",
-							"-B",
-							"tools/column/suite_stage.py",
+							"rnx-final",
+							"stage",
+							"suite",
 							"--stage",
 							"rune-suite",
 							"--out",
@@ -3854,6 +3854,10 @@
 		{
 			"change": "the 53 suite_stage.py stages other than rune-suite run as the controller's stage mode, [rnx-final, stage, suite, --stage, NAME, --out, OUT] in place of [python3, -B, tools/column/suite_stage.py, --stage, NAME, --out, OUT], and clippy and adapter-clippy as [rnx-final, stage, clippy, (--adapter,) --out, OUT] in place of [python3, -B, tools/column/clippy.py, (--adapter,) --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing was regenerated from the Rust output.",
 			"record": "0287"
+		},
+		{
+			"change": "rune-suite runs as the controller's stage mode, [rnx-final, stage, suite, --stage, rune-suite, --out, OUT] in place of [python3, -B, tools/column/suite_stage.py, --stage, rune-suite, --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
+			"record": "0289"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

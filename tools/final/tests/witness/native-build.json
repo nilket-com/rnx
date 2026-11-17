@@ -1,0 +1,399 @@
+{
+ "expected": {
+  "ambiguous": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "cwd": "<ROOT>",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "CARGO_TARGET_DIR": "<BULK>/build-target"
+     },
+     "log": "build.log",
+     "target_exists": false,
+     "timeout": 3600
+    }
+   ],
+   "files": [
+    "build-target-OWNER.json",
+    "build-target-RELEASE.json",
+    "build.log"
+   ],
+   "release": {
+    "error": null,
+    "original_error": "ValueError('ambiguous Rune test binary')",
+    "removed": true,
+    "retained": [
+     "build-target-OWNER.json",
+     "build.log"
+    ],
+    "status": "PASS"
+   },
+   "result": {
+    "error": "ValueError: ambiguous Rune test binary"
+   }
+  },
+  "good": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "cwd": "<ROOT>",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "CARGO_TARGET_DIR": "<BULK>/build-target"
+     },
+     "log": "build.log",
+     "target_exists": false,
+     "timeout": 3600
+    },
+    {
+     "command": [
+      "readelf",
+      "--debug-dump=info",
+      "--dwarf-depth=1",
+      "<BULK>/rune-tests"
+     ],
+     "cwd": "<ROOT>",
+     "log": "dwarf.log",
+     "timeout": 180
+    }
+   ],
+   "files": [
+    "BINARY.json",
+    "build-target-OWNER.json",
+    "build-target-RELEASE.json",
+    "build.log",
+    "dwarf.log",
+    "rune-tests"
+   ],
+   "release": {
+    "error": null,
+    "original_error": null,
+    "removed": true,
+    "retained": [
+     "BINARY.json",
+     "build-target-OWNER.json",
+     "build.log",
+     "dwarf.log",
+     "rune-tests"
+    ],
+    "status": "PASS"
+   },
+   "result": {
+    "binary": "rune-tests",
+    "receipt": {
+     "binary_sha256": "20c9ef92c32b1e8ff1e88ac252fafa5cbfbf508f3169a6f29e7a2dd93257ff7c",
+     "candidate": "<CANDIDATE>",
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "dwarf_sha256": "281b7dd87b14338398043b0d440a9e611fdf3e45494715d8de2acb6a3b9c96f8",
+     "expected_repo": "<ROOT>",
+     "source": "<SOURCE>",
+     "status": "PASS",
+     "units": [
+      {
+       "name": "rune/crates/rune/src/lib.rs/@/rune.abc-cgu.0",
+       "recorded_cwd": "<ROOT>"
+      }
+     ]
+    }
+   }
+  },
+  "no binary": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "cwd": "<ROOT>",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "CARGO_TARGET_DIR": "<BULK>/build-target"
+     },
+     "log": "build.log",
+     "target_exists": false,
+     "timeout": 3600
+    }
+   ],
+   "files": [
+    "build-target-OWNER.json",
+    "build-target-RELEASE.json",
+    "build.log"
+   ],
+   "release": {
+    "error": null,
+    "original_error": "ValueError('ambiguous Rune test binary')",
+    "removed": true,
+    "retained": [
+     "build-target-OWNER.json",
+     "build.log"
+    ],
+    "status": "PASS"
+   },
+   "result": {
+    "error": "ValueError: ambiguous Rune test binary"
+   }
+  },
+  "no recipe": {
+   "calls": [],
+   "files": [],
+   "release": null,
+   "result": {
+    "error": "ValueError: native contracts require one declared execution-serde library recipe"
+   }
+  },
+  "no units": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "cwd": "<ROOT>",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "CARGO_TARGET_DIR": "<BULK>/build-target"
+     },
+     "log": "build.log",
+     "target_exists": false,
+     "timeout": 3600
+    },
+    {
+     "command": [
+      "readelf",
+      "--debug-dump=info",
+      "--dwarf-depth=1",
+      "<BULK>/rune-tests"
+     ],
+     "cwd": "<ROOT>",
+     "log": "dwarf.log",
+     "timeout": 180
+    }
+   ],
+   "files": [
+    "build-target-OWNER.json",
+    "build-target-RELEASE.json",
+    "build.log",
+    "dwarf.log",
+    "rune-tests"
+   ],
+   "release": {
+    "error": null,
+    "original_error": "ValueError('no Rune compilation units')",
+    "removed": true,
+    "retained": [
+     "build-target-OWNER.json",
+     "build.log",
+     "dwarf.log",
+     "rune-tests"
+    ],
+    "status": "PASS"
+   },
+   "result": {
+    "error": "ValueError: no Rune compilation units"
+   }
+  },
+  "other checkout": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "cwd": "<ROOT>",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "CARGO_TARGET_DIR": "<BULK>/build-target"
+     },
+     "log": "build.log",
+     "target_exists": false,
+     "timeout": 3600
+    },
+    {
+     "command": [
+      "readelf",
+      "--debug-dump=info",
+      "--dwarf-depth=1",
+      "<BULK>/rune-tests"
+     ],
+     "cwd": "<ROOT>",
+     "log": "dwarf.log",
+     "timeout": 180
+    }
+   ],
+   "files": [
+    "build-target-OWNER.json",
+    "build-target-RELEASE.json",
+    "build.log",
+    "dwarf.log",
+    "rune-tests"
+   ],
+   "release": {
+    "error": null,
+    "original_error": "ValueError('Rune compilation source differs from checkout')",
+    "removed": true,
+    "retained": [
+     "build-target-OWNER.json",
+     "build.log",
+     "dwarf.log",
+     "rune-tests"
+    ],
+    "status": "PASS"
+   },
+   "result": {
+    "error": "ValueError: Rune compilation source differs from checkout"
+   }
+  },
+  "two dirs": {
+   "calls": [
+    {
+     "command": [
+      "cargo",
+      "+1.98.1",
+      "test",
+      "--locked",
+      "-p",
+      "rune",
+      "--profile",
+      "engine-dev",
+      "--lib",
+      "--features",
+      "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+      "--no-run",
+      "--message-format=json"
+     ],
+     "cwd": "<ROOT>",
+     "env": {
+      "CARGO_BUILD_JOBS": "7",
+      "CARGO_TARGET_DIR": "<BULK>/build-target"
+     },
+     "log": "build.log",
+     "target_exists": false,
+     "timeout": 3600
+    },
+    {
+     "command": [
+      "readelf",
+      "--debug-dump=info",
+      "--dwarf-depth=1",
+      "<BULK>/rune-tests"
+     ],
+     "cwd": "<ROOT>",
+     "log": "dwarf.log",
+     "timeout": 180
+    }
+   ],
+   "files": [
+    "build-target-OWNER.json",
+    "build-target-RELEASE.json",
+    "build.log",
+    "dwarf.log",
+    "rune-tests"
+   ],
+   "release": {
+    "error": null,
+    "original_error": "ValueError('missing Rune compilation directory')",
+    "removed": true,
+    "retained": [
+     "build-target-OWNER.json",
+     "build.log",
+     "dwarf.log",
+     "rune-tests"
+    ],
+    "status": "PASS"
+   },
+   "result": {
+    "error": "ValueError: missing Rune compilation directory"
+   }
+  },
+  "two recipes": {
+   "calls": [],
+   "files": [],
+   "release": null,
+   "result": {
+    "error": "ValueError: native contracts require one declared execution-serde library recipe"
+   }
+  }
+ },
+ "method": "native_contracts.build(<ROOT>, <BULK>, manifest) under MAKEFLAGS='-j7 --jobserver-auth=fifo:/nonexistent', with checked intercepted: the Cargo call writes one planted executable per listed (target name, profile.test) pair into CARGO_TARGET_DIR and prints their compiler-artifact lines after a build-script line; the readelf call prints the planted DWARF text (good: a Rune unit under <ROOT> and a core unit; or the shown edit). calls holds each checked call (with the two Cargo variables and whether the target existed); result the binary's name and BINARY.json (source and candidate shown as placeholders) or the error; files the bulk directory's names after; release the build target's release journal's status, removed, retained names and errors.",
+ "substitutions": {
+  "<BULK>": "the bulk directory",
+  "<ROOT>": "the checkout"
+ },
+ "witness": "837f2b5d4fbd23f123d4a0a607872b21bf584012"
+}

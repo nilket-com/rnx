@@ -365,20 +365,10 @@ fn bulk_assignments_cover_producer_calls() {
 			continue;
 		};
 		let text = std::fs::read_to_string(root.join(script)).unwrap_or_default();
-		let mut variables: BTreeSet<String> = assigned
+		let variables: BTreeSet<String> = assigned
 			.captures_iter(&text)
 			.map(|c| c[1].to_owned())
 			.collect();
-		if script.ends_with("suite_stage.py")
-			&& (name == "rune-clippy"
-				|| !rnx_final::catalogue::recipes(name, &root)
-					.unwrap()
-					.iter()
-					.any(|r| r.iter().any(|a| a.contains("clippy"))))
-		{
-			// This producer's baseline reader depends on its recipes.
-			variables.clear();
-		}
 		let bulk = rnx_final::catalogue::bulk_roots(name);
 		for variable in variables {
 			let kind = match variable.as_str() {
@@ -470,9 +460,9 @@ fn every_stage_that_must_be_a_producer_runs_one() {
 			.filter(|(name, command)| selection::requires_producer(name) && command[0] == "python3")
 			.map(|(name, command)| serde_json::json!([name, command]))
 			.collect();
-	// polars-inventories, cross, rune-suite and fixed-route.
+	// polars-inventories, cross and fixed-route.
 	assert!(
-		required.len() == 4,
+		required.len() == 3,
 		"{} Python producer stages",
 		required.len()
 	);

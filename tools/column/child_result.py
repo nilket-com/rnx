@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import time
@@ -22,7 +23,7 @@ ENV_KEYS = frozenset({'RUSTFLAGS', 'RUSTDOCFLAGS', 'RUSTUP_TOOLCHAIN', 'RUSTC',
 ENV_PREFIXES = ('CARGO_', 'RNX_')
 PRODUCERS = frozenset(('tools/column/' + n + '.py') for n in (
 	'accept', 'final', 'verify', 'clippy', 'inventories', 'cli', 'resume', 'recover_cross', 'chain', 'borrowed_controls', 'ir_pool', 'old_path', 'boolean_capture', 'f64_plan_capture',
-	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate', 'fixed_route_gate', 'suite_stage', 'miri_exact', 'repl_session_controls', 'jupyter_controls')) | {'tools/verify.py',
+	'f64_plan_large', 'f64_output_capture', 'accept_remote', 'cross_program_controls', 'cross_program_gate', 'fixed_route_gate', 'miri_exact', 'repl_session_controls', 'jupyter_controls')) | {'tools/verify.py',
 	'rune/tools/xtask/column/ck1.py', 'rune/tools/xtask/column/measure.py',
 	'rune/tools/xtask/column/cli_capture.py', 'rune/tools/xtask/supplemental/run.py'}
 LEAVES = {'ci/preflight.py', 'ci/disk_space.py', 'ci/hygiene.py', 'ci/commit_subjects.py',
@@ -81,6 +82,20 @@ def contract(command, cwd, root=ROOT):
 	if Path(command[0]).name in {'cargo', 'rustc', 'git', 'ssh', 'rustup', 'python3', 'python'}:
 		return 'leaf'
 	raise ValueError('unregistered raw child: ' + command[0])
+
+
+def discovered(text):
+	"""The test names a Cargo test binary's --list printed; never none."""
+	names = re.findall(r'^(.+): test$', text, re.M)
+	if not names: raise ValueError('empty test discovery')
+	return names
+
+
+def executed(text):
+	"""The tests a Cargo test run passed, over every result line; never none."""
+	counts = re.findall(r'test result: ok\. (\d+) passed;', text)
+	if not counts or sum(map(int, counts)) == 0: raise ValueError('empty executed suite')
+	return sum(map(int, counts))
 
 
 def publish(path, value):
@@ -174,7 +189,6 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 		if kind == 'producer': clean_env[CONTEXT] = str((directory / 'CONTEXT.json').resolve())
 		test_command = Path(command[0]).name == 'cargo' and 'test' in command and '--list' not in command
 		if test_command:
-			from suite_stage import discovered
 			discovery = command[:command.index('--')] if '--' in command else command[:]
 			# Keep filters and ignored policy, remove execution-thread settings.
 			tail = command[command.index('--')+1:] if '--' in command else []
@@ -188,7 +202,6 @@ def run(command, *, cwd, env=None, stdout=None, stderr=None, timeout=None, direc
 		if after is not None: row['declared_output'] = after()
 		if child.returncode != 0: raise ValueError('child exit is nonzero')
 		if test_command:
-			from suite_stage import executed
 			if stdout is None or not isinstance(getattr(stdout, 'name', None), str): raise ValueError('test execution requires a named log')
 			stdout.flush()
 			row['test_count'] = executed(Path(stdout.name).read_text())

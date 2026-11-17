@@ -418,14 +418,9 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		command.extend(rest.iter().map(|s| s.to_string()));
 		command
 	};
-	// Every suite stage but rune-suite runs as the controller's own stage
-	// mode; rune-suite stays with its Python native contract cases.
+	// Every suite stage runs as the controller's own stage mode.
 	let suite = |stage: &str| -> Stage {
-		let mut command = if stage == "rune-suite" {
-			python(&["tools/column/suite_stage.py"])
-		} else {
-			strings(&[crate::stage::PROGRAM, "stage", "suite"])
-		};
+		let mut command = strings(&[crate::stage::PROGRAM, "stage", "suite"]);
 		command.extend(strings(&["--stage", stage, "--out", &out_text(stage)]));
 		(stage.into(), command)
 	};
@@ -1006,7 +1001,18 @@ pub fn required(
 	Ok(stages.into_iter().collect())
 }
 
-/// The Cargo commands a suite stage runs (suite_stage.recipes).
+/// Each API boundary's doc tests: a compiling twin and its compile-fail
+/// controls, by selector and their exact count.
+pub const TWINS: [(&str, usize); 6] = [
+	("host_function_owned_output", 4),
+	("host_function_string_input", 8),
+	("ExecutionRuntime", 2),
+	("function::host::HostOutput", 4),
+	("opaque_factory", 2),
+	("opaque_method", 5),
+];
+
+/// The Cargo commands a suite stage runs.
 pub fn recipes(stage: &str, root: &Path) -> Result<Vec<Command>> {
 	if let Some((_, command)) = formats().into_iter().find(|(name, _)| name == stage) {
 		return Ok(vec![command]);
@@ -1074,15 +1080,7 @@ pub fn recipes(stage: &str, root: &Path) -> Result<Vec<Command>> {
 				command
 			})
 			.collect();
-		// Each API boundary has a compiling twin and a compile-fail control.
-		for selector in [
-			"host_function_owned_output",
-			"host_function_string_input",
-			"ExecutionRuntime",
-			"function::host::HostOutput",
-			"opaque_factory",
-			"opaque_method",
-		] {
+		for (selector, _) in TWINS {
 			commands.push(cargo(&[
 				"test",
 				"--locked",

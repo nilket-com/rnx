@@ -50,7 +50,7 @@ impl Fixture {
 		// A registered producer path, so no registration is patched.
 		std::fs::create_dir_all(root.join("tools/column")).unwrap();
 		let fixture = Self {
-			script: root.join("tools/column/suite_stage.py"),
+			script: root.join("tools/column/jupyter_controls.py"),
 			root,
 			out,
 		};

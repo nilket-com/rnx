@@ -221,7 +221,6 @@ tools/column/migration_rules.py	port
 tools/column/migration_score.py	port
 tools/column/miri_cache.py	port
 tools/column/miri_exact.py	port
-tools/column/native_contracts.py	port
 tools/column/old_path.py	port
 tools/column/old_path_child.py	port
 tools/column/old_path_gdb.py	port
@@ -250,8 +249,6 @@ tools/column/score_0214.py	port
 tools/column/score_0215.py	port
 tools/column/simd_hot_loop.py	port
 tools/column/simd_shape.py	port
-tools/column/stage_scheduler.py	port
-tools/column/suite_stage.py	port
 tools/column/test_anchor_cache.py	port	final controller-controls
 tools/column/test_boolean_limits.py	port	final controller-controls
 tools/column/test_boolean_vectors.py	port	final controller-controls
@@ -289,7 +286,6 @@ tools/column/test_masked_reuse_acceptance.py	port	final controller-controls
 tools/column/test_memory_resources.py	port	final controller-controls
 tools/column/test_migration_rules.py	port	final controller-controls
 tools/column/test_miri_cache.py	port	final controller-controls
-tools/column/test_native_contracts.py	port	final controller-controls
 tools/column/test_old_path_rules.py	port	final controller-controls
 tools/column/test_old_path_score.py	port	final controller-controls
 tools/column/test_owned_build.py	port	final controller-controls
@@ -308,8 +304,6 @@ tools/column/test_score_0214.py	port	final controller-controls
 tools/column/test_score_0215.py	port	final controller-controls
 tools/column/test_simd_hot_loop.py	port	final controller-controls
 tools/column/test_simd_shape.py	port	final controller-controls
-tools/column/test_stage_scheduler.py	port	final controller-controls
-tools/column/test_suite_stage.py	port	final controller-controls
 tools/column/test_valgrind_resolution.py	port	final controller-controls
 tools/engine_source.py	port
 tools/profile_recipes.py	port

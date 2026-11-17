@@ -48,7 +48,7 @@ pub fn declared_bulk(name: &str) -> u64 {
 /// Wrapper stages by script: what each builds beyond the manifests it names.
 fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 	Some(match script {
-		CLIPPY | SUITE | "tools/column/suite_stage.py" => &[],
+		CLIPPY | SUITE => &[],
 		"tools/column/inventories.py" => &[
 			("target/column-inventory-extract", "debug"),
 			("tools/polars-gen/Cargo.toml", "debug"),
@@ -249,7 +249,7 @@ pub fn resources(
 		return Ok(lanes);
 	}
 	match script(command) {
-		Some(SUITE | "tools/column/suite_stage.py") => {
+		Some(SUITE) => {
 			let stage = &command[command
 				.iter()
 				.position(|a| a == "--stage")
@@ -308,13 +308,13 @@ pub fn weight(_name: &str, command: &[String], root: &Path) -> Result<usize> {
 		});
 	}
 	match script(command) {
-		Some(SUITE | "tools/column/suite_stage.py") => {
+		Some(SUITE) => {
 			let stage = &command[command
 				.iter()
 				.position(|a| a == "--stage")
 				.context("suite stage without --stage")?
 				+ 1];
-			// suite_stage runs every test recipe with --test-threads=4.
+			// The stage runs every test recipe with --test-threads=4.
 			Ok(
 				if catalogue::recipes(stage, root)?
 					.iter()

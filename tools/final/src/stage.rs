@@ -1,7 +1,7 @@
 //! The stage programs the controller runs as its own executable:
 //! `rnx-final stage suite --stage NAME --out DIR` (the package, format,
-//! lint, suite and Clippy stages `suite_stage.py` ran, all but
-//! `rune-suite`) and `rnx-final stage clippy [--adapter] --out DIR` (the
+//! lint, suite and Clippy stages, `rune-suite` with its native contract
+//! cases) and `rnx-final stage clippy [--adapter] --out DIR` (the
 //! comparison `clippy.py` ran). Each publishes its receipt through the
 //! producer protocol, inside the final's guardian, jobserver and limits.
 use crate::catalogue::{self, Command};
@@ -164,7 +164,7 @@ pub fn wait(mut command: std::process::Command, limit: Duration) -> Result<i32> 
 	Ok(child.wait()?.code().unwrap_or(1))
 }
 
-/// A suite stage's row for each recipe, as `suite_stage.run` writes them.
+/// A suite stage's row for each recipe, as `suite_stage.run` wrote them.
 pub fn suite(
 	stage: &str,
 	out: &Path,
@@ -173,9 +173,6 @@ pub fn suite(
 	env: &Environment,
 	run: &mut dyn Invoke,
 ) -> Result<Vec<Value>> {
-	if stage == "rune-suite" {
-		bail!(value_error("rune-suite runs tools/column/suite_stage.py"));
-	}
 	let commands = catalogue::recipes(stage, root)?;
 	if commands.is_empty() {
 		bail!(value_error("empty recipe"));
@@ -207,6 +204,18 @@ pub fn suite(
 				&out.join(format!("{i}-test.log")),
 				&probe,
 			)?)?;
+			// An API boundary runs exactly its twins, every one passing.
+			if stage == "rune-suite" && command.iter().any(|a| a == "--doc") {
+				let twins = catalogue::TWINS
+					.iter()
+					.find(|(s, _)| Some(*s) == command.last().map(String::as_str))
+					.map(|(_, n)| *n);
+				if twins != Some(names.len()) || passed != names.len() as u64 {
+					bail!(value_error(
+						"API boundary requires both compiling and compile-fail twins"
+					));
+				}
+			}
 			row.insert("discovered".into(), json!(names));
 			row.insert("passed".into(), json!(passed));
 		} else if packages.contains(&stage) {
@@ -490,6 +499,42 @@ fn build_jobs(env: &Environment) -> Result<usize> {
 	job_budget::memory::build_jobs(&observation)
 }
 
+/// A suite stage's receipt, as `suite_stage.main` wrote it: its rows,
+/// then for `rune-suite` its native contracts, which must pass; and every
+/// log in `out`, by digest. An error is the receipt's, not the caller's.
+pub fn receipt(
+	stage: &str,
+	out: &Path,
+	rows: impl FnOnce() -> Result<Vec<Value>>,
+	contracts: impl FnOnce() -> Result<Value>,
+) -> Result<Value> {
+	let mut r = json!({"status": "FAIL", "stage": stage});
+	let outcome = (|| -> Result<()> {
+		r["checks"] = json!(rows()?);
+		if stage == "rune-suite" {
+			let c = contracts()?;
+			r["contracts"] = c.clone();
+			if c["status"] != "PASS" {
+				bail!(value_error(c["error"].as_str().unwrap_or_default()));
+			}
+		}
+		r["status"] = json!("PASS");
+		Ok(())
+	})();
+	if let Err(error) = outcome {
+		r["error"] = json!(format!("{error:#}"));
+	}
+	let mut artifacts = Map::new();
+	for entry in std::fs::read_dir(out)?.flatten() {
+		let path = entry.path();
+		if path.extension().is_some_and(|e| e == "log") {
+			artifacts.insert(path.to_string_lossy().into_owned(), json!(digest(&path)?));
+		}
+	}
+	r["artifacts"] = Value::Object(artifacts);
+	Ok(r)
+}
+
 /// Inside a final, the stage must be the one its context names, before it
 /// does anything: this executable (path and digest), this invocation of
 /// the logical program, and this output directory.
@@ -548,35 +593,34 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 			let stage = value("--stage").context("a suite stage needs --stage")?;
 			std::fs::create_dir_all(out.parent().context("--out has no parent")?)?;
 			std::fs::create_dir(&out)?;
-			let mut r = json!({"status": "FAIL", "stage": stage});
 			let record = || -> Result<String> {
 				Ok(crate::selection::record(root, "HEAD")?["baseline"]
 					.as_str()
 					.context("record without baseline")?
 					.to_owned())
 			};
-			match suite(
+			let r = receipt(
 				&stage,
 				&out,
-				root,
-				&record,
-				&env,
-				&mut Live { env: env.clone() },
-			) {
-				Ok(rows) => {
-					r["checks"] = json!(rows);
-					r["status"] = json!("PASS");
-				}
-				Err(error) => r["error"] = json!(format!("{error:#}")),
-			}
-			let mut artifacts = Map::new();
-			for entry in std::fs::read_dir(&out)?.flatten() {
-				let path = entry.path();
-				if path.extension().is_some_and(|e| e == "log") {
-					artifacts.insert(path.to_string_lossy().into_owned(), json!(digest(&path)?));
-				}
-			}
-			r["artifacts"] = Value::Object(artifacts);
+				|| {
+					suite(
+						&stage,
+						&out,
+						root,
+						&record,
+						&env,
+						&mut Live { env: env.clone() },
+					)
+				},
+				|| {
+					crate::contracts::run(
+						root,
+						&out,
+						&env,
+						&crate::contracts::Live { env: env.clone() },
+					)
+				},
+			)?;
 			publish(&out.join("RESULT.json"), &r, &env)?;
 			println!(
 				"{} {}",

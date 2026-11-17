@@ -1,4 +1,6 @@
+import os
 import unittest
+from unittest.mock import patch
 
 import host_budget as budget
 
@@ -29,6 +31,15 @@ class HostBudget(unittest.TestCase):
 
 	def test_a_single_cpu_still_runs_cases(self):
 		self.assertEqual(budget.case_width(observation(60*GIB, 60*GIB, cpus=1)), 1)
+
+	def test_inside_a_final_stages_use_its_budget(self):
+		# Moved from test_stage_scheduler.py (ADR 0289): inside a final the
+		# jobserver's width is the budget, measured once on a quiet host.
+		with patch.dict(os.environ, {'MAKEFLAGS': '-j7 --jobserver-auth=fifo:/nonexistent'}):
+			self.assertEqual(budget.build_jobs(), 7)
+			self.assertEqual(budget.case_width(), 3)
+		with patch.dict(os.environ, {'MAKEFLAGS': '-j7'}):
+			self.assertIsNone(budget.inherited_width())
 
 
 if __name__ == '__main__': unittest.main()

@@ -1,0 +1,63 @@
+{
+ "expected": {
+  "fail": {
+   "exit": true,
+   "value": {
+    "artifacts": {
+     "<OUT>/0-test.log": "836ff184e7b41b1e13cb5fd89fa1de98dbbab99e9d2918913ff43b86a5c7c213"
+    },
+    "checks": [
+     {
+      "command": [
+       "planted"
+      ],
+      "discovered": [
+       "a"
+      ],
+      "passed": 1
+     }
+    ],
+    "contracts": {
+     "error": "planted contract failure",
+     "status": "FAIL"
+    },
+    "error": "ValueError: planted contract failure",
+    "stage": "rune-suite",
+    "status": "FAIL"
+   }
+  },
+  "pass_": {
+   "exit": false,
+   "path": "RESULT.json",
+   "value": {
+    "artifacts": {
+     "<OUT>/0-test.log": "836ff184e7b41b1e13cb5fd89fa1de98dbbab99e9d2918913ff43b86a5c7c213"
+    },
+    "checks": [
+     {
+      "command": [
+       "planted"
+      ],
+      "discovered": [
+       "a"
+      ],
+      "passed": 1
+     }
+    ],
+    "contracts": {
+     "catalogue": {
+      "status": "PASS"
+     },
+     "status": "PASS"
+    },
+    "stage": "rune-suite",
+    "status": "PASS"
+   }
+  }
+ },
+ "method": "suite_stage.main() with --stage rune-suite --out <OUT>, its run (which writes <OUT>/0-test.log 'log' and returns one row), native_contracts.run and child.publish intercepted: pass, where contracts pass; fail, where contracts return status FAIL with an error (the receipt's error reduced to the raised exception's line). value is what main publishes, exit its return value.",
+ "substitutions": {
+  "<OUT>": "the stage out directory"
+ },
+ "witness": "837f2b5d4fbd23f123d4a0a607872b21bf584012"
+}
