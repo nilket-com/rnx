@@ -603,6 +603,19 @@ impl Bundle {
 	}
 
 	pub fn add(&mut self, path: &Path, kind: Kind, roots: &[PathBuf]) -> Result<Option<String>> {
+		self.add_labelled(path, kind, roots, None)
+	}
+
+	/// `add`, with the source named by `label`, a receipt's relative
+	/// diagnostic name, in place of the file's bare name, so the excerpt
+	/// stays identifiable once its source is gone.
+	pub fn add_labelled(
+		&mut self,
+		path: &Path,
+		kind: Kind,
+		roots: &[PathBuf],
+		label: Option<&str>,
+	) -> Result<Option<String>> {
 		if self.files().len() >= 8 || self.remaining < 1024 {
 			self.omit("budget exhausted");
 			return Ok(None);
@@ -642,28 +655,41 @@ impl Bundle {
 				"child.log"
 			}
 		);
+		// Every fallible read of the source comes first, so a source that
+		// fails leaves no excerpt behind and the budget untouched.
+		let (source_bytes, source_sha256) = (std::fs::metadata(&path)?.len(), digest(&path)?);
+		let excerpt_sha256 = {
+			use sha2::Digest as _;
+			pyjson::hex(&sha2::Sha256::digest(&data))
+		};
 		let destination = self.directory.join(&name);
+		// Only a file this call created is ever removed.
 		let mut stream = std::fs::OpenOptions::new()
 			.write(true)
 			.create_new(true)
 			.open(&destination)?;
-		stream.write_all(&data)?;
-		stream.sync_all()?;
+		if let Err(error) = stream.write_all(&data).and_then(|()| stream.sync_all()) {
+			// A partly written excerpt is removed; nothing was accounted.
+			drop(stream);
+			let _ = std::fs::remove_file(&destination);
+			return Err(error.into());
+		}
 		self.remaining -= data.len();
 		let source_name = bounded(
 			&sanitize(
-				&path
-					.file_name()
-					.map(|n| n.to_string_lossy().into_owned())
-					.unwrap_or_default(),
+				&label.map(str::to_owned).unwrap_or_else(|| {
+					path.file_name()
+						.map(|n| n.to_string_lossy().into_owned())
+						.unwrap_or_default()
+				}),
 				&self.environment,
 			),
 			256,
 		)
 		.0;
 		let row = json!({
-			"path": format!("failure/{name}"), "kind": kind.name(), "bytes": data.len(), "sha256": digest(&destination)?,
-			"source_name": source_name, "source_bytes": std::fs::metadata(&path)?.len(), "source_sha256": digest(&path)?,
+			"path": format!("failure/{name}"), "kind": kind.name(), "bytes": data.len(), "sha256": excerpt_sha256,
+			"source_name": source_name, "source_bytes": source_bytes, "source_sha256": source_sha256,
 			"truncated": cut, "projected": kind == Kind::Receipt,
 		});
 		self.row["files"]
@@ -795,24 +821,41 @@ fn retain_receipt(
 	}
 	bundle.add(&leaf, Kind::Receipt, roots)?;
 	let directory = leaf.parent().unwrap_or(Path::new("")).to_owned();
-	let mut references: Vec<PathBuf> = Vec::new();
+	// Declared names, labelled by themselves; then the conventional siblings.
+	let mut references: Vec<(PathBuf, Option<String>)> = Vec::new();
 	if let Some(Value::Array(declared)) = row.get("diagnostic_files") {
-		references.extend(
-			declared
-				.iter()
-				.take(16)
-				.filter_map(Value::as_str)
-				.map(|name| directory.join(name)),
-		);
+		for name in declared.iter().take(16).filter_map(Value::as_str) {
+			let plain = !name.is_empty()
+				&& Path::new(name)
+					.components()
+					.all(|c| matches!(c, std::path::Component::Normal(_)));
+			if plain {
+				references.push((directory.join(name), Some(name.to_owned())));
+			} else {
+				bundle.omit("invalid diagnostic name");
+			}
+		}
 	}
-	references.extend(DIAGNOSTIC_SIBLINGS.iter().map(|name| directory.join(name)));
+	references.extend(
+		DIAGNOSTIC_SIBLINGS
+			.iter()
+			.map(|name| (directory.join(name), None)),
+	);
 	let mut seen = std::collections::BTreeSet::new();
-	for path in references {
+	for (path, label) in references {
 		if !seen.insert(path.clone()) || !path.is_file() {
 			continue;
 		}
-		let text = bundle.add(&path, Kind::Log, roots)?;
-		bundle.adopt_cause(text.as_deref());
+		// One unusable file is noted and skipped; the rest are still kept.
+		match bundle.add_labelled(&path, Kind::Log, roots, label.as_deref()) {
+			Ok(text) => {
+				bundle.adopt_cause(text.as_deref());
+			}
+			Err(problem) => {
+				let note = bounded(&sanitize(&problem.to_string(), environment), 1024).0;
+				bundle.omit(&note);
+			}
+		}
 	}
 	if leaf != receipt {
 		bundle.add(receipt, Kind::Receipt, roots)?;

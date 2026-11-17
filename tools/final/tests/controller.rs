@@ -591,3 +591,248 @@ fn a_failed_stage_cause_survives_release() {
 		assert_eq!(read(&out.join("RELEASE.json"))["status"], "PASS");
 	}
 }
+
+/// The fake with the real compaction replaced, as the release test needs.
+struct Released(Fake);
+impl Hooks for Released {
+	fn head(&self, r: &Path) -> Option<String> {
+		self.0.head(r)
+	}
+	fn disk_check(&self, a: &Path, b: &Path, c: &Environment) -> Result<()> {
+		self.0.disk_check(a, b, c)
+	}
+	fn select(
+		&self,
+		a: &Path,
+		b: &Path,
+		c: Option<&[String]>,
+		d: &str,
+		e: &Environment,
+	) -> Result<Value> {
+		self.0.select(a, b, c, d, e)
+	}
+	fn check_selection(&self, a: &Value, b: &Path, c: &Environment) -> Result<()> {
+		self.0.check_selection(a, b, c)
+	}
+	fn resources(&self, a: &str, b: &[String], c: &Path, d: &Targets) -> Result<Resources> {
+		self.0.resources(a, b, c, d)
+	}
+	fn weight(&self, a: &str, b: &[String], c: &Path) -> Result<usize> {
+		self.0.weight(a, b, c)
+	}
+	fn tools_identity(&self, s: &Settings) -> Result<Value> {
+		self.0.tools_identity(s)
+	}
+	fn stage(&self, call: &StageCall) -> Option<Result<Done>> {
+		self.0.stage(call)
+	}
+	fn compact(&self, _: &Value, _: &Map<String, Value>, _: &Owners, _: &Value) -> Result<Value> {
+		Ok(json!({"schema": 1, "candidate": "c", "roots": []}))
+	}
+}
+
+const CENSUS_SECRET: &str = "planted-cross-secret-0292";
+
+/// The first two executed census cases, by the census plan.
+fn census_cases() -> (String, String) {
+	let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+	let plan =
+		std::fs::read_to_string(root.join("tools/verify/fixtures/census/execution.tsv")).unwrap();
+	let ids: Vec<String> = plan
+		.lines()
+		.skip(1)
+		.filter(|l| l.split('\t').nth(1) == Some("execute"))
+		.map(|l| l.split('\t').next().unwrap().to_owned())
+		.take(2)
+		.collect();
+	(ids[0].clone(), ids[1].clone())
+}
+
+/// A census payload under `payload`: two differing cases, the first with
+/// both engines' outputs (a secret in each stderr, `stderr_bytes` long),
+/// the second with only its stock run.
+fn plant_census(payload: &Path, first: &str, second: &str, stderr_bytes: usize) -> Result<()> {
+	let live = payload.join("census/live-execution");
+	for (case, engine) in [(first, "stock"), (first, "fresh"), (second, "stock")] {
+		let run = live.join(case).join(engine);
+		std::fs::create_dir_all(run.join("report"))?;
+		std::fs::write(run.join("stdout"), format!("{case} {engine} stdout\n"))?;
+		let line = format!("{case} {engine} stderr token={CENSUS_SECRET}\n");
+		std::fs::write(
+			run.join("stderr"),
+			line.repeat(stderr_bytes / line.len() + 1),
+		)?;
+		std::fs::write(
+			run.join("report/result.json"),
+			format!("{{\"case\": \"{case}\", \"engine\": \"{engine}\"}}\n"),
+		)?;
+	}
+	let summary = json!({"executed": 71, "admission_only": [], "differences": [
+		{"id": first, "reason": "live observations differ"},
+		{"id": second, "reason": format!("census execution {second} fresh failed: exit status: 124")},
+	]});
+	std::fs::write(
+		live.join("RESULT.json"),
+		serde_json::to_vec_pretty(&summary)?,
+	)?;
+	Ok(())
+}
+
+/// The launcher's receipt for `payload`, written by `verify.terminal_receipt`.
+fn census_receipt(payload: &Path) -> Result<PathBuf> {
+	let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+		.join("../..")
+		.canonicalize()?;
+	let script = format!(
+		"import importlib.util, sys\nfrom pathlib import Path\nsys.path.insert(0, {column:?})\nspec = importlib.util.spec_from_file_location('verify_launcher', {verify:?})\nverify = importlib.util.module_from_spec(spec); spec.loader.exec_module(verify)\nimport child_result\nresult = verify.terminal_receipt(Path({payload:?}), RuntimeError('cross verification failed'), {{'status': 'PASS'}})\nchild_result.atomic_json(Path({payload:?}) / 'RESULT.json', result)\n",
+		column = root.join("tools/column").to_string_lossy(),
+		verify = root.join("tools/verify.py").to_string_lossy(),
+		payload = payload.to_string_lossy(),
+	);
+	anyhow::ensure!(
+		std::process::Command::new("/usr/bin/python3")
+			.args(["-B", "-c", &script])
+			.status()?
+			.success()
+	);
+	Ok(payload.join("RESULT.json"))
+}
+
+/// A census failure through the final (ADR 0292): the launcher's real
+/// receipt over a planted payload, the child bundle `child::run` builds
+/// from it, the controller's handoff to `copy_bundle`, and the owned root's
+/// release. What survives names both cases and reasons and holds the first
+/// case's labelled stock and fresh evidence, redacted; with oversized
+/// stderr, the envelope's caps hold and say what they dropped.
+#[test]
+fn a_census_failure_keeps_its_cases_through_the_final() {
+	for stderr_bytes in [64, 200 * 1024] {
+		let dir = Dir::new();
+		let (first, second) = census_cases();
+		let (f, s) = (first.clone(), second.clone());
+		let stage: Box<StageFn> = Box::new(move |call: &StageCall| {
+			let bulk = PathBuf::from(&call.environment["RNX_FINAL_ROUTING_ROOT"]);
+			let payload = bulk.join("payload");
+			std::fs::create_dir(&payload)?;
+			plant_census(&payload, &f, &s, stderr_bytes)?;
+			let semantic = census_receipt(&payload)?;
+			std::fs::write(&call.log, "cross verification failed\n")?;
+			std::fs::create_dir(&call.directory)?;
+			atomic_json(
+				&call.directory.join("CHILD.json"),
+				&json!({"receipt": semantic, "sha256": digest(&semantic)?}),
+			)?;
+			// The child bundle, as child::run builds it for a failed producer.
+			let env: Environment = [("CROSS_TOKEN".to_string(), CENSUS_SECRET.to_string())].into();
+			let reference = failure::retain(
+				&call.directory,
+				"cross-child",
+				Some(&semantic),
+				std::slice::from_ref(&call.log),
+				&[call.directory.clone(), bulk.clone()],
+				&env,
+				"child exit is nonzero",
+			)?;
+			let result = call.directory.join("RESULT.json");
+			let mut row = common::stage_receipt(false, 1, json!([]), json!({}));
+			row["error"] = reference["error"].clone();
+			row["failure"] = reference;
+			atomic_json(&result, &row)?;
+			Ok(Done {
+				returncode: 1,
+				validation: json!({"path": result, "sha256": digest(&result)?}),
+				declared_output: None,
+			})
+		});
+		let fake = Arc::new(Released(Fake {
+			stages: vec!["broken"],
+			scope: "explicit",
+			stage: Some(stage),
+			..Default::default()
+		}));
+		let r = controller::run(&settings(
+			&dir.0,
+			"explicit",
+			Some(vec!["broken".into()]),
+			fake,
+			Instant::now(),
+		))
+		.unwrap();
+		let out = dir.0.join("final");
+		assert_eq!(
+			(r["status"].clone(), r["failed_stage"].clone()),
+			(json!("FAIL"), json!("broken"))
+		);
+		// The owned root is released; the evidence is the final's own.
+		assert_eq!(
+			std::fs::read_dir(dir.0.join("target/routing-cli"))
+				.unwrap()
+				.count(),
+			0
+		);
+		assert_eq!(read(&out.join("RELEASE.json"))["status"], "PASS");
+		let index = read(&out.join("FAILURE.json"));
+		let error = index["error"].as_str().unwrap();
+		assert!(
+			error.contains("(2 cases)")
+				&& error.contains(&format!("{first}: live observations differ")),
+			"{error}"
+		);
+		assert!(
+			error.contains(&format!(
+				"{second}: census execution {second} fresh failed: exit status: 124"
+			)),
+			"{error}"
+		);
+		let files = index["files"].as_array().unwrap();
+		let total: u64 = files.iter().map(|f| f["bytes"].as_u64().unwrap()).sum();
+		assert!(
+			files.len() <= 8 && total as usize <= failure::BUNDLE_CAP,
+			"{index}"
+		);
+		let on_disk = std::fs::read_dir(out.join("failure")).unwrap().count();
+		assert_eq!(on_disk, files.len(), "an excerpt without an index row");
+		let label = |name: &str| files.iter().find(|f| f["source_name"] == name).cloned();
+		let live = "census/live-execution";
+		assert!(label(&format!("{live}/RESULT.json")).is_some(), "{index}");
+		for engine in ["stock", "fresh"] {
+			let row = label(&format!("{live}/{first}/{engine}/report/result.json"))
+				.unwrap_or_else(|| panic!("{engine} report: {index}"));
+			let text = std::fs::read_to_string(out.join(row["path"].as_str().unwrap())).unwrap();
+			assert!(text.contains(&first) && text.contains(engine), "{text}");
+		}
+		let all: String = std::fs::read_dir(out.join("failure"))
+			.unwrap()
+			.flatten()
+			.map(|e| std::fs::read_to_string(e.path()).unwrap())
+			.collect();
+		assert!(!all.contains(CENSUS_SECRET), "the secret survived");
+		if stderr_bytes < 1024 {
+			for engine in ["stock", "fresh"] {
+				let row = label(&format!("{live}/{first}/{engine}/stderr"))
+					.unwrap_or_else(|| panic!("{engine} stderr: {index}"));
+				let text =
+					std::fs::read_to_string(out.join(row["path"].as_str().unwrap())).unwrap();
+				assert!(text.contains("<redacted>"), "{text}");
+			}
+			assert!(
+				all.contains(&format!(
+					"census evidence unavailable: {second} fresh stderr"
+				)),
+				"the unavailable run was not named"
+			);
+		} else {
+			// Oversized stderr: excerpts cut at the file cap, the rest dropped
+			// for the budget, and said so.
+			assert!(files.iter().any(|f| f["truncated"] == true), "{index}");
+			assert!(
+				index["omitted"]
+					.as_array()
+					.unwrap()
+					.iter()
+					.any(|o| o == "budget exhausted"),
+				"{index}"
+			);
+		}
+	}
+}

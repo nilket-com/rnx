@@ -22,6 +22,86 @@ def check_rune_pins(root):
 	return check_tree(root)
 
 
+CENSUS_PLAN = Path(__file__).resolve().parent / "verify" / "fixtures" / "census" / "execution.tsv"
+# What a census failure's receipt lists for retention, in priority order:
+# the final keeps at most eight files, the receipt included.
+CENSUS_EVIDENCE = (("stock", "report/result.json"), ("fresh", "report/result.json"),
+				   ("stock", "stderr"), ("fresh", "stderr"), ("stock", "stdout"), ("fresh", "stdout"))
+HEADLINE = "unreviewed census execution differences"
+
+
+def regular_file(base, relative):
+	"""base/relative, when every component is a plain entry and the last a regular file."""
+	import stat
+	path = base
+	for part in Path(relative).parts:
+		if part in ("", ".", "..") or "/" in part: return None
+		path = path / part
+		try: mode = os.lstat(path).st_mode
+		except OSError: return None
+		if stat.S_ISLNK(mode): return None
+	return path if stat.S_ISREG(mode) else None
+
+
+def bounded_read(path, limit):
+	"""At most limit bytes of path, or None when it holds more."""
+	with path.open("rb") as stream: data = stream.read(limit + 1)
+	return None if len(data) > limit else data
+
+
+def cut_bytes(text, limit):
+	"""text within limit UTF-8 bytes, cut at a character boundary and marked."""
+	data = text.encode()
+	if len(data) <= limit: return text
+	return data[:limit - 3].decode(errors="ignore") + "..."
+
+
+def census_headline(differences):
+	"""One line naming the differences, as the verifier's headline bounds it:
+	the total, the first four cases (each within 512 bytes), "(+K more)",
+	the whole within 4096 bytes, named cases dropped before the total."""
+	named = [cut_bytes(f"{' '.join(str(d.get('id', '')).split())}: {' '.join(str(d.get('reason', '')).split())}", 512)
+			 for d in differences[:4] if isinstance(d, dict)]
+	head = f"{HEADLINE} ({len(differences)} cases): "
+	while True:
+		left = len(differences) - len(named)
+		line = head + "; ".join(named) + (f" (+{left} more)" if left else "")
+		if len(line.encode()) <= 4096 or not named: return line
+		named.pop()
+
+
+def census_failure(output):
+	"""A census failure's concrete error, its retained evidence and the
+	evidence its runs never wrote, from the census summary alone; None when
+	there is no readable census difference, so any other failure keeps its
+	receipt as it was."""
+	summary_name = "census/live-execution/RESULT.json"
+	try:
+		summary_path = regular_file(output, summary_name)
+		if summary_path is None: return None
+		data = bounded_read(summary_path, 1 << 20)
+		if data is None: return None
+		differences = json.loads(data)["differences"]
+		if not isinstance(differences, list) or not differences: return None
+		known = {line.split("\t", 1)[0] for line in CENSUS_PLAN.read_text().splitlines()[1:] if line}
+	except (OSError, ValueError, KeyError, TypeError):
+		return None
+	# Every row must name a known case and a reason, or the summary is malformed.
+	if not all(isinstance(d, dict) and isinstance(d.get("id"), str) and d["id"] in known
+			   and isinstance(d.get("reason"), str) for d in differences):
+		return None
+	cases = [d["id"] for d in differences]
+	files, unavailable = [summary_name], []
+	for case in cases:
+		for engine, name in CENSUS_EVIDENCE:
+			relative = f"census/live-execution/{case}/{engine}/{name}"
+			if regular_file(output, relative) is None:
+				unavailable.append(f"census evidence unavailable: {case} {engine} {name} (the run did not write it)")
+			elif len(files) < 16:
+				files.append(relative)
+	return dict(error=census_headline(differences), diagnostic_files=files, causes=unavailable[:16])
+
+
 def validate_request(request):
 	"""Reject incomplete source binding before any Cargo compilation."""
 	if request.get("rune_rev") is None:
@@ -190,13 +270,27 @@ def main():
 					(output/'RESULT.json').rename(output/'CONTROLLER-RESULT.json')
 	except Exception as error:
 		failure = error
-	result_path = output/'CONTROLLER-RESULT.json'
-	result = json.loads(result_path.read_text()) if result_path.exists() else {'status':'FAIL'}
-	result['cleanup'] = owned.result
-	if failure is not None: result.update(status='FAIL', launcher_error=repr(failure), launcher_notes=getattr(failure, '__notes__', []))
+	result = terminal_receipt(output, failure, owned.result)
 	child_result.atomic_json(output/'RESULT.json', result)
 	child_result.bind(output/'RESULT.json')
 	if failure is not None: raise failure
+
+
+def terminal_receipt(output, failure, cleanup):
+	"""The launcher's published receipt: the controller's result, the owned
+	build's cleanup, and on failure the launcher's error and, for a census
+	difference, its concrete cause and bounded evidence."""
+	result_path = output/'CONTROLLER-RESULT.json'
+	result = json.loads(result_path.read_text()) if result_path.exists() else {'status':'FAIL'}
+	result['cleanup'] = cleanup
+	if failure is not None:
+		result.update(status='FAIL', launcher_error=repr(failure), launcher_notes=getattr(failure, '__notes__', []))
+		# A census difference names its cases and keeps their bounded
+		# evidence, never at the cost of the original failure.
+		try: census = census_failure(output)
+		except Exception: census = None
+		if census is not None: result.update(census)
+	return result
 
 
 if __name__ == "__main__":

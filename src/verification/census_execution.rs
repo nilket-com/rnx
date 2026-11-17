@@ -463,9 +463,117 @@ pub(super) fn run(
 	serde_json::to_writer_pretty(&mut file, &summary)?;
 	file.write_all(b"\n")?;
 	if !summary["differences"].as_array().is_some_and(Vec::is_empty) {
-		return Err("unreviewed census execution differences".into());
+		return Err(headline(&differences).into());
 	}
 	Ok(summary)
+}
+
+/// The headline's own control, run with the census self-check before any
+/// live case: one difference, an invocation failure on several lines, more
+/// cases than it names, and oversized reasons, each within its bounds.
+pub(super) fn headline_self_check() -> Result<(), String> {
+	let check = |ok: bool, what: &str| {
+		if ok {
+			Ok(())
+		} else {
+			Err(format!("census headline self-check failed: {what}"))
+		}
+	};
+	let one = headline(&[json!({"id": "a", "reason": "live observations differ"})]);
+	check(
+		one == "unreviewed census execution differences (1 cases): a: live observations differ",
+		"one case",
+	)?;
+	let failed = headline(&[
+		json!({"id": "b", "reason": "census execution b fresh failed: exit status: 124\nmore"}),
+	]);
+	check(
+		!failed.contains('\n')
+			&& failed.contains("b: census execution b fresh failed: exit status: 124 more"),
+		"one line",
+	)?;
+	let many: Vec<Value> = (0..9)
+		.map(|i| json!({"id": format!("c{i}"), "reason": "differ"}))
+		.collect();
+	let line = headline(&many);
+	check(
+		line.starts_with("unreviewed census execution differences (9 cases): c0: differ; c1: differ; c2: differ; c3: differ")
+			&& line.ends_with(" (+5 more)"),
+		"case bound",
+	)?;
+	let huge = headline(&[
+		json!({"id": "d", "reason": "x".repeat(100_000)}),
+		json!({"id": "e", "reason": "y"}),
+	]);
+	check(
+		huge.len() <= HEADLINE_BYTES
+			&& huge.contains("(2 cases)")
+			&& huge.contains("d: xxx")
+			&& huge.contains("..."),
+		"byte bound",
+	)?;
+	let wide = headline(&[json!({"id": "f", "reason": "é".repeat(4000)})]);
+	check(
+		wide.len() <= HEADLINE_BYTES && wide.contains("(1 cases)"),
+		"UTF-8 bound",
+	)
+}
+
+/// Cases a census headline names before it counts the rest.
+const HEADLINE_CASES: usize = 4;
+/// The headline's UTF-8 bytes, within the final's 16 KiB error cap.
+const HEADLINE_BYTES: usize = 4096;
+/// One case's reason, at most.
+const REASON_BYTES: usize = 512;
+
+/// The longest prefix of `text` within `limit` UTF-8 bytes, marked when cut.
+fn cut(text: &str, limit: usize) -> String {
+	if text.len() <= limit {
+		return text.to_owned();
+	}
+	let mut end = limit.saturating_sub(3);
+	while !text.is_char_boundary(end) {
+		end -= 1;
+	}
+	format!("{}...", &text[..end])
+}
+
+/// One line naming the census differences: the total, the first cases
+/// with their reasons, and how many were left out, within its byte bound
+/// whatever the reasons hold.
+pub(super) fn headline(differences: &[Value]) -> String {
+	let total = differences.len();
+	let one_line = |v: &Value| {
+		v.as_str()
+			.unwrap_or_default()
+			.split_whitespace()
+			.collect::<Vec<_>>()
+			.join(" ")
+	};
+	let mut named: Vec<String> = differences
+		.iter()
+		.take(HEADLINE_CASES)
+		.map(|d| {
+			cut(
+				&format!("{}: {}", one_line(&d["id"]), one_line(&d["reason"])),
+				REASON_BYTES,
+			)
+		})
+		.collect();
+	let head = format!("unreviewed census execution differences ({total} cases): ");
+	loop {
+		let left = total - named.len();
+		let tail = if left > 0 {
+			format!(" (+{left} more)")
+		} else {
+			String::new()
+		};
+		let line = format!("{head}{}{tail}", named.join("; "));
+		if line.len() <= HEADLINE_BYTES || named.is_empty() {
+			return line;
+		}
+		named.pop();
+	}
 }
 
 fn origin_name(origin: ErrorOrigin) -> &'static str {
@@ -607,6 +715,11 @@ mod tests {
 			4
 		);
 	}
+	#[test]
+	fn the_headline_names_cases_within_its_bounds() {
+		headline_self_check().unwrap();
+	}
+
 	#[test]
 	fn clock_envelopes_do_not_accept_missing_or_outside_values() {
 		assert!(clock_check("wall", Some(11), 10, 12, 4));

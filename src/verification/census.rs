@@ -630,6 +630,7 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 /// Plain checks are called by the harness-free controller, not only libtest.
 pub(super) fn self_check() -> CensusResult<Value> {
 	// Check the closed class and both companion tables before launching live cases.
+	super::census_execution::headline_self_check()?;
 	let admissions = admission_policy(ADMISSIONS)?;
 	if observed_admission(&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"AsyncFunction"}}))?
 		!= "fresh-refuses-AsyncFunction"
