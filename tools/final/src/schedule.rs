@@ -52,7 +52,8 @@ pub struct ControllerEvent {
 	pub at: f64,
 	/// `blocked` (waiting for a stage to end or a signal) or `woken`.
 	pub event: String,
-	/// What woke it: a stage's name, or `signal`.
+	/// What woke it: a stage's name, `signal`, or `tokens` (a write to the
+	/// jobserver while a stage waited on tokens).
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub by: Option<String>,
 }
@@ -243,7 +244,7 @@ pub fn validate(schedule: &Schedule, selected: &[String]) -> Result<()> {
 		ensure!(time(e.at) && e.at >= last, "controller events out of order");
 		ensure!(
 			e.by.as_ref()
-				.is_none_or(|b| b == "signal" || selected.contains(b)),
+				.is_none_or(|b| b == "signal" || b == "tokens" || selected.contains(b)),
 			"the controller was woken by an unknown stage"
 		);
 		last = e.at;

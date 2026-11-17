@@ -16,7 +16,7 @@ use serde_json::{Map, Value, json};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicI32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
@@ -117,6 +117,21 @@ pub trait Hooks: Send + Sync {
 	/// Tests run a fake child; None runs the stage's command.
 	fn stage(&self, _call: &StageCall) -> Option<Result<child::Done>> {
 		None
+	}
+	/// Called just before the controller blocks between passes; a control
+	/// writes there to land between a refusal and the block.
+	fn before_block(&self) {}
+	/// The controller has taken a `Tokens` event and not yet cleared its
+	/// flag: a control writes there to land while the event is outstanding.
+	fn tokens_received(&self) {}
+	/// A stage was just refused its tokens, inside its pass.
+	fn after_token_refusal(&self) {}
+	/// The watcher read a batch with a write in it and sent an event
+	/// (`sent`) or found one outstanding.
+	fn watcher_decided(&self, _sent: bool) {}
+	/// The watch on the jobserver's writes; a control substitutes one.
+	fn jobserver_watch(&self, pool: &Pool) -> Result<job_budget::fifo::Watch> {
+		pool.watch()
 	}
 }
 
@@ -651,6 +666,65 @@ fn stage_failure(
 enum Event {
 	Done(usize, Result<child::Done>),
 	Signal(i32),
+	/// The jobserver fifo was written, or its watch overflowed: capacity
+	/// may have changed (ADR 0290). At most one is outstanding.
+	Tokens,
+	/// The jobserver watch ended with an error; the controller must not
+	/// sleep on it.
+	WatchFailed(String),
+}
+
+/// The thread that turns jobserver writes into [`Event::Tokens`]. Dropping
+/// it, on every return and unwinding, stops and joins the thread, so it
+/// never outlives the pool.
+struct Watcher {
+	stop: job_budget::fifo::StopWatch,
+	handle: Option<std::thread::JoinHandle<()>>,
+}
+
+impl Watcher {
+	fn start(
+		watch: job_budget::fifo::Watch,
+		sender: Notifier,
+		pending: Arc<AtomicBool>,
+		hooks: Arc<dyn Hooks>,
+	) -> Result<Self> {
+		use job_budget::fifo::Notice;
+		let stop = watch.stopper()?;
+		let handle = std::thread::spawn(move || {
+			loop {
+				match watch.wait() {
+					// The batch is read; one event covers it and any later
+					// write until the controller clears the flag.
+					Ok(Notice::Modified) => {
+						let sent = !pending.swap(true, Ordering::SeqCst);
+						hooks.watcher_decided(sent);
+						if sent && !sender.send(Event::Tokens) {
+							return;
+						}
+					}
+					Ok(Notice::Stopped) => return,
+					Err(error) => {
+						let _ = sender.send(Event::WatchFailed(format!("{error:#}")));
+						return;
+					}
+				}
+			}
+		});
+		Ok(Self {
+			stop,
+			handle: Some(handle),
+		})
+	}
+}
+
+impl Drop for Watcher {
+	fn drop(&mut self) {
+		let _ = self.stop.stop();
+		if let Some(handle) = self.handle.take() {
+			let _ = handle.join();
+		}
+	}
 }
 
 /// Sends events to a running final: stage completions and signals.
@@ -752,6 +826,18 @@ fn run_stages(
 		total + lanes.iter().map(|r| growth[r]).sum::<u64>()
 	};
 	let pool = Arc::new(Pool::create(&settings.out.join("jobserver.fifo"), tokens)?);
+	// Armed before any stage, so no write after a refusal is missed.
+	let tokens_pending = Arc::new(AtomicBool::new(false));
+	let watch = settings
+		.hooks
+		.jobserver_watch(&pool)
+		.context("start the jobserver watch")?;
+	let watcher = Watcher::start(
+		watch,
+		events.0.clone(),
+		tokens_pending.clone(),
+		settings.hooks.clone(),
+	)?;
 	disk.insert("floor_bytes".into(), json!(DISK_FLOOR_BYTES));
 	disk.insert(
 		"estimate_bytes".into(),
@@ -816,6 +902,7 @@ fn run_stages(
 		}
 		done_rows.insert(index, row);
 	};
+	let (mut token_waiting, mut tokens_noted) = (false, false);
 	let outcome = (|| -> Result<()> {
 		loop {
 			if pending.is_empty() && running.is_empty() {
@@ -828,6 +915,8 @@ fn run_stages(
 					&format!("final interrupted by signal {signal}")
 				));
 			}
+			// A refused stage waits for tokens until a later pass admits it.
+			token_waiting = false;
 			if failed.is_none() {
 				let pass = pending.clone();
 				// The stages a refusal leaves unevaluated in this pass.
@@ -863,6 +952,12 @@ fn run_stages(
 								)?;
 							}
 							Event::Signal(signal) => interrupted.store(signal, Ordering::SeqCst),
+							// Noted, its flag still set: earlier stages of this
+							// pass are rechecked only by the next pass.
+							Event::Tokens => tokens_noted = true,
+							Event::WatchFailed(error) => {
+								bail!(value_error(&format!("jobserver watch failed: {error}")))
+							}
 						}
 					}
 					if failed.is_some() || interrupted.load(Ordering::SeqCst) != 0 {
@@ -918,7 +1013,16 @@ fn run_stages(
 					}
 					// A stage's tokens, whole or not at all: no part is held while
 					// it waits, so a running stage's clients can always take them.
-					let Some(lease) = pool.take(weights[index])? else {
+					// Too few is a refusal with nothing read or written back, so
+					// it raises no write to wake on.
+					let lease = if pool.available()? >= weights[index] {
+						pool.take(weights[index])?
+					} else {
+						None
+					};
+					let Some(lease) = lease else {
+						token_waiting = true;
+						settings.hooks.after_token_refusal();
 						recorder.borrow_mut().wait(
 							index,
 							now(),
@@ -979,15 +1083,52 @@ fn run_stages(
 					stages[pending[0]].0
 				)));
 			}
-			// Wait on a stage's end or a signal. A stage refused its tokens
-			// is tried again then; Cargo jobs returning tokens mid-stage give
-			// no event, and nothing polls for them.
-			recorder.borrow_mut().controller(now(), "blocked", None);
-			let event = receiver.recv().ok();
+			// Wait on a stage's end, a signal, or a write to the jobserver
+			// while a stage waits on tokens.
+			enum Woken {
+				Tokens,
+				Event(Event),
+				Closed,
+			}
+			let woken = loop {
+				if tokens_noted {
+					tokens_noted = false;
+					// Cleared before the recheck, never after: a write coalesced
+					// under the old flag is covered by the coming pass, and a
+					// later write sends a new event.
+					tokens_pending.store(false, Ordering::SeqCst);
+					if token_waiting {
+						break Woken::Tokens;
+					}
+				}
+				settings.hooks.before_block();
+				recorder.borrow_mut().controller(now(), "blocked", None);
+				match receiver.recv() {
+					Ok(Event::Tokens) => {
+						settings.hooks.tokens_received();
+						tokens_noted = true;
+					}
+					Ok(Event::WatchFailed(error)) => {
+						bail!(value_error(&format!("jobserver watch failed: {error}")))
+					}
+					Ok(event) => break Woken::Event(event),
+					Err(_) => break Woken::Closed,
+				}
+			};
+			let event = match woken {
+				Woken::Tokens => {
+					recorder
+						.borrow_mut()
+						.controller(now(), "woken", Some("tokens".into()));
+					continue;
+				}
+				Woken::Event(event) => Some(event),
+				Woken::Closed => None,
+			};
 			let by = match &event {
 				Some(Event::Done(index, _)) => Some(stages[*index].0.clone()),
 				Some(Event::Signal(_)) => Some("signal".to_string()),
-				None => None,
+				_ => None,
 			};
 			recorder.borrow_mut().controller(now(), "woken", by);
 			match event {
@@ -1007,7 +1148,7 @@ fn run_stages(
 						.check_selection(selection_value, root, &settings.environment)?;
 				}
 				Some(Event::Signal(signal)) => interrupted.store(signal, Ordering::SeqCst),
-				None => {}
+				_ => {}
 			}
 		}
 	})();
@@ -1027,7 +1168,7 @@ fn run_stages(
 					&mut finished,
 					&mut succeeded,
 				),
-				Ok(Event::Signal(_)) => {}
+				Ok(Event::Signal(_) | Event::Tokens | Event::WatchFailed(_)) => {}
 				Err(_) => break,
 			}
 		}
@@ -1040,6 +1181,8 @@ fn run_stages(
 	)
 	.finish();
 	atomic_json(&settings.out.join("SCHEDULE.json"), &schedule)?;
+	// The watcher stops and joins before the pool closes and its fifo goes.
+	drop(watcher);
 	let pool = Arc::try_unwrap(pool).map_err(|_| anyhow::anyhow!("jobserver still shared"))?;
 	let closed = pool.close();
 	outcome?;

@@ -1,13 +1,14 @@
 //! Ports of the Python scheduling controls (test_stage_scheduler.Scheduling).
 mod common;
 use anyhow::Result;
+use job_budget::fifo::Pool;
 use rnx_final::child::Done;
 use rnx_final::controller::{self, Hooks, Settings, StageCall};
 use rnx_final::failure::Environment;
 use rnx_final::receipt::{atomic_json, digest, invocation_id};
 use rnx_final::scheduler::{ALONE, FIRST, Resources, Targets};
 use serde_json::{Map, Value, json};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -44,6 +45,106 @@ struct Fake {
 	weights: BTreeMap<&'static str, usize>,
 	/// Remove the schedule after the stages, before finalization.
 	drop_schedule: bool,
+	/// A stage that borrows tokens and returns them mid-stage (ADR 0290).
+	returns: Option<Returns>,
+	flow: Mutex<Flow>,
+	moved: std::sync::Condvar,
+	/// The controller has taken the failing returner's end.
+	processed: Arc<(Mutex<bool>, std::sync::Condvar)>,
+}
+
+/// A running stage `stage` borrows `borrow` tokens as Cargo does; `gate`
+/// ends once it has, so the next pass refuses `waiter`; after the
+/// controller blocks behind that refusal, `stage` returns `chunks` by raw
+/// fifo writes and, when `waiter` should start, stays alive until it has.
+#[derive(Clone, Default)]
+struct Returns {
+	stage: &'static str,
+	gate: &'static str,
+	waiter: &'static str,
+	borrow: usize,
+	chunks: Vec<usize>,
+	/// Another client takes the gate's returned token before the returns,
+	/// and gives it back after them.
+	competitor: bool,
+	/// The returns are written from inside the controller's
+	/// `before_block`, between its refusal and its block.
+	in_block: bool,
+	/// The controller's watch is on a decoy fifo, whose removal the stage
+	/// causes instead of returning: a real IN_IGNORED.
+	unlink: bool,
+	/// The watch cannot start.
+	watch_fails: bool,
+	/// Count the fifo's reads from the returns until the controller has
+	/// rechecked and blocked again.
+	count_reads: bool,
+	/// After the chunks, `n` more tokens are written at a forced point of
+	/// the controller's handoff, and the watcher's decision on them kept.
+	handoff: Option<(Handoff, usize)>,
+	/// The stage fails, its borrowed tokens coming back only after the
+	/// controller has taken the failure.
+	fail: bool,
+	expect_start: bool,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Handoff {
+	/// The controller has taken the Tokens event, its flag still set.
+	Outstanding,
+	/// The flag cleared, the recheck has just refused the waiter.
+	AfterRecheck,
+}
+
+#[derive(Default)]
+struct Flow {
+	fifo: Option<PathBuf>,
+	borrowed: bool,
+	gate_returned: bool,
+	gate_processed: bool,
+	blocks: usize,
+	started: BTreeSet<String>,
+	written: bool,
+	decoy: Option<PathBuf>,
+	/// When enough tokens for the waiter were first back.
+	enough_at: Option<Instant>,
+	returner_returned: bool,
+	returner_processed: bool,
+	/// Reads of the fifo while too few tokens were back (`count_reads`).
+	reads: Option<usize>,
+	/// The watcher's decisions, sent or coalesced, in order.
+	decisions: Vec<bool>,
+	taken_after_written: usize,
+	/// The watcher's decision on the handoff's write.
+	handoff_decision: Option<bool>,
+	timeouts: Vec<String>,
+}
+
+/// An inotify watch for reads of `path`, as a raw descriptor.
+fn read_watch(path: &Path) -> i32 {
+	let name = std::ffi::CString::new(path.as_os_str().as_encoded_bytes()).unwrap();
+	// SAFETY: flags only, then a valid descriptor and NUL-terminated path.
+	unsafe {
+		let fd = libc::inotify_init1(libc::IN_NONBLOCK | libc::IN_CLOEXEC);
+		assert!(fd >= 0 && libc::inotify_add_watch(fd, name.as_ptr(), libc::IN_ACCESS) >= 0);
+		fd
+	}
+}
+
+/// The read records queued on a `read_watch`, and the descriptor closed.
+fn reads(fd: i32) -> usize {
+	let mut buffer = [0u8; 4096];
+	let mut records = 0;
+	loop {
+		// SAFETY: a valid descriptor and buffer.
+		let n = unsafe { libc::read(fd, buffer.as_mut_ptr().cast(), buffer.len()) };
+		if n <= 0 {
+			break;
+		}
+		records += n as usize / std::mem::size_of::<libc::inotify_event>();
+	}
+	// SAFETY: closing the descriptor this function was given.
+	unsafe { libc::close(fd) };
+	records
 }
 
 impl Fake {
@@ -63,6 +164,10 @@ impl Fake {
 			exclusive: None,
 			weights: BTreeMap::new(),
 			drop_schedule: false,
+			returns: None,
+			flow: Mutex::new(Flow::default()),
+			moved: std::sync::Condvar::new(),
+			processed: Arc::new((Mutex::new(false), std::sync::Condvar::new())),
 		}
 	}
 	fn span(&self, name: &str) -> Option<(Instant, Instant)> {
@@ -90,7 +195,67 @@ impl Hooks for Fake {
 	}
 	fn check_selection(&self, _: &Value, _: &Path, _: &Environment) -> Result<()> {
 		std::thread::sleep(self.check_delay);
+		// Called after the controller takes a stage's end: the gate's end
+		// has now been processed, so the next block follows its pass.
+		let mut flow = self.flow.lock().unwrap();
+		if flow.gate_returned {
+			flow.gate_processed = true;
+		}
+		if flow.returner_returned {
+			flow.returner_processed = true;
+			let (lock, moved) = &*self.processed;
+			*lock.lock().unwrap() = true;
+			moved.notify_all();
+		}
+		self.moved.notify_all();
 		Ok(())
+	}
+	fn tokens_received(&self) {
+		// Any event taken once the chunks are written: its flag is still set.
+		let armed = {
+			let mut flow = self.flow.lock().unwrap();
+			if flow.written {
+				flow.taken_after_written += 1;
+			}
+			flow.written
+		};
+		self.handoff(Handoff::Outstanding, armed);
+	}
+	fn after_token_refusal(&self) {
+		// A refusal after an event taken since the chunks: the recheck's,
+		// its flag already cleared.
+		let armed = self.flow.lock().unwrap().taken_after_written >= 1;
+		self.handoff(Handoff::AfterRecheck, armed);
+	}
+	fn watcher_decided(&self, sent: bool) {
+		self.flow.lock().unwrap().decisions.push(sent);
+		self.moved.notify_all();
+	}
+	fn jobserver_watch(&self, pool: &Pool) -> Result<job_budget::fifo::Watch> {
+		match &self.returns {
+			Some(r) if r.watch_fails => anyhow::bail!("planted watch failure"),
+			Some(r) if r.unlink => {
+				let decoy = pool.path().with_file_name("decoy.fifo");
+				let status = std::process::Command::new("mkfifo").arg(&decoy).status()?;
+				anyhow::ensure!(status.success());
+				let watch = job_budget::fifo::Watch::new(&decoy)?;
+				self.flow.lock().unwrap().decoy = Some(decoy);
+				Ok(watch)
+			}
+			_ => pool.watch(),
+		}
+	}
+	fn before_block(&self) {
+		let mut flow = self.flow.lock().unwrap();
+		if flow.gate_processed {
+			flow.blocks += 1;
+			let r = self.returns.as_ref().unwrap();
+			if r.in_block && !flow.written {
+				write_tokens(flow.fifo.as_ref().unwrap(), &r.chunks);
+				flow.written = true;
+			}
+		}
+		self.moved.notify_all();
 	}
 	fn finalize(
 		&self,
@@ -139,6 +304,9 @@ impl Hooks for Fake {
 		}
 	}
 	fn stage(&self, call: &StageCall) -> Option<Result<Done>> {
+		if let Some(r) = &self.returns {
+			self.returning(r, call);
+		}
 		self.environments.lock().unwrap().push((
 			std::env::var("GIT_OPTIONAL_LOCKS").ok(),
 			call.environment.get("GIT_OPTIONAL_LOCKS").cloned(),
@@ -211,6 +379,154 @@ impl Hooks for Fake {
 				declared_output: None,
 			})
 		})())
+	}
+}
+
+impl Fake {
+	/// At the forced point `at`, once, after the chunks were written: write
+	/// the handoff's tokens and wait for the watcher to decide on them.
+	fn handoff(&self, at: Handoff, armed: bool) {
+		let Some(Returns {
+			handoff: Some((point, n)),
+			..
+		}) = &self.returns
+		else {
+			return;
+		};
+		let (fifo, before) = {
+			let flow = self.flow.lock().unwrap();
+			if *point != at || !armed || !flow.written || flow.handoff_decision.is_some() {
+				return;
+			}
+			(flow.fifo.clone().unwrap(), flow.decisions.len())
+		};
+		write_tokens(&fifo, &[*n]);
+		self.until("the watcher decided on the handoff", |f| {
+			f.decisions.len() > before
+		});
+		let mut flow = self.flow.lock().unwrap();
+		flow.handoff_decision = flow.decisions.get(before).copied();
+	}
+}
+
+/// Raw writes to the fifo, one per chunk, as Cargo's jobs return tokens.
+fn write_tokens(fifo: &Path, chunks: &[usize]) {
+	let mut f = std::fs::OpenOptions::new().write(true).open(fifo).unwrap();
+	for &n in chunks {
+		std::io::Write::write_all(&mut f, &vec![b'+'; n]).unwrap();
+	}
+}
+
+impl Fake {
+	/// Wait, bounded, until `done` holds of the flow.
+	/// Wait, bounded, until `done` holds of the flow; a wait that runs out
+	/// is recorded, and fails the control.
+	fn until(&self, what: &str, done: impl Fn(&Flow) -> bool) {
+		let flow = self.flow.lock().unwrap();
+		let (mut flow, _) = self
+			.moved
+			.wait_timeout_while(flow, Duration::from_secs(20), |f| !done(f))
+			.unwrap();
+		if !done(&flow) {
+			flow.timeouts.push(what.to_owned());
+		}
+	}
+
+	fn returning(&self, r: &Returns, call: &StageCall) {
+		let name = call.name.as_str();
+		if name == r.waiter {
+			self.flow.lock().unwrap().started.insert(name.into());
+			self.moved.notify_all();
+		}
+		if name == r.gate {
+			self.until("the returner borrowed", |f| f.borrowed);
+			self.flow.lock().unwrap().gate_returned = true;
+		}
+		if name != r.stage {
+			return;
+		}
+		let flags = &call.environment["MAKEFLAGS"];
+		let path = PathBuf::from(
+			flags
+				.split("fifo:")
+				.nth(1)
+				.unwrap()
+				.split_whitespace()
+				.next()
+				.unwrap(),
+		);
+		let mut fifo = std::fs::OpenOptions::new()
+			.read(true)
+			.write(true)
+			.open(&path)
+			.unwrap();
+		let mut borrowed = vec![0u8; r.borrow];
+		std::io::Read::read_exact(&mut fifo, &mut borrowed).unwrap();
+		{
+			let mut flow = self.flow.lock().unwrap();
+			flow.fifo = Some(path.clone());
+			flow.borrowed = true;
+		}
+		self.moved.notify_all();
+		let mut held = vec![0u8; usize::from(r.competitor)];
+		// The competitor takes the gate's token as it comes back.
+		std::io::Read::read_exact(&mut fifo, &mut held).unwrap();
+		self.until("the controller blocked behind the refusal", |f| {
+			f.blocks >= 1
+		});
+		// Counted before the writes, so a fast wake is not missed.
+		let handled = self.flow.lock().unwrap().blocks;
+		let watched = r.count_reads.then(|| read_watch(&path));
+		if r.unlink {
+			let decoy = self.flow.lock().unwrap().decoy.clone().unwrap();
+			std::fs::remove_file(decoy).unwrap();
+		} else if r.fail {
+			// Returned only once the controller has taken the failure; the
+			// stage ends now, and the helper waits on the flow.
+			let mut back = fifo.try_clone().unwrap();
+			self.flow.lock().unwrap().returner_returned = true;
+			let processed = self.processed.clone();
+			let n = r.borrow;
+			std::thread::spawn(move || {
+				let (lock, moved) = &*processed;
+				let done = lock.lock().unwrap();
+				let _ = moved
+					.wait_timeout_while(done, Duration::from_secs(20), |d| !*d)
+					.unwrap();
+				std::io::Write::write_all(&mut back, &vec![b'+'; n]).unwrap();
+			});
+			return;
+		} else if !r.in_block {
+			// Written and published under one lock, so no callback sees the
+			// write without its flag.
+			let mut flow = self.flow.lock().unwrap();
+			write_tokens(&path, &r.chunks);
+			flow.written = true;
+		}
+		if r.competitor {
+			self.until("the controller took the returns", |f| f.blocks > handled);
+			std::io::Write::write_all(&mut fifo, &held).unwrap();
+		}
+		if r.expect_start {
+			self.until("the waiter started", |f| f.started.contains(r.waiter));
+		} else if !r.unlink && !r.chunks.is_empty() {
+			// Let the controller take every write and block again.
+			self.until("the controller took the returns", |f| f.blocks > handled);
+		}
+		if let Some(fd) = watched {
+			// Nothing else reads the fifo now: any read is the controller's.
+			self.flow.lock().unwrap().reads = Some(reads(fd));
+		}
+		// Whatever is still borrowed goes back as the stage ends.
+		let returned: usize = if r.unlink {
+			0
+		} else {
+			r.chunks.iter().sum::<usize>() + r.handoff.map_or(0, |(_, n)| n)
+		};
+		if returned < r.borrow {
+			self.flow.lock().unwrap().enough_at = Some(Instant::now());
+		}
+		std::io::Write::write_all(&mut fifo, &vec![b'+'; r.borrow - returned]).unwrap();
 	}
 }
 
@@ -1032,4 +1348,247 @@ fn a_disk_refusal_with_nothing_running_is_recorded() {
 		vec![("queued".to_string(), vec!["a".to_string()])]
 	);
 	assert!(trace(&s, "b")["ready"].is_null());
+}
+
+/// The plan every token-return control runs: `returner` (weight 1) and
+/// `gate` (weight 1) start, `waiter` (weight 4) is refused; capacity 5.
+fn returning(r: Returns, codes: &[(&'static str, f64, i32)]) -> (Value, Dir, Arc<Fake>) {
+	let mut fake = Fake::new(
+		vec![
+			("returner", vec!["x"]),
+			("gate", vec!["y"]),
+			("waiter", vec!["z"]),
+		],
+		codes,
+	);
+	fake.weights = [("returner", 1), ("gate", 1), ("waiter", 4)].into();
+	fake.returns = Some(r);
+	let fake = Arc::new(fake);
+	let (result, dir) = run(fake.clone(), 5);
+	let timeouts = fake.flow.lock().unwrap().timeouts.clone();
+	assert!(timeouts.is_empty(), "readiness waits ran out: {timeouts:?}");
+	(result, dir, fake)
+}
+
+fn tokens_wakes(s: &Value) -> usize {
+	s["controller"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.filter(|e| e["by"] == "tokens")
+		.count()
+}
+
+fn base() -> Returns {
+	Returns {
+		stage: "returner",
+		gate: "gate",
+		waiter: "waiter",
+		borrow: 3,
+		..Default::default()
+	}
+}
+
+/// Tokens a running stage's Cargo returns by raw writes let the waiting
+/// stage start while that stage is still alive. (Before ADR 0290 only a
+/// stage's end retried a refusal, so the waiter started after it ended.)
+#[test]
+fn returned_tokens_start_a_waiting_stage_before_the_returner_ends() {
+	let (r, dir, fake) = returning(
+		Returns {
+			chunks: vec![3],
+			expect_start: true,
+			..base()
+		},
+		&[],
+	);
+	assert_eq!(r["status"], "PASS", "{r}");
+	let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
+	assert!(
+		waiter.0 < returner.1,
+		"the waiter started only after the returner ended"
+	);
+	let s = schedule(&dir);
+	assert_eq!(waits(&s, "waiter").last().unwrap().0, "tokens");
+	assert!(tokens_wakes(&s) >= 1);
+}
+
+/// Returns that leave too few tokens start nothing, read nothing, and wake
+/// the controller at most once per write, its own included; the waiter starts only once
+/// enough are back, as the returner ends, with every token conserved.
+#[test]
+fn too_few_returned_tokens_start_nothing() {
+	let (r, dir, fake) = returning(
+		Returns {
+			chunks: vec![2],
+			count_reads: true,
+			..base()
+		},
+		&[],
+	);
+	assert_eq!(r["status"], "PASS", "{r}");
+	// The recheck on too few tokens read nothing, so wrote nothing back.
+	assert_eq!(fake.flow.lock().unwrap().reads, Some(0));
+	let waiter = fake.span("waiter").unwrap();
+	let enough = fake.flow.lock().unwrap().enough_at.unwrap();
+	assert!(waiter.0 >= enough, "the waiter started on too few tokens");
+	// The writes after the refusal: the gate's lease coming back as it
+	// ends, the returned chunk, and the returner's last token as it ends.
+	// One wake each at most; an insufficient pass adds none of its own.
+	let writes = 3;
+	assert!(tokens_wakes(&schedule(&dir)) <= writes);
+}
+
+/// A competing client holds the gate's returned token through the
+/// returns; the waiter starts only once the competitor gives it back.
+#[test]
+fn a_competing_client_delays_the_waiter_until_it_returns() {
+	let (r, _dir, fake) = returning(
+		Returns {
+			chunks: vec![3],
+			competitor: true,
+			expect_start: true,
+			..base()
+		},
+		&[],
+	);
+	assert_eq!(r["status"], "PASS", "{r}");
+	let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
+	assert!(waiter.0 < returner.1);
+}
+
+/// A burst of returns, each its own write, before the controller takes
+/// its one pending event; and returns written between the controller's
+/// refusal and its block. One notification suffices for either.
+#[test]
+fn a_burst_and_a_return_before_the_block_each_wake_once_enough() {
+	for r in [
+		Returns {
+			chunks: vec![1, 1, 1],
+			expect_start: true,
+			..base()
+		},
+		Returns {
+			chunks: vec![1, 2],
+			expect_start: true,
+			..base()
+		},
+		Returns {
+			chunks: vec![3],
+			in_block: true,
+			expect_start: true,
+			..base()
+		},
+	] {
+		let label = format!("{:?} in_block={}", r.chunks, r.in_block);
+		let (result, _dir, fake) = returning(r, &[]);
+		assert_eq!(result["status"], "PASS", "{label}: {result}");
+		let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
+		assert!(waiter.0 < returner.1, "{label}");
+	}
+}
+
+/// A stage failing while another waits on tokens stops admission: the
+/// waiter never starts, even once the tokens come back, and the final
+/// ends with the watcher joined.
+#[test]
+fn a_failure_while_a_stage_waits_on_tokens_stops_admission() {
+	let (r, dir, _fake) = returning(
+		Returns {
+			fail: true,
+			..base()
+		},
+		&[("returner", 0.0, 1)],
+	);
+	assert_eq!(r["status"], "FAIL", "{r}");
+	assert_eq!(trace(&schedule(&dir), "waiter")["state"], "not started");
+}
+
+/// A watch the kernel removes (IN_IGNORED, here from a decoy fifo's
+/// unlink) ends with a named controller error, and the running stages are
+/// drained; a watch that cannot start is an explicit error before any
+/// stage.
+#[test]
+fn a_removed_jobserver_watch_fails_the_final_by_name() {
+	let (r, dir, _fake) = returning(
+		Returns {
+			unlink: true,
+			..base()
+		},
+		&[],
+	);
+	assert_eq!(r["status"], "FAIL", "{r}");
+	assert!(
+		r["error"]
+			.as_str()
+			.unwrap()
+			.contains("jobserver watch failed"),
+		"{r}"
+	);
+	let s = schedule(&dir);
+	assert_eq!(trace(&s, "waiter")["state"], "not started");
+	assert_eq!(trace(&s, "returner")["state"], "passed");
+	let mut fake = Fake::new(vec![("returner", vec!["x"])], &[]);
+	fake.returns = Some(Returns {
+		watch_fails: true,
+		..base()
+	});
+	let (r, _dir) = run(Arc::new(fake), 5);
+	assert_eq!(r["status"], "FAIL", "{r}");
+	assert!(
+		r["error"]
+			.as_str()
+			.unwrap()
+			.contains("planted watch failure"),
+		"{r}"
+	);
+	assert!(r["checks"].as_array().unwrap().is_empty(), "{r}");
+}
+
+/// A write while the controller holds an outstanding Tokens event, its
+/// flag not yet cleared, is coalesced into it, and the recheck that event
+/// leads to finds the whole capacity.
+#[test]
+fn capacity_returned_while_an_event_is_outstanding_is_found_by_its_recheck() {
+	let (r, _dir, fake) = returning(
+		Returns {
+			chunks: vec![1],
+			handoff: Some((Handoff::Outstanding, 2)),
+			expect_start: true,
+			..base()
+		},
+		&[],
+	);
+	assert_eq!(r["status"], "PASS", "{r}");
+	assert_eq!(
+		fake.flow.lock().unwrap().handoff_decision,
+		Some(false),
+		"the write was not coalesced"
+	);
+	let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
+	assert!(waiter.0 < returner.1);
+}
+
+/// A write after the flag is cleared and the recheck has refused the
+/// waiter, before the controller blocks, sends a new event and is not
+/// lost.
+#[test]
+fn capacity_returned_after_the_recheck_is_not_lost() {
+	let (r, _dir, fake) = returning(
+		Returns {
+			chunks: vec![1],
+			handoff: Some((Handoff::AfterRecheck, 2)),
+			expect_start: true,
+			..base()
+		},
+		&[],
+	);
+	assert_eq!(r["status"], "PASS", "{r}");
+	assert_eq!(
+		fake.flow.lock().unwrap().handoff_decision,
+		Some(true),
+		"the write raised no event"
+	);
+	let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
+	assert!(waiter.0 < returner.1);
 }

@@ -208,6 +208,23 @@ impl Pool {
 		self.state.give(&bytes).context("return jobserver tokens")
 	}
 
+	/// The tokens in the fifo now, counted without reading any (`FIONREAD`):
+	/// a count short of a stage's weight refuses it with nothing read and
+	/// nothing written back.
+	pub fn available(&self) -> Result<usize> {
+		let mut count: libc::c_int = 0;
+		// SAFETY: FIONREAD writes one int for a valid pipe descriptor.
+		if unsafe { libc::ioctl(self.state.fifo.as_raw_fd(), libc::FIONREAD, &mut count) } != 0 {
+			return Err(std::io::Error::last_os_error()).context("count jobserver tokens");
+		}
+		Ok(count.max(0) as usize)
+	}
+
+	/// A watch on the fifo for writes by any process; see [`Watch`].
+	pub fn watch(&self) -> Result<Watch> {
+		Watch::new(&self.path)
+	}
+
 	/// Tokens taken and not yet returned.
 	pub fn outstanding(&self) -> usize {
 		*self.state.outstanding.lock().unwrap()
@@ -508,6 +525,152 @@ fn write_within(
 	Ok(())
 }
 
+/// What a [`Watch`] saw.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Notice {
+	/// Something wrote to the fifo, or the queue overflowed: capacity may
+	/// have changed. Notices coalesce; one says only "recheck".
+	Modified,
+	/// The watch was asked to stop.
+	Stopped,
+}
+
+/// An inotify watch for `IN_MODIFY` on a jobserver fifo, with a stop pipe.
+/// Every write to the fifo, by this process, a stage's client, or Cargo's
+/// and rustc's raw returns, is notified; reads are not.
+pub struct Watch {
+	inotify: File,
+	stop_read: File,
+	stop_write: File,
+}
+
+/// A handle that stops a [`Watch`] waiting on another thread.
+pub struct StopWatch(File);
+
+impl StopWatch {
+	pub fn stop(&self) -> Result<()> {
+		(&self.0)
+			.write_all(b"!")
+			.context("stop the jobserver watch")
+	}
+}
+
+impl Watch {
+	pub fn new(path: &Path) -> Result<Self> {
+		use std::os::fd::FromRawFd as _;
+		// SAFETY: flags only; a new descriptor or -1.
+		let fd = unsafe { libc::inotify_init1(libc::IN_NONBLOCK | libc::IN_CLOEXEC) };
+		if fd < 0 {
+			return Err(std::io::Error::last_os_error()).context("inotify_init1 for the jobserver");
+		}
+		// SAFETY: a fresh descriptor this value now owns.
+		let inotify = unsafe { File::from_raw_fd(fd) };
+		let name = CString::new(path.as_os_str().as_bytes()).context("fifo path has a NUL byte")?;
+		// SAFETY: a valid inotify descriptor and NUL-terminated path.
+		if unsafe { libc::inotify_add_watch(fd, name.as_ptr(), libc::IN_MODIFY) } < 0 {
+			return Err(std::io::Error::last_os_error())
+				.with_context(|| format!("watch {}", path.display()));
+		}
+		let mut pipe = [0; 2];
+		// SAFETY: two valid out-pointers for pipe2.
+		if unsafe { libc::pipe2(pipe.as_mut_ptr(), libc::O_NONBLOCK | libc::O_CLOEXEC) } != 0 {
+			return Err(std::io::Error::last_os_error()).context("pipe2 for the jobserver watch");
+		}
+		// SAFETY: pipe2 returned two fresh descriptors this value now owns.
+		let (stop_read, stop_write) =
+			unsafe { (File::from_raw_fd(pipe[0]), File::from_raw_fd(pipe[1])) };
+		Ok(Self {
+			inotify,
+			stop_read,
+			stop_write,
+		})
+	}
+
+	pub fn stopper(&self) -> Result<StopWatch> {
+		Ok(StopWatch(self.stop_write.try_clone()?))
+	}
+
+	/// Block until the fifo is written or the watch is stopped. A stop
+	/// takes priority whenever it is readable, and each poll is followed by
+	/// at most one bounded batch, so a writer that never pauses cannot
+	/// postpone a stop. A notice covers every write read so far; a write
+	/// still queued raises the next one.
+	pub fn wait(&self) -> Result<Notice> {
+		let mut buffer = vec![0u8; 64 * 1024];
+		loop {
+			let mut fds = [
+				libc::pollfd {
+					fd: self.inotify.as_raw_fd(),
+					events: libc::POLLIN,
+					revents: 0,
+				},
+				libc::pollfd {
+					fd: self.stop_read.as_raw_fd(),
+					events: libc::POLLIN,
+					revents: 0,
+				},
+			];
+			// SAFETY: two valid pollfds for the duration of the call; no timeout.
+			if unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) } < 0 {
+				let error = std::io::Error::last_os_error();
+				if error.kind() == ErrorKind::Interrupted {
+					continue;
+				}
+				return Err(error).context("poll the jobserver watch");
+			}
+			let readable = libc::POLLIN | libc::POLLHUP | libc::POLLERR;
+			if fds[1].revents & readable != 0 {
+				return Ok(Notice::Stopped);
+			}
+			if fds[0].revents & readable == 0 {
+				continue;
+			}
+			match (&self.inotify).read(&mut buffer) {
+				Ok(0) => bail!("the jobserver watch closed"),
+				// A batch with no write in it says nothing; keep waiting.
+				Ok(n) => {
+					if classify(&buffer[..n])? {
+						return Ok(Notice::Modified);
+					}
+				}
+				Err(error)
+					if matches!(error.kind(), ErrorKind::Interrupted | ErrorKind::WouldBlock) => {}
+				Err(error) => return Err(error).context("read the jobserver watch"),
+			}
+		}
+	}
+}
+
+/// Whether a batch of inotify records says capacity may have changed: a
+/// write, or a full queue. A removed or invalidated watch is an error, so
+/// the controller never sleeps on a dead source.
+pub fn classify(batch: &[u8]) -> Result<bool> {
+	const HEADER: usize = std::mem::size_of::<libc::inotify_event>();
+	let mut modified = false;
+	let mut at = 0;
+	while at < batch.len() {
+		ensure!(
+			batch.len() - at >= HEADER,
+			"a truncated jobserver watch record"
+		);
+		let mask = u32::from_ne_bytes(batch[at + 4..at + 8].try_into().unwrap());
+		let len = u32::from_ne_bytes(batch[at + 12..at + 16].try_into().unwrap()) as usize;
+		if mask & (libc::IN_IGNORED | libc::IN_DELETE_SELF | libc::IN_UNMOUNT) != 0 {
+			bail!("the jobserver watch was removed (mask {mask:#x})");
+		}
+		if mask & (libc::IN_MODIFY | libc::IN_Q_OVERFLOW) != 0 {
+			modified = true;
+		}
+		// The declared name must be in the batch too.
+		at = at
+			.checked_add(HEADER)
+			.and_then(|e| e.checked_add(len))
+			.filter(|e| *e <= batch.len())
+			.context("a truncated jobserver watch record")?;
+	}
+	Ok(modified)
+}
+
 /// The width a stage inherited from its final's jobserver, if it runs in one.
 pub fn inherited_width(makeflags: &str) -> Option<usize> {
 	if !makeflags.contains("--jobserver-auth=fifo:") {
@@ -657,6 +820,132 @@ mod tests {
 			assert_eq!(receiver.recv().unwrap(), 3);
 		});
 		assert_eq!(available(&pool), 3);
+		pool.close().unwrap();
+	}
+
+	fn record(mask: u32) -> Vec<u8> {
+		let mut r = Vec::new();
+		r.extend_from_slice(&1i32.to_ne_bytes());
+		r.extend_from_slice(&mask.to_ne_bytes());
+		r.extend_from_slice(&0u32.to_ne_bytes());
+		r.extend_from_slice(&0u32.to_ne_bytes());
+		r
+	}
+
+	#[test]
+	fn a_batch_rechecks_on_a_write_or_an_overflow_and_fails_on_removal() {
+		assert!(classify(&record(libc::IN_MODIFY)).unwrap());
+		assert!(classify(&record(libc::IN_Q_OVERFLOW)).unwrap());
+		let mut two = record(libc::IN_MODIFY);
+		two.extend(record(libc::IN_MODIFY));
+		assert!(classify(&two).unwrap());
+		assert!(!classify(&record(libc::IN_ACCESS)).unwrap());
+		for removed in [libc::IN_IGNORED, libc::IN_DELETE_SELF, libc::IN_UNMOUNT] {
+			let mut batch = record(libc::IN_MODIFY);
+			batch.extend(record(removed));
+			assert!(classify(&batch).is_err(), "{removed:#x}");
+		}
+		assert!(classify(&record(libc::IN_MODIFY)[..10]).is_err());
+		// A header declaring a name the batch does not hold.
+		let mut named = record(libc::IN_MODIFY);
+		named[12..16].copy_from_slice(&16u32.to_ne_bytes());
+		assert!(classify(&named).is_err());
+		named.extend([0u8; 16]);
+		assert!(classify(&named).unwrap());
+		let mut huge = record(libc::IN_MODIFY);
+		huge[12..16].copy_from_slice(&u32::MAX.to_ne_bytes());
+		assert!(classify(&huge).is_err());
+	}
+
+	/// With a write and a stop both pending, the stop wins; and a watch
+	/// stopped while a writer keeps writing ends.
+	#[test]
+	fn a_stop_takes_priority_over_writes() {
+		let (_dir, pool) = pool(1);
+		let watch = pool.watch().unwrap();
+		pool.state.write(b"+").unwrap();
+		watch.stopper().unwrap().stop().unwrap();
+		assert_eq!(watch.wait().unwrap(), Notice::Stopped);
+		let watch = pool.watch().unwrap();
+		let stop = watch.stopper().unwrap();
+		let writing = std::sync::atomic::AtomicBool::new(true);
+		let (first, seen) = std::sync::mpsc::channel();
+		let (ended, done) = std::sync::mpsc::channel();
+		let path = pool.path().to_owned();
+		std::thread::scope(|s| {
+			s.spawn(|| {
+				let mut fifo = OpenOptions::new().write(true).open(&path).unwrap();
+				while writing.load(std::sync::atomic::Ordering::SeqCst) {
+					fifo.write_all(b"+").unwrap();
+					let mut back = [0u8; 1];
+					let _ = (&pool.state.fifo).read(&mut back);
+				}
+			});
+			s.spawn(|| {
+				let mut notices = 0;
+				while watch.wait().unwrap() == Notice::Modified {
+					notices += 1;
+					if notices == 1 {
+						first.send(()).unwrap();
+					}
+				}
+				ended.send(notices).unwrap();
+			});
+			// Stop once the writer is seen running, while it still writes.
+			let bound = std::time::Duration::from_secs(20);
+			let outcome = seen
+				.recv_timeout(bound)
+				.map_err(|_| "no first notice")
+				.and_then(|()| {
+					stop.stop().unwrap();
+					done.recv_timeout(bound)
+						.map_err(|_| "the stop was starved by writes")
+				});
+			// Every path ends the writer and asks the watcher to stop before
+			// the scope joins them; the outcome is checked after.
+			writing.store(false, std::sync::atomic::Ordering::SeqCst);
+			let _ = stop.stop();
+			outcome
+		})
+		.map(|notices| assert!(notices >= 1))
+		.unwrap();
+		pool.close().unwrap();
+	}
+
+	/// Own and other processes' writes are notified, coalesced into one
+	/// notice when they come before the wait; reads are not; the count is
+	/// read without consuming; stop ends a wait.
+	#[test]
+	fn a_watch_sees_writes_by_any_process_and_not_reads() {
+		let (_dir, pool) = pool(2);
+		let watch = pool.watch().unwrap();
+		assert_eq!(pool.available().unwrap(), 2);
+		let lease = pool.take(2).unwrap().unwrap();
+		assert_eq!(pool.available().unwrap(), 0);
+		pool.give(lease).unwrap();
+		for _ in 0..3 {
+			let status = std::process::Command::new("sh")
+				.args(["-c", &format!("printf + > {}", pool.path().display())])
+				.status()
+				.unwrap();
+			assert!(status.success());
+		}
+		assert_eq!(pool.available().unwrap(), 5);
+		// The give and three raw writes: one notice for them all.
+		assert_eq!(watch.wait().unwrap(), Notice::Modified);
+		// A raw read, as a client takes a token, raises nothing: the stop
+		// is the next notice.
+		let mut other = OpenOptions::new()
+			.read(true)
+			.write(true)
+			.custom_flags(libc::O_NONBLOCK)
+			.open(pool.path())
+			.unwrap();
+		let mut token = [0u8; 1];
+		other.read_exact(&mut token).unwrap();
+		assert_eq!(pool.available().unwrap(), 4);
+		watch.stopper().unwrap().stop().unwrap();
+		assert_eq!(watch.wait().unwrap(), Notice::Stopped);
 		pool.close().unwrap();
 	}
 
