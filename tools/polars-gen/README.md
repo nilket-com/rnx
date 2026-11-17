@@ -175,8 +175,9 @@ Only an exact `[[bounded_readbacks]]` entry (inventory `key`, canonical
 `support::bounded_usize`, which a compile-time `usize` width assertion and a
 debug assertion guard. A name alone never qualifies. The oracle's Rust side
 formats those types with the same check, so a wrapping binding is a
-mismatch. `probes/0093/census.py` classifies every read-back as checked or
-bounded, with its route.
+mismatch. Record 0093's census (`probes/0093/census.py` at 107e2bde,
+since deleted) classified every read-back as checked or bounded, with its
+route.
 
 Record 0094's `[[hash_tokens]]` entries (inventory `key`, canonical
 `path`, `direction` `return` or `parameter`, the parameter's name, the

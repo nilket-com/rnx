@@ -1,6 +1,7 @@
 //! Record 0143: Candle interchange and functional scatter, against Candle's
 //! own readers and writers as the parity oracle, NumPy-written fixtures
-//! (`tests/data/0143`, from `probes/0143/fixtures.py`), and every refusal.
+//! (`tests/data/0143`, written by `probes/0143/fixtures.py` at 107e2bde with
+//! NumPy and Python's `zipfile`, since deleted), and every refusal.
 use candle_core::{Device, Tensor as CTensor};
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};

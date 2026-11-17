@@ -2,11 +2,11 @@
 //! `RNX_GEN_MODEL` naming its directory, fetched by probes/0149/fetch.sh).
 //!
 //! `the_early_gate_chats_are_generated`: the frozen non-D2 gate chats
-//! (probes/0149/gate_chats.json): rnx's prompt ids, greedy ids and the
-//! complete logits at every step, written to `RNX_GEN_GATE_OUT` (a JSON
-//! index and a raw little-endian f32 file beside it) for
-//! probes/0149/hf_gate.py; and `chat_strs` on the same chats gives the same
-//! ids as the full-logit path.
+//! (probes/0149/gate_chats.json): every logit at every step is finite, and
+//! `chat_strs` on the same chats gives the same ids as the full-logit path.
+//! Record 0149 also compared these logits with the transformers
+//! implementation; that external comparison is history, its Python
+//! comparator retired in ADR 0285, and nothing here replaces it.
 use rnx_candle::text::generate;
 
 fn gate() -> (Vec<(String, String)>, Vec<usize>) {
@@ -39,20 +39,13 @@ fn gate() -> (Vec<(String, String)>, Vec<usize>) {
 #[ignore = "needs the pinned model in RNX_GEN_MODEL"]
 fn the_early_gate_chats_are_generated() {
 	let dir = std::env::var("RNX_GEN_MODEL").expect("RNX_GEN_MODEL");
-	let out = std::env::var("RNX_GEN_GATE_OUT").expect("RNX_GEN_GATE_OUT");
 	let g = generate::load_dir(&dir).unwrap();
 	let (chats, max_new) = gate();
-	let mut index = Vec::new();
-	let mut raw: Vec<u8> = Vec::new();
 	for ((s, u), &m) in chats.iter().zip(&max_new) {
 		let prompt = generate::prompt_ids(&g, s, u).unwrap();
 		let (ids, logits) = generate::full_logits(&g, s, u, m).unwrap();
-		let at = raw.len() / 4;
 		for v in &logits {
 			assert!(v.iter().all(|x| x.is_finite()), "a non-finite logit");
-			for x in v {
-				raw.extend_from_slice(&x.to_le_bytes());
-			}
 		}
 		// the production path gives the same ids
 		let (r, _) = generate::chat_strs(&g, &[s.as_str()], &[u.as_str()], m, &Default::default());
@@ -65,14 +58,7 @@ fn the_early_gate_chats_are_generated() {
 			r[0].stop,
 			r[0].text
 		);
-		index.push(serde_json::json!({
-			"system": s, "user": u, "max_new_tokens": m, "prompt_ids": prompt, "ids": ids,
-			"text": r[0].text, "stop": r[0].stop, "logits_at": at, "steps": logits.len(),
-			"vocab": logits[0].len(),
-		}));
 	}
-	std::fs::write(format!("{out}.f32"), raw).unwrap();
-	std::fs::write(out, serde_json::Value::Array(index).to_string()).unwrap();
 }
 
 /// The calibration grid (review round 1, R2), fail-closed, run alone:

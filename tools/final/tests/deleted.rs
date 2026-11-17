@@ -175,3 +175,207 @@ fn every_stage_script_exists() {
 		}
 	}
 }
+
+/// The probe scripts ADR 0285 deleted, as its committed tombstone lists them.
+fn retired(root: &Path) -> Vec<String> {
+	std::fs::read_to_string(root.join("tools/final/tests/retired/probes-0285.txt"))
+		.unwrap()
+		.lines()
+		.filter(|l| !l.starts_with('#') && !l.trim().is_empty())
+		.map(str::to_owned)
+		.collect()
+}
+
+/// The reviewed history that names a retired script: each file, an exact
+/// line, and how many times that line occurs. Nothing else may name one.
+const HISTORY_LINES: [(&str, &str, usize); 4] = [
+	(
+		"tools/polars-gen/README.md",
+		"mismatch. Record 0093's census (`probes/0093/census.py` at 107e2bde,",
+		1,
+	),
+	(
+		"adapters/candle/tests/interchange.rs",
+		"//! (`tests/data/0143`, written by `probes/0143/fixtures.py` at 107e2bde with",
+		1,
+	),
+	(
+		"tools/polars-gen/releases/0.55.2-joins.toml",
+		"cite = \"record 0118 stage 4: the in-memory reader over script Bytes (Cursor<Vec<u8>>); census path in probes/0118/census.py\"",
+		3,
+	),
+	(
+		"tools/polars-gen/releases/0.55.2-joins.toml",
+		"cite = \"record 0118 stage 4: the in-memory writer into a polars::Sink; census path in probes/0118/census.py\"",
+		5,
+	),
+];
+
+/// Every line of a current file that names a retired script, by its path
+/// or as a dotted module (`probes.0143.fixtures`, or `from probes.0143
+/// import fixtures`), other than the reviewed history lines; and every
+/// reviewed line whose count changed.
+fn retired_references(root: &Path, files: &[String], retired: &[String]) -> Vec<String> {
+	let dotted: Vec<(String, Regex)> = retired
+		.iter()
+		.map(|p| {
+			let stem = p.trim_end_matches(".py");
+			let (package, module) = stem.rsplit_once('/').unwrap();
+			let (package, module) = (package.replace('/', "."), module.to_owned());
+			let (p_, m_) = (regex::escape(&package), regex::escape(&module));
+			let pattern = format!(r"\b{p_}\.{m_}\b|\bfrom\s+{p_}\s+import\s+([\w]+\s*,\s*)*{m_}\b");
+			(p.clone(), Regex::new(&pattern).unwrap())
+		})
+		.collect();
+	let mut found = Vec::new();
+	let mut seen: std::collections::BTreeMap<(&str, &str), usize> = Default::default();
+	for file in files {
+		if file.starts_with("plans/")
+			|| file.starts_with("probes/")
+			|| file.starts_with("tools/final/tests/retired/")
+			|| file == "tools/final/tests/deleted.rs"
+		{
+			continue;
+		}
+		let Ok(text) = std::fs::read_to_string(root.join(file)) else {
+			continue;
+		};
+		if !text.contains("probes/") && !text.contains("probes.") {
+			continue;
+		}
+		for line in text.lines() {
+			let named = retired
+				.iter()
+				.find(|p| line.contains(p.as_str()))
+				.cloned()
+				.or_else(|| {
+					dotted
+						.iter()
+						.find(|(_, r)| r.is_match(line))
+						.map(|(p, _)| p.clone())
+				});
+			let Some(path) = named else { continue };
+			match HISTORY_LINES
+				.iter()
+				.find(|(f, l, _)| f == file && *l == line)
+			{
+				Some((f, l, _)) => *seen.entry((f, l)).or_default() += 1,
+				None => found.push(format!("{file}: {path}: {}", line.trim())),
+			}
+		}
+	}
+	for (f, l, count) in HISTORY_LINES {
+		let got = seen.get(&(f, l)).copied().unwrap_or(0);
+		if files.iter().any(|x| x == f) && got != count {
+			found.push(format!(
+				"{f}: reviewed history line occurs {got} times, not {count}"
+			));
+		}
+	}
+	found
+}
+
+#[test]
+fn no_retired_probe_script_is_tracked_or_named() {
+	let root = root();
+	let files = tracked(&root);
+	let retired = retired(&root);
+	assert_eq!(retired.len(), 151);
+	let still: Vec<&String> = retired.iter().filter(|p| files.contains(p)).collect();
+	assert!(still.is_empty(), "still tracked: {still:?}");
+	let found = retired_references(&root, &files, &retired);
+	assert!(found.is_empty(), "{found:#?}");
+	// Every reviewed history file is current.
+	for (f, _, _) in HISTORY_LINES {
+		assert!(files.iter().any(|x| x == f), "{f}");
+	}
+}
+
+#[test]
+fn only_the_reviewed_history_names_a_retired_script() {
+	let root = std::env::temp_dir().join(format!(
+		"rnx-final-retired-{}",
+		rnx_final::receipt::invocation_id()
+	));
+	for d in ["tools/polars-gen/releases", "adapters/candle/tests"] {
+		std::fs::create_dir_all(root.join(d)).unwrap();
+	}
+	let retired = vec![
+		"probes/0143/fixtures.py".to_string(),
+		"probes/0118/census.py".to_string(),
+		"probes/0093/census.py".to_string(),
+	];
+	let toml = "tools/polars-gen/releases/0.55.2-joins.toml";
+	let cites = format!(
+		"{}\n{}\n{}\n",
+		HISTORY_LINES[2].1, HISTORY_LINES[2].1, HISTORY_LINES[2].1
+	) + &format!("{}\n", HISTORY_LINES[3].1).repeat(5);
+	// The reviewed files, each exactly as reviewed, pass.
+	let reviewed = [
+		(
+			"tools/polars-gen/README.md".to_string(),
+			format!("{}\n", HISTORY_LINES[0].1),
+		),
+		(
+			"adapters/candle/tests/interchange.rs".to_string(),
+			format!("{}\n", HISTORY_LINES[1].1),
+		),
+		(toml.to_string(), cites.clone()),
+	];
+	let write = |files: &[(String, String)]| -> Vec<String> {
+		for (name, text) in files {
+			std::fs::write(root.join(name), text).unwrap();
+		}
+		files.iter().map(|(n, _)| n.clone()).collect()
+	};
+	let names = write(&reviewed);
+	assert!(retired_references(&root, &names, &retired).is_empty());
+	// Each of these is flagged.
+	let planted: [(&str, String); 11] = [
+		(
+			"a.py",
+			"importlib.import_module(\"probes.0143.fixtures\")\n".into(),
+		),
+		("b.py", "from probes.0143 import fixtures\n".into()),
+		(
+			"c.rs",
+			"//! written by `probes/0143/fixtures.py` at 107e2bde\n".into(),
+		),
+		(
+			"d.md",
+			"Record 0143's generator, `probes/0143/fixtures.py` at 107e2bde.\n".into(),
+		),
+		(
+			"e.md",
+			"python3 probes/0143/fixtures.py # 107e2bde\n".into(),
+		),
+		(
+			"f.md",
+			"~~~sh\npython3 probes/0143/fixtures.py\n~~~\n".into(),
+		),
+		("g.md", "    python3 probes/0143/fixtures.py\n".into()),
+		(
+			"h.rs",
+			"let c = [\"python3\", \"probes/0143/fixtures.py\"]; // at 107e2bde\n".into(),
+		),
+		(
+			toml,
+			cites.clone() + "cite = \"record 0118 stage 4: probes/0143/fixtures.py\"\n",
+		),
+		(toml, cites.replace("Cursor<Vec<u8>>", "Cursor<u8>")),
+		(
+			"adapters/candle/tests/interchange.rs",
+			format!("{}\n{}\n", HISTORY_LINES[1].1, HISTORY_LINES[1].1),
+		),
+	];
+	for (name, text) in planted {
+		let mut files = reviewed.to_vec();
+		files.retain(|(n, _)| n != name);
+		files.push((name.to_string(), text));
+		let names = write(&files);
+		let found = retired_references(&root, &names, &retired);
+		assert!(!found.is_empty(), "{name}: not flagged");
+		write(&reviewed);
+	}
+	let _ = std::fs::remove_dir_all(&root);
+}

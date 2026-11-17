@@ -1,6 +1,6 @@
 # ADR 0285: Retired probe scripts are deleted
 
-Status: Proposed
+Status: Implemented
 
 Base: published 107e2bde2cad0888d82e4763e60dbd55f22ebb65 (ADR 0284).
 

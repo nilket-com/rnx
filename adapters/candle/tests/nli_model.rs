@@ -2,8 +2,10 @@
 //! `RNX_NLI_MODEL` naming its directory, fetched by probes/0148/fetch.sh).
 //!
 //! `the_early_gate_pairs_are_scored`: the frozen non-D2 gate pairs
-//! (probes/0148/gate_pairs.json), batched and each alone, written as
-//! logits to `RNX_NLI_GATE_OUT` for probes/0148/hf_gate.py.
+//! (probes/0148/gate_pairs.json) score batched and each alone. Record 0148
+//! also compared these logits with the sentence-transformers
+//! implementation; that external comparison is history, its Python
+//! comparator retired in ADR 0285, and nothing here replaces it.
 use rnx_candle::text::{CAPS, nli};
 
 fn gate_pairs() -> (Vec<String>, Vec<String>) {
@@ -35,7 +37,6 @@ fn gate_pairs() -> (Vec<String>, Vec<String>) {
 #[ignore = "needs the pinned NLI model in RNX_NLI_MODEL"]
 fn the_early_gate_pairs_are_scored() {
 	let dir = std::env::var("RNX_NLI_MODEL").expect("RNX_NLI_MODEL");
-	let out = std::env::var("RNX_NLI_GATE_OUT").expect("RNX_NLI_GATE_OUT");
 	let m = nli::load_dir(&dir).unwrap();
 	let (p, h) = gate_pairs();
 	let pr: Vec<&str> = p.iter().map(String::as_str).collect();
@@ -56,11 +57,10 @@ fn the_early_gate_pairs_are_scored() {
 				.unwrap(),
 		);
 	}
-	let json = serde_json::json!({
-		"premises": p, "hypotheses": h, "batches": trace.batches,
-		"batched": batched, "alone": alone,
-	});
-	std::fs::write(out, json.to_string()).unwrap();
+	eprintln!(
+		"{} pairs scored batched and alone",
+		batched.len() + alone.len()
+	);
 }
 
 /// The calibration grid (review round 1, R2), fail-closed. Needs the
