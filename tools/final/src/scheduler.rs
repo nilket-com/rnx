@@ -48,7 +48,7 @@ pub fn declared_bulk(name: &str) -> u64 {
 /// Wrapper stages by script: what each builds beyond the manifests it names.
 fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 	Some(match script {
-		"tools/column/clippy.py" | "tools/column/suite_stage.py" => &[],
+		CLIPPY | SUITE | "tools/column/suite_stage.py" => &[],
 		"tools/column/inventories.py" => &[
 			("target/column-inventory-extract", "debug"),
 			("tools/polars-gen/Cargo.toml", "debug"),
@@ -108,12 +108,25 @@ pub fn manifest(command: &[String]) -> &str {
 		.map_or("Cargo.toml", String::as_str)
 }
 
+/// The program a stage runs: a Rust stage mode by its logical name, else
+/// the Python script it names.
 pub fn script(command: &[String]) -> Option<&str> {
+	if command[0] == crate::stage::PROGRAM {
+		return match command.get(2).map(String::as_str) {
+			Some("suite") => Some(SUITE),
+			Some("clippy") => Some(CLIPPY),
+			_ => None,
+		};
+	}
 	command[1..]
 		.iter()
 		.find(|a| a.ends_with(".py"))
 		.map(String::as_str)
 }
+
+/// The Rust stage modes, as the scheduler names them.
+pub const SUITE: &str = "rnx-final stage suite";
+pub const CLIPPY: &str = "rnx-final stage clippy";
 
 fn is_cargo(command: &[String]) -> bool {
 	Path::new(&command[0])
@@ -135,7 +148,7 @@ pub fn declared(name: &str, command: &[String]) -> Result<()> {
 	{
 		return Ok(());
 	}
-	if command[0] == "python3"
+	if (command[0] == "python3" || command[0] == crate::stage::PROGRAM)
 		&& (script(command).is_some_and(|s| wrapper(s).is_some()) || is_unittest(command))
 	{
 		return Ok(());
@@ -236,7 +249,7 @@ pub fn resources(
 		return Ok(lanes);
 	}
 	match script(command) {
-		Some("tools/column/suite_stage.py") => {
+		Some(SUITE | "tools/column/suite_stage.py") => {
 			let stage = &command[command
 				.iter()
 				.position(|a| a == "--stage")
@@ -248,7 +261,7 @@ pub fn resources(
 			}
 			Ok(all)
 		}
-		Some("tools/column/clippy.py") => {
+		Some(CLIPPY) => {
 			let prefix = format!(
 				"column-clippy-{}",
 				if command.iter().any(|a| a == "--adapter") {
@@ -295,7 +308,7 @@ pub fn weight(_name: &str, command: &[String], root: &Path) -> Result<usize> {
 		});
 	}
 	match script(command) {
-		Some("tools/column/suite_stage.py") => {
+		Some(SUITE | "tools/column/suite_stage.py") => {
 			let stage = &command[command
 				.iter()
 				.position(|a| a == "--stage")

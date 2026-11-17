@@ -88,7 +88,9 @@ fn pipe() -> Result<(OwnedFd, OwnedFd)> {
 	Ok(unsafe { (OwnedFd::from_raw_fd(fds[0]), OwnedFd::from_raw_fd(fds[1])) })
 }
 
-fn pidfd(pid: i32) -> Result<OwnedFd> {
+/// A pidfd for `pid`: it names that process until the descriptor closes,
+/// reaped or not, so a signal through it never reaches a reused PID.
+pub fn pidfd(pid: i32) -> Result<OwnedFd> {
 	// SAFETY: pidfd_open takes a pid and flags and returns a new descriptor.
 	let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
 	if fd < 0 {

@@ -1,6 +1,6 @@
 # ADR 0287: Package suites run in Rust
 
-Status: Proposed
+Status: Implemented
 
 Base: published f0a6663697538651432537c442ed6c60791b424a (ADR 0286).
 

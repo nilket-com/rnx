@@ -1,0 +1,8 @@
+# ADR 0287: Python stage programs replaced by the Rust stage mode, and the
+# finished-record workflows that ran them. tools/final/tests/deleted.rs
+# requires none to be tracked and no current file to run or name one.
+tools/column/borrowed_controls.py
+tools/column/clippy.py
+tools/column/package_gates.py
+tools/column/test_borrowed_controls.py
+tools/column/verify.py

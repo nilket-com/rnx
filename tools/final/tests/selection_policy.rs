@@ -460,16 +460,22 @@ fn every_stage_that_must_be_a_producer_runs_one() {
 			);
 		}
 	}
-	// The Python stage protocol, which checks the producers' receipts at
-	// run time, classifies each of them as a producer too.
+	// The Python stage protocol, which checks a Python producer's receipt
+	// at run time, classifies each Python-run one as a producer too; the
+	// Rust stage modes run under the Rust protocol alone.
 	let required: Vec<serde_json::Value> =
 		rnx_final::catalogue::commands(&root.join("target/unused"), &root)
 			.unwrap()
 			.into_iter()
-			.filter(|(name, _)| selection::requires_producer(name))
+			.filter(|(name, command)| selection::requires_producer(name) && command[0] == "python3")
 			.map(|(name, command)| serde_json::json!([name, command]))
 			.collect();
-	assert!(required.len() > 20, "{} producer stages", required.len());
+	// polars-inventories, cross, rune-suite and fixed-route.
+	assert!(
+		required.len() == 4,
+		"{} Python producer stages",
+		required.len()
+	);
 	let script = "import json, sys\nfrom pathlib import Path\nimport child_result as c\nroot = Path(sys.argv[1])\nprint(json.dumps([n for n, command in json.loads(sys.argv[2]) if c.contract(command, root, root) != 'producer']))";
 	let output = std::process::Command::new("python3")
 		.args(["-B", "-c", script])

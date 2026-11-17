@@ -12,12 +12,14 @@ pub mod evidence;
 pub mod failure;
 pub mod guardian;
 pub mod outputs;
+pub mod producer;
 pub mod pyjson;
 pub mod pylist;
 pub mod receipt;
 pub mod routes;
 pub mod scheduler;
 pub mod selection;
+pub mod stage;
 pub mod types;
 
 #[cfg(test)]

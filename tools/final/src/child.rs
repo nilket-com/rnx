@@ -228,6 +228,19 @@ fn lexical_resolve(path: &Path) -> PathBuf {
 /// "producer" when the child writes its own bound receipt, "leaf" when its
 /// exit and logs are the evidence; anything unregistered is refused.
 pub fn contract(command: &[String], cwd: &Path, root: &Path) -> Result<&'static str> {
+	// A Rust stage is a producer only as the logical program in one of its
+	// modes; the runner gives it the controller's own executable.
+	if command[0] == crate::stage::PROGRAM {
+		return match (
+			command.get(1).map(String::as_str),
+			command.get(2).map(String::as_str),
+		) {
+			(Some("stage"), Some("suite" | "clippy")) => Ok("producer"),
+			_ => Err(value_error(&format!(
+				"unregistered rnx-final child: {command:?}"
+			))),
+		};
+	}
 	if is_python(&command[0])
 		&& let Some(i) = command.iter().position(|p| p == "-m")
 		&& command.get(i + 1).map(String::as_str) != Some("unittest")
@@ -487,6 +500,11 @@ fn run_guarded(run: &Run, command: &[String], env: &Environment, log: &Path) -> 
 }
 
 /// Run a stage child once and write its validation receipt.
+/// The executable `guardian` names, `/proc/self/exe` resolved to the file.
+fn own_executable(guardian: &Path) -> Result<PathBuf> {
+	Ok(std::fs::canonicalize(guardian)?)
+}
+
 pub fn run(run: Run) -> Result<Done> {
 	let started = Instant::now();
 	let cwd = std::fs::canonicalize(run.cwd)?;
@@ -509,6 +527,12 @@ pub fn run(run: Run) -> Result<Done> {
 		.create_new(true)
 		.write(true)
 		.open(run.log)?;
+	// The controller's own executable, which a Rust stage runs as.
+	let program = own_executable(run.guardian)?;
+	let mut resolved = run.command.to_vec();
+	if resolved[0] == crate::stage::PROGRAM {
+		resolved[0] = program.to_string_lossy().into_owned();
+	}
 	let result = (|| -> Result<()> {
 		let kind = contract(run.command, &cwd, &root)?;
 		let mut clean = run.env.clone();
@@ -538,6 +562,10 @@ pub fn run(run: Run) -> Result<Done> {
 			ctx["result_directory"] = json!(result_dir.to_string_lossy());
 			ctx["existing_results"] = Value::Object(existing);
 			ctx["resume"] = json!(run.command.iter().any(|p| p == "--resume"));
+		}
+		if run.command[0] == crate::stage::PROGRAM {
+			ctx["executable"] =
+				json!({"path": program.to_string_lossy(), "sha256": digest(&program)?});
 		}
 		crate::types::write_as::<crate::types::ChildContext>(
 			&directory.join("CONTEXT.json"),
@@ -584,7 +612,7 @@ pub fn run(run: Run) -> Result<Done> {
 				json!(discovered(&std::fs::read_to_string(&discovery_log)?)?),
 			);
 		}
-		let code = run_guarded(&run, run.command, &clean, run.log)?;
+		let code = run_guarded(&run, &resolved, &clean, run.log)?;
 		row.insert("process_exit".into(), json!(code));
 		returncode = code;
 		if let Some(after) = run.after {

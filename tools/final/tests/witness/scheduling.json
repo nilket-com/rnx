@@ -1483,6 +1483,10 @@
 		{
 			"change": "adds the stages engine-source-controls (python3 -B tools/test_engine_source.py) and census-refresh-controls (python3 -B tools/test_refresh_census.py) right after pin-controls, each scheduled as pin-controls is: no Cargo resources, weight 1, no bulk root, no jobserver environment. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output. The producers list, which names stages by position, gains an empty entry for each new stage, and every position after pin-controls moves up by two.",
 			"record": "0286"
+		},
+		{
+			"change": "the 53 suite_stage.py stages other than rune-suite run as the controller's stage mode, [rnx-final, stage, suite, --stage, NAME, --out, OUT] in place of [python3, -B, tools/column/suite_stage.py, --stage, NAME, --out, OUT], and clippy and adapter-clippy as [rnx-final, stage, clippy, (--adapter,) --out, OUT] in place of [python3, -B, tools/column/clippy.py, (--adapter,) --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing was regenerated from the Rust output.",
+			"record": "0287"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

@@ -418,17 +418,16 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		command.extend(rest.iter().map(|s| s.to_string()));
 		command
 	};
+	// Every suite stage but rune-suite runs as the controller's own stage
+	// mode; rune-suite stays with its Python native contract cases.
 	let suite = |stage: &str| -> Stage {
-		(
-			stage.into(),
-			python(&[
-				"tools/column/suite_stage.py",
-				"--stage",
-				stage,
-				"--out",
-				&out_text(stage),
-			]),
-		)
+		let mut command = if stage == "rune-suite" {
+			python(&["tools/column/suite_stage.py"])
+		} else {
+			strings(&[crate::stage::PROGRAM, "stage", "suite"])
+		};
+		command.extend(strings(&["--stage", stage, "--out", &out_text(stage)]));
+		(stage.into(), command)
 	};
 	let mut steps: Vec<Stage> = vec![("commit-discipline".into(), python(&["ci/preflight.py"]))];
 	for manifest in MANIFESTS {
@@ -511,12 +510,20 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		),
 		(
 			"clippy".into(),
-			python(&["tools/column/clippy.py", "--out", &out_text("clippy")]),
+			strings(&[
+				crate::stage::PROGRAM,
+				"stage",
+				"clippy",
+				"--out",
+				&out_text("clippy"),
+			]),
 		),
 		(
 			"adapter-clippy".into(),
-			python(&[
-				"tools/column/clippy.py",
+			strings(&[
+				crate::stage::PROGRAM,
+				"stage",
+				"clippy",
 				"--adapter",
 				"--out",
 				&out_text("adapter-clippy"),

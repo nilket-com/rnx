@@ -15,3 +15,5 @@ serde = { version = "1.0.163", features = ["derive"] }
 # Receipts carry Python-written floats; they must read back exactly.
 serde_json = { version = "1.0.96", features = ["float_roundtrip"] }
 sha2 = "0.11.0"
+# The Clippy baselines' published trees, unpacked inside their root.
+tar = { version = "0.4.46", default-features = false }

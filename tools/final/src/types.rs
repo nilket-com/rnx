@@ -105,6 +105,16 @@ pub struct ChildContext {
 	pub existing_results: Field<BTreeMap<String, String>>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub resume: Field<bool>,
+	/// The executable a Rust stage ran as: the controller's own.
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub executable: Field<Executable>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Executable {
+	pub path: String,
+	pub sha256: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

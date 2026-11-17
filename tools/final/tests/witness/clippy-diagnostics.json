@@ -1,0 +1,459 @@
+{
+	"expected": {
+		"a path outside the root stays absolute": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"example",
+						[
+							"/elsewhere/lib.rs"
+						]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "/elsewhere/lib.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"a secondary span alone": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"example",
+						[]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": false,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"changed message": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"changed",
+						[
+							"src/example.rs"
+						]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "changed",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"ignored lines": {
+			"found": [],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "note",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				},
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "build-script-executed",
+					"target": {
+						"name": "rnx"
+					}
+				},
+				"not json"
+			]
+		},
+		"moved line and absolute path": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"example",
+						[
+							"src/example.rs"
+						]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "<SCRATCH>/diag-root/src/example.rs",
+								"is_primary": true,
+								"line_start": 17
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"one": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"example",
+						[
+							"src/example.rs"
+						]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"other target, level and code": {
+			"found": [
+				[
+					[
+						"rnx",
+						"error",
+						"clippy::example",
+						"example",
+						[
+							"src/example.rs"
+						]
+					],
+					1
+				],
+				[
+					[
+						"rnx",
+						"warning",
+						null,
+						"example",
+						[
+							"src/example.rs"
+						]
+					],
+					1
+				],
+				[
+					[
+						"rnx-polars",
+						"warning",
+						"clippy::example",
+						"example",
+						[
+							"src/example.rs"
+						]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx-polars"
+					}
+				},
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "error",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				},
+				{
+					"message": {
+						"code": null,
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"primary files sorted, others ignored": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"example",
+						[
+							"src/a.rs",
+							"src/b.rs"
+						]
+					],
+					1
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/b.rs",
+								"is_primary": true,
+								"line_start": 1
+							},
+							{
+								"column_start": 1,
+								"file_name": "src/a.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		},
+		"twice": {
+			"found": [
+				[
+					[
+						"rnx",
+						"warning",
+						"clippy::example",
+						"example",
+						[
+							"src/example.rs"
+						]
+					],
+					2
+				]
+			],
+			"lines": [
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				},
+				{
+					"message": {
+						"code": {
+							"code": "clippy::example"
+						},
+						"level": "warning",
+						"message": "example",
+						"spans": [
+							{
+								"column_start": 1,
+								"file_name": "src/example.rs",
+								"is_primary": true,
+								"line_start": 1
+							}
+						]
+					},
+					"reason": "compiler-message",
+					"target": {
+						"name": "rnx"
+					}
+				}
+			]
+		}
+	},
+	"method": "clippy.diagnostics(path, root) for each case's lines written one per line to root/diagnostics.jsonl; found is each identity [target, level, code, message, [primary files]] with its count, sorted",
+	"substitutions": {
+		"<SCRATCH>": "a scratch directory; diag-root is the root"
+	},
+	"witness": "f0a6663697538651432537c442ed6c60791b424a"
+}

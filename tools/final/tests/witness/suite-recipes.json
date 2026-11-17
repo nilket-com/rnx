@@ -1,0 +1,2481 @@
+{
+	"expected": {
+		"record_baseline": "0000000000000000000000000000000000000001",
+		"stages": {
+			"clippy-adapter-candle": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-clippy-adapter-candle/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						]
+					}
+				]
+			},
+			"clippy-adapter-polars": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/polars/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json",
+							"--",
+							"-Wclippy::erasing_op"
+						],
+						"cwd": "<SCRATCH>/out-clippy-adapter-polars/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/polars/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json",
+							"--",
+							"-Wclippy::erasing_op"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/polars/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						]
+					}
+				]
+			},
+			"clippy-adapter-postgres": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-clippy-adapter-postgres/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						]
+					}
+				]
+			},
+			"format-adapter-candle": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-adapter-postgres": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-check-demos-candle-Cargo.toml": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"demos/candle/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"demos/candle/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-check-demos-polars-Cargo.toml": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"demos/polars/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"demos/polars/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-check-servers-http-postgres-Cargo.toml": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"servers/http-postgres/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"servers/http-postgres/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-benches": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-builder": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-column-probe": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-examples": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-execute-guard": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-generate": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-hegel": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-measure-harness": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-no-std": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-polars-gen": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-site": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"format-package-xtask": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"lint-check-demos-candle-Cargo.toml": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"demos/candle/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-check-demos-candle-Cargo.toml/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"demos/candle/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"demos/candle/Cargo.toml"
+						]
+					}
+				]
+			},
+			"lint-check-demos-polars-Cargo.toml": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"demos/polars/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-check-demos-polars-Cargo.toml/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"demos/polars/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"demos/polars/Cargo.toml"
+						]
+					}
+				]
+			},
+			"lint-check-servers-http-postgres-Cargo.toml": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"servers/http-postgres/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-check-servers-http-postgres-Cargo.toml/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"servers/http-postgres/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--manifest-path",
+							"servers/http-postgres/Cargo.toml"
+						]
+					}
+				]
+			},
+			"lint-package-benches": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--benches",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-benches/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--benches",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--benches"
+						]
+					}
+				]
+			},
+			"lint-package-builder": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-builder/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"lint-package-column-probe": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-column-probe/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml"
+						]
+					}
+				]
+			},
+			"lint-package-examples": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-examples/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"lint-package-execute-guard": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-execute-guard/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"lint-package-generate": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-generate/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"lint-package-hegel": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-hegel/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--tests"
+						]
+					}
+				]
+			},
+			"lint-package-measure-harness": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-measure-harness/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml"
+						]
+					}
+				]
+			},
+			"lint-package-no-std": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+nightly-2026-09-01",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--example",
+							"minimal",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-no-std/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+nightly-2026-09-01",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--example",
+							"minimal",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+nightly-2026-09-01",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--example",
+							"minimal"
+						]
+					}
+				]
+			},
+			"lint-package-polars-gen": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-polars-gen/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"lint-package-site": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-site/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all-targets",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"lint-package-xtask": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-lint-package-xtask/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--tests"
+						]
+					}
+				]
+			},
+			"package-benches": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--benches"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/benches/Cargo.toml",
+							"--benches"
+						]
+					}
+				]
+			},
+			"package-builder": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all-targets"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/builder/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"package-column-probe": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/column/probe/Cargo.toml"
+						]
+					}
+				]
+			},
+			"package-examples": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all-targets"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/examples/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"package-execute-guard": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all-targets"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"ci/execute_guard/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"package-generate": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all-targets"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/generate/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"package-hegel": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--",
+							"--list"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-discovery.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml",
+							"--",
+							"--test-threads=4"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-test.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--manifest-path",
+							"rune/hegel_tests/Cargo.toml"
+						],
+						"discovered": [
+							"module::case"
+						],
+						"passed": 1
+					}
+				]
+			},
+			"package-measure-harness": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/measure/harness/Cargo.toml"
+						]
+					}
+				]
+			},
+			"package-no-std": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+nightly-2026-09-01",
+							"run",
+							"--locked",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--example",
+							"minimal"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+nightly-2026-09-01",
+							"run",
+							"--locked",
+							"--manifest-path",
+							"rune/no-std/Cargo.toml",
+							"--example",
+							"minimal"
+						]
+					}
+				]
+			},
+			"package-polars-gen": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all-targets"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"tools/polars-gen/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"package-site": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all-targets"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-package.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"check",
+							"--locked",
+							"--manifest-path",
+							"rune/tools/site/Cargo.toml",
+							"--all-targets"
+						]
+					}
+				]
+			},
+			"package-xtask": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--",
+							"--list"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-discovery.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml",
+							"--",
+							"--test-threads=4"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-test.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--all-targets",
+							"--all-features",
+							"--manifest-path",
+							"rune/tools/xtask/Cargo.toml"
+						],
+						"discovered": [
+							"module::case"
+						],
+						"passed": 1
+					}
+				]
+			},
+			"project-clippy": {
+				"calls": [
+					{
+						"command": [
+							"git",
+							"archive",
+							"0000000000000000000000000000000000000001"
+						],
+						"cwd": "<ROOT>",
+						"subprocess": true
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<SCRATCH>/out-project-clippy/baseline-0",
+						"env": null,
+						"log": "0-baseline-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--message-format=json"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-candidate-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"baseline": "0000000000000000000000000000000000000001",
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						]
+					}
+				]
+			},
+			"project-format": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--all",
+							"--check"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-format.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--all",
+							"--check"
+						]
+					}
+				]
+			},
+			"project-suite": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--",
+							"--list"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-discovery.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--",
+							"--test-threads=4"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-test.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"tools/project/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						],
+						"discovered": [
+							"module::case"
+						],
+						"passed": 1
+					}
+				]
+			},
+			"rune-clippy": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace",
+							"--",
+							"-D",
+							"warnings"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace,execution,capture-io,disable-io,sha2",
+							"--",
+							"-D",
+							"warnings"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "1-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+							"--",
+							"-D",
+							"warnings"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "2-clippy.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace,native-code,capture-io,disable-io,sha2",
+							"--",
+							"-D",
+							"warnings"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "3-clippy.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace",
+							"--",
+							"-D",
+							"warnings"
+						]
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace,execution,capture-io,disable-io,sha2",
+							"--",
+							"-D",
+							"warnings"
+						]
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+							"--",
+							"-D",
+							"warnings"
+						]
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"-p",
+							"rune",
+							"--profile",
+							"engine-dev",
+							"--lib",
+							"--tests",
+							"--features",
+							"fmt,workspace,native-code,capture-io,disable-io,sha2",
+							"--",
+							"-D",
+							"warnings"
+						]
+					}
+				]
+			},
+			"suite-adapter-candle": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--",
+							"--list"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-discovery.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--",
+							"--test-threads=4"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-test.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/candle/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						],
+						"discovered": [
+							"module::case"
+						],
+						"passed": 1
+					}
+				]
+			},
+			"suite-adapter-postgres": {
+				"calls": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--",
+							"--list"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-discovery.log"
+					},
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests",
+							"--",
+							"--test-threads=4"
+						],
+						"cwd": "<ROOT>",
+						"env": null,
+						"log": "0-test.log"
+					}
+				],
+				"rows": [
+					{
+						"command": [
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/postgres/Cargo.toml",
+							"--features",
+							"test-support",
+							"--lib",
+							"--tests"
+						],
+						"discovered": [
+							"module::case"
+						],
+						"passed": 1
+					}
+				]
+			}
+		}
+	},
+	"method": "for each of the 53 catalogue stages that run suite_stage.py, other than rune-suite: suite_stage.run(stage, out, root) with invoke and subprocess.run intercepted (discovery output 'module::case: test', execution 'test result: ok. 1 passed', Clippy output empty, git archive an empty tar) and gate_policy.record's baseline 0000...0001; expected holds each call in order (command, cwd, log name) and the returned rows",
+	"substitutions": {
+		"<ROOT>": "the checkout",
+		"<SCRATCH>": "a scratch directory holding the out directories (out-STAGE), the owned baseline root and the Valgrind root (<SCRATCH>/valgrind, with include/valgrind/callgrind.h)"
+	},
+	"witness": "f0a6663697538651432537c442ed6c60791b424a"
+}

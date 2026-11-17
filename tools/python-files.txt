@@ -155,11 +155,9 @@ tools/column/boolean_large.py	port
 tools/column/boolean_limits.py	port
 tools/column/boolean_pins.py	port
 tools/column/boolean_vectors.py	port
-tools/column/borrowed_controls.py	port
 tools/column/child_result.py	port
 tools/column/cli.py	port
 tools/column/cli_symbols.py	port
-tools/column/clippy.py	port
 tools/column/compare/calibrate.py	port
 tools/column/compare/durable.py	port
 tools/column/compare/engines.py	port
@@ -231,7 +229,6 @@ tools/column/old_path_programs.py	port
 tools/column/old_path_rules.py	port
 tools/column/old_path_score.py	port
 tools/column/owned_build.py	port
-tools/column/package_gates.py	port
 tools/column/packed_equality.py	port
 tools/column/paired_build.py	port
 tools/column/perf_cycles.py	port
@@ -258,7 +255,6 @@ tools/column/suite_stage.py	port
 tools/column/test_anchor_cache.py	port	final controller-controls
 tools/column/test_boolean_limits.py	port	final controller-controls
 tools/column/test_boolean_vectors.py	port	final controller-controls
-tools/column/test_borrowed_controls.py	port	final controller-controls
 tools/column/test_build_rerun.py	port	final controller-controls
 tools/column/test_child_result.py	port	final controller-controls
 tools/column/test_cli_symbols.py	port	final controller-controls
@@ -315,7 +311,6 @@ tools/column/test_simd_shape.py	port	final controller-controls
 tools/column/test_stage_scheduler.py	port	final controller-controls
 tools/column/test_suite_stage.py	port	final controller-controls
 tools/column/test_valgrind_resolution.py	port	final controller-controls
-tools/column/verify.py	port
 tools/engine_source.py	port
 tools/profile_recipes.py	port
 tools/project/scripts/notices.py	port

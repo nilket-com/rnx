@@ -1,0 +1,114 @@
+{
+	"expected": {
+		"adapter-clippy": {
+			"base": "0873610926649d8c79094c1aa346fa6728c5251a",
+			"calls": [
+				{
+					"CARGO_BUILD_JOBS": null,
+					"CARGO_TARGET_DIR": null,
+					"command": [
+						"git",
+						"archive",
+						"0873610926649d8c79094c1aa346fa6728c5251a"
+					],
+					"cwd": "<ROOT>"
+				},
+				{
+					"CARGO_BUILD_JOBS": "jobs",
+					"CARGO_TARGET_DIR": "<ROOT>/target/column-clippy-adapter-published",
+					"command": [
+						"cargo",
+						"clippy",
+						"--locked",
+						"--lib",
+						"--tests",
+						"--message-format=json",
+						"--manifest-path",
+						"adapters/polars/Cargo.toml",
+						"--features",
+						"test-support",
+						"--",
+						"-Wclippy::erasing_op"
+					],
+					"cwd": "<SCRATCH>/clippy-adapter/published"
+				},
+				{
+					"CARGO_BUILD_JOBS": "jobs",
+					"CARGO_TARGET_DIR": "<ROOT>/target/column-clippy-adapter-candidate",
+					"command": [
+						"cargo",
+						"clippy",
+						"--locked",
+						"--lib",
+						"--tests",
+						"--message-format=json",
+						"--manifest-path",
+						"adapters/polars/Cargo.toml",
+						"--features",
+						"test-support",
+						"--",
+						"-Wclippy::erasing_op"
+					],
+					"cwd": "<ROOT>"
+				}
+			],
+			"polars_lint_args": [
+				"--",
+				"-Wclippy::erasing_op"
+			]
+		},
+		"clippy": {
+			"base": "0873610926649d8c79094c1aa346fa6728c5251a",
+			"calls": [
+				{
+					"CARGO_BUILD_JOBS": null,
+					"CARGO_TARGET_DIR": null,
+					"command": [
+						"git",
+						"archive",
+						"0873610926649d8c79094c1aa346fa6728c5251a"
+					],
+					"cwd": "<ROOT>"
+				},
+				{
+					"CARGO_BUILD_JOBS": "jobs",
+					"CARGO_TARGET_DIR": "<ROOT>/target/column-clippy-published",
+					"command": [
+						"cargo",
+						"clippy",
+						"--locked",
+						"--lib",
+						"--tests",
+						"--message-format=json",
+						"--no-default-features"
+					],
+					"cwd": "<SCRATCH>/clippy-host/published"
+				},
+				{
+					"CARGO_BUILD_JOBS": "jobs",
+					"CARGO_TARGET_DIR": "<ROOT>/target/column-clippy-candidate",
+					"command": [
+						"cargo",
+						"clippy",
+						"--locked",
+						"--lib",
+						"--tests",
+						"--message-format=json",
+						"--no-default-features"
+					],
+					"cwd": "<ROOT>"
+				}
+			],
+			"polars_lint_args": [
+				"--",
+				"-Wclippy::erasing_op"
+			]
+		}
+	},
+	"method": "clippy.py's main with --out <SCRATCH>/clippy-host or --out <SCRATCH>/clippy-adapter --adapter, subprocess.run intercepted (git archive an empty tar, Cargo returning 0 with no output) and build_jobs 4; expected holds each call in order with its cwd and CARGO_TARGET_DIR, BASE and POLARS_LINT_ARGS",
+	"substitutions": {
+		"<ROOT>": "the checkout",
+		"<SCRATCH>": "a scratch directory"
+	},
+	"witness": "f0a6663697538651432537c442ed6c60791b424a"
+}

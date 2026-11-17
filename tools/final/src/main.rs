@@ -85,6 +85,7 @@ fn main() {
 	let arguments: Vec<OsString> = std::env::args_os().skip(1).collect();
 	let result = match arguments.first().and_then(|a| a.to_str()) {
 		Some("guardian") => rnx_final::guardian::main(&arguments[1..]),
+		Some("stage") => rnx_final::stage::main(&arguments[1..], &root()),
 		Some("python-list") => {
 			rnx_final::pylist::check(&root(), rnx_final::pylist::BASELINE).map(|r| {
 				println!("{r}");

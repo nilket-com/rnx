@@ -1,24 +1,20 @@
 # Column adapter checks
 
-Run the ordered local checks with:
+The column adapter's checks run as stages of the Rust final (its format,
+Clippy, suite and CLI stages); run them with the final's entry, inside its
+own systemd unit:
 
 ```sh
-python3 -B tools/column/verify.py --scope adapter --cli --out target/0205/dev-unique
+sh tools/final/final.sh --complete --out target/RECORD/FINAL
 ```
 
-Every output directory must be new. The command pins source files, checks the
-complete Rune pin graph, controller controls, formatting and Clippy before
-tests, then checks host/Arrow behavior and routing inventory. With `--cli`, it
-builds the actual adapter executable and verifies default/legacy routing, full
-output equality and fuel exhaustion. Add `--release` for the production recipe;
-the CLI receipt records the binary hash. Development runs are not final signed
-acceptance or performance evidence.
+ADR 0205's ordered prerequisite workflow was
+retired in ADR 0287. Development runs are not final signed acceptance or
+performance evidence.
 
-For long jobs use the durable launcher with the declared exact memory ceiling:
-
-```sh
-python3 -B tools/column/launch.py --unit rnx-0205-unique --cwd /absolute/rnx --hosts /absolute/hosts.json -- python3 -B tools/column/verify.py --scope adapter --cli --release --out target/0205/release-unique
-```
+For other long jobs use the durable launcher with the declared exact memory
+ceiling, as `tools/column/launch.py --unit NAME --cwd ROOT --hosts HOSTS --
+COMMAND`.
 
 The launcher propagates PATH and SSH_AUTH_SOCK, sets MemoryMax to the JSON
 `measurement.memory_bytes` value, disables swap, and kills the service on OOM.

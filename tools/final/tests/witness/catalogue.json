@@ -317,9 +317,9 @@
 			[
 				"project-format",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"project-format",
 					"--out",
@@ -329,9 +329,9 @@
 			[
 				"format-adapter-candle",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-adapter-candle",
 					"--out",
@@ -341,9 +341,9 @@
 			[
 				"format-adapter-postgres",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-adapter-postgres",
 					"--out",
@@ -353,9 +353,9 @@
 			[
 				"format-package-no-std",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-no-std",
 					"--out",
@@ -365,9 +365,9 @@
 			[
 				"format-package-examples",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-examples",
 					"--out",
@@ -377,9 +377,9 @@
 			[
 				"format-package-benches",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-benches",
 					"--out",
@@ -389,9 +389,9 @@
 			[
 				"format-package-hegel",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-hegel",
 					"--out",
@@ -401,9 +401,9 @@
 			[
 				"format-package-column-probe",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-column-probe",
 					"--out",
@@ -413,9 +413,9 @@
 			[
 				"format-package-measure-harness",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-measure-harness",
 					"--out",
@@ -425,9 +425,9 @@
 			[
 				"format-package-xtask",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-xtask",
 					"--out",
@@ -437,9 +437,9 @@
 			[
 				"format-package-polars-gen",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-polars-gen",
 					"--out",
@@ -449,9 +449,9 @@
 			[
 				"format-package-execute-guard",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-execute-guard",
 					"--out",
@@ -461,9 +461,9 @@
 			[
 				"format-package-builder",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-builder",
 					"--out",
@@ -473,9 +473,9 @@
 			[
 				"format-package-generate",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-generate",
 					"--out",
@@ -485,9 +485,9 @@
 			[
 				"format-package-site",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-package-site",
 					"--out",
@@ -497,9 +497,9 @@
 			[
 				"format-check-demos-candle-Cargo.toml",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-check-demos-candle-Cargo.toml",
 					"--out",
@@ -509,9 +509,9 @@
 			[
 				"format-check-demos-polars-Cargo.toml",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-check-demos-polars-Cargo.toml",
 					"--out",
@@ -521,9 +521,9 @@
 			[
 				"format-check-servers-http-postgres-Cargo.toml",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"format-check-servers-http-postgres-Cargo.toml",
 					"--out",
@@ -573,9 +573,9 @@
 			[
 				"clippy",
 				[
-					"python3",
-					"-B",
-					"tools/column/clippy.py",
+					"rnx-final",
+					"stage",
+					"clippy",
 					"--out",
 					"<OUT>/clippy"
 				]
@@ -583,9 +583,9 @@
 			[
 				"adapter-clippy",
 				[
-					"python3",
-					"-B",
-					"tools/column/clippy.py",
+					"rnx-final",
+					"stage",
+					"clippy",
 					"--adapter",
 					"--out",
 					"<OUT>/adapter-clippy"
@@ -594,9 +594,9 @@
 			[
 				"lint-package-no-std",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-no-std",
 					"--out",
@@ -606,9 +606,9 @@
 			[
 				"lint-package-examples",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-examples",
 					"--out",
@@ -618,9 +618,9 @@
 			[
 				"lint-package-benches",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-benches",
 					"--out",
@@ -630,9 +630,9 @@
 			[
 				"lint-package-hegel",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-hegel",
 					"--out",
@@ -642,9 +642,9 @@
 			[
 				"lint-package-column-probe",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-column-probe",
 					"--out",
@@ -654,9 +654,9 @@
 			[
 				"lint-package-measure-harness",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-measure-harness",
 					"--out",
@@ -666,9 +666,9 @@
 			[
 				"lint-package-xtask",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-xtask",
 					"--out",
@@ -678,9 +678,9 @@
 			[
 				"lint-package-polars-gen",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-polars-gen",
 					"--out",
@@ -690,9 +690,9 @@
 			[
 				"lint-package-execute-guard",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-execute-guard",
 					"--out",
@@ -702,9 +702,9 @@
 			[
 				"lint-package-builder",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-builder",
 					"--out",
@@ -714,9 +714,9 @@
 			[
 				"lint-package-generate",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-generate",
 					"--out",
@@ -726,9 +726,9 @@
 			[
 				"lint-package-site",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-package-site",
 					"--out",
@@ -738,9 +738,9 @@
 			[
 				"lint-check-demos-candle-Cargo.toml",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-check-demos-candle-Cargo.toml",
 					"--out",
@@ -750,9 +750,9 @@
 			[
 				"lint-check-demos-polars-Cargo.toml",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-check-demos-polars-Cargo.toml",
 					"--out",
@@ -762,9 +762,9 @@
 			[
 				"lint-check-servers-http-postgres-Cargo.toml",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"lint-check-servers-http-postgres-Cargo.toml",
 					"--out",
@@ -1158,9 +1158,9 @@
 			[
 				"rune-clippy",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"rune-clippy",
 					"--out",
@@ -1170,9 +1170,9 @@
 			[
 				"project-suite",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"project-suite",
 					"--out",
@@ -1182,9 +1182,9 @@
 			[
 				"project-clippy",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"project-clippy",
 					"--out",
@@ -1194,9 +1194,9 @@
 			[
 				"suite-adapter-candle",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"suite-adapter-candle",
 					"--out",
@@ -1206,9 +1206,9 @@
 			[
 				"suite-adapter-postgres",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"suite-adapter-postgres",
 					"--out",
@@ -1218,9 +1218,9 @@
 			[
 				"clippy-adapter-candle",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"clippy-adapter-candle",
 					"--out",
@@ -1230,9 +1230,9 @@
 			[
 				"clippy-adapter-polars",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"clippy-adapter-polars",
 					"--out",
@@ -1242,9 +1242,9 @@
 			[
 				"clippy-adapter-postgres",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"clippy-adapter-postgres",
 					"--out",
@@ -1254,9 +1254,9 @@
 			[
 				"package-no-std",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-no-std",
 					"--out",
@@ -1266,9 +1266,9 @@
 			[
 				"package-examples",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-examples",
 					"--out",
@@ -1278,9 +1278,9 @@
 			[
 				"package-benches",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-benches",
 					"--out",
@@ -1290,9 +1290,9 @@
 			[
 				"package-hegel",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-hegel",
 					"--out",
@@ -1302,9 +1302,9 @@
 			[
 				"package-column-probe",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-column-probe",
 					"--out",
@@ -1314,9 +1314,9 @@
 			[
 				"package-measure-harness",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-measure-harness",
 					"--out",
@@ -1326,9 +1326,9 @@
 			[
 				"package-xtask",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-xtask",
 					"--out",
@@ -1338,9 +1338,9 @@
 			[
 				"package-polars-gen",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-polars-gen",
 					"--out",
@@ -1350,9 +1350,9 @@
 			[
 				"package-execute-guard",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-execute-guard",
 					"--out",
@@ -1362,9 +1362,9 @@
 			[
 				"package-builder",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-builder",
 					"--out",
@@ -1374,9 +1374,9 @@
 			[
 				"package-generate",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-generate",
 					"--out",
@@ -1386,9 +1386,9 @@
 			[
 				"package-site",
 				[
-					"python3",
-					"-B",
-					"tools/column/suite_stage.py",
+					"rnx-final",
+					"stage",
+					"suite",
 					"--stage",
 					"package-site",
 					"--out",
@@ -1417,6 +1417,10 @@
 		{
 			"change": "adds the stages engine-source-controls (python3 -B tools/test_engine_source.py) and census-refresh-controls (python3 -B tools/test_refresh_census.py) right after pin-controls, each scheduled as pin-controls is: no Cargo resources, weight 1, no bulk root, no jobserver environment. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
 			"record": "0286"
+		},
+		{
+			"change": "the 53 suite_stage.py stages other than rune-suite run as the controller's stage mode, [rnx-final, stage, suite, --stage, NAME, --out, OUT] in place of [python3, -B, tools/column/suite_stage.py, --stage, NAME, --out, OUT], and clippy and adapter-clippy as [rnx-final, stage, clippy, (--adapter,) --out, OUT] in place of [python3, -B, tools/column/clippy.py, (--adapter,) --out, OUT]; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing was regenerated from the Rust output.",
+			"record": "0287"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"
