@@ -276,6 +276,10 @@ pub struct Acceptance {
 	pub manifest_error: Field<String>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub diagnostics_error: Field<String>,
+	/// The digest of the final's SCHEDULE.json, which revalidation then
+	/// requires (finals before ADR 0288 have none).
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub schedule_sha256: Field<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

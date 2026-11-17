@@ -195,6 +195,9 @@ impl Final {
 			crate::evidence::revalidate(out)?;
 		}
 		let acceptance: Acceptance = types::read(&out.join("ACCEPTANCE.json"))?;
+		// A declared schedule is validated on its own; its times and choices
+		// are this run's, not a parity field.
+		crate::evidence::check_schedule(out, &result, &acceptance)?;
 		let manifest: Manifest = types::read(&out.join("MANIFEST.json"))?;
 		let environments = types::read(&out.join("ENVIRONMENTS.json"))?;
 		static OWNER: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^([0-9a-f]{32})-").unwrap());

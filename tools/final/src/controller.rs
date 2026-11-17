@@ -767,6 +767,9 @@ fn run_stages(
 	let mut failed: Option<StageFailed> = None;
 	let (sender, receiver) = events;
 	let mut environments: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
+	let names: Vec<String> = stages.iter().map(|(n, _)| n.clone()).collect();
+	let recorder = std::cell::RefCell::new(crate::schedule::Recorder::new(&names));
+	let now = || settings.hooks.elapsed(settings.started);
 	let mut complete = |owner: &Owners,
 	                    index: usize,
 	                    result: Result<child::Done>,
@@ -801,6 +804,9 @@ fn run_stages(
 		if done["returncode"] == 0 {
 			succeeded.insert(index);
 		}
+		recorder
+			.borrow_mut()
+			.end(index, now(), done["returncode"] == 0);
 		if done["returncode"] != 0 && failed.is_none() {
 			let message = stage_failure(settings, name, &done, owner, &mut row);
 			*failed = Some(StageFailed {
@@ -823,7 +829,20 @@ fn run_stages(
 				));
 			}
 			if failed.is_none() {
-				for index in pending.clone() {
+				let pass = pending.clone();
+				// The stages a refusal leaves unevaluated in this pass.
+				let queue_rest = |position: usize, by: usize| {
+					for &later in &pass[position + 1..] {
+						recorder.borrow_mut().wait(
+							later,
+							now(),
+							"queued",
+							vec![stages[by].0.clone()],
+							Value::Null,
+						);
+					}
+				};
+				for (position, &index) in pass.iter().enumerate() {
 					// A stage that already failed stops admission before the next start.
 					while let Ok(event) = receiver.try_recv() {
 						match event {
@@ -850,7 +869,7 @@ fn run_stages(
 						break;
 					}
 					let running_set: BTreeSet<usize> = running.keys().copied().collect();
-					if !scheduler::ready(
+					if let Some(gate) = scheduler::gate(
 						index,
 						&plan,
 						&finished,
@@ -858,8 +877,22 @@ fn run_stages(
 						&needs[index],
 						&succeeded,
 					) {
+						let name = |j: &usize| stages[*j].0.clone();
+						let (gate, behind) = match gate {
+							scheduler::Gate::Alone => {
+								("alone", running_set.iter().map(name).collect())
+							}
+							scheduler::Gate::Producers(p) => {
+								("producers", p.iter().map(name).collect())
+							}
+							scheduler::Gate::Lanes(j) => ("lanes", vec![name(&j)]),
+						};
+						recorder
+							.borrow_mut()
+							.wait(index, now(), gate, behind, Value::Null);
 						continue;
 					}
+					recorder.borrow_mut().ready(index, now());
 					let free = settings.hooks.disk_free(root)?;
 					if disk["lowest_free_bytes"].as_u64().is_none_or(|l| free < l) {
 						disk.insert("lowest_free_bytes".into(), json!(free));
@@ -867,6 +900,14 @@ fn run_stages(
 					let needed = DISK_FLOOR_BYTES
 						+ declared(&mut pending.iter().copied().chain(running.keys().copied()));
 					if free < needed {
+						recorder.borrow_mut().wait(
+							index,
+							now(),
+							"disk",
+							vec![],
+							json!({"free_bytes": free, "needed_bytes": needed}),
+						);
+						queue_rest(position, index);
 						if !running.is_empty() {
 							break;
 						}
@@ -878,6 +919,14 @@ fn run_stages(
 					// A stage's tokens, whole or not at all: no part is held while
 					// it waits, so a running stage's clients can always take them.
 					let Some(lease) = pool.take(weights[index])? else {
+						recorder.borrow_mut().wait(
+							index,
+							now(),
+							"tokens",
+							vec![],
+							json!({"weight": weights[index]}),
+						);
+						queue_rest(position, index);
 						break;
 					};
 					let (name, command) = stages[index].clone();
@@ -902,6 +951,7 @@ fn run_stages(
 						environment_digests(&env, &settings.out, &owner.id, cross.as_deref())?,
 					);
 					pending.retain(|i| *i != index);
+					recorder.borrow_mut().start(index, now());
 					let stopper = Arc::new(Stopper::default());
 					let handle = spawn_stage(
 						settings,
@@ -914,6 +964,7 @@ fn run_stages(
 					);
 					running.insert(index, (lease, stopper, handle));
 					if plan[index].contains(ALONE) {
+						queue_rest(position, index);
 						break;
 					}
 				}
@@ -931,7 +982,14 @@ fn run_stages(
 			// Wait on a stage's end or a signal. A stage refused its tokens
 			// is tried again then; Cargo jobs returning tokens mid-stage give
 			// no event, and nothing polls for them.
+			recorder.borrow_mut().controller(now(), "blocked", None);
 			let event = receiver.recv().ok();
+			let by = match &event {
+				Some(Event::Done(index, _)) => Some(stages[*index].0.clone()),
+				Some(Event::Signal(_)) => Some("signal".to_string()),
+				None => None,
+			};
+			recorder.borrow_mut().controller(now(), "woken", by);
 			match event {
 				Some(Event::Done(index, result)) => {
 					complete(
@@ -976,6 +1034,12 @@ fn run_stages(
 	}
 	rows.extend(done_rows.into_values());
 	atomic_json(&settings.out.join("ENVIRONMENTS.json"), &environments)?;
+	let schedule = std::mem::replace(
+		&mut *recorder.borrow_mut(),
+		crate::schedule::Recorder::new(&[]),
+	)
+	.finish();
+	atomic_json(&settings.out.join("SCHEDULE.json"), &schedule)?;
 	let pool = Arc::try_unwrap(pool).map_err(|_| anyhow::anyhow!("jobserver still shared"))?;
 	let closed = pool.close();
 	outcome?;
@@ -1210,6 +1274,8 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	let candidate = settings.hooks.head(&root);
 	let mut acceptance = json!({"status": "FAIL", "candidate": candidate, "acceptance_scope": scope, "mode": if settings.fresh { "fresh-clone" } else { "ordinary" }});
 	let (mut selection_value, mut owner, mut failed_row) = (None, None, None);
+	// Set once the stages begin: from then on the final owes a schedule.
+	let mut scheduled = false;
 	let (mut evidence_map, mut tools, mut rows, mut disk) =
 		(Map::new(), json!({}), Vec::new(), Map::new());
 	let lock = std::fs::OpenOptions::new()
@@ -1256,6 +1322,7 @@ pub fn run(settings: &Settings) -> Result<Value> {
 			selection_value = Some(selected.clone());
 			tools = settings.hooks.tools_identity(&settings)?;
 			let mut collected = Collected::default();
+			scheduled = true;
 			let failure = run_stages(
 				&settings,
 				&selected,
@@ -1298,6 +1365,19 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	if !disk.is_empty() {
 		acceptance["disk"] = Value::Object(disk.clone());
 	}
+	// A final that ran its stages declares their schedule, so revalidation
+	// requires it; without the record it cannot pass.
+	if scheduled {
+		match digest(&out.join("SCHEDULE.json")) {
+			Ok(sha) => acceptance["schedule_sha256"] = json!(sha),
+			Err(error) => {
+				if acceptance["status"] == "PASS" || acceptance["error"].is_null() {
+					acceptance["error"] = json!(format!("schedule record unreadable: {error:#}"));
+				}
+				acceptance["status"] = json!("FAIL");
+			}
+		}
+	}
 	// Throttling at the control group's high limit is evidence about a failed deadline.
 	acceptance["memory"] = json!({"tokens": tokens.to_string(), "events_before": events_before, "events_after": job_budget::memory::memory_events()});
 	if let Some(row) = &failed_row {
@@ -1315,18 +1395,30 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		&mut acceptance,
 	);
 	let pass = acceptance["status"] == "PASS" && release["status"] == "PASS";
-	let records: Map<String, Value> = ["ACCEPTANCE", "MANIFEST", "RELEASE", "ENVIRONMENTS"]
-		.iter()
-		.filter_map(|n| {
-			digest(&out.join(format!("{n}.json")))
-				.ok()
-				.map(|d| (n.to_string(), json!(d)))
-		})
-		.collect();
+	// The declared schedule must still be the one bound below.
+	let declared = acceptance.get("schedule_sha256").cloned();
+	let schedule_now = digest(&out.join("SCHEDULE.json")).ok().map(|d| json!(d));
+	let schedule_error = (declared.is_some() && declared != schedule_now)
+		.then(|| json!("schedule record changed before binding"));
+	let pass = pass && schedule_error.is_none();
+	let records: Map<String, Value> = [
+		"ACCEPTANCE",
+		"MANIFEST",
+		"RELEASE",
+		"ENVIRONMENTS",
+		"SCHEDULE",
+	]
+	.iter()
+	.filter_map(|n| {
+		digest(&out.join(format!("{n}.json")))
+			.ok()
+			.map(|d| (n.to_string(), json!(d)))
+	})
+	.collect();
 	let mut r = json!({
 		"status": if pass { "PASS" } else { "FAIL" }, "candidate": acceptance["candidate"], "seconds": settings.hooks.elapsed(settings.started),
 		"checks": rows.iter().map(|row| json!({"name": row["name"], "exit": row["exit"]})).collect::<Vec<_>>(),
-		"error": acceptance.get("error").cloned().unwrap_or(Value::Null), "release_error": release.get("error").cloned().unwrap_or(Value::Null),
+		"error": acceptance.get("error").cloned().filter(|e| !e.is_null()).or(schedule_error).unwrap_or(Value::Null), "release_error": release.get("error").cloned().unwrap_or(Value::Null),
 		"manifest_error": acceptance.get("manifest_error").cloned().unwrap_or(Value::Null), "diagnostics_error": acceptance.get("diagnostics_error").cloned().unwrap_or(Value::Null),
 		"finalization": acceptance.get("finalization").cloned().unwrap_or(Value::Null), "remote_context": null,
 		"acceptance_scope": scope, "complete_final": scope == "complete" && pass, "publication_eligible": publication_eligible(scope)? && pass,

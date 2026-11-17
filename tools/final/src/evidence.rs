@@ -534,6 +534,34 @@ fn read(path: &Path) -> Result<Value> {
 	)?)
 }
 
+/// A final that declares its schedule binds it as a terminal record, and
+/// the record holds exactly its selected stages, consistently. A final from
+/// before ADR 0288 declares none and binds none.
+pub fn check_schedule(
+	out: &Path,
+	result: &crate::types::FinalResult,
+	acceptance: &crate::types::Acceptance,
+) -> Result<()> {
+	let declared = acceptance.schedule_sha256.value();
+	let bound = result.records.get("SCHEDULE");
+	ensure!(
+		declared == bound,
+		"the declared schedule is not the bound one"
+	);
+	let Some(bound) = bound else {
+		return Ok(());
+	};
+	ensure!(
+		digest(&out.join("SCHEDULE.json"))? == *bound,
+		"SCHEDULE differs from its terminal record"
+	);
+	let schedule: crate::schedule::Schedule =
+		serde_json::from_slice(&std::fs::read(out.join("SCHEDULE.json"))?)?;
+	let selection: crate::types::Selection = crate::types::read(&out.join("SELECTION.json"))?;
+	let names: Vec<String> = selection.stages.iter().map(|(n, _)| n.clone()).collect();
+	crate::schedule::validate(&schedule, &names)
+}
+
 /// Check a released final from its terminal records alone, each read as
 /// its declared type.
 pub fn revalidate(out: &Path) -> Result<Value> {
@@ -559,6 +587,7 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 	let a: Acceptance = types::read(&out.join("ACCEPTANCE.json"))?;
 	let m: Manifest = types::read(&out.join("MANIFEST.json"))?;
 	let r: Release = types::read(&out.join("RELEASE.json"))?;
+	check_schedule(out, &result, &a)?;
 	ensure!(
 		result.status == Status::Pass && a.status == Status::Pass && r.status == Status::Pass,
 		"final not complete"

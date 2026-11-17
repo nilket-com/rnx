@@ -42,6 +42,8 @@ struct Fake {
 	/// A stage whose unchanged Python client runs an exclusive case.
 	exclusive: Option<&'static str>,
 	weights: BTreeMap<&'static str, usize>,
+	/// Remove the schedule after the stages, before finalization.
+	drop_schedule: bool,
 }
 
 impl Fake {
@@ -60,6 +62,7 @@ impl Fake {
 			borrow: None,
 			exclusive: None,
 			weights: BTreeMap::new(),
+			drop_schedule: false,
 		}
 	}
 	fn span(&self, name: &str) -> Option<(Instant, Instant)> {
@@ -93,9 +96,12 @@ impl Hooks for Fake {
 		&self,
 		_: &Value,
 		_: &Map<String, Value>,
-		_: &Path,
+		root: &Path,
 		_: &Environment,
 	) -> Result<Value> {
+		if self.drop_schedule {
+			std::fs::remove_file(root.join("final/SCHEDULE.json"))?;
+		}
 		Ok(common::finalization())
 	}
 	fn resources(&self, name: &str, _: &[String], _: &Path, _: &Targets) -> Result<Resources> {
@@ -671,4 +677,351 @@ fn a_waiting_wide_stage_never_starves_a_running_exclusive_case() {
 		wide.0 >= holder.1,
 		"the wide stage ran beside a stage holding a token"
 	);
+}
+
+fn schedule(dir: &Dir) -> Value {
+	serde_json::from_slice(&std::fs::read(dir.0.join("final/SCHEDULE.json")).unwrap()).unwrap()
+}
+
+fn waits(s: &Value, stage: &str) -> Vec<(String, Vec<String>)> {
+	let trace = s["stages"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.find(|t| t["name"] == stage)
+		.unwrap();
+	trace["waits"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.map(|w| {
+			(
+				w["gate"].as_str().unwrap().to_owned(),
+				w["behind"]
+					.as_array()
+					.map(|b| b.iter().map(|x| x.as_str().unwrap().to_owned()).collect())
+					.unwrap_or_default(),
+			)
+		})
+		.collect()
+}
+
+fn trace<'a>(s: &'a Value, stage: &str) -> &'a Value {
+	s["stages"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.find(|t| t["name"] == stage)
+		.unwrap()
+}
+
+/// A lane, a token refusal and the stage that refusal left unevaluated
+/// are each recorded once, in order, as the gates admission reached; the
+/// controller's block and what woke it are recorded too.
+#[test]
+fn lanes_tokens_and_a_queued_stage_are_recorded_once() {
+	let mut fake = Fake::new(
+		vec![
+			("a", vec!["x"]),
+			("b", vec!["x"]),
+			("c", vec!["y"]),
+			("d", vec!["z"]),
+		],
+		&[("a", 0.6, 0)],
+	);
+	fake.weights = [("a", 2)].into();
+	let (r, dir) = run(Arc::new(fake), 2);
+	assert_eq!(r["status"], "PASS", "{r}");
+	let s = schedule(&dir);
+	assert!(waits(&s, "a").is_empty());
+	assert_eq!(
+		waits(&s, "b"),
+		vec![("lanes".to_string(), vec!["a".to_string()])]
+	);
+	assert_eq!(waits(&s, "c"), vec![("tokens".to_string(), vec![])]);
+	assert_eq!(trace(&s, "c")["waits"][0]["evidence"], json!({"weight": 1}));
+	// Queued behind c's refusal; then, once a ends, b and c take both
+	// tokens, so d is itself refused them.
+	assert_eq!(
+		waits(&s, "d"),
+		vec![
+			("queued".to_string(), vec!["c".to_string()]),
+			("tokens".to_string(), vec![])
+		]
+	);
+	// A queued stage was not evaluated: its readiness comes only later.
+	assert!(
+		trace(&s, "d")["ready"].as_f64().unwrap()
+			>= trace(&s, "d")["waits"][0]["at"].as_f64().unwrap()
+	);
+	for stage in ["a", "b", "c", "d"] {
+		assert_eq!(trace(&s, stage)["state"], "passed", "{stage}");
+	}
+	let events: Vec<(String, Value)> = s["controller"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.map(|e| (e["event"].as_str().unwrap().into(), e["by"].clone()))
+		.collect();
+	assert_eq!(events.first(), Some(&("blocked".to_string(), Value::Null)));
+	assert!(
+		events.contains(&("woken".to_string(), json!("a"))),
+		"{events:?}"
+	);
+}
+
+/// A declared producer, then the disk, then a stage that runs alone.
+#[test]
+fn producers_disk_and_alone_waits_are_recorded() {
+	// polars-suite waits for its producer polars-inventories.
+	let fake = Fake::new(
+		vec![
+			("polars-inventories", vec!["p"]),
+			("polars-suite", vec!["q"]),
+		],
+		&[("polars-inventories", 0.4, 0)],
+	);
+	let (r, dir) = run(Arc::new(fake), 4);
+	assert_eq!(r["status"], "PASS", "{r}");
+	assert_eq!(
+		waits(&schedule(&dir), "polars-suite"),
+		vec![(
+			"producers".to_string(),
+			vec!["polars-inventories".to_string()]
+		)]
+	);
+	// The second stage sees too little disk while the first runs.
+	let fake = Fake::new(vec![("a", vec!["x"]), ("b", vec!["y"])], &[("a", 0.4, 0)]);
+	*fake.free.lock().unwrap() = vec![u64::MAX / 2, 1, u64::MAX / 2];
+	let (r, dir) = run(Arc::new(fake), 4);
+	assert_eq!(r["status"], "PASS", "{r}");
+	let s = schedule(&dir);
+	assert_eq!(waits(&s, "b"), vec![("disk".to_string(), vec![])]);
+	assert_eq!(
+		trace(&s, "b")["waits"][0]["evidence"]["free_bytes"],
+		json!(1)
+	);
+	// A stage that runs alone waits for the running one.
+	let fake = Fake::new(vec![("a", vec!["x"]), ("b", vec![ALONE])], &[("a", 0.4, 0)]);
+	let (r, dir) = run(Arc::new(fake), 4);
+	assert_eq!(r["status"], "PASS", "{r}");
+	assert_eq!(
+		waits(&schedule(&dir), "b"),
+		vec![("alone".to_string(), vec!["a".to_string()])]
+	);
+}
+
+/// A failed final keeps its schedule: the failed stage ended failed, a
+/// stage that never started is marked so and has no end.
+#[test]
+fn a_failed_final_records_its_stages_states() {
+	let mut fake = Fake::new(vec![("a", vec!["x"]), ("b", vec!["x"])], &[("a", 0.1, 1)]);
+	fake.weight = 1;
+	let (r, dir) = run(Arc::new(fake), 2);
+	assert_eq!(r["status"], "FAIL");
+	let s = schedule(&dir);
+	assert_eq!(trace(&s, "a")["state"], "failed");
+	assert!(trace(&s, "a")["ended"].is_f64());
+	assert_eq!(trace(&s, "b")["state"], "not started");
+	assert!(trace(&s, "b")["started"].is_null() && trace(&s, "b")["ended"].is_null());
+	let result: rnx_final::types::FinalResult =
+		rnx_final::types::read(&dir.0.join("final/RESULT.json")).unwrap();
+	let acceptance: rnx_final::types::Acceptance =
+		rnx_final::types::read(&dir.0.join("final/ACCEPTANCE.json")).unwrap();
+	rnx_final::evidence::check_schedule(&dir.0.join("final"), &result, &acceptance).unwrap();
+}
+
+/// A declared schedule must be the bound one and hold exactly the
+/// selection's stages, in order and consistently; a final from before the
+/// record declares and binds none.
+#[test]
+fn a_tampered_missing_or_malformed_schedule_is_refused() {
+	use rnx_final::evidence::check_schedule;
+	use rnx_final::types::{Acceptance, FinalResult, read};
+	let fake = Fake::new(vec![("a", vec!["x"]), ("b", vec!["y"])], &[]);
+	let (r, dir) = run(Arc::new(fake), 4);
+	assert_eq!(r["status"], "PASS", "{r}");
+	let out = dir.0.join("final");
+	let result: FinalResult = read(&out.join("RESULT.json")).unwrap();
+	let acceptance: Acceptance = read(&out.join("ACCEPTANCE.json")).unwrap();
+	check_schedule(&out, &result, &acceptance).unwrap();
+	assert_eq!(
+		result.records.get("SCHEDULE"),
+		Some(&digest(&out.join("SCHEDULE.json")).unwrap())
+	);
+	// Unbound while declared.
+	let mut unbound = result.clone();
+	unbound.records.remove("SCHEDULE");
+	assert!(check_schedule(&out, &unbound, &acceptance).is_err());
+	// Neither declared nor bound: a final from before ADR 0288.
+	let mut old = acceptance.clone();
+	old.schedule_sha256 = rnx_final::receipt::Field::Absent;
+	assert!(check_schedule(&out, &unbound, &old).is_ok());
+	// Bound but not declared.
+	assert!(check_schedule(&out, &result, &old).is_err());
+	let original = std::fs::read(out.join("SCHEDULE.json")).unwrap();
+	let mut s: Value = serde_json::from_slice(&original).unwrap();
+	for (name, edit) in [
+		(
+			"a missing stage",
+			Box::new(|s: &mut Value| {
+				s["stages"].as_array_mut().unwrap().pop();
+			}) as Box<dyn Fn(&mut Value)>,
+		),
+		(
+			"an extra stage",
+			Box::new(|s: &mut Value| {
+				let t = s["stages"][0].clone();
+				s["stages"].as_array_mut().unwrap().push(t);
+			}),
+		),
+		(
+			"an unknown gate",
+			Box::new(|s: &mut Value| {
+				s["stages"][0]["waits"] = json!([{"at": 0.0, "gate": "luck"}]);
+			}),
+		),
+		(
+			"an end before its start",
+			Box::new(|s: &mut Value| {
+				s["stages"][0]["ended"] = json!(-1.0);
+			}),
+		),
+		(
+			"a state that disagrees",
+			Box::new(|s: &mut Value| {
+				s["stages"][0]["state"] = json!("not started");
+			}),
+		),
+		(
+			"controller events out of order",
+			Box::new(|s: &mut Value| {
+				s["controller"] =
+					json!([{"at": 5.0, "event": "blocked"}, {"at": 1.0, "event": "woken"}]);
+			}),
+		),
+		(
+			"woken by an unknown stage",
+			Box::new(|s: &mut Value| {
+				s["controller"] = json!([{"at": 0.0, "event": "woken", "by": "nobody"}]);
+			}),
+		),
+		(
+			"running, ready after its start",
+			Box::new(|s: &mut Value| {
+				let t = &mut s["stages"][0];
+				t["state"] = json!("running");
+				t["ended"] = Value::Null;
+				t["ready"] = json!(t["started"].as_f64().unwrap() + 1.0);
+			}),
+		),
+		(
+			"running, started without ready",
+			Box::new(|s: &mut Value| {
+				let t = &mut s["stages"][0];
+				t["state"] = json!("running");
+				t["ended"] = Value::Null;
+				t["ready"] = Value::Null;
+			}),
+		),
+		(
+			"running, waited after its start",
+			Box::new(|s: &mut Value| {
+				let t = &mut s["stages"][0];
+				t["state"] = json!("running");
+				t["ended"] = Value::Null;
+				t["waits"] =
+					json!([{"at": t["started"].as_f64().unwrap() + 1.0, "gate": "tokens"}]);
+			}),
+		),
+	] {
+		let mut edited = s.clone();
+		edit(&mut edited);
+		atomic_json(&out.join("SCHEDULE.json"), &edited).unwrap();
+		// Rebound, so only the content is wrong.
+		let mut rebound = result.clone();
+		rebound.records.insert(
+			"SCHEDULE".into(),
+			digest(&out.join("SCHEDULE.json")).unwrap(),
+		);
+		let mut declared = acceptance.clone();
+		declared.schedule_sha256 =
+			rnx_final::receipt::Field::Value(digest(&out.join("SCHEDULE.json")).unwrap());
+		assert!(check_schedule(&out, &rebound, &declared).is_err(), "{name}");
+	}
+	s = serde_json::from_slice(&original).unwrap();
+	atomic_json(&out.join("SCHEDULE.json"), &s).unwrap();
+}
+
+/// A well-formed edit to a failed final's schedule, with neither its
+/// declaration nor its binding updated, is refused by the schedule check
+/// and by comparison, which does not revalidate a failed final.
+#[test]
+fn a_failed_finals_stale_schedule_binding_is_refused() {
+	use rnx_final::evidence::check_schedule;
+	use rnx_final::types::{Acceptance, FinalResult, read};
+	let fake = Fake::new(vec![("a", vec!["x"]), ("b", vec!["x"])], &[("a", 0.1, 1)]);
+	let (r, dir) = run(Arc::new(fake), 2);
+	assert_eq!(r["status"], "FAIL");
+	let out = dir.0.join("final");
+	let result: FinalResult = read(&out.join("RESULT.json")).unwrap();
+	let acceptance: Acceptance = read(&out.join("ACCEPTANCE.json")).unwrap();
+	check_schedule(&out, &result, &acceptance).unwrap();
+	let before = rnx_final::compare::compare(&out, &out, None).map_err(|e| format!("{e:#}"));
+	let mut s = schedule(&dir);
+	s["stages"][0]["ended"] = json!(s["stages"][0]["ended"].as_f64().unwrap() + 0.001);
+	atomic_json(&out.join("SCHEDULE.json"), &s).unwrap();
+	let error = check_schedule(&out, &result, &acceptance).unwrap_err();
+	assert!(
+		format!("{error:#}").contains("SCHEDULE differs"),
+		"{error:#}"
+	);
+	let compared = rnx_final::compare::compare(&out, &out, None).map_err(|e| format!("{e:#}"));
+	assert!(
+		compared
+			.as_ref()
+			.is_err_and(|e| e.contains("SCHEDULE differs")),
+		"before {before:?}, after {compared:?}"
+	);
+}
+
+/// A final that ran its stages owes their schedule: one removed before
+/// binding fails the final instead of passing as a pre-schedule final.
+#[test]
+fn a_missing_schedule_fails_a_final_that_ran_stages() {
+	let mut fake = Fake::new(vec![("a", vec!["x"])], &[]);
+	fake.drop_schedule = true;
+	let (r, dir) = run(Arc::new(fake), 2);
+	assert_eq!(r["status"], "FAIL", "{r}");
+	assert!(
+		r["error"].as_str().unwrap().contains("schedule record"),
+		"{r}"
+	);
+	assert!(r["records"].get("SCHEDULE").is_none());
+	let acceptance: Value =
+		serde_json::from_slice(&std::fs::read(dir.0.join("final/ACCEPTANCE.json")).unwrap())
+			.unwrap();
+	assert_eq!(acceptance["status"], "FAIL");
+}
+
+/// Too little disk before any stage runs fails the final, and the trace
+/// keeps the refusal with its numbers; the stage after it was not evaluated.
+#[test]
+fn a_disk_refusal_with_nothing_running_is_recorded() {
+	let fake = Fake::new(vec![("a", vec!["x"]), ("b", vec!["y"])], &[]);
+	*fake.free.lock().unwrap() = vec![1];
+	let (r, dir) = run(Arc::new(fake), 2);
+	assert_eq!(r["status"], "FAIL", "{r}");
+	let s = schedule(&dir);
+	assert_eq!(waits(&s, "a"), vec![("disk".to_string(), vec![])]);
+	assert_eq!(
+		trace(&s, "a")["waits"][0]["evidence"]["free_bytes"],
+		json!(1)
+	);
+	assert_eq!(trace(&s, "a")["state"], "not started");
+	assert_eq!(
+		waits(&s, "b"),
+		vec![("queued".to_string(), vec!["a".to_string()])]
+	);
+	assert!(trace(&s, "b")["ready"].is_null());
 }

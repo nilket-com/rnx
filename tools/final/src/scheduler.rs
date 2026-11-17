@@ -348,13 +348,43 @@ pub fn ready(
 	producers: &[usize],
 	succeeded: &BTreeSet<usize>,
 ) -> bool {
+	gate(index, plan, finished, running, producers, succeeded).is_none()
+}
+
+/// The first readiness check a stage fails, in the order `ready` applies
+/// them, or none when it is ready.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Gate {
+	/// It runs alone and another stage is running.
+	Alone,
+	/// These declared producers have not passed.
+	Producers(Vec<usize>),
+	/// This earlier, unfinished stage shares a resource lane with it.
+	Lanes(usize),
+}
+
+pub fn gate(
+	index: usize,
+	plan: &[Resources],
+	finished: &BTreeSet<usize>,
+	running: &BTreeSet<usize>,
+	producers: &[usize],
+	succeeded: &BTreeSet<usize>,
+) -> Option<Gate> {
 	if plan[index].contains(ALONE) && !running.is_empty() {
-		return false;
+		return Some(Gate::Alone);
 	}
-	if !producers.iter().all(|j| succeeded.contains(j)) {
-		return false;
+	let waiting: Vec<usize> = producers
+		.iter()
+		.copied()
+		.filter(|j| !succeeded.contains(j))
+		.collect();
+	if !waiting.is_empty() {
+		return Some(Gate::Producers(waiting));
 	}
-	(0..index).all(|j| finished.contains(&j) || !conflict(&plan[index], &plan[j]))
+	(0..index)
+		.find(|j| !finished.contains(j) && conflict(&plan[index], &plan[*j]))
+		.map(Gate::Lanes)
 }
 
 /// Selection indices of each stage's declared prerequisites.
@@ -432,6 +462,71 @@ pub fn stage_environment(
 
 /// Each stage's resources, weight, bulk roots, environment and producers
 /// against the Python controller's at ADR 0284's witness revision.
+#[cfg(test)]
+mod gates {
+	use super::*;
+
+	/// `ready` as it was before `gate`, kept to hold the two equal.
+	fn ready_before(
+		index: usize,
+		plan: &[Resources],
+		finished: &BTreeSet<usize>,
+		running: &BTreeSet<usize>,
+		producers: &[usize],
+		succeeded: &BTreeSet<usize>,
+	) -> bool {
+		if plan[index].contains(ALONE) && !running.is_empty() {
+			return false;
+		}
+		if !producers.iter().all(|j| succeeded.contains(j)) {
+			return false;
+		}
+		(0..index).all(|j| finished.contains(&j) || !conflict(&plan[index], &plan[j]))
+	}
+
+	#[test]
+	fn the_gate_agrees_with_readiness_everywhere() {
+		let lane = |s: &str| -> Resources { [s.to_string()].into() };
+		let plans: Vec<Vec<Resources>> = vec![
+			vec![lane("a"), lane("a"), lane("b")],
+			vec![lane("a"), [ALONE.to_string()].into(), lane("b")],
+			vec![[FIRST.to_string()].into(), lane("a"), lane("a")],
+			vec![
+				lane("a"),
+				lane("b"),
+				[ALONE.to_string(), "a".to_string()].into(),
+			],
+		];
+		let subsets = |n: usize| -> Vec<BTreeSet<usize>> {
+			(0..1u32 << n)
+				.map(|m| (0..n).filter(|i| m & (1 << i) != 0).collect())
+				.collect()
+		};
+		let mut checked = 0;
+		for plan in &plans {
+			let n = plan.len();
+			for finished in subsets(n) {
+				for running in subsets(n) {
+					for succeeded in subsets(n) {
+						for index in 0..n {
+							for producers in [vec![], vec![0], (0..index).collect::<Vec<_>>()] {
+								let a = ready_before(
+									index, plan, &finished, &running, &producers, &succeeded,
+								);
+								let g =
+									gate(index, plan, &finished, &running, &producers, &succeeded);
+								assert_eq!(a, g.is_none(), "{plan:?} {index} {g:?}");
+								checked += 1;
+							}
+						}
+					}
+				}
+			}
+		}
+		assert!(checked > 10_000, "{checked}");
+	}
+}
+
 #[cfg(test)]
 mod witness {
 	use super::*;
