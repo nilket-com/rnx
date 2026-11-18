@@ -101,6 +101,7 @@ struct Flow {
 	borrowed: bool,
 	gate_returned: bool,
 	gate_processed: bool,
+	gate_refusals: usize,
 	blocks: usize,
 	started: BTreeSet<String>,
 	written: bool,
@@ -224,7 +225,14 @@ impl Hooks for Fake {
 	fn after_token_refusal(&self) {
 		// A refusal after an event taken since the chunks: the recheck's,
 		// its flag already cleared.
-		let armed = self.flow.lock().unwrap().taken_after_written >= 1;
+		let armed = {
+			let mut flow = self.flow.lock().unwrap();
+			if flow.gate_processed && !flow.written {
+				flow.gate_refusals += 1;
+				self.moved.notify_all();
+			}
+			flow.taken_after_written >= 1
+		};
 		self.handoff(Handoff::AfterRecheck, armed);
 	}
 	fn watcher_decided(&self, sent: bool) {
@@ -474,6 +482,14 @@ impl Fake {
 		self.until("the controller blocked behind the refusal", |f| {
 			f.blocks >= 1
 		});
+		if matches!(r.handoff, Some((Handoff::AfterRecheck, _))) {
+			// The first refusal follows the gate's completion. The second
+			// follows consumption of the gate's only token notice. Let it
+			// clear the flag before writing the chunk that arms the handoff.
+			self.until("the controller rechecked the gate's token notice", |f| {
+				f.gate_refusals >= 2
+			});
+		}
 		// Counted before the writes, so a fast wake is not missed.
 		let handled = self.flow.lock().unwrap().blocks;
 		let watched = r.count_reads.then(|| read_watch(&path));
