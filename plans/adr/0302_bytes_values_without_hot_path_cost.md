@@ -1,6 +1,6 @@
 # ADR 0302: Bytes values without hot-path cost
 
-Status: Proposed
+Status: Withdrawn
 
 Base: published 4447af3351d110d4c2fccd29793da436cef4c92e (ADR 0301, withdrawn).
 
