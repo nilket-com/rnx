@@ -12,6 +12,7 @@ pub mod controller;
 pub mod cross;
 pub mod evidence;
 pub mod failure;
+pub mod fixed_route;
 pub mod guardian;
 pub mod jobs;
 pub mod outputs;

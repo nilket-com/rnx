@@ -1,0 +1,122 @@
+{
+ "expected": {
+  "approval: a baseline without a policy": {
+   "error": "ValueError",
+   "message": "unreviewed anchor bootstrap",
+   "repr": "ValueError('unreviewed anchor bootstrap')"
+  },
+  "approval: a plan that is not a plan commit": {
+   "error": "ValueError",
+   "message": "approval is not a plan commit",
+   "repr": "ValueError('approval is not a plan commit')"
+  },
+  "approval: a plan that is not an ancestor": {
+   "error": "CalledProcessError",
+   "message": "Command '['git', '-C', '<REPO>', 'merge-base', '--is-ancestor', '<SIDE>', '<C>']' returned non-zero exit status 1.",
+   "repr": "CalledProcessError(1, ['git', '-C', '<REPO>', 'merge-base', '--is-ancestor', '<SIDE>', '<C>'])"
+  },
+  "approval: a plan without the declaration": {
+   "error": "ValueError",
+   "message": "approval declaration absent",
+   "repr": "ValueError('approval declaration absent')"
+  },
+  "approval: a short anchor": {
+   "error": "ValueError",
+   "message": "anchor must be a full commit",
+   "repr": "ValueError('anchor must be a full commit')"
+  },
+  "approval: a short plan": {
+   "error": "ValueError",
+   "message": "approval plan must be full commit",
+   "repr": "ValueError('approval plan must be full commit')"
+  },
+  "approval: a signed, declared, ancestral plan": {
+   "ok": null
+  },
+  "approval: a transition skipping the baseline": {
+   "error": "ValueError",
+   "message": "anchor transition skips baseline lineage",
+   "repr": "ValueError('anchor transition skips baseline lineage')"
+  },
+  "approval: an unchanged anchor": {
+   "ok": null
+  },
+  "approval: an unknown full anchor": {
+   "error": "CalledProcessError",
+   "message": "Command '['git', '-C', '<REPO>', 'rev-parse', '0000000000000000000000000000000000000000^{commit}']' returned non-zero exit status 128.",
+   "repr": "CalledProcessError(128, ['git', '-C', '<REPO>', 'rev-parse', '0000000000000000000000000000000000000000^{commit}'])"
+  },
+  "approval: an unsigned plan": {
+   "error": "CalledProcessError",
+   "message": "Command '['git', '-C', '<REPO>', 'verify-commit', '<UNSIGNED>']' returned non-zero exit status 1.",
+   "repr": "CalledProcessError(1, ['git', '-C', '<REPO>', 'verify-commit', '<UNSIGNED>'])"
+  },
+  "source: a baseline without a policy": {
+   "error": "ValueError",
+   "message": "missing baseline policy outside reviewed bootstrap",
+   "repr": "ValueError('missing baseline policy outside reviewed bootstrap')"
+  },
+  "source: a changed inventory": {
+   "error": "ValueError",
+   "message": "policy inventory/limit change: STOP inventory",
+   "repr": "ValueError('policy inventory/limit change: STOP inventory')"
+  },
+  "source: a changed item": {
+   "error": "ValueError",
+   "message": "fixed source changed: src/lib.rs:alpha",
+   "repr": "ValueError('fixed source changed: src/lib.rs:alpha')"
+  },
+  "source: a failing guard": {
+   "error": "CalledProcessError",
+   "message": "Command '['<GUARD>', '--item', '<SOURCE>', 'fn', '', 'gamma']' returned non-zero exit status 3.",
+   "repr": "CalledProcessError(3, ['<GUARD>', '--item', '<SOURCE>', 'fn', '', 'gamma'])"
+  },
+  "source: a numeric receiver": {
+   "error": "TypeError",
+   "message": "expected str, bytes or os.PathLike object, not int",
+   "repr": "TypeError('expected str, bytes or os.PathLike object, not int')"
+  },
+  "source: an inventory string": {
+   "error": "ValueError",
+   "message": "invalid source selector",
+   "repr": "ValueError('invalid source selector')"
+  },
+  "source: reordered kernels": {
+   "error": "ValueError",
+   "message": "policy inventory/limit change: STOP kernels",
+   "repr": "ValueError('policy inventory/limit change: STOP kernels')"
+  },
+  "source: unchanged items": {
+   "ok": {
+    "baseline": "<B>",
+    "candidate": "<C>",
+    "inventory": "32376a80ab4fe7b86132dee86d20e08a0b05e81b6fa33d7093e74c04fc803452",
+    "items": [
+     {
+      "canonical": "fn alpha() { 1 }",
+      "selector": {
+       "file": "src/lib.rs",
+       "kind": "fn",
+       "name": "alpha",
+       "receiver": ""
+      },
+      "sha256": "23855c01217ba3e507f507930d97b62aa61e9ea39d83bd664f96ce552e23c7d1"
+     },
+     {
+      "canonical": "fn beta() { 2 }",
+      "selector": {
+       "file": "src/lib.rs",
+       "kind": "fn",
+       "name": "beta",
+       "receiver": ""
+      },
+      "sha256": "e947b79a50e8a1e275920ff90bc50831825eeb1a4af77d8ed9eea7e173d341e8"
+     }
+    ],
+    "status": "PASS"
+   }
+  }
+ },
+ "method": "drift_band.anchor_approval and source_condition over a planted repository <REPO> (git system and global config off; user Fixture <fixture@example.invalid>; commits signed with an ephemeral ed25519 key and a repository allowed-signers file, except <UNSIGNED>). History on main: <X> 'base' (src/lib.rs 'fn alpha() { 1 }\\nfn beta() { 2 }\\n'), <B> 'policy' (tools/column/fixed_route_policy.json = P1, anchor <X>, no transition, the live schema, limits, kernels, modes and sizes with inventory alpha and beta of src/lib.rs, written json indent 1), <Y> 'anchor work' (src/other.rs), <PLAN> signed 'plan: adr 9001 anchor transition' (plans/adr/9001_anchor.md declaring the transition <X> to <Y>), <UNSIGNED> unsigned 'plan: adr 9002 unsigned transition' (the same declaration in 9002_unsigned.md), <C> (policy P2: anchor <Y>, transition {old <X>, new <Y>, plan <PLAN>, path 9001}), <D> (alpha changed to 10), <G> (a policy whose only item is gamma); <SIDE> signed 'plan: adr 9003 side transition' on a branch from <B>. <GUARD> is a sh script exiting 3 for name gamma, else printing the source lines containing the name. Each case is ok with the value, or error with the exception class, message and repr. Commit hashes are named, the guard's scratch source is <SOURCE>.",
+ "witness": "96a809fe09fed4f9a19487854f4d4de5c3784c92"
+}

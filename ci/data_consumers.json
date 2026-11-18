@@ -1093,6 +1093,33 @@
       "max_bytes": 70534,
       "reason": "ADR 0294 witness fixture: the Python cross launcher's refusals, calls, environments, requests, receipts and files generated once at 152b0c07 from controlled values with every child intercepted (method recorded inside); the Rust stage mode is compared against it."
     },
+    "tools/final/tests/witness/fixed-route-anchor-cache.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/fixed_route.rs"
+      },
+      "max_bytes": 727650,
+      "reason": "ADR 0296 witness fixture: anchor_cache's results, ownership journal and cache tree through publication, hits, misses, damage, replacement, interrupted publication and recovery, generated once at 96a809fe with fixed identifiers and injected faults (method recorded inside); the Rust cache is compared against it."
+    },
+    "tools/final/tests/witness/fixed-route-band.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/fixed_route.rs"
+      },
+      "max_bytes": 197353,
+      "reason": "ADR 0296 witness fixture: drift_band's policy validation, anchor transitions, band comparisons (exact limits, high counts, decreases), measurement recipe and scores, generated once at 96a809fe from controlled values (method recorded inside); the Rust port is compared against it."
+    },
+    "tools/final/tests/witness/fixed-route-git.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/fixed_route.rs"
+      },
+      "max_bytes": 5723,
+      "reason": "ADR 0296 witness fixture: anchor_approval and source_condition over a planted repository signed with an ephemeral key, generated once at 96a809fe (method recorded inside); the Rust port is compared against it."
+    },
     "tools/final/tests/witness/inventories.json": {
       "class": "live-fixture",
       "consumer": {
