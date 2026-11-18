@@ -38,16 +38,37 @@ fn write(path: &Path, value: &serde_json::Value) {
 	std::fs::write(path, serde_json::to_vec(value).unwrap()).unwrap();
 }
 
-/// A final directory selecting `names`, begun `ago` seconds before now.
+/// A complete final directory selecting `names`, begun `ago` seconds
+/// before now.
 fn final_dir(dir: &Path, names: &[&str], ago: u64) {
+	scoped_dir(dir, "complete", names, ago);
+}
+
+/// A final directory of `scope` selecting `names`, begun `ago` seconds
+/// before now.
+fn scoped_dir(dir: &Path, scope: &str, names: &[&str], ago: u64) {
 	let stages: Vec<_> = names.iter().map(|n| json!([n, ["true"]])).collect();
 	let selection = dir.join("SELECTION.json");
-	write(&selection, &json!({"schema": 1, "stages": stages}));
+	write(
+		&selection,
+		&json!({"schema": 1, "scope": scope, "stages": stages}),
+	);
 	std::fs::File::options()
 		.write(true)
 		.open(&selection)
 		.unwrap()
 		.set_modified(now() - Duration::from_secs(ago))
+		.unwrap();
+}
+
+/// Re-plant a final's start `ago` seconds before the real clock, for views
+/// the binary renders at the real time.
+fn began_real(dir: &Path, ago: u64) {
+	std::fs::File::options()
+		.write(true)
+		.open(dir.join("SELECTION.json"))
+		.unwrap()
+		.set_modified(SystemTime::now() - Duration::from_secs(ago))
 		.unwrap();
 }
 
@@ -389,7 +410,7 @@ fn the_alias_answers_from_a_fresh_checkout_over_a_scripted_manager() {
 	let s = scratch();
 	let root = &s.0;
 	let finals = root.join("finals");
-	reference(&finals);
+	began_real(&reference(&finals), 10_000);
 	let dir = running(&finals);
 	// The final's start, relative to the real clock this time.
 	std::fs::File::options()
@@ -520,6 +541,7 @@ fn only_regular_receipts_are_read() {
 	let finals = root.join("finals");
 	let reference = finals.join("0294/FINAL-ref");
 	final_dir(&reference, &["a"], 10_000);
+	began_real(&reference, 10_000);
 	result(&reference, "PASS", true, 2640.0, &[]);
 	fifo(&reference.join("SCHEDULE.json"));
 	let external = root.join("external.json");
@@ -588,5 +610,119 @@ fn only_regular_receipts_are_read() {
 			"against the last complete PASS, {} (44m00s)",
 			reference.display()
 		)
+	);
+}
+
+/// Like with like: a required final against the last required PASS of
+/// the same stages, never a newer complete PASS or a required PASS of
+/// other stages; a complete final against the last complete PASS, never a
+/// newer required PASS. With no comparable PASS, no estimate.
+#[test]
+fn an_estimate_compares_like_with_like() {
+	let s = scratch();
+	let root = &s.0;
+	let six = [
+		"commit-discipline",
+		"controller-controls",
+		"python-list",
+		"format-final",
+		"clippy-final",
+		"final-controls",
+	];
+	let required = root.join("0295/FINAL-REQUIRED-v1");
+	scoped_dir(&required, "required", &six, 9000);
+	finished(&required, &six);
+	result(&required, "PASS", false, 138.0, &[]);
+	let stage = |name: &str, ended: f64| json!({"name": name, "state": "passed", "ready": 0.0, "waits": [], "started": 0.0, "ended": ended});
+	write(
+		&required.join("SCHEDULE.json"),
+		&json!({"schema": 1, "stages": [stage("commit-discipline", 30.0), stage("final-controls", 130.0)], "controller": []}),
+	);
+	// The same number of stages, one of them different.
+	let mut swapped = six;
+	swapped[5] = "jupyter-tests";
+	let other = root.join("0295/FINAL-REQUIRED-other");
+	scoped_dir(&other, "required", &swapped, 8000);
+	finished(&other, &swapped);
+	result(&other, "PASS", false, 60.0, &[]);
+	let complete = reference(root);
+	// A newer complete PASS than the required one, to be ignored by it.
+	std::fs::File::options()
+		.write(true)
+		.open(complete.join("SELECTION.json"))
+		.unwrap()
+		.set_modified(now() - Duration::from_secs(5000))
+		.unwrap();
+	let running = root.join("0296/FINAL-REQUIRED-v2");
+	scoped_dir(&running, "required", &six, 60);
+	finished(&running, &six[..4]);
+	std::fs::create_dir_all(running.join("final-controls-child")).unwrap();
+	let all = jobs::finals(root);
+	let view: Vec<String> = jobs::final_view(&running, &all, now(), true)
+		.into_iter()
+		.map(|l| l.replace(&*root.to_string_lossy(), "<ROOT>"))
+		.collect();
+	assert_eq!(
+		view,
+		vec![
+			"final <ROOT>/0296/FINAL-REQUIRED-v2",
+			"stages [####################----------] 4/6 done, 1 running: final-controls",
+			"time   [#############-----------------] 1m / ~2m est",
+			"against the last required PASS of the same 6 stages, <ROOT>/0295/FINAL-REQUIRED-v1 (2m18s), which had 1 done by now",
+		]
+	);
+	// Only a required PASS of other stages: no estimate.
+	std::fs::remove_dir_all(&required).unwrap();
+	let view = jobs::final_view(&running, &jobs::finals(root), now(), true);
+	assert_eq!(
+		view[2],
+		"time   1m elapsed; no earlier required PASS of the same 6 stages to compare with"
+	);
+	// A complete final ignores the newer required PASS.
+	let newer = root.join("0297/FINAL-REQUIRED-v1");
+	scoped_dir(&newer, "required", &six, 100);
+	finished(&newer, &six);
+	result(&newer, "PASS", false, 140.0, &[]);
+	let full = root.join("0297/FINAL-RUST-v1");
+	scoped_dir(&full, "complete", &["a", "b"], 600);
+	let view: Vec<String> = jobs::final_view(&full, &jobs::finals(root), now(), true)
+		.into_iter()
+		.map(|l| l.replace(&*root.to_string_lossy(), "<ROOT>"))
+		.collect();
+	assert_eq!(
+		view[2..],
+		[
+			"time   [######------------------------] 10m / ~44m est".to_string(),
+			"against the last complete PASS, <ROOT>/0294/FINAL A (44m00s), which had 2 done by now"
+				.to_string(),
+			"no stage is running".to_string(),
+		]
+	);
+	// Never a later PASS, an unknown scope, or an unusable duration.
+	std::fs::remove_dir_all(&newer).unwrap();
+	let later = root.join("0297/FINAL-REQUIRED-later");
+	scoped_dir(&later, "required", &six, 30);
+	finished(&later, &six);
+	result(&later, "PASS", false, 90.0, &[]);
+	let unknown = root.join("0296/FINAL-unknown");
+	scoped_dir(&unknown, "nightly", &six, 7000);
+	finished(&unknown, &six);
+	result(&unknown, "PASS", false, 80.0, &[]);
+	let zero = root.join("0296/FINAL-zero");
+	scoped_dir(&zero, "required", &six, 6000);
+	finished(&zero, &six);
+	result(&zero, "PASS", false, 0.0, &[]);
+	let view = jobs::final_view(&running, &jobs::finals(root), now(), true);
+	assert_eq!(
+		view[2],
+		"time   1m elapsed; no earlier required PASS of the same 6 stages to compare with"
+	);
+	// An unknown scope is never estimated, even against its own kind.
+	let unknown_running = root.join("0297/FINAL-unknown-running");
+	scoped_dir(&unknown_running, "nightly", &six, 60);
+	let view = jobs::final_view(&unknown_running, &jobs::finals(root), now(), true);
+	assert_eq!(
+		view[2],
+		"time   1m elapsed; no earlier comparable PASS to compare with"
 	);
 }

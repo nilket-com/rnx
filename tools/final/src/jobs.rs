@@ -297,6 +297,9 @@ struct Stages {
 	total: usize,
 	done: usize,
 	begun: Vec<String>,
+	/// The selection's scope and stage names, for a comparable reference.
+	scope: Option<String>,
+	names: std::collections::BTreeSet<String>,
 }
 
 fn stages(dir: &Path) -> Option<Stages> {
@@ -320,6 +323,8 @@ fn stages(dir: &Path) -> Option<Stages> {
 		total: names.len(),
 		done,
 		begun,
+		scope: selection["scope"].as_str().map(String::from),
+		names: names.iter().map(|n| (*n).to_owned()).collect(),
 	})
 }
 
@@ -405,10 +410,36 @@ pub fn final_view(dir: &Path, others: &[PathBuf], now: SystemTime, live: bool) -
 		));
 		return lines;
 	}
+	// Like with like: a complete final against the last complete PASS;
+	// any other known scope against the last PASS of that scope that
+	// selected exactly the same stages. A reference began before this
+	// final, and has a usable duration.
+	let scope = stages
+		.scope
+		.as_deref()
+		.filter(|s| matches!(*s, "complete" | "required" | "explicit" | "docs"));
+	let began = started(dir);
 	let reference = others.iter().filter(|o| o.as_path() != dir).find_map(|o| {
 		let t = terminal(o)?;
-		(t.status == "PASS" && t.complete).then_some((o, t))
+		let theirs = self::stages(o)?;
+		let earlier = matches!((started(o), began), (Some(a), Some(b)) if a < b);
+		let comparable = t.status == "PASS"
+			&& earlier
+			&& t.seconds.is_finite()
+			&& t.seconds > 0.0
+			&& scope.is_some()
+			&& theirs.scope.as_deref() == scope
+			&& match scope {
+				Some("complete") => t.complete,
+				_ => theirs.names == stages.names,
+			};
+		comparable.then_some((o, t))
 	});
+	let kind = match scope {
+		Some("complete") => "complete PASS".to_string(),
+		Some(other) => format!("{other} PASS of the same {} stages", stages.names.len()),
+		None => "comparable PASS".to_string(),
+	};
 	match reference {
 		Some((path, t)) => {
 			let paced = read(&path.join("SCHEDULE.json"))
@@ -426,7 +457,7 @@ pub fn final_view(dir: &Path, others: &[PathBuf], now: SystemTime, live: bool) -
 				minutes(t.seconds)
 			));
 			let mut against = format!(
-				"against the last complete PASS, {} ({})",
+				"against the last {kind}, {} ({})",
 				path.display(),
 				clock(t.seconds)
 			);
@@ -436,7 +467,7 @@ pub fn final_view(dir: &Path, others: &[PathBuf], now: SystemTime, live: bool) -
 			lines.push(against);
 		}
 		None => lines.push(format!(
-			"time   {} elapsed; no earlier complete PASS to compare with",
+			"time   {} elapsed; no earlier {kind} to compare with",
 			minutes(elapsed)
 		)),
 	}
