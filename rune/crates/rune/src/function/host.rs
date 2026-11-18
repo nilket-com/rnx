@@ -1,5 +1,6 @@
 //! Closed, synchronous new-host signatures. Enrollment is a trusted host contract.
 #![allow(missing_docs)]
+use crate as rune;
 use crate::alloc::clone::TryClone;
 use crate::function::{Function, Plain, Ref};
 use crate::runtime::FunctionHandler;
@@ -62,7 +63,15 @@ pub enum HostOutputKind {
 	OpaqueOwned,
 	/// A consuming, closed Result<tree, String> output transport.
 	OwnedTree,
+	/// A checked producer's Result<native, String>, or a terminal resource limit.
+	OpaqueResultString,
 }
+
+/// A checked opaque producer reached its input or work ceiling.
+/// The execution bridge reports this at the host call site.
+#[derive(crate::Any, Debug)]
+#[doc(hidden)]
+pub struct OpaqueProducerLimit;
 /// One node in a static output-shape graph. Every declared node must be importable.
 /// Indices refer to nodes in the same certificate; recursive containers describe
 /// arbitrarily large finite graphs. A union promises that every alternative is safe.
@@ -210,6 +219,9 @@ impl HostSignature {
 	pub(crate) fn valid(self) -> bool {
 		self.arity <= 4
 			&& (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
+			&& (self.output != HostOutputKind::OpaqueResultString
+				|| (self.arity == 2
+					&& self.arguments[..2] == [HostType::String, HostType::OwnedTreeInput]))
 			&& (self.output != HostOutputKind::OwnedTree
 				|| (self.arity == 1 && self.arguments[0] == HostType::String))
 			&& (!self.arguments.contains(&HostType::OpaqueShared)

@@ -309,6 +309,7 @@ impl<'ast> Visit<'ast> for Scan {
 		if [
             "opaque_method",
             "opaque_factory",
+			"opaque_result_function",
 			"function",
 			"function_meta",
 			"raw_function",
@@ -351,6 +352,7 @@ impl<'ast> Visit<'ast> for Scan {
 				.unwrap_or_default();
 			let class = match method.as_str() {
 				"opaque_method" | "opaque_factory" => "host-value",
+				"opaque_result_function" => "opaque-result-factory",
 				"host_function" => "typed",
 				"host_function_with_output" | "host_function_owned_output" => "dynamic-output",
 				"host_function_string_input" => "string-input",
@@ -418,6 +420,7 @@ impl<'ast> Visit<'ast> for Scan {
 				};
 				let method = method.to_string();
 				if [
+					"opaque_result_function",
 					"function",
 					"function_meta",
 					"raw_function",
@@ -435,6 +438,7 @@ impl<'ast> Visit<'ast> for Scan {
 				.contains(&method.as_str())
 				{
 					let class = match method.as_str() {
+						"opaque_result_function" => "opaque-result-factory",
 						"host_function" => "typed",
 						"host_function_with_output" | "host_function_owned_output" => {
 							"dynamic-output"

@@ -176,6 +176,117 @@ impl Module {
 		Ok(())
 	}
 
+	/// Register a checked session producer beside this function's legacy handler.
+	/// The checked callable only sees a string snapshot and an owned tree packet.
+	/// Both handlers are installed under the same name.
+	///
+	/// ```compile_fail,E0631
+	/// #[derive(rune::Any)] struct Native;
+	/// let mut module = rune::Module::new();
+	/// module.opaque_result_function("borrowed", |_, _, _, _| Ok(()),
+	///     |_: &str, _: &rune::host::OwnedTreeInput| Ok(Ok(Native)));
+	/// ```
+	/// ```compile_fail,E0631
+	/// #[derive(rune::Any)] struct Native;
+	/// let mut module = rune::Module::new();
+	/// module.opaque_result_function("mutable", |_, _, _, _| Ok(()),
+	///     |_: &str, _: &mut rune::host::OwnedTreeInput| Ok(Ok(Native)));
+	/// ```
+	/// ```compile_fail,E0631
+	/// #[derive(rune::Any)] struct Native;
+	/// let mut module = rune::Module::new();
+	/// module.opaque_result_function("value", |_, _, _, _| Ok(()),
+	///     |_: &str, _: rune::Value| Ok(Ok(Native)));
+	/// ```
+	/// ```compile_fail,E0593
+	/// let mut module = rune::Module::new();
+	/// module.opaque_result_function("raw", |_, _, _, _| Ok(()), |_, _, _, _| Ok(()));
+	/// ```
+	/// ```compile_fail,E0308
+	/// #[derive(rune::Any)] struct Native;
+	/// let mut module = rune::Module::new();
+	/// module.opaque_result_function("non_string_error", |_, _, _, _| Ok(()),
+	///     |_, _| Ok(Err::<Native, i64>(7)));
+	/// ```
+	#[doc(hidden)]
+	pub fn opaque_result_function<N, F, T, G>(
+		&mut self,
+		name: N,
+		legacy: F,
+		producer: G,
+	) -> Result<ItemFnMut<'_>, ContextError>
+	where
+		N: IntoComponent,
+		F: Fn(&mut dyn Memory, Address, usize, Output) -> Result<(), VmError>
+			+ 'static
+			+ Send
+			+ Sync,
+		T: crate::Any,
+		G: Fn(
+				&str,
+				crate::host::OwnedTreeInput,
+			) -> Result<Result<T, std::string::String>, crate::host::OpaqueProducerLimit>
+			+ 'static
+			+ Send
+			+ Sync,
+	{
+		use crate::host::{AlternateHost, OwnedTreeInput};
+		use crate::runtime::FunctionHandler;
+
+		let native = NativeType::of::<T>();
+		let registered = self.opaque.types.get(&native.hash);
+		if !registered.is_some_and(|entry| entry.descriptor.type_id == native.id) {
+			return Err(ContextError::OpaqueType {
+				declared: native.info.into(),
+				registered: registered.map(|entry| entry.descriptor.info.into()),
+			});
+		}
+		let item = ItemBuf::with_item([name])?;
+		let path = self.item.join(&item)?;
+		let hash = Hash::type_hash(&path);
+		if self.names.contains(&Name::Item(hash))
+			|| self.opaque.factories.contains_key(&hash)
+			|| self.opaque.methods.contains_key(&hash)
+		{
+			return Err(ContextError::ConflictingFunctionName { item: path, hash });
+		}
+
+		let checked = move |name: &str, tree: OwnedTreeInput| -> Result<Value, VmError> {
+			let result = match producer(name, tree) {
+				Ok(Ok(native)) => Ok(Value::new(native)?),
+				Ok(Err(message)) => Err(crate::to_value(message)?),
+				Err(limit) => return Ok(Value::new(limit)?),
+			};
+			Ok(Value::try_from(result)?)
+		};
+		let handler = FunctionHandler::new(move |stack, addr, args, out| {
+			Function::<(Ref<str>, OwnedTreeInput), Plain>::call(&checked, stack, addr, args, out)
+		})?;
+		let mut data = FunctionData::from_raw(item, FunctionHandler::new(legacy)?);
+		data.alternate_host = Some(AlternateHost {
+			await_only: false,
+			handler,
+			enrollment: HostEnrollment {
+				signature: HostSignature {
+					arity: 2,
+					arguments: [
+						HostType::String,
+						HostType::OwnedTreeInput,
+						HostType::Unit,
+						HostType::Unit,
+					],
+					output: HostOutputKind::OpaqueResultString,
+				},
+				certificate: None,
+			},
+		});
+		self.names.try_reserve(1)?;
+		self.items.try_reserve(1)?;
+		self.opaque.factories.try_reserve(1)?;
+		self.opaque.factories.try_insert(hash, native)?;
+		self.insert_function_item(data, Docs::EMPTY, None, path, hash)
+	}
+
 	/// Register a shared receiver with no additional arguments. R uses the
 	/// existing closed scalar or explicitly certified builtin output domain.
 	///
@@ -287,6 +398,40 @@ mod associated_metadata_tests {
 	#[rune::function(free, path = Impostor::make, opaque_factory)]
 	fn impostor_factory() -> Impostor {
 		Impostor
+	}
+
+	#[test]
+	fn fallible_native_producer_checks_nominal_type_before_registration() {
+		let mut module = Module::with_crate("opaque_test").unwrap();
+		let legacy = |_: &mut dyn Memory, _: Address, _: usize, _: Output| Ok(());
+		assert!(matches!(
+			module.opaque_result_function("load", legacy, |_, _| Ok(Ok(Native(7)))),
+			Err(ContextError::OpaqueType {
+				registered: None,
+				..
+			})
+		));
+		assert!(module.items.is_empty());
+		assert!(module.opaque.factories.is_empty());
+		module.opaque_type::<Native>(|_| 0, |_, _| Ok(())).unwrap();
+		assert!(matches!(
+			module.opaque_result_function("load", legacy, |_, _| Ok(Ok(Impostor))),
+			Err(ContextError::OpaqueType {
+				registered: Some(_),
+				..
+			})
+		));
+		assert!(module.items.is_empty());
+		assert!(module.opaque.factories.is_empty());
+		module
+			.opaque_result_function("load", legacy, |_, _| Ok(Ok(Native(7))))
+			.unwrap();
+		assert!(matches!(
+			module.opaque_result_function("load", legacy, |_, _| Ok(Ok(Native(8)))),
+			Err(ContextError::ConflictingFunctionName { .. })
+		));
+		assert_eq!(module.items.len(), 1);
+		assert_eq!(module.opaque.factories.len(), 1);
 	}
 
 	#[test]

@@ -3,7 +3,7 @@ use super::super::value::Type;
 use super::*;
 use crate as rune;
 
-use crate::function::host::{HostOutputKind, HostSignature, HostType};
+use crate::function::host::{HostOutputKind, HostSignature, HostType, OpaqueProducerLimit};
 use crate::runtime::{self as stock, FromValue};
 
 // Execution core Iterator diagnostics retain the listed differences from legacy VM diagnostics.
@@ -396,8 +396,52 @@ impl Executor {
 					Err(value) => self.host_variant(store, Type::Result, false, Some((value, err))),
 				}
 			}
+			HostOutputKind::OpaqueResultString => self.host_opaque_result(store, value),
 		}
 	}
+
+	#[cold]
+	#[inline(never)]
+	fn host_opaque_result(&mut self, store: &mut Store, value: &stock::Value) -> Result<Value> {
+		use stock::TypeHash;
+
+		if value.type_hash() == OpaqueProducerLimit::HASH {
+			let _limit = value
+				.borrow_ref::<OpaqueProducerLimit>()
+				.map_err(|_| error(ErrorKind::InvalidCode))?;
+			return Err(error(ErrorKind::StoreCapacity));
+		}
+		let result = value
+			.borrow_ref::<core::result::Result<stock::Value, stock::Value>>()
+			.map_err(|_| error(ErrorKind::InvalidCode))?;
+		let native = match &*result {
+			Ok(native) => native,
+			Err(text) => {
+				return self.host_variant(
+					store,
+					Type::Result,
+					false,
+					Some((text, HostType::String)),
+				)
+			}
+		};
+
+		let child = self.host_output(store, native, HostOutputKind::OpaqueOwned)?;
+		let parent = store.variant(Type::Result, true, Some(child));
+		let cleanup = store.release(child);
+		match (parent, cleanup) {
+			(Ok(parent), Ok(())) => Ok(parent),
+			(Ok(parent), Err(cleanup)) => {
+				self.pending_host_cleanup = store.release(parent).err();
+				Err(cleanup)
+			}
+			(Err(primary), cleanup) => {
+				self.pending_host_cleanup = cleanup.err();
+				Err(primary)
+			}
+		}
+	}
+
 	fn host_variant(
 		&mut self,
 		store: &mut Store,
@@ -603,6 +647,126 @@ mod tests {
 	use super::*;
 	use crate::experimental_core::{error::HostCause, frontend, heap::Limits};
 	use crate::{Context, Diagnostics, Hash, Module, Source, Sources};
+
+	#[derive(crate::Any)]
+	struct ResultNative(std::sync::Arc<std::sync::atomic::AtomicUsize>, bool);
+
+	impl Drop for ResultNative {
+		fn drop(&mut self) {
+			self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+			assert!(!self.1, "native destructor witness");
+		}
+	}
+
+	#[test]
+	fn fallible_native_producer_imports_and_releases_exactly_once() {
+		use super::minimal_tests::{code, executor, installed};
+		use std::sync::{
+			atomic::{AtomicUsize, Ordering},
+			Arc,
+		};
+		let drops = Arc::new(AtomicUsize::new(0));
+		let observed = drops.clone();
+		let mut module = Module::with_item(["tiny"]).unwrap();
+		module
+			.opaque_type::<ResultNative>(|_| 64, |_, _| Ok(()))
+			.unwrap();
+		module
+			.opaque_result_function(
+				"load",
+				|_, _, _, _| unreachable!(),
+				move |path, _| match path {
+					"bad" => Ok(Err("script error".into())),
+					"limit" => Err(OpaqueProducerLimit),
+					_ => Ok(Ok(ResultNative(observed.clone(), false))),
+				},
+			)
+			.unwrap();
+		let context = installed(module);
+		let code = code(&context, "load", 2);
+		let mut executor = executor(&context);
+		let mut store = Store::new(Limits::default()).unwrap();
+		let tree = store.root_i64(1);
+		let input = store.root_string("ok").unwrap();
+		let baseline = store.payload_bytes();
+		let output = executor
+			.invoke_code(&code, &mut store, 0, &[&input, &tree], 100)
+			.unwrap();
+		let (tag, success, child) = store.variant_parts(output.value).unwrap();
+		assert_eq!((tag, success), (Type::Result, true));
+		assert_eq!(
+			store.host_snapshot(child.unwrap()).unwrap().type_hash(),
+			<ResultNative as stock::TypeHash>::HASH
+		);
+		assert!(store.payload_bytes() >= baseline + 64);
+		assert_eq!(drops.load(Ordering::SeqCst), 0);
+		store.root_release(output).unwrap();
+		assert_eq!(drops.load(Ordering::SeqCst), 1);
+		assert_eq!(store.payload_bytes(), baseline);
+		store.root_release(input).unwrap();
+
+		let input = store.root_string("bad").unwrap();
+		let output = executor
+			.invoke_code(&code, &mut store, 0, &[&input, &tree], 100)
+			.unwrap();
+		let (tag, success, child) = store.variant_parts(output.value).unwrap();
+		assert_eq!((tag, success), (Type::Result, false));
+		assert_eq!(store.text(child.unwrap()).unwrap(), "script error");
+		store.root_release(output).unwrap();
+		store.root_release(input).unwrap();
+
+		let input = store.root_string("limit").unwrap();
+		let failure = executor
+			.invoke_code(&code, &mut store, 0, &[&input, &tree], 100)
+			.unwrap_err();
+		assert_eq!(failure.error.kind, ErrorKind::StoreCapacity);
+		store.root_release(input).unwrap();
+		assert_eq!(store.live_entries(), 0);
+		assert_eq!(drops.load(Ordering::SeqCst), 1);
+
+		// The native value fits by itself, but the Result wrapper needs a second slot.
+		executor.active_host_runtime = Some(context.execution_runtime().unwrap().inner);
+		let mut tight = Store::new(Limits {
+			entries: 1,
+			..Limits::default()
+		})
+		.unwrap();
+		let native = stock::Value::new(ResultNative(drops.clone(), false)).unwrap();
+		let bare = executor
+			.host_output(&mut tight, &native, HostOutputKind::OpaqueOwned)
+			.unwrap();
+		drop(native);
+		tight.release(bare).unwrap();
+		assert_eq!(drops.load(Ordering::SeqCst), 2);
+		let native = stock::Value::new(ResultNative(drops.clone(), false)).unwrap();
+		let wrapped = stock::Value::try_from(Ok::<_, stock::Value>(native)).unwrap();
+		let failure = executor
+			.host_output(&mut tight, &wrapped, HostOutputKind::OpaqueResultString)
+			.unwrap_err();
+		assert_eq!(failure.kind, ErrorKind::StoreCapacity);
+		assert_eq!(tight.live_entries(), 0);
+		assert_eq!(tight.payload_bytes(), 0);
+		drop(wrapped);
+		assert_eq!(drops.load(Ordering::SeqCst), 3);
+		let native = stock::Value::new(ResultNative(drops.clone(), true)).unwrap();
+		let wrapped = stock::Value::try_from(Ok::<_, stock::Value>(native)).unwrap();
+		let failure = executor
+			.host_output(&mut tight, &wrapped, HostOutputKind::OpaqueResultString)
+			.unwrap_err();
+		assert_eq!(failure.kind, ErrorKind::StoreCapacity);
+		let cleanup = executor.pending_host_cleanup.take().unwrap();
+		assert_eq!(cleanup.kind, ErrorKind::Host);
+		assert!(matches!(cleanup.detail, Detail::HostPanicked));
+		drop(wrapped);
+		assert_eq!(drops.load(Ordering::SeqCst), 4);
+		let wrong =
+			stock::Value::try_from(Ok::<_, stock::Value>(stock::Value::from(1i64))).unwrap();
+		let failure = executor
+			.host_output(&mut tight, &wrong, HostOutputKind::OpaqueResultString)
+			.unwrap_err();
+		assert_eq!(failure.kind, ErrorKind::InvalidCode);
+		assert_eq!(tight.live_entries(), 0);
+	}
 
 	struct DirectDocument(bool);
 	impl crate::host::OwnedOutputSource for DirectDocument {

@@ -1637,6 +1637,71 @@ mod opaque_tests {
 	}
 
 	#[test]
+	fn fallible_native_producer_admits_only_the_unwrapped_value() {
+		use std::sync::{
+			Arc,
+			atomic::{AtomicUsize, Ordering::SeqCst},
+		};
+		let made = Arc::new(AtomicUsize::new(0));
+		let drops = Arc::new(AtomicUsize::new(0));
+		let displays = Arc::new(AtomicUsize::new(0));
+		let mut context = context();
+		let mut module = rune::Module::with_crate("other_host").unwrap();
+		module.opaque_type::<Other>(|_| 1, |_, _| Ok(())).unwrap();
+		module
+			.opaque_method::<Other, _, _>("read", |_: &Other| 7i64, None)
+			.unwrap();
+		let (calls, dropped) = (made.clone(), drops.clone());
+		module
+			.opaque_result_function(
+				"load",
+				|_, _, _, _| unreachable!(),
+				move |path, _| {
+					calls.fetch_add(1, SeqCst);
+					if path == "bad" {
+						return Ok(Err("script error".into()));
+					}
+					Ok(Ok(Other {
+						made: calls.clone(),
+						drops: dropped.clone(),
+						displays: displays.clone(),
+					}))
+				},
+			)
+			.unwrap();
+		context.install(module).unwrap();
+		let mut session = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+		for input in [
+			"let wrapped=other_host::load(\"ok\", []);",
+			"[other_host::load(\"ok\", [])]",
+			"other_host::load(\"ok\")?",
+			"let read=other_host::load;",
+		] {
+			assert!(
+				matches!(session.eval(input), Err(Failure::Refused(_))),
+				"{input}"
+			);
+		}
+		assert_eq!(made.load(SeqCst), 0);
+		assert_eq!(
+			shown(&mut session, "let loaded=other_host::load(\"ok\", [])?;0"),
+			"0"
+		);
+		assert_eq!(shown(&mut session, "loaded.read()"), "7");
+		assert_eq!(
+			shown(
+				&mut session,
+				"fn bad(){let _=other_host::load(\"bad\", [])?;Ok(())} bad()"
+			),
+			"Err(\"script error\")"
+		);
+		assert_eq!(made.load(SeqCst), 2);
+		assert_eq!(drops.load(SeqCst), 0);
+		session.reset_fallible().unwrap();
+		assert_eq!(drops.load(SeqCst), 1);
+		assert!(session.binding_names().is_empty());
+	}
+	#[test]
 	fn opaque_binding_methods_aliases_and_cross_input_reassignment() {
 		let mut session = session();
 		assert_eq!(shown(&mut session, "let a=rnx_test::dense();0"), "0");

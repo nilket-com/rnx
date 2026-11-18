@@ -210,6 +210,22 @@ fn read_csv(path: &str, schema: rune::Value) -> Result<DataFrame, String> {
 		.map_err(err)?
 		.map(DataFrame)
 }
+
+#[cfg(feature = "generated")]
+fn read_csv_checked(
+	path: &str,
+	schema: rune::host::OwnedTreeInput,
+) -> Result<Result<DataFrame, String>, rune::host::OpaqueProducerLimit> {
+	let schema = match values::csv_schema_session(&schema)? {
+		Ok(schema) => schema,
+		Err(error) => return Ok(Err(error)),
+	};
+	let result = match engine::run("read_csv", move || files::csv_session(path, schema)) {
+		Ok(result) => result?,
+		Err(error) => Err(err(error)),
+	};
+	Ok(result.map(DataFrame))
+}
 /// Record 0125: `read_csv(path)` without a schema reads with Polars' own
 /// schema inference, date parsing off (the 0.55.2 date-parsing crash).
 fn read_csv_inferred(path: &str) -> Result<DataFrame, String> {
@@ -330,6 +346,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.ty::<LazyFrame>().map_err(err)?;
 	m.ty::<LazyGroupBy>().map_err(err)?;
 	m.ty::<Expr>().map_err(err)?;
+	#[cfg(feature = "generated")]
+	m.opaque_result_function("read_csv", read_csv_either, read_csv_checked)
+		.map_err(err)?;
+	#[cfg(not(feature = "generated"))]
 	m.raw_function("read_csv", read_csv_either)
 		.build()
 		.map_err(err)?;

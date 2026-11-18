@@ -33,16 +33,77 @@ pub(crate) fn schema(value: rune::Value) -> Result<Arc<p::Schema>, String> {
 		let kind = tuple[1]
 			.borrow_string_ref()
 			.map_err(|_| "polars read_csv: dtype must be a string")?;
-		let dtype = match &*kind {
-			"string" => p::DataType::String,
-			"i64" => p::DataType::Int64,
-			"f64" => p::DataType::Float64,
-			"bool" => p::DataType::Boolean,
-			_ => return Err("polars read_csv: dtype must be string, i64, f64 or bool".into()),
-		};
+		let dtype = schema_dtype(&kind)?;
 		fields.push((p::PlSmallStr::from_str(&name), dtype));
 	}
 	Ok(Arc::new(p::Schema::from_iter(fields)))
+}
+
+fn schema_dtype(kind: &str) -> Result<p::DataType, String> {
+	match kind {
+		"string" => Ok(p::DataType::String),
+		"i64" => Ok(p::DataType::Int64),
+		"f64" => Ok(p::DataType::Float64),
+		"bool" => Ok(p::DataType::Boolean),
+		_ => Err("polars read_csv: dtype must be string, i64, f64 or bool".into()),
+	}
+}
+
+#[cfg(feature = "generated")]
+pub(crate) fn csv_schema_session(
+	tree: &rune::host::OwnedTreeInput,
+) -> Result<Result<Arc<p::Schema>, String>, rune::host::OpaqueProducerLimit> {
+	use rune::host::{OpaqueProducerLimit, TreeKind};
+	let Some(root) = tree
+		.node(0)
+		.filter(|root| matches!(root.kind(), TreeKind::Vec))
+	else {
+		return Ok(Err("polars read_csv: schema must be a vector".into()));
+	};
+	if root.frontier() || root.len() > crate::files::CSV_SESSION_COLUMNS {
+		return Err(OpaqueProducerLimit);
+	}
+	if root.is_empty() {
+		return Ok(Err("polars read_csv: schema must not be empty".into()));
+	}
+	let result = (|| {
+		let mut fields = Vec::with_capacity(root.len());
+		let mut names = HashSet::with_capacity(root.len());
+		for i in 0..root.len() {
+			let tuple = root
+				.child(i)
+				.and_then(|(_, child)| tree.node(child))
+				.filter(|node| matches!(node.kind(), TreeKind::Tuple))
+				.ok_or_else(|| {
+					format!(
+						"polars read_csv: schema item {} must be a (name, dtype) tuple",
+						i + 1
+					)
+				})?;
+			if tuple.len() != 2 || tuple.frontier() {
+				return Err(format!(
+					"polars read_csv: schema item {} needs two fields",
+					i + 1
+				));
+			}
+			let field = |i| match tuple
+				.child(i)
+				.and_then(|(_, child)| tree.node(child))
+				.map(|node| node.kind())
+			{
+				Some(TreeKind::String(text)) => Some(text.as_str()),
+				_ => None,
+			};
+			let name = field(0).ok_or("polars read_csv: schema name must be a string")?;
+			if name.is_empty() || !names.insert(name) {
+				return Err("polars read_csv: schema names must be nonempty and unique".into());
+			}
+			let kind = field(1).ok_or("polars read_csv: dtype must be a string")?;
+			fields.push((p::PlSmallStr::from_str(name), schema_dtype(kind)?));
+		}
+		Ok(Arc::new(p::Schema::from_iter(fields)))
+	})();
+	Ok(result)
 }
 pub(crate) fn literal(value: rune::Value) -> Result<Expr, String> {
 	let expr = if let Ok(v) = value.as_bool() {

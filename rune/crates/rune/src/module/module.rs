@@ -1703,7 +1703,17 @@ impl Module {
 	) -> Result<ItemFnMut<'_>, ContextError> {
 		let item = self.item.join(&data.item)?;
 		let hash = Hash::type_hash(&item);
+		self.insert_function_item(data, docs, deprecated, item, hash)
+	}
 
+	fn insert_function_item(
+		&mut self,
+		data: FunctionData,
+		docs: Docs,
+		deprecated: Option<Box<str>>,
+		item: ItemBuf,
+		hash: Hash,
+	) -> Result<ItemFnMut<'_>, ContextError> {
 		if !self.names.try_insert(Name::Item(hash))? {
 			return Err(ContextError::ConflictingFunctionName { item, hash });
 		}

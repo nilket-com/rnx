@@ -11,6 +11,7 @@ pub(crate) enum Fact {
 	Bottom,
 	Plain,
 	Exact(Hash),
+	ResultOfNative(Hash),
 	Maybe,
 }
 impl Fact {
@@ -19,6 +20,7 @@ impl Fact {
 			(Self::Bottom, v) | (v, Self::Bottom) => v,
 			(Self::Plain, Self::Plain) => Self::Plain,
 			(Self::Exact(a), Self::Exact(b)) if a == b => Self::Exact(a),
+			(Self::ResultOfNative(a), Self::ResultOfNative(b)) if a == b => Self::ResultOfNative(a),
 			_ => Self::Maybe,
 		}
 	}
@@ -36,6 +38,7 @@ pub(crate) struct Envelope {
 struct Node {
 	seed: Fact,
 	edges: Vec<usize>,
+	unwrapped: bool,
 }
 pub(crate) struct Proof {
 	facts: Vec<Fact>,
@@ -138,6 +141,7 @@ impl Builder<'_, '_> {
 		self.nodes.try_push(Node {
 			seed,
 			edges: Vec::new(),
+			unwrapped: false,
 		})?;
 		Ok(id)
 	}
@@ -394,6 +398,22 @@ impl Builder<'_, '_> {
 		}
 		Ok(())
 	}
+	fn factory_fact(&self, call: hir::Call) -> Fact {
+		let hir::Call::Meta { hash } = call else {
+			return Fact::Plain;
+		};
+		let Some(native) = self.context.opaque.factories.get(&hash) else {
+			return Fact::Plain;
+		};
+		if self.context.host(hash).is_some_and(|binding| {
+			binding.signature.output == crate::host::HostOutputKind::OpaqueResultString
+		}) {
+			Fact::ResultOfNative(native.hash)
+		} else {
+			Fact::Exact(native.hash)
+		}
+	}
+
 	fn graph(&mut self, item: &hir::ItemFn<'_>) -> Result<()> {
 		self.block(&item.body)?;
 		for arg in item.args {
@@ -415,7 +435,17 @@ impl Builder<'_, '_> {
 					let n = self.variable(v)?;
 					self.edge(i, n)?;
 				}
-				E::Group(v) | E::Try(v) | E::Await(v) => self.edge(i, v.index())?,
+				E::Group(v) | E::Await(v) => self.edge(i, v.index())?,
+				E::Try(v) => {
+					if let E::Call(call) = self.exprs.get(v).kind {
+						if let Fact::ResultOfNative(hash) = self.factory_fact(call.call) {
+							self.nodes[v.index()].unwrapped = true;
+							self.nodes[i].seed = Fact::Exact(hash);
+							continue;
+						}
+					}
+					self.edge(i, v.index())?;
+				}
 				E::Return(Some(v)) | E::Yield(Some(v)) => self.edge(i, v.index())?,
 				E::Assign(a) => {
 					if let E::Variable(v) = self.exprs.get(a.lhs).kind {
@@ -454,17 +484,7 @@ impl Builder<'_, '_> {
 					self.block(&f.body)?;
 					self.nodes[i].seed = Fact::Plain;
 				}
-				E::Call(c) => {
-					self.nodes[i].seed = match c.call {
-						hir::Call::Meta { hash } => self
-							.context
-							.opaque
-							.factories
-							.get(&hash)
-							.map_or(Fact::Plain, |t| Fact::Exact(t.hash)),
-						_ => Fact::Plain,
-					};
-				}
+				E::Call(c) => self.nodes[i].seed = self.factory_fact(c.call),
 				E::Tuple(s) | E::Vec(s) => {
 					self.nodes[i].seed = Fact::Plain;
 					for v in s.items {
@@ -586,6 +606,11 @@ impl Builder<'_, '_> {
 		for (i, e) in self.exprs.expressions().enumerate() {
 			if !self.owned[i] {
 				continue;
+			}
+			// The opaque Result itself is temporary. Only the direct checked '?'
+			// is allowed to consume it, so it cannot enter the REPL state envelope.
+			if matches!(facts.get(i), Some(Fact::ResultOfNative(_))) && !self.nodes[i].unwrapped {
+				return Err(fail(e.span, Refusal::OpaqueOperation));
 			}
 			use hir::ExprKind as E;
 			let p = |id, kind| plain(id, e.span, kind);
@@ -766,7 +791,9 @@ impl Builder<'_, '_> {
 						R::RangeFull => {}
 					}
 				}
-				E::Try(v) => p(v, Refusal::OpaqueOperation)?,
+				E::Try(v) if !self.nodes.get(v.index()).is_some_and(|n| n.unwrapped) => {
+					p(v, Refusal::OpaqueOperation)?;
+				}
 				E::Return(Some(v)) => p(v, Refusal::OpaqueReturn)?,
 				E::Break(b) => {
 					if let Some(v) = b.expr {

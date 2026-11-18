@@ -64,11 +64,21 @@ fn csv_handle(
 	schema: Arc<p::Schema>,
 	after_header: impl FnOnce() -> Result<(), String>,
 ) -> Result<p::DataFrame, String> {
+	csv_header(&mut *file, &schema)?;
+	after_header()?;
+	file.rewind().map_err(|e| e.to_string())?;
+	csv_body(file, schema)
+}
+
+fn csv_header(
+	reader: impl polars_io::mmap::MmapBytesReader,
+	schema: &p::Schema,
+) -> Result<(), String> {
 	let header = p::CsvReadOptions::default()
 		.with_has_header(false)
 		.with_infer_schema_length(Some(0))
 		.with_n_rows(Some(1))
-		.into_reader_with_file_handle(&mut *file)
+		.into_reader_with_file_handle(reader)
 		.finish()
 		.map_err(|e| e.to_string())?;
 	if header.height() != 1 || header.width() != schema.len() {
@@ -79,17 +89,74 @@ fn csv_handle(
 			return Err("header names or order do not match schema".into());
 		}
 	}
-	drop(header);
-	after_header()?;
-	file.rewind().map_err(|e| e.to_string())?;
+	Ok(())
+}
+
+fn csv_body(
+	reader: impl polars_io::mmap::MmapBytesReader,
+	schema: Arc<p::Schema>,
+) -> Result<p::DataFrame, String> {
 	let frame = p::CsvReadOptions::default()
 		.with_has_header(true)
 		.with_schema(Some(schema))
-		.into_reader_with_file_handle(file)
+		.into_reader_with_file_handle(reader)
 		.finish()
 		.map_err(|e| e.to_string())?;
 	validate(&frame)?;
 	Ok(frame)
+}
+
+#[cfg(feature = "generated")]
+pub(crate) const CSV_SESSION_COLUMNS: usize = 16;
+
+#[cfg(feature = "generated")]
+pub(crate) fn csv_session(
+	path: &str,
+	schema: Arc<p::Schema>,
+) -> Result<Result<p::DataFrame, String>, crate::rune::host::OpaqueProducerLimit> {
+	use crate::rune::host::OpaqueProducerLimit;
+	use polars_io::{csv::read::SplitLines, utils::compression::SupportedCompression};
+	use std::io::{Cursor, Read};
+	const BYTES: usize = 64 * 1024;
+	const LINES: usize = 2_048;
+
+	let file = match regular(path) {
+		Ok(file) => file,
+		Err(error) => return Ok(Err(error)),
+	};
+	let mut bytes = Vec::new();
+	bytes
+		.try_reserve_exact(BYTES + 1)
+		.map_err(|_| OpaqueProducerLimit)?;
+	if let Err(error) = file.take((BYTES + 1) as u64).read_to_end(&mut bytes) {
+		return Ok(Err(format!("polars read_csv {path:?}: {error}")));
+	}
+	if bytes.len() > BYTES || SupportedCompression::check(&bytes).is_some() {
+		return Err(OpaqueProducerLimit);
+	}
+	// Count physical lines even inside quotes as a conservative record-work bound.
+	let lines = bytes.iter().filter(|&&b| b == b'\n').count()
+		+ usize::from(!bytes.is_empty() && !bytes.ends_with(b"\n"));
+	if lines > LINES {
+		return Err(OpaqueProducerLimit);
+	}
+	// The header reader infers its width. Charge separators conservatively
+	// before that inference, including any that occur inside quoted fields.
+	if SplitLines::new(&bytes, Some(b'"'), b'\n', None).any(|record| {
+		record
+			.iter()
+			.filter(|&&b| b == b',')
+			.take(CSV_SESSION_COLUMNS)
+			.count() == CSV_SESSION_COLUMNS
+	}) {
+		return Err(OpaqueProducerLimit);
+	}
+	// The pinned parser derives body buffers from row counts and schema width.
+	// The byte/line/column limits cap both passes on the immutable snapshot.
+	// Keep the legacy options, including chunking, for parse-error parity.
+	let result = csv_header(Cursor::new(&bytes), &schema)
+		.and_then(|()| csv_body(Cursor::new(&bytes), schema));
+	Ok(result.map_err(|error| format!("polars read_csv {path:?}: {error}")))
 }
 /// Record 0125: a local JSON file (an array of objects), read with Polars'
 /// own `JsonReader` and its default options, the schema inferred by Polars.
