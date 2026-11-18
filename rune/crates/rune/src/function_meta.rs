@@ -13,6 +13,12 @@ use crate::module::AssociatedKey;
 use crate::runtime::{FunctionHandler, MaybeTypeOf, Protocol, TypeInfo, TypeOf};
 use crate::{Hash, ItemBuf};
 
+#[cfg(feature = "execution")]
+use crate::function::{
+	host::{opaque::NativeType, HostScalar},
+	Plain, Ref,
+};
+
 mod sealed {
 	use crate::params::Params;
 	use crate::runtime::Protocol;
@@ -359,6 +365,24 @@ pub enum FunctionMetaKind {
 	Function(FunctionData),
 	#[doc(hidden)]
 	AssociatedFunction(AssociatedFunctionData),
+	#[cfg(feature = "execution")]
+	#[doc(hidden)]
+	OpaqueAssociated(Box<OpaqueAssociatedData>),
+}
+
+#[cfg(feature = "execution")]
+pub(crate) enum OpaqueAssociatedKind {
+	Factory,
+	Method(crate::function::host::HostType),
+}
+
+/// Typed enrollment minted alongside the associated handler.
+#[cfg(feature = "execution")]
+#[doc(hidden)]
+pub struct OpaqueAssociatedData {
+	pub(crate) data: AssociatedFunctionData,
+	pub(crate) native: NativeType,
+	pub(crate) kind: OpaqueAssociatedKind,
 }
 
 impl FunctionMetaKind {
@@ -386,6 +410,40 @@ impl FunctionMetaKind {
 			AssociatedFunctionData::from_instance_function(name.to_instance()?, f)?,
 		))
 	}
+
+	/// An associated opaque read must use one shared receiver and return a scalar.
+	///
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[rune::function(instance, opaque_method)]
+	/// fn read(_: Native) -> i64 { 7 }
+	/// ```
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[rune::function(instance, opaque_method)]
+	/// fn read(_: &mut Native) -> i64 { 7 }
+	/// ```
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[rune::function(instance, opaque_method)]
+	/// fn read(_: &Native, value: i64) -> i64 { value }
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn opaque_associated_method<T, F, R>(name: &'static str, f: F) -> alloc::Result<Self>
+	where
+		T: crate::Any + TypeOf + MaybeTypeOf,
+		F: for<'a> Fn(&'a T) -> R + InstanceFunction<(Ref<T>,), Plain, Return = R>,
+		R: HostScalar + MaybeTypeOf,
+	{
+		let data = AssociatedFunctionData::from_instance_function(name.to_instance()?, f)?;
+		Ok(Self::OpaqueAssociated(Box::try_new(
+			OpaqueAssociatedData {
+				data,
+				native: NativeType::of::<T>(),
+				kind: OpaqueAssociatedKind::Method(R::KIND),
+			},
+		)?))
+	}
 }
 
 #[doc(hidden)]
@@ -393,6 +451,39 @@ pub struct FunctionBuilder<N, F, A, K> {
 	name: N,
 	f: F,
 	_marker: PhantomData<(A, K)>,
+}
+
+#[cfg(feature = "execution")]
+impl<F> FunctionBuilder<&'static str, F, (), Plain> {
+	/// A static opaque factory must return its own associated type.
+	///
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[derive(rune::Any)] struct Other;
+	/// #[rune::function(free, path = Native::make, opaque_factory)]
+	/// fn make() -> Other { Other }
+	/// ```
+	/// ```compile_fail
+	/// use rune::runtime::{Address, Memory, Output, VmResult};
+	/// #[derive(rune::Any)] struct Native;
+	/// #[rune::function(free, path = Native::make, opaque_factory)]
+	/// fn raw(_: &mut dyn Memory, _: Address, _: usize, _: Output) -> VmResult<()> { Ok(()) }
+	/// ```
+	pub fn build_opaque_associated_factory<T>(self) -> alloc::Result<FunctionMetaKind>
+	where
+		T: crate::Any + TypeOf + MaybeTypeOf,
+		F: Fn() -> T + Function<(), Plain, Return = T>,
+	{
+		let associated = Associated::from_type::<T>(self.name.to_instance()?)?;
+		let data = AssociatedFunctionData::from_function(associated, self.f)?;
+		Ok(FunctionMetaKind::OpaqueAssociated(Box::try_new(
+			OpaqueAssociatedData {
+				data,
+				native: NativeType::of::<T>(),
+				kind: OpaqueAssociatedKind::Factory,
+			},
+		)?))
+	}
 }
 
 impl<N, F, A, K> FunctionBuilder<N, F, A, K> {

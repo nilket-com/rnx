@@ -485,13 +485,43 @@ fn host_inventory(root: &Path) -> Result<Json> {
 		.filter(|r| !r.file.starts_with("src/"))
 		.collect();
 	assert!(!adapters.is_empty());
-	for r in &adapters {
-		assert_eq!(
-			r.class, "undeclared",
-			"adapter host was enrolled without a routing policy: {} {}",
-			r.file, r.path
-		);
-	}
+	let mut enrolled = adapters
+		.iter()
+		.filter(|r| r.class != "undeclared")
+		.map(|r| {
+			(
+				r.file.as_str(),
+				r.owner.as_str(),
+				r.class.as_str(),
+				r.declaration.as_str(),
+			)
+		})
+		.collect::<Vec<_>>();
+	enrolled.sort_unstable();
+	assert_eq!(
+		enrolled,
+		[
+			(
+				"adapters/polars/src/generated/functions.rs",
+				"install_3",
+				"opaque-factory",
+				"m . function_meta (f_67f62ad3___empty_polars_core__frame__dataframe__dataframe)",
+			),
+			(
+				"adapters/polars/src/generated/functions.rs",
+				"install_3",
+				"opaque-method",
+				"m . function_meta (f_d8d3a8e8___width_polars_core__frame__dataframe__dataframe)",
+			),
+			(
+				"adapters/polars/src/lib.rs",
+				"build",
+				"host-value",
+				"m . opaque_type :: < DataFrame > (dataframe_bytes , display_fmt)",
+			),
+		],
+		"added, missing or changed adapter host enrollment",
+	);
 	let mut counts = BTreeMap::new();
 	for r in &rows {
 		*counts
@@ -500,7 +530,9 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	}
 	life.close()?;
 	Ok(
-		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,"adapter_rule":"ordinary legacy registrations are undeclared; typed Rust signatures alone do not enroll a new-engine handler"}),
+		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,
+			"adapter_enrollments":{"polars":{"source_sites":enrolled.len(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
+			"adapter_rule":"only the listed sites enroll for execution. Other adapter registrations remain undeclared"}),
 	)
 }
 

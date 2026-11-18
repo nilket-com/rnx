@@ -23,6 +23,8 @@ mod files;
 #[cfg(feature = "generated")]
 #[doc(hidden)]
 pub mod generated;
+#[cfg(all(test, feature = "generated"))]
+mod opaque_charge_tests;
 #[cfg(all(feature = "generated", feature = "test-support"))]
 #[doc(hidden)]
 pub mod oracle;
@@ -166,13 +168,18 @@ pub fn preview_html(frame: &p::DataFrame) -> Result<String, String> {
 	preview::render_html(frame)
 }
 /// Explicit `format!("{frame}")` shows the same bounded preview.
-#[rune::function(instance, protocol = DISPLAY_FMT)]
+#[cfg_attr(not(feature = "generated"), rune::function(instance, protocol = DISPLAY_FMT))]
 fn display_fmt(frame: &DataFrame, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
 	use rune::alloc::fmt::TryWrite;
 	match preview::render(&frame.0) {
 		Ok(text) => rune::vm_write!(f, "{text}"),
 		Err(e) => rune::vm_write!(f, "<polars::DataFrame: preview unavailable: {e}>"),
 	}
+}
+
+#[cfg(feature = "generated")]
+fn dataframe_bytes(frame: &DataFrame) -> usize {
+	std::mem::size_of::<DataFrame>().saturating_add(frame.0.estimated_size())
 }
 /// Record 0068: register the session presenter for `DataFrame`. Lazy plans,
 /// group-bys and expressions stay opaque; presenting one must never run it.
@@ -315,6 +322,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 			.map_err(|e| format!("Polars test builder marker: {e}"))?;
 	}
 
+	#[cfg(feature = "generated")]
+	m.opaque_type::<DataFrame>(dataframe_bytes, display_fmt)
+		.map_err(err)?;
+	#[cfg(not(feature = "generated"))]
 	m.ty::<DataFrame>().map_err(err)?;
 	m.ty::<LazyFrame>().map_err(err)?;
 	m.ty::<LazyGroupBy>().map_err(err)?;
@@ -364,6 +375,7 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.function_meta(sum).map_err(err)?;
 	m.function_meta(alias).map_err(err)?;
 	m.function_meta(preview).map_err(err)?;
+	#[cfg(not(feature = "generated"))]
 	m.function_meta(display_fmt).map_err(err)?;
 	m.function_meta(write_parquet_new).map_err(err)?;
 	#[cfg(all(feature = "generated", feature = "test-support"))]

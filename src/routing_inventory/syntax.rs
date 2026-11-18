@@ -3,7 +3,7 @@ use super::Result;
 use quote::{ToTokens, quote};
 use serde::Serialize;
 use std::{
-	collections::BTreeSet,
+	collections::{BTreeMap, BTreeSet},
 	path::{Path, PathBuf},
 };
 use syn::{
@@ -113,6 +113,8 @@ struct Scan {
 	shapes: Vec<FunctionShape>,
 	templates: Vec<Registration>,
 	vm_aliases: BTreeSet<String>,
+	opaque_marks: Vec<(String, &'static str)>,
+	meta_uses: BTreeMap<String, Vec<usize>>,
 }
 impl Scan {
 	fn new(file: String) -> Self {
@@ -124,6 +126,8 @@ impl Scan {
 			shapes: Vec::new(),
 			templates: Vec::new(),
 			vm_aliases: BTreeSet::from(["Vm".into()]),
+			opaque_marks: Vec::new(),
+			meta_uses: BTreeMap::new(),
 		}
 	}
 	fn site(&mut self, tokens: String) {
@@ -169,12 +173,50 @@ impl Scan {
 			declaration,
 		});
 	}
+
+	fn opaque_marks(&mut self, name: &syn::Ident, attrs: &[Attribute]) {
+		for attr in attrs {
+			let syn::Meta::List(list) = &attr.meta else {
+				continue;
+			};
+			for token in list.tokens.clone() {
+				let proc_macro2::TokenTree::Ident(mark) = token else {
+					continue;
+				};
+				let class = match mark.to_string().as_str() {
+					"opaque_factory" => "opaque-factory",
+					"opaque_method" => "opaque-method",
+					_ => continue,
+				};
+				self.opaque_marks.push((name.to_string(), class));
+			}
+		}
+	}
+
+	fn bind_opaque_marks(&mut self) -> Result<()> {
+		for (name, class) in &self.opaque_marks {
+			let Some([index]) = self.meta_uses.get(name).map(Vec::as_slice) else {
+				return Err(format!(
+					"opaque metadata must be registered once in {}: {name}",
+					self.file
+				)
+				.into());
+			};
+			let registration = &mut self.registrations[*index];
+			if registration.class != "undeclared" {
+				return Err(format!("duplicate opaque metadata in {}: {name}", self.file).into());
+			}
+			registration.class = (*class).into();
+		}
+		Ok(())
+	}
 }
 impl<'ast> Visit<'ast> for Scan {
 	fn visit_item_fn(&mut self, n: &'ast syn::ItemFn) {
 		if excluded(&n.attrs) {
 			return;
 		}
+		self.opaque_marks(&n.sig.ident, &n.attrs);
 		let old = std::mem::replace(&mut self.owner, n.sig.ident.to_string());
 		self.shapes.push(FunctionShape {
 			file: self.file.clone(),
@@ -189,6 +231,7 @@ impl<'ast> Visit<'ast> for Scan {
 		if excluded(&n.attrs) {
 			return;
 		}
+		self.opaque_marks(&n.sig.ident, &n.attrs);
 		let old = std::mem::replace(&mut self.owner, n.sig.ident.to_string());
 		self.shapes.push(FunctionShape {
 			file: self.file.clone(),
@@ -315,6 +358,15 @@ impl<'ast> Visit<'ast> for Scan {
 				"host_function_await" => "awaited",
 				_ => "undeclared",
 			};
+			if method == "function_meta"
+				&& let Some(Expr::Path(arg)) = n.args.first()
+				&& let Some(ident) = arg.path.get_ident()
+			{
+				self.meta_uses
+					.entry(ident.to_string())
+					.or_default()
+					.push(self.registrations.len());
+			}
 			self.registration(name, class, n.to_token_stream().to_string());
 		}
 		visit::visit_expr_method_call(self, n);
@@ -462,6 +514,7 @@ fn scan(root: &Path) -> Result<Vec<Scan>> {
 			.replace('\\', "/");
 		let mut s = Scan::new(file);
 		s.visit_file(&syn::parse_file(&std::fs::read_to_string(p)?)?);
+		s.bind_opaque_marks()?;
 		all.push(s);
 	}
 	Ok(all)
@@ -531,6 +584,17 @@ fn real(){
 			.collect::<Vec<_>>(),
 		["json::active", "json::plain", "json::meta"]
 	);
+
+	let marked = "#[rune::function(instance, opaque_method)] fn read(_: &T) -> i64 { 7 }";
+	for uses in 0..=2 {
+		let calls = "m.function_meta(read);".repeat(uses);
+		let mut scan = Scan::new("adapter.rs".into());
+		scan.visit_file(&syn::parse_file(&format!("{marked} fn install() {{{calls}}}")).unwrap());
+		assert_eq!(scan.bind_opaque_marks().is_ok(), uses == 1);
+		if uses == 1 {
+			assert_eq!(scan.registrations[0].class, "opaque-method");
+		}
+	}
 }
 
 #[test]

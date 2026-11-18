@@ -5,9 +5,76 @@ use crate::function::host::{
 	HostEnrollment, HostOutput, HostOutputKind, HostSignature, HostType, OutputCertificate,
 };
 use crate::function::Ref;
+use crate::function_meta::{OpaqueAssociatedData, OpaqueAssociatedKind};
 use crate::runtime::{Formatter, Value};
 
 impl Module {
+	pub(super) fn insert_opaque_associated(
+		&mut self,
+		metadata: OpaqueAssociatedData,
+		docs: Docs,
+		deprecated: Option<Box<str>>,
+	) -> Result<ItemFnMut<'_>, ContextError> {
+		let OpaqueAssociatedData { data, native, kind } = metadata;
+		let association = &data.associated;
+		let registered = self.opaque.types.get(&native.hash);
+		if association.container != native.hash
+			|| !registered.is_some_and(|r| r.descriptor.type_id == native.id)
+		{
+			return Err(ContextError::OpaqueType {
+				declared: native.info.into(),
+				registered: registered.map(|r| r.descriptor.info.into()),
+			});
+		}
+		if !matches!(association.name.kind, meta::AssociatedKind::Instance(_))
+			|| association.name.function_parameters != Hash::EMPTY
+		{
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "nonstandard opaque association",
+			});
+		}
+		let name = Name::Associated(association.as_key()?);
+		let key = association.name.kind.hash(association.container);
+		if self.names.contains(&name)
+			|| self.opaque.factories.contains_key(&key)
+			|| self.opaque.methods.contains_key(&key)
+		{
+			return Err(Self::associated_conflict(association)?);
+		}
+		let (map, arity, input, output) = match kind {
+			OpaqueAssociatedKind::Factory => (
+				&mut self.opaque.factories,
+				0,
+				HostType::Unit,
+				HostOutputKind::OpaqueOwned,
+			),
+			OpaqueAssociatedKind::Method(result) => (
+				&mut self.opaque.methods,
+				1,
+				HostType::OpaqueShared,
+				HostOutputKind::Scalar(result),
+			),
+		};
+		map.try_reserve(1)?;
+		self.names.try_reserve(1)?;
+		self.associated.try_reserve(1)?;
+		self.names.try_insert(name)?;
+		map.try_insert(key, native)?;
+		self.push_associated_function(
+			data,
+			docs,
+			deprecated,
+			Some(HostEnrollment {
+				signature: HostSignature {
+					arity,
+					arguments: [input, HostType::Unit, HostType::Unit, HostType::Unit],
+					output,
+				},
+				certificate: None,
+			}),
+		)
+	}
+
 	/// Register a host value type, its logical payload charge and bounded display.
 	/// The host promises no hidden execution Roots or callbacks into the engine.
 	pub fn opaque_type<T>(
@@ -191,5 +258,77 @@ impl Module {
 		});
 		self.opaque.methods.try_insert(key, NativeType::of::<T>())?;
 		Ok(())
+	}
+}
+
+#[cfg(test)]
+mod associated_metadata_tests {
+	use super::*;
+	use crate::Context;
+
+	#[derive(rune::Any)]
+	#[rune(item = ::opaque_test)]
+	struct Native(i64);
+
+	#[derive(rune::Any)]
+	#[rune(item = ::opaque_test, name = Native)]
+	struct Impostor;
+
+	#[rune::function(free, path = Native::make, opaque_factory)]
+	fn make() -> Native {
+		Native(42)
+	}
+
+	#[rune::function(instance, path = get, opaque_method)]
+	fn get(value: &Native) -> i64 {
+		value.0
+	}
+
+	#[rune::function(free, path = Impostor::make, opaque_factory)]
+	fn impostor_factory() -> Impostor {
+		Impostor
+	}
+
+	#[test]
+	fn mismatched_and_duplicate_proofs_leave_the_original_association() {
+		let mut module = Module::with_crate("opaque_test").unwrap();
+		assert!(matches!(
+			module.function_meta(make),
+			Err(ContextError::OpaqueType {
+				registered: None,
+				..
+			})
+		));
+		assert!(module.opaque.factories.is_empty());
+		module.opaque_type::<Native>(|_| 0, |_, _| Ok(())).unwrap();
+		assert_eq!(Native::HASH, Impostor::HASH);
+		assert!(matches!(
+			module.function_meta(impostor_factory),
+			Err(ContextError::OpaqueType {
+				registered: Some(_),
+				..
+			})
+		));
+		assert!(module.opaque.factories.is_empty());
+		module.function_meta(make).unwrap();
+		module.function_meta(get).unwrap();
+		let before = (module.associated.len(), module.names.len());
+		for meta in [make as FunctionMeta, get] {
+			assert!(matches!(
+				module.function_meta(meta),
+				Err(ContextError::ConflictingInstanceFunction { .. })
+			));
+		}
+		assert_eq!((module.associated.len(), module.names.len()), before);
+		let associated = Hash::associated_function(Native::HASH, Hash::ident("make"));
+		let path = ItemBuf::with_crate_item("opaque_test", ["Native", "make"]).unwrap();
+		let path = Hash::type_hash(&path);
+		let mut context = Context::new();
+		context.install(module).unwrap();
+		let binding = context.host(associated).unwrap();
+		assert!(binding
+			.handler
+			.same_allocation(context.lookup_function(path).unwrap()));
+		assert_eq!(binding.signature.output, HostOutputKind::OpaqueOwned);
 	}
 }

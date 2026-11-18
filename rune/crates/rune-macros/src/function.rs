@@ -13,6 +13,12 @@ enum Path {
 	Protocol(syn::Path),
 }
 
+#[derive(Clone, Copy)]
+enum Opaque {
+	Factory,
+	Method,
+}
+
 #[derive(Default)]
 pub(crate) struct FunctionAttrs {
 	instance: bool,
@@ -26,6 +32,7 @@ pub(crate) struct FunctionAttrs {
 	self_type: Option<syn::PathSegment>,
 	/// Defines a fallible function which can make use of the `?` operator.
 	vm_result: bool,
+	opaque: Option<Opaque>,
 	/// The function is deprecated.
 	deprecated: Option<syn::LitStr>,
 }
@@ -46,6 +53,15 @@ impl FunctionAttrs {
 				out.keep = true;
 			} else if ident == "vm_result" {
 				out.vm_result = true;
+			} else if ident == "opaque_factory" || ident == "opaque_method" {
+				if out.opaque.is_some() {
+					return Err(syn::Error::new(ident.span(), "Duplicate opaque enrollment"));
+				}
+				out.opaque = Some(if ident == "opaque_factory" {
+					Opaque::Factory
+				} else {
+					Opaque::Method
+				});
 			} else if ident == "protocol" {
 				input.parse::<Token![=]>()?;
 				let protocol: syn::Path = input.parse()?;
@@ -194,6 +210,26 @@ impl Function {
 	/// Expand the function declaration.
 	pub(crate) fn expand(mut self, attrs: FunctionAttrs) -> syn::Result<TokenStream> {
 		let instance = attrs.instance || self.takes_self;
+		if let Some(opaque) = attrs.opaque {
+			let named = match &attrs.path {
+				Path::None => true,
+				Path::Rename(name) => name.arguments.is_empty(),
+				Path::Protocol(_) => false,
+			};
+			let valid = named
+				&& self.sig.generics.params.is_empty()
+				&& !attrs.vm_result
+				&& match opaque {
+					Opaque::Factory => !instance && attrs.self_type.is_some(),
+					Opaque::Method => instance,
+				};
+			if !valid {
+				return Err(syn::Error::new(
+					self.sig.span(),
+					"Opaque enrollment requires a nongeneric named static factory or instance method",
+				));
+			}
+		}
 
 		let (meta_fn, real_fn, mut sig, real_fn_mangled) = if attrs.keep {
 			let meta_fn =
@@ -303,7 +339,11 @@ impl Function {
 		}
 
 		let meta_kind = syn::Ident::new(
-			if instance { "instance" } else { "function" },
+			match attrs.opaque {
+				Some(Opaque::Method) => "opaque_associated_method",
+				_ if instance => "instance",
+				_ => "function",
+			},
 			self.sig.span(),
 		);
 
@@ -356,7 +396,11 @@ impl Function {
 		let build_with = if instance {
 			None
 		} else if let Some(self_type) = &attrs.self_type {
-			Some(quote!(.build_associated::<#self_type>()?))
+			if matches!(attrs.opaque, Some(Opaque::Factory)) {
+				Some(quote!(.build_opaque_associated_factory::<#self_type>()?))
+			} else {
+				Some(quote!(.build_associated::<#self_type>()?))
+			}
 		} else {
 			Some(quote!(.build()?))
 		};

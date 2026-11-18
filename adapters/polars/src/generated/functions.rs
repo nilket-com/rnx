@@ -6095,7 +6095,7 @@ fn f_3981939c_op_many_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 fn f_d72ce74e__dtypes_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Vec<W_polars_core__datatypes__dtype__DataType> { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::DataFrame::dtypes", move || <polars::frame::DataFrame>::dtypes(__arg0)), "polars::DataFrame::dtypes"); { let mut __v = Vec::new(); for __r in __r { __v.push(W_polars_core__datatypes__dtype__DataType(__r)); } __v } }
 /// Creates an empty `DataFrame` usable in a compile time context (such as static initializers).
 /// Polars: `polars_core::frame::dataframe::DataFrame::empty`. empty() -> DataFrame
-#[rune::function(free, path = DataFrame::empty)]
+#[rune::function(free, path = DataFrame::empty, opaque_factory)]
 fn f_67f62ad3___empty_polars_core__frame__dataframe__dataframe() -> DataFrame { let __r = crate::engine::infallible(crate::engine::run("polars::DataFrame::empty", move || <polars::frame::DataFrame>::empty()), "polars::DataFrame::empty"); DataFrame(__r) }
 /// Create an empty `DataFrame` with empty columns as per the `schema`.
 /// Polars: `polars_core::frame::dataframe::DataFrame::empty_with_arc_schema`. empty_with_arc_schema(schema: SchemaRef) -> DataFrame
@@ -6419,7 +6419,7 @@ fn f_f4b69d71_checked_polars_core__frame__dataframe__dataframe(this: &mut DataFr
 fn f_cd77a06b_checked_polars_core__frame__dataframe__dataframe(this: &mut DataFrame, other: &DataFrame) -> () { let __arg0 = &mut this.0; let __arg1 = &other.0; let __r = crate::engine::infallible(crate::engine::run("polars::DataFrame::vstack_mut_unchecked", move || <polars::frame::DataFrame>::vstack_mut_unchecked(__arg0, __arg1)), "polars::DataFrame::vstack_mut_unchecked"); { let _ = __r; } }
 /// Get the number of columns in this [`DataFrame`].
 /// Polars: `polars_core::frame::dataframe::DataFrame::width`. width() -> int (a proven length or index)
-#[rune::function(instance, path = width)]
+#[rune::function(instance, path = width, opaque_method)]
 fn f_d8d3a8e8___width_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> i64 { let __arg0 = &this.0; let __r = crate::engine::infallible(crate::engine::run("polars::DataFrame::width", move || <polars::frame::DataFrame>::width(__arg0)), "polars::DataFrame::width"); support::bounded_usize(__r) }
 /// Add a new column to this [`DataFrame`] or replace an existing one. Broadcasts unit-length columns.
 /// Polars: `polars_core::frame::dataframe::DataFrame::with_column`. with_column(column: Column) -> result of unit (receiver mutated in place) (fallible)

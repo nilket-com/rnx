@@ -796,13 +796,26 @@ pub(crate) fn emit_method_with(
 		ret_conv
 	}
 	.replace("__OP__", &name);
+	let opaque = match (
+		w.rust.as_str(),
+		c.canonical_path.as_str(),
+		c.receiver.as_str(),
+	) {
+		("DataFrame", "polars_core::frame::dataframe::DataFrame::empty", "none") => {
+			", opaque_factory"
+		}
+		("DataFrame", "polars_core::frame::dataframe::DataFrame::width", "&self") => {
+			", opaque_method"
+		}
+		_ => "",
+	};
 	let attr = if wide.is_some() {
 		// record 0127: registered through the raw shim below
 		format!("/// Registered through a raw shim (arity {arity}; record 0127).")
 	} else if c.receiver == "none" {
-		format!("#[rune::function(free, path = {}::{name})]", w.rust)
+		format!("#[rune::function(free, path = {}::{name}{opaque})]", w.rust)
 	} else {
-		format!("#[rune::function(instance, path = {name})]")
+		format!("#[rune::function(instance, path = {name}{opaque})]")
 	};
 	let doc = doc_line(c);
 	let rune = format!("{}::{name}", rune_path(w));

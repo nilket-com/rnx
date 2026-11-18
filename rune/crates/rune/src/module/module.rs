@@ -1325,6 +1325,10 @@ impl Module {
 			FunctionMetaKind::AssociatedFunction(data) => {
 				self.insert_associated_function(data, docs, deprecated)
 			}
+			#[cfg(feature = "execution")]
+			FunctionMetaKind::OpaqueAssociated(data) => {
+				self.insert_opaque_associated(Box::into_inner(data), docs, deprecated)
+			}
 		}
 	}
 
@@ -1336,6 +1340,10 @@ impl Module {
 			FunctionMetaKind::Function(data) => self.function_inner(data, Docs::EMPTY, None),
 			FunctionMetaKind::AssociatedFunction(data) => {
 				self.insert_associated_function(data, Docs::EMPTY, None)
+			}
+			#[cfg(feature = "execution")]
+			FunctionMetaKind::OpaqueAssociated(data) => {
+				self.insert_opaque_associated(Box::into_inner(data), Docs::EMPTY, None)
 			}
 		}
 	}
@@ -1759,7 +1767,22 @@ impl Module {
 		#[allow(unused)] deprecated: Option<Box<str>>,
 	) -> Result<ItemFnMut<'_>, ContextError> {
 		self.insert_associated_name(&data.associated)?;
+		self.push_associated_function(
+			data,
+			docs,
+			deprecated,
+			#[cfg(feature = "execution")]
+			None,
+		)
+	}
 
+	fn push_associated_function(
+		&mut self,
+		data: AssociatedFunctionData,
+		docs: Docs,
+		deprecated: Option<Box<str>>,
+		#[cfg(feature = "execution")] host: Option<crate::function::host::HostEnrollment>,
+	) -> Result<ItemFnMut<'_>, ContextError> {
 		self.associated.try_push(ModuleAssociated {
 			container: data.associated.container,
 			container_type_info: data.associated.container_type_info,
@@ -1771,7 +1794,7 @@ impl Module {
 				#[cfg(feature = "execution")]
 				format_default: None,
 				#[cfg(feature = "execution")]
-				host: None,
+				host,
 				#[cfg(feature = "execution")]
 				alternate_host: None,
 				handler: data.handler,
@@ -1817,35 +1840,36 @@ impl Module {
 			.names
 			.try_insert(Name::Associated(associated.as_key()?))?
 		{
-			return Err(match &associated.name.kind {
-				meta::AssociatedKind::Protocol(protocol) => {
-					ContextError::ConflictingProtocolFunction {
-						type_info: associated.container_type_info.try_clone()?,
-						name: protocol.name.try_into()?,
-					}
-				}
-				meta::AssociatedKind::FieldFn(protocol, field) => {
-					ContextError::ConflictingFieldFunction {
-						type_info: associated.container_type_info.try_clone()?,
-						name: protocol.name.try_into()?,
-						field: field.as_ref().try_into()?,
-					}
-				}
-				meta::AssociatedKind::IndexFn(protocol, index) => {
-					ContextError::ConflictingIndexFunction {
-						type_info: associated.container_type_info.try_clone()?,
-						name: protocol.name.try_into()?,
-						index: *index,
-					}
-				}
-				meta::AssociatedKind::Instance(name) => ContextError::ConflictingInstanceFunction {
-					type_info: associated.container_type_info.try_clone()?,
-					name: name.as_ref().try_into()?,
-				},
-			});
+			return Err(Self::associated_conflict(associated)?);
 		}
-
 		Ok(())
+	}
+
+	fn associated_conflict(associated: &Associated) -> alloc::Result<ContextError> {
+		Ok(match &associated.name.kind {
+			meta::AssociatedKind::Protocol(protocol) => ContextError::ConflictingProtocolFunction {
+				type_info: associated.container_type_info.try_clone()?,
+				name: protocol.name.try_into()?,
+			},
+			meta::AssociatedKind::FieldFn(protocol, field) => {
+				ContextError::ConflictingFieldFunction {
+					type_info: associated.container_type_info.try_clone()?,
+					name: protocol.name.try_into()?,
+					field: field.as_ref().try_into()?,
+				}
+			}
+			meta::AssociatedKind::IndexFn(protocol, index) => {
+				ContextError::ConflictingIndexFunction {
+					type_info: associated.container_type_info.try_clone()?,
+					name: protocol.name.try_into()?,
+					index: *index,
+				}
+			}
+			meta::AssociatedKind::Instance(name) => ContextError::ConflictingInstanceFunction {
+				type_info: associated.container_type_info.try_clone()?,
+				name: name.as_ref().try_into()?,
+			},
+		})
 	}
 
 	/// Define a new trait.
