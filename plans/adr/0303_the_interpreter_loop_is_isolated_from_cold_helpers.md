@@ -1,6 +1,6 @@
 # ADR 0303: The interpreter loop is isolated from cold helpers
 
-Status: Proposed
+Status: Withdrawn
 
 Base: published d49a8f19e06e58b4ead1fea7e1c0e5ecbaa19baf (ADR 0302, withdrawn).
 
