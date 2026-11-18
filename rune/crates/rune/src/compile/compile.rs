@@ -330,6 +330,14 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 						))?;
 					}
 					let hash = self.q.pool.item_type_hash(item_meta.item);
+					let async_function = matches!(f.call, crate::runtime::Call::Async);
+					let file_async_main = async_function
+						&& collector.allows_file_async_main()
+						&& f.impl_item.is_none()
+						&& matches!(&f.ast, FunctionAst::Node(..))
+						&& hash == crate::Hash::type_hash(["main"])
+						&& item_meta.is_public(self.q.pool);
+					let admits_async = collector.allows_async_functions() || file_async_main;
 					// Copy bounded summaries while every body in this HIR arena is
 					// available, before lowering can stop at its first refusal.
 					collector
@@ -395,9 +403,7 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 							}
 						}
 					}
-					if matches!(f.call, crate::runtime::Call::Async)
-						&& !collector.allows_async_functions()
-					{
+					if async_function && !admits_async {
 						let operation = crate::experimental_core::error::Refusal::AsyncFunction;
 						collector.record_failure(
 							crate::experimental_core::error::Error::refused(operation).at(
@@ -417,7 +423,11 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 					collector
 						.lower(
 							hash,
-							crate::experimental_core::frontend::BodyKind::Function,
+							if file_async_main {
+								crate::experimental_core::frontend::BodyKind::FileAsyncMain
+							} else {
+								crate::experimental_core::frontend::BodyKind::Function
+							},
 							type_hash,
 							location.source_id.into_index() as u32,
 							&exprs,
@@ -506,10 +516,9 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 						}
 					}
 					if !matches!(f.call, crate::runtime::Call::Immediate)
-						&& !(matches!(f.call, crate::runtime::Call::Async)
-							&& collector.allows_async_functions())
+						&& !(async_function && admits_async)
 					{
-						let operation = if matches!(f.call, crate::runtime::Call::Async) {
+						let operation = if async_function {
 							crate::experimental_core::error::Refusal::AsyncFunction
 						} else {
 							crate::experimental_core::error::Refusal::GeneratorFunction

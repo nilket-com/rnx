@@ -5,7 +5,9 @@
 //! something to await exists under that feature, and interruption is sent
 //! as `SIGINT` the way a terminal sends it.
 #![cfg(all(unix, feature = "test-support"))]
-use std::io::Write;
+use std::io::{BufRead, BufReader, Read, Write};
+use std::net::TcpListener;
+use std::os::fd::AsRawFd;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -57,6 +59,27 @@ enum Signal {
 	/// Once the first `rnx_test::test_pending` await is running, which it
 	/// reports from inside the operation; startup has its own bound.
 	WhenPending,
+	/// The Rune loop signals readiness on stdout just before entering.
+	WhenLoopRuns,
+	/// Wait for the actual request and withhold a response.
+	WhenRequest(TcpListener),
+}
+
+fn ready_to_read(fd: &impl AsRawFd) -> std::io::Result<()> {
+	let mut input = libc::pollfd {
+		fd: fd.as_raw_fd(),
+		events: libc::POLLIN,
+		revents: 0,
+	};
+	// SAFETY: poll borrows one initialized descriptor for the duration of the call.
+	match unsafe { libc::poll(&mut input, 1, 60_000) } {
+		1 => Ok(()),
+		0 => Err(std::io::Error::new(
+			std::io::ErrorKind::TimedOut,
+			"the fixture did not become ready to interrupt",
+		)),
+		_ => Err(std::io::Error::last_os_error()),
+	}
 }
 
 /// Start rnx, send it `SIGINT` after `after`, and collect what it did. The
@@ -82,6 +105,8 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.args(args)
 		.env("RNX_TEST_PENDING_READY", &ready)
+		.env("NO_PROXY", "127.0.0.1")
+		.env("no_proxy", "127.0.0.1")
 		.stdin(if stdin.is_some() {
 			Stdio::piped()
 		} else {
@@ -98,27 +123,59 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 		pipe.write_all(text.as_bytes()).unwrap();
 		pipe.flush().unwrap();
 	}
-	match signal {
-		Signal::After(after) => std::thread::sleep(after),
-		Signal::WhenPending => {
-			let deadline = Instant::now() + Duration::from_secs(60);
-			while !ready.exists()
-				&& Instant::now() < deadline
-				&& child.try_wait().unwrap().is_none()
-			{
-				std::thread::sleep(Duration::from_millis(10));
+	let mut consumed = String::new();
+	let mut pending_connection = None;
+	let readiness = (|| -> std::io::Result<()> {
+		match signal {
+			Signal::After(after) => std::thread::sleep(after),
+			Signal::WhenPending => {
+				let deadline = Instant::now() + Duration::from_secs(60);
+				while !ready.exists()
+					&& Instant::now() < deadline
+					&& child.try_wait().unwrap().is_none()
+				{
+					std::thread::sleep(Duration::from_millis(10));
+				}
+				if !ready.exists() {
+					return Err(std::io::Error::other(
+						"rnx did not reach its pending await within 60 seconds of starting",
+					));
+				}
+				let _ = std::fs::remove_file(&ready);
 			}
-			if !ready.exists() {
-				let _ = child.kill();
-				let done = child.wait_with_output().unwrap();
-				panic!(
-					"rnx did not reach its pending await within 60 seconds of starting; no SIGINT sent\nstdout: {}\nstderr: {}",
-					String::from_utf8_lossy(&done.stdout),
-					String::from_utf8_lossy(&done.stderr)
-				);
+			Signal::WhenLoopRuns => {
+				let pipe = child.stdout.as_mut().unwrap();
+				ready_to_read(pipe)?;
+				let mut line = [0; 6];
+				pipe.read_exact(&mut line)?;
+				if &line != b"ready\n" {
+					return Err(std::io::Error::other("unexpected loop readiness"));
+				}
+				consumed.push_str("ready\n");
 			}
-			let _ = std::fs::remove_file(&ready);
+			Signal::WhenRequest(listener) => {
+				ready_to_read(&listener)?;
+				let (stream, _) = listener.accept()?;
+				stream.set_read_timeout(Some(Duration::from_secs(5)))?;
+				let mut reader = BufReader::new(stream);
+				let mut line = String::new();
+				reader.read_line(&mut line)?;
+				if line != "GET /wait HTTP/1.1\r\n" {
+					return Err(std::io::Error::other("unexpected fixture request"));
+				}
+				pending_connection = Some(reader.into_inner());
+			}
 		}
+		Ok(())
+	})();
+	if let Err(error) = readiness {
+		let _ = child.kill();
+		let done = child.wait_with_output().unwrap();
+		panic!(
+			"{error}; no SIGINT sent\nstdout: {}\nstderr: {}",
+			String::from_utf8_lossy(&done.stdout),
+			String::from_utf8_lossy(&done.stderr)
+		);
 	}
 	let sent = Command::new("kill")
 		.arg("-INT")
@@ -144,10 +201,12 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 		);
 	}
 	let done = child.wait_with_output().unwrap();
+	drop(pending_connection);
+	consumed.push_str(&String::from_utf8_lossy(&done.stdout));
 	// A later pending await may have written it again.
 	let _ = std::fs::remove_file(&ready);
 	Ran {
-		stdout: String::from_utf8_lossy(&done.stdout).into_owned(),
+		stdout: consumed,
 		stderr: String::from_utf8_lossy(&done.stderr).into_owned(),
 		code: done.status.code(),
 		elapsed: start.elapsed(),
@@ -178,6 +237,158 @@ fn a_file_may_await_in_main() {
 	let ran = rnx(&["run", path.to_str().unwrap()], None);
 	assert_eq!(ran.code, Some(0), "{}", ran.stderr);
 	assert_eq!(ran.stdout, "20\n");
+}
+
+#[test]
+fn a_file_waits_on_the_execution_engine_and_keeps_argv_and_errors() {
+	for (name, source, code, stdout) in [
+		(
+			"argv.rn",
+			"pub async fn main(args) { time::sleep(1).await?; args.len() }",
+			0,
+			"2\n",
+		),
+		(
+			"arity.rn",
+			"pub async fn main() { time::sleep(1).await?; 7 }",
+			1,
+			"",
+		),
+		(
+			"located.rn",
+			"pub async fn main(_) {\n    time::sleep(1).await?;\n    println!(\"once\");\n    1 / 0\n}",
+			1,
+			"once\n",
+		),
+	] {
+		let path = script(name, source);
+		let path = path.to_str().unwrap();
+		let old = rnx(&["run", "--engine=legacy", path, "one", "two"], None);
+		let new = rnx(&["run", "--debug-engine", path, "one", "two"], None);
+		let (engine, diagnostics) = new.stderr.split_once('\n').unwrap();
+		assert!(
+			engine.starts_with("rnx: engine=execution "),
+			"{name}: {engine}"
+		);
+		assert_eq!(new.code, Some(code), "{name}: {diagnostics}");
+		assert_eq!(new.code, old.code, "{name}");
+		assert_eq!(new.stdout, stdout, "{name}");
+		assert_eq!(new.stdout, old.stdout, "{name}");
+		assert_eq!(diagnostics, old.stderr, "{name}");
+		match name {
+			"arity.rn" => assert_eq!(
+				diagnostics,
+				"runtime error (no source position is available for this fault): Wrong number of arguments 1, expected 0\n"
+			),
+			"located.rn" => {
+				assert!(diagnostics.contains("line 4, column 5: Division by zero"));
+				assert!(diagnostics.contains("1 / 0"));
+			}
+			_ => assert!(diagnostics.is_empty()),
+		}
+	}
+}
+
+#[test]
+fn an_execution_file_halts_with_its_full_budget_before_or_after_a_wait() {
+	for (body, stdout) in [
+		("loop {}", ""),
+		(
+			"time::sleep(1).await?; println!(\"waited\"); loop {}",
+			"waited\n",
+		),
+	] {
+		let path = script("budget.rn", &format!("pub async fn main(_) {{ {body} }}"));
+		let path = path.to_str().unwrap();
+		let old = rnx(
+			&["run", "--engine=legacy", "--budget", "100000", path],
+			None,
+		);
+		let new = rnx(&["run", "--debug-engine", "--budget", "100000", path], None);
+		let (engine, diagnostics) = new.stderr.split_once('\n').unwrap();
+		assert!(engine.starts_with("rnx: engine=execution "), "{engine}");
+		assert_eq!(new.code, Some(1));
+		assert_eq!(new.code, old.code);
+		assert_eq!(new.stdout, stdout);
+		assert_eq!(new.stdout, old.stdout);
+		assert_eq!(
+			diagnostics,
+			"halted: 100000 work units exceeded; --budget N raises it\n"
+		);
+		assert_eq!(diagnostics, old.stderr);
+	}
+}
+
+#[test]
+fn other_file_async_forms_decline_before_effects() {
+	for source in [
+		"async fn helper() { 7 } pub async fn main(_) { println!(\"once\"); helper().await }",
+		"pub async fn main(_) { println!(\"once\"); (async { 7 }).await }",
+		"pub async fn main(_) { println!(\"once\"); let _pending = time::sleep(1); 7 }",
+		"pub async fn main(_) { println!(\"once\"); select { _ = time::sleep(1) => 7 } }",
+	] {
+		let path = script("decline.rn", source);
+		let path = path.to_str().unwrap();
+		let ran = rnx(&["run", "--debug-engine", path], None);
+		assert!(
+			ran.stderr.starts_with("rnx: engine=legacy refusal="),
+			"{source}: {}",
+			ran.stderr
+		);
+		assert_eq!(ran.code, Some(0), "{source}: {}", ran.stderr);
+		assert_eq!(ran.stdout, "once\n7\n", "{source}");
+	}
+}
+
+#[test]
+fn an_execution_file_interrupts_a_pending_host_wait_without_retrying() {
+	for (legacy, engine) in [
+		(true, "rnx: engine=legacy"),
+		(false, "rnx: engine=execution native-requested=on"),
+	] {
+		let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+		let url = format!("http://{}/wait", listener.local_addr().unwrap());
+		let path = script(
+			"interrupt-wait.rn",
+			&format!(
+				"pub async fn main(_) {{ println!(\"once\"); http::get({url:?}).await?.body }}"
+			),
+		);
+		let mut args = vec!["run", "--debug-engine"];
+		if legacy {
+			args.push("--engine=legacy");
+		}
+		args.push(path.to_str().unwrap());
+		let ran = interrupt(&args, None, Signal::WhenRequest(listener));
+		assert_eq!(ran.code, Some(130), "{engine}: {}", ran.stderr);
+		assert_eq!(ran.stdout, "once\n", "{engine}");
+		assert_eq!(ran.stderr, format!("{engine}\ninterrupted\n"), "{engine}");
+	}
+}
+
+#[test]
+fn an_execution_file_interrupts_a_running_loop_between_slices() {
+	let path = script(
+		"interrupt-loop.rn",
+		"pub async fn main(_) { println!(\"ready\"); loop {} }",
+	);
+	let ran = interrupt(
+		&[
+			"run",
+			"--debug-engine",
+			"--budget",
+			"2000000000",
+			path.to_str().unwrap(),
+		],
+		None,
+		Signal::WhenLoopRuns,
+	);
+	assert_eq!(ran.code, Some(130), "{}", ran.stderr);
+	assert_eq!(ran.stdout, "ready\n");
+	assert_eq!(
+		ran.stderr,
+		"rnx: engine=execution native-requested=on\ninterrupted\n"
+	);
 }
 
 #[test]

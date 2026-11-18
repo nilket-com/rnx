@@ -714,10 +714,15 @@ fn policy_rows(root: &Path) -> Result<Json> {
 		(
 			"src/runner/execution.rs",
 			"attempt",
-			"CALL frontend::compile",
+			"CALL frontend::compile_file",
 		),
 		("src/runner/execution.rs", "invoke", "METHOD prepare"),
 		("src/runner/execution.rs", "invoke", "METHOD invoke"),
+		(
+			"src/runner/execution/awaiting.rs",
+			"drive",
+			"METHOD start_sliced",
+		),
 		(
 			"src/config/execution.rs",
 			"evaluate",

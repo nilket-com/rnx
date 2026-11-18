@@ -395,6 +395,16 @@ fn invoke(
 	)
 }
 
+pub(super) fn admission_only_reason(id: &str, class: &str, reason: &str) -> bool {
+	if id == "0212" {
+		return class == "both-admit" && reason == "zero-arg-async-file-entry";
+	}
+	if class == "both-admit" {
+		return matches!(reason, "no-main" | "main-requires-arguments");
+	}
+	reason == class
+}
+
 pub(super) fn run(
 	binary: &Path,
 	fixtures: &Path,
@@ -413,18 +423,15 @@ pub(super) fn run(
 			.get(item.id)
 			.ok_or("missing census admission policy")?;
 		if item.mode == "admission-only" {
-			if *class == "both-admit"
-				&& !matches!(item.reason, "no-main" | "main-requires-arguments")
-			{
-				return Err("unexpected compile-only reason".into());
-			}
-			if *class != "both-admit" && item.reason != *class {
-				return Err("census refusal policy mismatch".into());
+			if !admission_only_reason(item.id, class, item.reason) {
+				return Err(
+					format!("census admission-only policy mismatch for {}", item.id).into(),
+				);
 			}
 			compile_only.push(json!({"id":item.id,"reason":item.reason}));
 			continue;
 		}
-		if *class != "both-admit" {
+		if *class != "both-admit" || item.id == "0212" {
 			return Err("execution requires both-admit policy".into());
 		}
 		let input = fixtures
@@ -714,6 +721,18 @@ mod tests {
 				.count(),
 			4
 		);
+		let async_entry = rows.iter().find(|row| row.id == "0212").unwrap();
+		assert_eq!(async_entry.mode, "admission-only");
+		assert!(admission_only_reason(
+			"0212",
+			"both-admit",
+			async_entry.reason
+		));
+		assert!(!admission_only_reason(
+			"0213",
+			"both-admit",
+			async_entry.reason
+		));
 	}
 	#[test]
 	fn the_headline_names_cases_within_its_bounds() {

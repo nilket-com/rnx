@@ -221,7 +221,7 @@ pub(super) fn child(args: &[String]) -> CensusResult<Value> {
 			.insert(rune::Source::new("h0.rn", &source).unwrap())
 			.unwrap();
 		let mut fresh_diagnostics = rune::Diagnostics::new();
-		let fresh = rune::experimental_core::frontend::compile(
+		let fresh = rune::experimental_core::frontend::compile_file(
 			&mut fresh_sources,
 			&context,
 			&mut fresh_diagnostics,
@@ -650,8 +650,9 @@ pub(super) fn self_check() -> CensusResult<Value> {
 		let class = admissions
 			.get(id)
 			.ok_or("missing admission companion row")?;
-		if (mode == "execute" && *class != "both-admit")
-			|| (mode == "admission-only" && *class != "both-admit" && reason != *class)
+		if (mode == "execute" && (*class != "both-admit" || id == "0212"))
+			|| (mode == "admission-only"
+				&& !super::census_execution::admission_only_reason(id, class, reason))
 		{
 			return Err("census admission/execution companion mismatch".into());
 		}
@@ -725,7 +726,7 @@ mod tests {
 		assert_eq!(policy["0007"], "both-admit");
 		assert!(admission_policy("id\tclass\nx\tboth-admit\nx\tstock-fails\n").is_err());
 		assert!(admission_policy("id\tclass\nx\tunknown\n").is_err());
-		assert_eq!(policy["0212"], "fresh-refuses-AsyncFunction");
+		assert_eq!(policy["0212"], "both-admit");
 		assert_eq!(
 			observed_admission(
 				&json!({"stock":{"compiled":true},"fresh":{"compiled":false,"refusal":"AsyncFunction"}})

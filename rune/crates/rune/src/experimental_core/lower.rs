@@ -91,6 +91,13 @@ use crate::alloc::{String, Vec};
 use crate::ast::{BinOp, Span, UnOp};
 use crate::{hir, Hash};
 
+#[derive(Clone, Copy)]
+pub(crate) enum AwaitPolicy {
+	Refuse,
+	FileHost,
+	Session,
+}
+
 pub(crate) fn function(
 	exprs: &hir::Exprs<'_>,
 	item: &hir::ItemFn<'_>,
@@ -109,10 +116,10 @@ pub(crate) fn function(
 	proofs: &mut super::frontend::receiver_proofs::Proofs,
 	body_hash: Hash,
 	opaque: Option<&super::frontend::opaque::Proof>,
-	allow_host_await: bool,
+	await_policy: AwaitPolicy,
 ) -> Result<Function> {
 	let mut cx = Lower {
-		allow_host_await,
+		await_policy,
 		opaque,
 		self_binding: self_receiver.and_then(|receiver| {
 			self_receiver::binding(exprs, item).map(|binding| (binding, receiver))
@@ -213,7 +220,7 @@ struct Loop {
 }
 
 struct Lower<'a, 'hir> {
-	allow_host_await: bool,
+	await_policy: AwaitPolicy,
 	opaque: Option<&'a super::frontend::opaque::Proof>,
 	proofs: &'a mut super::frontend::receiver_proofs::Proofs,
 	body_hash: Hash,
@@ -2304,7 +2311,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 
 	#[inline(never)]
 	fn await_host(&mut self, value: hir::ExprId, out: u32, span: Span) -> Result<()> {
-		if !self.allow_host_await {
+		if matches!(self.await_policy, AwaitPolicy::Refuse) {
 			return Err(self.refused(span, Refusal::Await));
 		}
 		let mut expr = self.exprs.get(value);
@@ -2312,7 +2319,11 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			expr = self.exprs.get(inner);
 		}
 		if let hir::ExprKind::AsyncBlock(block) = expr.kind {
-			return self.await_block(block, out, expr.span);
+			return if matches!(self.await_policy, AwaitPolicy::Session) {
+				self.await_block(block, out, expr.span)
+			} else {
+				Err(self.refused(expr.span, Refusal::AsyncBlock))
+			};
 		}
 		if matches!(expr.kind, hir::ExprKind::Select(_)) {
 			return Err(self.refused(span, Refusal::Select));
@@ -2324,7 +2335,11 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			return Err(self.refused(span, Refusal::Await));
 		};
 		if self.constants.async_functions.contains(&hash) {
-			return self.await_script(call, hash, out, span);
+			return if matches!(self.await_policy, AwaitPolicy::Session) {
+				self.await_script(call, hash, out, span)
+			} else {
+				self.refuse_script_await(hash, Refusal::Await, expr.span)
+			};
 		}
 		if !self.context.host_requires_await(hash) {
 			if self.pool.item_for_hash(hash).is_some()

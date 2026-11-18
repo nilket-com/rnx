@@ -145,13 +145,14 @@ pub(crate) mod receiver_proofs;
 #[derive(Clone, Copy)]
 pub(crate) enum BodyKind {
 	Function,
+	FileAsyncMain,
 	Closure { owner: Hash },
 	AsyncBlock { owner: Hash },
 }
 impl BodyKind {
 	fn owner(self, hash: Hash) -> Hash {
 		match self {
-			Self::Function => hash,
+			Self::Function | Self::FileAsyncMain => hash,
 			Self::Closure { owner } | Self::AsyncBlock { owner } => owner,
 		}
 	}
@@ -159,6 +160,7 @@ impl BodyKind {
 
 pub(crate) struct Collector {
 	opaque_session: Option<opaque::Envelope>,
+	file_entry: Option<FileEntry>,
 	revision: u64,
 	entries: Vec<(Hash, Option<Function>, Option<Location>)>,
 	transaction: CompileTransaction,
@@ -183,6 +185,10 @@ pub(crate) struct Collector {
 impl Collector {
 	pub(crate) fn allows_async_functions(&self) -> bool {
 		self.opaque_session.is_some()
+	}
+
+	pub(crate) fn allows_file_async_main(&self) -> bool {
+		self.file_entry.is_some()
 	}
 
 	pub(crate) fn record_failure(&mut self, error: Error) {
@@ -710,10 +716,17 @@ impl Collector {
 			&mut self.proofs,
 			hash,
 			opaque.as_ref(),
-			self.opaque_session.is_some()
+			if matches!(body_kind, BodyKind::FileAsyncMain) {
+				super::lower::AwaitPolicy::FileHost
+			} else if self.opaque_session.is_some()
 				&& (matches!(body_kind, BodyKind::AsyncBlock { .. })
 					|| hash == Hash::type_hash(["main"])
-					|| constants.async_functions.contains(&hash)),
+					|| constants.async_functions.contains(&hash))
+			{
+				super::lower::AwaitPolicy::Session
+			} else {
+				super::lower::AwaitPolicy::Refuse
+			},
 		);
 		let function = match result {
 			Ok(function) => function,
@@ -736,6 +749,9 @@ impl Collector {
 		}
 
 		self.entries[id as usize].1 = Some(function);
+		if matches!(body_kind, BodyKind::FileAsyncMain) {
+			self.file_entry = Some(FileEntry::Async);
+		}
 		Ok(())
 	}
 
@@ -840,6 +856,34 @@ pub fn compile(
 	compile_inner(sources, context, diagnostics, revision, None)
 }
 
+/// Calling convention of the resolved file entry.
+#[derive(Clone, Copy)]
+pub enum FileEntry {
+	/// Use the ordinary complete invocation.
+	Sync,
+	/// Drive the declared async `main` in slices with a waiting host runtime.
+	Async,
+}
+
+/// Compile for the file runner. A declared public async `main` may directly
+/// await enrolled host functions in its own body.
+pub fn compile_file(
+	sources: &mut Sources,
+	context: &Context,
+	diagnostics: &mut Diagnostics,
+	revision: u64,
+) -> Result<(Program, FileEntry)> {
+	let (program, entry) = compile_with_entry(
+		sources,
+		context,
+		diagnostics,
+		revision,
+		None,
+		Some(FileEntry::Sync),
+	)?;
+	Ok((program, entry.unwrap_or(FileEntry::Sync)))
+}
+
 // The session entry will be exposed only through a checked ProgramDomain envelope.
 pub(crate) fn compile_inner(
 	sources: &mut Sources,
@@ -848,6 +892,25 @@ pub(crate) fn compile_inner(
 	revision: u64,
 	opaque_session: Option<opaque::Envelope>,
 ) -> Result<Program> {
+	let (program, _) = compile_with_entry(
+		sources,
+		context,
+		diagnostics,
+		revision,
+		opaque_session,
+		None,
+	)?;
+	Ok(program)
+}
+
+fn compile_with_entry(
+	sources: &mut Sources,
+	context: &Context,
+	diagnostics: &mut Diagnostics,
+	revision: u64,
+	opaque_session: Option<opaque::Envelope>,
+	file_entry: Option<FileEntry>,
+) -> Result<(Program, Option<FileEntry>)> {
 	// Preflight the complete input before proportional source copies.
 	let mut bytes = 0usize;
 	let mut count = 0usize;
@@ -881,6 +944,7 @@ pub(crate) fn compile_inner(
 
 	let mut collector = Collector {
 		opaque_session,
+		file_entry,
 		revision,
 		entries: Vec::new(),
 		transaction: CompileTransaction::default(),
@@ -957,9 +1021,10 @@ pub(crate) fn compile_inner(
 		return Err(error);
 	}
 
+	let file_entry = collector.file_entry;
 	let mut program = collector.finish(context, diagnostics)?;
 	program.sources = retained;
-	Ok(program)
+	Ok((program, file_entry))
 }
 
 #[cfg(test)]

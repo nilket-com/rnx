@@ -5,10 +5,12 @@ use rune::alloc::prelude::TryClone;
 use rune::experimental_core::{
 	error::{ErrorKind, Location},
 	execute::{Executor, Failure, PrepareError},
-	frontend::{self, Program},
+	frontend::{self, FileEntry, Program},
 	heap::{FormatLimits, Limits as StoreLimits, Store, ViewKind, ViewLimits},
 	value::{Root, Scalar, Type},
 };
+
+mod awaiting;
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn run(
@@ -78,26 +80,28 @@ fn attempt(
 			return Some(1);
 		}
 	};
-	let program = match frontend::compile(&mut sources, context, &mut Diagnostics::new(), 1)
-		.and_then(|program| {
-			if let Some(refusal) =
-				crate::engine::legacy_alias_entry_refusal(&program, &loader.texts[0].text)
-			{
-				return Err(rune::experimental_core::error::Error::refused(refusal));
+	let (program, mode) =
+		match frontend::compile_file(&mut sources, context, &mut Diagnostics::new(), 1).and_then(
+			|(program, mode)| {
+				if let Some(refusal) =
+					crate::engine::legacy_alias_entry_refusal(&program, &loader.texts[0].text)
+				{
+					return Err(rune::experimental_core::error::Error::refused(refusal));
+				}
+				Ok((program, mode))
+			},
+		) {
+			Ok(program) => program,
+			Err(error) => {
+				if let Some(refusal) = error.refusal {
+					options.selected("legacy", Some(refusal.name()));
+					return None;
+				}
+				options.selected("execution", None);
+				unplaced("error", &format!("{}: {:?}", error.operation, error.kind));
+				return Some(1);
 			}
-			Ok(program)
-		}) {
-		Ok(program) => program,
-		Err(error) => {
-			if let Some(refusal) = error.refusal {
-				options.selected("legacy", Some(refusal.name()));
-				return None;
-			}
-			options.selected("execution", None);
-			unplaced("error", &format!("{}: {:?}", error.operation, error.kind));
-			return Some(1);
-		}
-	};
+		};
 	let Some(entry) = program.function(rune::Hash::type_hash(["main"])) else {
 		options.selected("execution", None);
 		let hash = rune::Hash::type_hash(["main"]);
@@ -136,6 +140,7 @@ fn attempt(
 		&program,
 		store,
 		entry,
+		mode,
 		&argv,
 		debug_source,
 		budget,
@@ -177,6 +182,7 @@ fn invoke(
 	program: &Program,
 	store: &mut Store,
 	entry: u32,
+	mode: FileEntry,
 	argv: &Root,
 	debug_source: bool,
 	budget: usize,
@@ -206,7 +212,7 @@ fn invoke(
 	if debug_source {
 		debug_sources(loader);
 	}
-	let driver = match crate::execute::Runtime::new() {
+	let mut driver = match crate::execute::Runtime::new() {
 		Ok(driver) => driver,
 		Err(error) => {
 			unplaced("error", &format!("cannot start the runtime: {error}"));
@@ -217,16 +223,27 @@ fn invoke(
 		unplaced("error", &error);
 		return Some(1);
 	}
-	let outcome = driver.run_sync(|| prepared.invoke(budget));
-	if let Err(error) = lifecycle.finish(outcome.is_err()) {
+	let outcome = match mode {
+		FileEntry::Sync => Ok(Some(driver.run_sync(|| prepared.invoke(budget)))),
+		FileEntry::Async => awaiting::run(&mut driver, prepared, budget),
+	};
+	if let Err(error) = lifecycle.finish(!matches!(outcome, Ok(Some(Ok(_))))) {
 		unplaced("error", &error);
 		return Some(1);
 	}
 	drop(driver);
 	let root = match outcome {
-		Ok(root) => root,
-		Err(error) => {
+		Ok(Some(Ok(root))) => root,
+		Ok(Some(Err(error))) => {
 			report_failure(&error, program, budget);
+			return Some(1);
+		}
+		Ok(None) => {
+			eprintln!("interrupted");
+			return Some(130);
+		}
+		Err(error) => {
+			unplaced("error", &error);
 			return Some(1);
 		}
 	};
