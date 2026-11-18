@@ -154,11 +154,15 @@ fn compile(context: &Context, sources: &mut Sources, loader: &mut Loader) -> Opt
 }
 
 fn debug_sources(loader: &Loader) {
-	for source in &loader.texts {
-		eprintln!("--- compiled source of {}", source.path.display());
-		eprint!("{}", source.text);
-		eprintln!("--- end of compiled source");
+	for source in loader.loaded_texts() {
+		debug_source_text(&source.path.to_string_lossy(), &source.text);
 	}
+}
+
+fn debug_source_text(name: &str, text: &str) {
+	eprintln!("--- compiled source of {name}");
+	eprint!("{text}");
+	eprintln!("--- end of compiled source");
 }
 
 /// The source and offset of a runtime error in this compiled unit.
@@ -281,9 +285,8 @@ pub(crate) fn run_loaded(
 		return 1;
 	}
 	if engine.choice == crate::engine::EngineChoice::Auto {
-		if crate::engine::requires_loader(&loader.texts[0].text) {
-			engine.selected("legacy", Some("SourceLoader"));
-		} else if let Some(code) = execution::run(
+		loader.record_module_reads();
+		if let Some(code) = execution::run(
 			context,
 			&sources,
 			&arguments,
@@ -291,10 +294,11 @@ pub(crate) fn run_loaded(
 			budget,
 			engine,
 			lifecycle,
-			&loader,
+			&mut loader,
 		) {
 			return code;
 		}
+		loader.replay_module_reads();
 	} else {
 		engine.selected("legacy", None);
 	}
@@ -419,7 +423,7 @@ pub(crate) fn run_loaded(
 	// They are only candidates: each is verified against the value, because a
 	// name and a shape are two different claims.
 	let mut fields = Fields::default();
-	for source in &loader.texts {
+	for source in loader.loaded_texts() {
 		crate::declared::into_fields(&source.text, &mut fields);
 	}
 	match returned(&value) {

@@ -9,10 +9,10 @@ use super::error::{Error, ErrorKind, Location, Refusal, Result};
 use crate::alloc::{String, Vec};
 use crate::ast::{Span, Spanned};
 use crate::compile::{
-	self, NoopCompileVisitor, NoopSourceLoader, Options, Pool, Prelude, UnitBuilder,
+	self, NoopCompileVisitor, NoopSourceLoader, Options, Pool, Prelude, SourceLoader, UnitBuilder,
 };
 use crate::runtime::unit::DefaultStorage;
-use crate::{Context, Diagnostics, Hash, Sources, Statics};
+use crate::{Context, Diagnostics, Hash, Item, Source, SourceId, Sources, Statics};
 
 /// A copy of one compiled source, kept so a host can render error locations after
 /// the [`Sources`] are gone.
@@ -873,6 +873,27 @@ pub fn compile_file(
 	diagnostics: &mut Diagnostics,
 	revision: u64,
 ) -> Result<(Program, FileEntry)> {
+	file_program(sources, context, diagnostics, revision, None)
+}
+
+/// Compile a file entry using an explicit loader for its external modules.
+pub fn compile_file_with_loader(
+	sources: &mut Sources,
+	context: &Context,
+	diagnostics: &mut Diagnostics,
+	revision: u64,
+	loader: &mut dyn SourceLoader,
+) -> Result<(Program, FileEntry)> {
+	file_program(sources, context, diagnostics, revision, Some(loader))
+}
+
+fn file_program(
+	sources: &mut Sources,
+	context: &Context,
+	diagnostics: &mut Diagnostics,
+	revision: u64,
+	loader: Option<&mut dyn SourceLoader>,
+) -> Result<(Program, FileEntry)> {
 	let (program, entry) = compile_with_entry(
 		sources,
 		context,
@@ -880,6 +901,7 @@ pub fn compile_file(
 		revision,
 		None,
 		Some(FileEntry::Sync),
+		loader,
 	)?;
 	Ok((program, entry.unwrap_or(FileEntry::Sync)))
 }
@@ -899,37 +921,83 @@ pub(crate) fn compile_inner(
 		revision,
 		opaque_session,
 		None,
+		None,
 	)?;
 	Ok(program)
 }
 
-fn compile_with_entry(
-	sources: &mut Sources,
-	context: &Context,
-	diagnostics: &mut Diagnostics,
-	revision: u64,
-	opaque_session: Option<opaque::Envelope>,
-	file_entry: Option<FileEntry>,
-) -> Result<(Program, Option<FileEntry>)> {
-	// Preflight the complete input before proportional source copies.
-	let mut bytes = 0usize;
-	let mut count = 0usize;
+#[derive(Clone, Copy, Default)]
+struct SourceBounds {
+	count: u32,
+	bytes: usize,
+}
 
-	for id in sources.source_ids() {
-		let source = sources
-			.get(id)
-			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "source identity"))?;
-		count += 1;
-		bytes = bytes
+impl SourceBounds {
+	fn include(&mut self, source: &Source) -> Result<()> {
+		let bytes = self
+			.bytes
 			.checked_add(source.as_str().len())
 			.and_then(|n| n.checked_add(source.name().len()))
 			.ok_or_else(|| Error::refused(Refusal::SourceLimit))?;
-		if count > 256 || bytes > 16 << 20 || source.name().len() > 255 {
+		if self.count == 256 || bytes > 16 << 20 || source.name().len() > 255 {
 			return Err(Error::refused(Refusal::SourceLimit));
 		}
+		self.bytes = bytes;
+		self.count += 1;
+		Ok(())
 	}
 
-	let mut retained = Vec::try_with_capacity(count)?;
+	fn admit_inserted(&mut self, sources: &Sources) -> Result<()> {
+		while let Some(source) = sources.get(SourceId::new(self.count)) {
+			self.include(source)?;
+		}
+		Ok(())
+	}
+}
+
+struct BoundedLoader<'a> {
+	loader: &'a mut dyn SourceLoader,
+	bounds: SourceBounds,
+	over_limit: bool,
+}
+
+impl SourceLoader for BoundedLoader<'_> {
+	fn load(
+		&mut self,
+		sources: &Sources,
+		id: SourceId,
+		item: &Item,
+		span: &dyn Spanned,
+	) -> compile::Result<Source> {
+		let refuse = || compile::Error::msg(span, "execution source limit exceeded");
+		if self.over_limit || self.bounds.admit_inserted(sources).is_err() {
+			self.over_limit = true;
+			return Err(refuse());
+		}
+		let source = self.loader.load(sources, id, item, span)?;
+		// The indexer owns insertion. Check a prospective source without
+		// assigning an ID or charging it as an admitted source here.
+		if self.bounds.include_prospective(&source).is_err() {
+			self.over_limit = true;
+			return Err(refuse());
+		}
+		Ok(source)
+	}
+}
+
+impl SourceBounds {
+	fn include_prospective(self, source: &Source) -> Result<()> {
+		let mut prospective = self;
+		prospective.include(source)
+	}
+}
+
+fn retain_sources(
+	sources: &Sources,
+	revision: u64,
+	bounds: SourceBounds,
+) -> Result<Vec<SourceRecord>> {
+	let mut retained = Vec::try_with_capacity(bounds.count as usize)?;
 	for id in sources.source_ids() {
 		let source = sources
 			.get(id)
@@ -941,7 +1009,24 @@ fn compile_with_entry(
 			text: String::try_from(source.as_str())?,
 		})?;
 	}
+	Ok(retained)
+}
 
+fn compile_with_entry(
+	sources: &mut Sources,
+	context: &Context,
+	diagnostics: &mut Diagnostics,
+	revision: u64,
+	opaque_session: Option<opaque::Envelope>,
+	file_entry: Option<FileEntry>,
+	loader: Option<&mut dyn SourceLoader>,
+) -> Result<(Program, Option<FileEntry>)> {
+	let mut bounds = SourceBounds::default();
+	bounds.admit_inserted(sources)?;
+	let retained = loader
+		.is_none()
+		.then(|| retain_sources(sources, revision, bounds))
+		.transpose()?;
 	let mut collector = Collector {
 		opaque_session,
 		file_entry,
@@ -975,11 +1060,20 @@ fn compile_with_entry(
 
 	let mut pool = Pool::new()?;
 	let mut visitor = NoopCompileVisitor::new();
-	let mut loader = NoopSourceLoader::default();
+	let mut noop = NoopSourceLoader::default();
+	let mut bounded = loader.map(|loader| BoundedLoader {
+		loader,
+		bounds,
+		over_limit: false,
+	});
+	let loader: &mut dyn SourceLoader = match &mut bounded {
+		Some(loader) => loader,
+		None => &mut noop,
+	};
 	let options = Options::default();
 	let statics = Statics::new();
 	let mut storage = DefaultStorage::default();
-	compile::compile(
+	let compiled = compile::compile(
 		&mut unit,
 		&prelude,
 		sources,
@@ -987,13 +1081,17 @@ fn compile_with_entry(
 		context,
 		&mut visitor,
 		diagnostics,
-		&mut loader,
+		loader,
 		&options,
 		&[],
 		&statics,
 		&mut storage,
 		Some(&mut collector),
-	)?;
+	);
+	if bounded.is_some_and(|loader| loader.over_limit) {
+		return Err(Error::refused(Refusal::SourceLimit));
+	}
+	compiled?;
 
 	collector.resolve_with_diagnostics(context, diagnostics)?;
 
@@ -1023,7 +1121,13 @@ fn compile_with_entry(
 
 	let file_entry = collector.file_entry;
 	let mut program = collector.finish(context, diagnostics)?;
-	program.sources = retained;
+	program.sources = match retained {
+		Some(retained) => retained,
+		None => {
+			bounds.admit_inserted(sources)?;
+			retain_sources(sources, revision, bounds)?
+		}
+	};
 	Ok((program, file_entry))
 }
 

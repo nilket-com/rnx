@@ -21,7 +21,7 @@ pub(super) fn run(
 	budget: usize,
 	options: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
-	loader: &Loader,
+	loader: &mut Loader,
 ) -> Option<i32> {
 	let mut store = match Store::new(StoreLimits::default()) {
 		Ok(store) => store,
@@ -57,11 +57,11 @@ fn attempt(
 	budget: usize,
 	options: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
-	loader: &Loader,
+	loader: &mut Loader,
 	store: &mut Store,
 ) -> Option<i32> {
-	// Compilation may expand Sources. Keep the original loader cache and source
-	// identities untouched so a refusal never rereads or double-charges files.
+	// Compilation may expand Sources. The original entry IDs remain the
+	// inputs to any legacy attempt, which replays module loads via Loader.
 	let copy = || -> Result<Sources, String> {
 		let mut sources = Sources::new();
 		let mut index = 0u32;
@@ -80,28 +80,32 @@ fn attempt(
 			return Some(1);
 		}
 	};
-	let (program, mode) =
-		match frontend::compile_file(&mut sources, context, &mut Diagnostics::new(), 1).and_then(
-			|(program, mode)| {
-				if let Some(refusal) =
-					crate::engine::legacy_alias_entry_refusal(&program, &loader.texts[0].text)
-				{
-					return Err(rune::experimental_core::error::Error::refused(refusal));
-				}
-				Ok((program, mode))
-			},
-		) {
-			Ok(program) => program,
-			Err(error) => {
-				if let Some(refusal) = error.refusal {
-					options.selected("legacy", Some(refusal.name()));
-					return None;
-				}
-				options.selected("execution", None);
-				unplaced("error", &format!("{}: {:?}", error.operation, error.kind));
-				return Some(1);
+	let (program, mode) = match frontend::compile_file_with_loader(
+		&mut sources,
+		context,
+		&mut Diagnostics::new(),
+		1,
+		loader,
+	)
+	.and_then(|(program, mode)| {
+		if let Some(refusal) =
+			crate::engine::legacy_alias_entry_refusal(&program, &loader.texts[0].text)
+		{
+			return Err(rune::experimental_core::error::Error::refused(refusal));
+		}
+		Ok((program, mode))
+	}) {
+		Ok(program) => program,
+		Err(error) => {
+			if let Some(refusal) = error.refusal {
+				options.selected("legacy", Some(refusal.name()));
+				return None;
 			}
-		};
+			options.selected("execution", None);
+			unplaced("error", &format!("{}: {:?}", error.operation, error.kind));
+			return Some(1);
+		}
+	};
 	let Some(entry) = program.function(rune::Hash::type_hash(["main"])) else {
 		options.selected("execution", None);
 		let hash = rune::Hash::type_hash(["main"]);
@@ -146,7 +150,6 @@ fn attempt(
 		budget,
 		options,
 		lifecycle,
-		loader,
 	);
 	if let Err(error) = store.root_release(argv) {
 		unplaced("error", &format!("{:?}", error));
@@ -188,7 +191,6 @@ fn invoke(
 	budget: usize,
 	options: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
-	loader: &Loader,
 ) -> Option<i32> {
 	let args = [argv];
 	let prepared = match executor.prepare(program, store, entry, &args) {
@@ -210,7 +212,9 @@ fn invoke(
 	};
 	options.selected("execution", None);
 	if debug_source {
-		debug_sources(loader);
+		for source in program.sources() {
+			debug_source_text(&source.name, &source.text);
+		}
 	}
 	let mut driver = match crate::execute::Runtime::new() {
 		Ok(driver) => driver,
@@ -248,7 +252,7 @@ fn invoke(
 		}
 	};
 	let mut fields = Fields::default();
-	for source in &loader.texts {
+	for source in program.sources() {
 		crate::declared::into_fields(&source.text, &mut fields);
 	}
 	let code = match show(store, &root, &fields, options.debug) {
@@ -373,12 +377,26 @@ mod tests {
 		options: crate::engine::Options,
 		budget: usize,
 	) -> i32 {
-		let path = std::env::temp_dir().join(format!(
-			"rnx-routing-effects-{}-{}.rn",
+		run_files(context, text, None, options, budget)
+	}
+	fn run_files(
+		context: &Context,
+		text: &str,
+		module: Option<&str>,
+		options: crate::engine::Options,
+		budget: usize,
+	) -> i32 {
+		let root = std::env::temp_dir().join(format!(
+			"rnx-routing-effects-{}-{}",
 			std::process::id(),
 			NEXT.fetch_add(1, Ordering::Relaxed)
 		));
+		std::fs::create_dir(&root).unwrap();
+		let path = root.join("main.rn");
 		std::fs::write(&path, text).unwrap();
+		if let Some(module) = module {
+			std::fs::write(root.join("helper.rn"), module).unwrap();
+		}
 		let lifecycle = crate::lifecycle::Lifecycle::new(false).unwrap();
 		let code = super::super::run_loaded(
 			context,
@@ -391,7 +409,7 @@ mod tests {
 			Loader::new(),
 		);
 		lifecycle.close().unwrap();
-		std::fs::remove_file(path).unwrap();
+		std::fs::remove_dir_all(root).unwrap();
 		code
 	}
 	#[test]
@@ -449,6 +467,22 @@ mod tests {
 				assert_eq!(undeclared.load(Ordering::SeqCst), legacy, "{body}");
 				assert_eq!(macros.load(Ordering::SeqCst), macro_count, "{body}");
 			}
+			typed.store(0, Ordering::SeqCst);
+			macros.store(0, Ordering::SeqCst);
+			assert_eq!(
+				run_files(
+					&context,
+					"mod helper; pub fn main(args) { helper::work() }",
+					Some(
+						r#"pub fn work() { probe::touch(); let value = probe::once!(42); let bytes = b"x"; value }"#
+					),
+					options,
+					100_000,
+				),
+				0
+			);
+			assert_eq!(typed.load(Ordering::SeqCst), 1);
+			assert_eq!(macros.load(Ordering::SeqCst), 1);
 		}
 	}
 

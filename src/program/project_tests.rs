@@ -74,6 +74,49 @@ fn number(entry: &Path, loader: &mut Loader) -> i64 {
 }
 
 #[test]
+fn mapped_aliases_have_distinct_read_charges_and_replay_in_a_new_order() {
+	let tree = Tree::new();
+	let main = tree.write("app/main.rn", "");
+	let old_a = "pub fn value() { 42 }";
+	let old_b = "pub fn value() { 456 }";
+	let file = tree.write("pkg/mod.rn", old_a);
+	let mut loader = tree.loader(&[("a", "pkg"), ("b", "pkg"), ("c", "pkg")]);
+	let mut sources = Sources::new();
+	let entry = sources.insert(loader.entry(&main).unwrap()).unwrap();
+	let span = rune::ast::Span::empty();
+	let a = ItemBuf::with_item(["a"]).unwrap();
+	let b = ItemBuf::with_item(["b"]).unwrap();
+	let c = ItemBuf::with_item(["c"]).unwrap();
+	loader.record_module_reads();
+	let loaded_a = loader.load(&sources, entry, &a, &span).unwrap();
+	assert_eq!(loaded_a.path(), Some(file.as_path()));
+	std::fs::write(&file, old_b).unwrap();
+	let loaded_b = loader.load(&sources, entry, &b, &span).unwrap();
+	assert_eq!(loaded_b.path(), Some(file.as_path()));
+	assert_eq!(loader.opens, 3);
+	let remaining = SOURCE_ALLOWANCE - old_a.len() - old_b.len();
+	assert_eq!(loader.remaining, remaining);
+	let new_text = "pub fn value() { 123 }";
+	std::fs::write(&file, new_text).unwrap();
+	let mut replay = Sources::new();
+	replay.insert(Source::memory("").unwrap()).unwrap();
+	let shifted = replay
+		.insert(Source::with_path("main.rn", "", &main).unwrap())
+		.unwrap();
+	loader.replay_module_reads();
+	for (alias, text) in [(&b, old_b), (&a, old_a)] {
+		let loaded = loader.load(&replay, shifted, alias, &span).unwrap();
+		assert_eq!(loaded.source_line(span).unwrap().text, text);
+	}
+	assert_eq!(loader.opens, 3);
+	assert_eq!(loader.remaining, remaining);
+	let unseen = loader.load(&replay, shifted, &c, &span).unwrap();
+	assert_eq!(unseen.source_line(span).unwrap().text, new_text);
+	assert_eq!(loader.opens, 4);
+	assert_eq!(loader.remaining, remaining - new_text.len());
+}
+
+#[test]
 fn external_nested_inline_renamed_and_ancestry() {
 	let t = Tree::new();
 	t.write("pkg/mod.rn", "pub mod nested; pub mod inline { pub mod leaf; } pub fn marker() { 7 } pub fn value() { self::nested::value() + self::inline::leaf::value() + super::marker() + crate::marker() }");

@@ -1,0 +1,5 @@
+mod pkg;
+
+pub fn main(args) {
+	pkg::value()
+}

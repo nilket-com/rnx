@@ -548,10 +548,10 @@ fn entries() -> Vec<Entry> {
 		Entry {
 			name: "module-and-project-sources",
 			route: Fallback,
-			file: "src/runner.rs",
-			owner: "compile",
-			call: "METHOD with_source_loader",
-			needs: "select legacy before effects while external loader is unsupported",
+			file: "src/runner/execution.rs",
+			owner: "attempt",
+			call: "CALL frontend::compile_file_with_loader",
+			needs: "shared bounded module loader with replay on pre-effect refusal",
 		},
 		Entry {
 			name: "project-run",
@@ -706,16 +706,8 @@ fn policy_rows(root: &Path) -> Result<Json> {
 		rows.push(json!({"path":e.name,"verdict":verdict,"source_file":e.file,"source_owner":e.owner,"requires":e.needs,"current_route":if matches!(e.route,Route::Blocked){"legacy"}else{"execution with pre-effect selection"}}));
 	}
 	for (file, owner, call) in [
-		(
-			"src/runner.rs",
-			"run_loaded",
-			"CALL crate::engine::requires_loader",
-		),
-		(
-			"src/runner/execution.rs",
-			"attempt",
-			"CALL frontend::compile_file",
-		),
+		("src/runner.rs", "run_loaded", "METHOD record_module_reads"),
+		("src/runner.rs", "run_loaded", "METHOD replay_module_reads"),
 		("src/runner/execution.rs", "invoke", "METHOD prepare"),
 		("src/runner/execution.rs", "invoke", "METHOD invoke"),
 		(

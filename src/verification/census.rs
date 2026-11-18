@@ -1,5 +1,7 @@
 //! Real-registration, compile-only census. Never constructs a VM or invokes Rune.
 //! Frozen fixture bytes are inputs; aggregate observations come only from children.
+pub(super) mod module_trees;
+
 use rune::ast::Spanned;
 use rune::compile::{CompileVisitor, Located, MetaError, meta::MetaRef};
 use serde_json::{Value, json};
@@ -614,12 +616,14 @@ pub(super) fn run(args: &[String]) -> CensusResult<Value> {
 		pinned(&root, string(row, "input")?, string(row, "input_sha256")?)?;
 	}
 	let live_execution = super::census_execution::run(&executable, &root, repo, &out, &admissions)?;
+	let module_trees = module_trees::run(&executable, &out)?;
 
 	check_registration(&manifest, repo)?;
 	if hash_file(&executable)? != executable_hash {
 		return Err("census executable changed".into());
 	}
-	let result = json!({"status":"PASS","admission_checks":244,"execution":live_execution,"binary":executable,"binary_sha256":executable_hash,"seconds":start.elapsed().as_secs_f64(),"runs":runs});
+	let result = json!({"status":"PASS","admission_checks":244,"execution":live_execution,
+		"module_trees":module_trees,"binary":executable,"binary_sha256":executable_hash,"seconds":start.elapsed().as_secs_f64(),"runs":runs});
 	write_new(
 		&out.join("RESULT.json"),
 		&serde_json::to_vec_pretty(&result)?,

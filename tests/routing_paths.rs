@@ -24,7 +24,7 @@ fn run(
 	extra: &[&Path],
 	legacy: bool,
 	native: bool,
-	debug: bool,
+	debug: &[&str],
 	label: &str,
 ) -> Output {
 	let mut c = Command::new("/usr/bin/timeout");
@@ -43,9 +43,7 @@ fn run(
 	if legacy {
 		c.arg("--engine=legacy");
 	}
-	if debug {
-		c.arg("--debug-engine");
-	}
+	c.args(debug);
 	if !extra.is_empty() {
 		c.arg("--source-map").arg(extra[0]);
 	}
@@ -70,12 +68,18 @@ fn run(
 	output
 }
 fn verify(root: &Path, extra: &[&Path], route: &str) {
+	verify_outcome(root, extra, route, true);
+}
+
+fn verify_outcome(root: &Path, extra: &[&Path], route: &str, success: bool) {
+	let mut routes = Vec::new();
 	for native in [false, true] {
 		let mode = if native { "on" } else { "off" };
-		let old = run(root, extra, true, native, false, &format!("{mode}-legacy"));
-		let new = run(root, extra, false, native, false, &format!("{mode}-auto"));
-		assert!(
+		let old = run(root, extra, true, native, &[], &format!("{mode}-legacy"));
+		let new = run(root, extra, false, native, &[], &format!("{mode}-auto"));
+		assert_eq!(
 			old.status.success(),
+			success,
 			"{}",
 			String::from_utf8_lossy(&old.stderr)
 		);
@@ -83,8 +87,15 @@ fn verify(root: &Path, extra: &[&Path], route: &str) {
 			(old.status.code(), old.stdout, old.stderr),
 			(new.status.code(), new.stdout, new.stderr)
 		);
-		let evidence = run(root, extra, false, native, true, &format!("{mode}-route"));
-		assert!(evidence.status.success());
+		let evidence = run(
+			root,
+			extra,
+			false,
+			native,
+			&["--debug-engine"],
+			&format!("{mode}-route"),
+		);
+		assert_eq!(evidence.status.success(), success);
 		let text = String::from_utf8(evidence.stderr).unwrap();
 		let selected: Vec<_> = text
 			.lines()
@@ -92,10 +103,14 @@ fn verify(root: &Path, extra: &[&Path], route: &str) {
 			.collect();
 		assert_eq!(selected.len(), 1, "{text}");
 		assert!(selected[0].starts_with(route), "{text}");
+		routes.push(
+			serde_json::json!({"native": mode, "route": selected[0], "exit": evidence.status.code()}),
+		);
 	}
 	fs::write(
 		root.join("RESULT.json"),
-		b"{\"status\":\"PASS\",\"native_modes\":[\"off\",\"on\"]}\n",
+		serde_json::json!({"status":"PASS","native_modes":["off","on"],"auto_routes":routes})
+			.to_string(),
 	)
 	.unwrap();
 	println!(
@@ -104,16 +119,118 @@ fn verify(root: &Path, extra: &[&Path], route: &str) {
 	);
 }
 #[test]
-fn module_files_select_legacy_before_effects_while_the_loader_is_unsupported() {
+fn nested_module_files_use_execution_and_keep_layout_precedence() {
 	let root = scratch("modules");
 	fs::write(
 		root.join("main.rn"),
 		"mod helper;pub fn main(args){println!(\"once\");[helper::value(),args]}",
 	)
 	.unwrap();
-	fs::write(root.join("helper.rn"), "pub fn value(){42}").unwrap();
-	verify(&root, &[], "rnx: engine=legacy refusal=SourceLoader");
+	fs::create_dir(root.join("helper")).unwrap();
+	fs::write(root.join("helper.rn"), "pub fn value(){999}").unwrap();
+	fs::write(
+		root.join("helper/mod.rn"),
+		"mod nested;pub fn value(){nested::value()}",
+	)
+	.unwrap();
+	fs::write(root.join("helper/nested.rn"), "pub fn value(){42}").unwrap();
+	verify(&root, &[], "rnx: engine=execution ");
+	let debug = run(&root, &[], false, false, &["--debug-source"], "source");
+	let text = String::from_utf8(debug.stderr).unwrap();
+	for file in ["main.rn", "helper/mod.rn", "helper/nested.rn"] {
+		let mark = format!("--- compiled source of {}", root.join(file).display());
+		assert_eq!(text.matches(&mark).count(), 1, "{text}");
+	}
+	assert!(!text.contains("999"), "{text}");
 }
+
+#[test]
+fn refused_module_falls_back_before_side_effects_and_shows_each_source_once() {
+	let root = scratch("module-refusal");
+	fs::write(
+		root.join("main.rn"),
+		"mod helper;pub fn main(args){println!(\"once\");helper::value()}",
+	)
+	.unwrap();
+	fs::write(root.join("helper.rn"), "pub fn value(){let x=b\"abc\";42}").unwrap();
+	verify(&root, &[], "rnx: engine=legacy refusal=ByteStr");
+	let debug = run(&root, &[], false, false, &["--debug-source"], "source");
+	assert_eq!(debug.stdout, b"once\n42\n");
+	let text = String::from_utf8(debug.stderr).unwrap();
+	for file in ["main.rn", "helper.rn"] {
+		let mark = format!("--- compiled source of {}", root.join(file).display());
+		assert_eq!(text.matches(&mark).count(), 1, "{text}");
+	}
+}
+
+#[test]
+fn missing_read_and_allowance_errors_keep_the_declaring_module_location() {
+	for error in ["missing", "read", "allowance"] {
+		let root = scratch(error);
+		fs::write(
+			root.join("main.rn"),
+			"mod helper;pub fn main(args){println!(\"unexpected\");helper::value()}",
+		)
+		.unwrap();
+		fs::write(
+			root.join("helper.rn"),
+			"mod child;pub fn value(){child::value()}",
+		)
+		.unwrap();
+		fs::create_dir(root.join("helper")).unwrap();
+		match error {
+			"read" => fs::write(root.join("helper/child.rn"), [0xff]).unwrap(),
+			"allowance" => {
+				fs::write(root.join("helper/child.rn"), vec![b' '; 8 * 1024 * 1024]).unwrap()
+			}
+			_ => {}
+		}
+		verify_outcome(
+			&root,
+			&[],
+			"rnx: engine=legacy refusal=FrontendDiagnostic",
+			false,
+		);
+		let result = run(&root, &[], false, false, &[], "diagnostic");
+		assert!(result.stdout.is_empty());
+		let text = String::from_utf8(result.stderr).unwrap();
+		assert!(
+			text.contains(&format!(
+				"{}, line 1, column 1:",
+				root.join("helper.rn").display()
+			)),
+			"{text}"
+		);
+		assert!(text.contains("mod child;"), "{text}");
+	}
+}
+
+#[test]
+fn a_runtime_failure_in_a_module_is_located_and_terminal() {
+	let root = scratch("module-runtime");
+	fs::write(
+		root.join("main.rn"),
+		"mod helper;pub fn main(args){println!(\"once\");helper::value()}",
+	)
+	.unwrap();
+	fs::write(
+		root.join("helper.rn"),
+		"pub fn value(){\n  panic!(\"module failure\")\n}",
+	)
+	.unwrap();
+	verify_outcome(&root, &[], "rnx: engine=execution ", false);
+	let result = run(&root, &[], false, false, &[], "diagnostic");
+	assert_eq!(result.stdout, b"once\n");
+	let text = String::from_utf8(result.stderr).unwrap();
+	assert!(
+		text.contains(&format!(
+			"{}, line 2, column 3:",
+			root.join("helper.rn").display()
+		)),
+		"{text}"
+	);
+}
+
 #[test]
 #[cfg(feature = "project-sources")]
 fn explicit_source_map_preserves_admission_and_argument_boundaries() {
@@ -133,6 +250,54 @@ fn explicit_source_map_preserves_admission_and_argument_boundaries() {
 	)
 	.unwrap();
 	verify(&root, &[&map], "rnx: engine=execution native-requested=");
+}
+
+#[test]
+#[cfg(feature = "project-sources")]
+fn explicit_source_map_loads_an_external_module_and_keeps_entry_admission() {
+	let root = scratch("source-map");
+	fs::write(
+		root.join("main.rn"),
+		"mod pkg;pub fn main(args){[pkg::value(),args]}",
+	)
+	.unwrap();
+	let package = scratch("mapped-module");
+	fs::write(package.join("mod.rn"), "pub fn value(){42}").unwrap();
+	let map = root.join("map.json");
+	fs::write(
+		&map,
+		serde_json::to_vec(
+			&serde_json::json!({"format":1,"entry":root.join("main.rn"),"mounts":[{"prefix":["pkg"],"root":package}]}),
+		)
+		.unwrap(),
+	)
+	.unwrap();
+	verify(&root, &[&map], "rnx: engine=execution native-requested=");
+
+	fs::write(
+		&map,
+		serde_json::json!({"format":1,"entry":root.join("other.rn"),"mounts":[]}).to_string(),
+	)
+	.unwrap();
+	let legacy = run(&root, &[&map], true, false, &[], "bad-map-legacy");
+	let auto = run(
+		&root,
+		&[&map],
+		false,
+		false,
+		&["--debug-engine"],
+		"bad-map-auto",
+	);
+	assert_eq!(
+		(legacy.status.code(), &legacy.stdout, &legacy.stderr),
+		(auto.status.code(), &auto.stdout, &auto.stderr)
+	);
+	assert_eq!(auto.status.code(), Some(1));
+	let text = String::from_utf8(auto.stderr).unwrap();
+	assert!(
+		text.contains("source map entry does not match the absolute run entry"),
+		"{text}"
+	);
 }
 
 #[test]

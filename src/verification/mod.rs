@@ -98,6 +98,11 @@ pub(crate) fn main() -> Result<()> {
 			serde_json::to_writer(std::io::stdout().lock(), &value)?;
 			Ok(())
 		}
+		[mode, suite, case] if mode == "--child" && suite == "census-module-tree" => {
+			let value = census::module_trees::child(case)?;
+			serde_json::to_writer(std::io::stdout().lock(), &value)?;
+			Ok(())
+		}
 		[mode, suite, input, engine, clock, output]
 			if mode == "--child" && suite == "census-exec" =>
 		{
