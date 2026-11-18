@@ -202,18 +202,70 @@ fn a_descendant_that_never_stops_writing_does_not_hold_the_call() {
 	//
 	// The case the group kill cannot stop, and the one no reasoning about a
 	// pipeful covers: it is bounded by reading the clock before every read.
-	let (line, took) = reported(
-		&commands::shell(
-			"setsid sh -c 'while :; do echo xxxxxxxxxxxxxxxx; done' 2>/dev/null & sleep 6",
-		),
-		200,
-		None,
-	);
-	assert!(line.contains("cut_short=true"), "{line}");
+	//
+	// The writer must be live before the deadline matters, or the flags say
+	// nothing about it: the supervised child reaches its termination trigger
+	// only after the writer has written and said so.
+	let marks = harness::scratch("capture-writer");
+	let (line, took) = reported(&live_writer(&marks, true), WRITER_DEADLINE_MS, None);
 	assert!(
-		took < Duration::from_secs(2),
+		marks.join("armed").exists(),
+		"the deadline came before the writer was live, so this run proves nothing: {line}"
+	);
+	assert!(line.contains("timed_out=true"), "{line}");
+	assert!(line.contains("cut_short=true"), "{line}");
+	assert!(!line.contains(" out=0 "), "no prefix was captured: {line}");
+	assert!(
+		took < Duration::from_millis(WRITER_DEADLINE_MS.into()) + Duration::from_secs(2),
 		"the call took {took:?} against a writer that never stops"
 	);
+	let _ = std::fs::remove_dir_all(&marks);
+}
+
+/// The deadline leaves room for the bounded startup wait in `live_writer`.
+#[cfg(unix)]
+const WRITER_DEADLINE_MS: u32 = 2000;
+
+/// A detached writer that never stops, started by a child that waits (bounded)
+/// for the writer's first line before it marks itself `armed` and sleeps past
+/// the deadline. With `writes` false the detached process stays silent, so the
+/// child is never armed.
+#[cfg(unix)]
+fn live_writer(marks: &std::path::Path, writes: bool) -> String {
+	// The marker paths travel as positional arguments, never as shell source,
+	// so a scratch directory with spaces or quotes cannot change the script.
+	let live = marks.join("live");
+	let armed = marks.join("armed");
+	let writer = if writes {
+		r#"echo xxxxxxxxxxxxxxxx; : > "$1"; while :; do echo xxxxxxxxxxxxxxxx; done"#
+	} else {
+		"sleep 6"
+	};
+	let script = format!(
+		r#"setsid sh -c '{writer}' sh "$1" 2>/dev/null & i=0; while [ ! -e "$1" ] && [ "$i" -lt 300 ]; do sleep 0.005; i=$((i+1)); done; [ -e "$1" ] && : > "$2"; sleep 6"#
+	);
+	commands::shell_with(
+		&script,
+		&[
+			live.to_str().expect("scratch paths are UTF-8"),
+			armed.to_str().expect("scratch paths are UTF-8"),
+		],
+	)
+}
+
+#[test]
+#[cfg(unix)]
+fn a_writer_that_never_goes_live_never_arms_the_child() {
+	// The control for the premise above: without a live writer the child is
+	// never armed, so the main case cannot pass by accident.
+	let marks = harness::scratch("capture-silent");
+	let (line, _) = reported(&live_writer(&marks, false), WRITER_DEADLINE_MS, None);
+	assert!(
+		!marks.join("armed").exists(),
+		"armed without a live writer: {line}"
+	);
+	assert!(line.contains(" out=0 "), "{line}");
+	let _ = std::fs::remove_dir_all(&marks);
 }
 
 #[test]

@@ -174,6 +174,14 @@ pub fn shell(script: &str) -> String {
 	arguments("sh", &["-c", script])
 }
 
+/// A shell script with positional arguments (`$1`, `$2`, ...), so values such
+/// as paths reach the script as arguments rather than as shell source.
+pub fn shell_with(script: &str, args: &[&str]) -> String {
+	let mut all = vec!["-c", script, "sh"];
+	all.extend_from_slice(args);
+	arguments("sh", &all)
+}
+
 /// The same count of zero bytes on standard output and on standard error.
 pub fn zeros_on_both(count: usize) -> String {
 	#[cfg(unix)]
