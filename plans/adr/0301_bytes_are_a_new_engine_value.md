@@ -1,6 +1,6 @@
 # ADR 0301: Bytes are a new-engine value
 
-Status: Proposed
+Status: Withdrawn
 
 Base: published 13150c86c401fe2f99c30cf1b3f935e21a6278f2 (fix after ADR 0300).
 
