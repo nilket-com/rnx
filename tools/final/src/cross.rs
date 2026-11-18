@@ -551,7 +551,7 @@ extern "C" fn on_signal(signal: libc::c_int) {
 /// as the Python launcher did. Inside a final the controller owns
 /// interruption: it drains the stage and its owner recovery releases the
 /// assigned payload.
-fn interruptible() -> Result<&'static crate::guardian::StopSignal> {
+pub fn interruptible() -> Result<&'static crate::guardian::StopSignal> {
 	if STOP.get().is_none() {
 		let _ = STOP.set(crate::guardian::StopSignal::new()?);
 	}
@@ -567,7 +567,7 @@ fn interruptible() -> Result<&'static crate::guardian::StopSignal> {
 	STOP.get().context("stop signal")
 }
 
-fn interrupted() -> Result<()> {
+pub fn interrupted() -> Result<()> {
 	match INTERRUPTED.load(std::sync::atomic::Ordering::SeqCst) {
 		0 => Ok(()),
 		signal => Err(raise(

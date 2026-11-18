@@ -149,7 +149,6 @@ tests/worker_checks.py	port
 tests/worker_execution.py	port
 tests/worker_parent.py	port
 tools/archive_data.py	port
-tools/column/anchor_cache.py	port
 tools/column/boolean_capture.py	port
 tools/column/boolean_large.py	port
 tools/column/boolean_limits.py	port
@@ -172,7 +171,6 @@ tools/column/cross_program_controls.py	port
 tools/column/cross_program_exception.py	port
 tools/column/cross_program_gate.py	port
 tools/column/cross_program_miri.py	port
-tools/column/drift_band.py	port
 tools/column/elf_targets.py	port
 tools/column/executor_identity.py	port
 tools/column/f64_output_capture.py	port
@@ -192,7 +190,6 @@ tools/column/failure_detail.py	port
 tools/column/final_child.py	port
 tools/column/final_evidence.py	port
 tools/column/fixed_route_exception.py	port
-tools/column/fixed_route_gate.py	port
 tools/column/fixed_route_vectors.py	port
 tools/column/gate_policy.py	port
 tools/column/host_budget.py	port
@@ -246,13 +243,11 @@ tools/column/score_0214.py	port
 tools/column/score_0215.py	port
 tools/column/simd_hot_loop.py	port
 tools/column/simd_shape.py	port
-tools/column/test_anchor_cache.py	port	final controller-controls
 tools/column/test_boolean_limits.py	port	final controller-controls
 tools/column/test_boolean_vectors.py	port	final controller-controls
 tools/column/test_build_rerun.py	port	final controller-controls
 tools/column/test_child_result.py	port	final controller-controls
 tools/column/test_cli_symbols.py	port	final controller-controls
-tools/column/test_drift_band.py	port	final controller-controls
 tools/column/test_executor_identity.py	port	final controller-controls
 tools/column/test_f64_output_edges.py	port	final controller-controls
 tools/column/test_f64_output_pins.py	port	final controller-controls
@@ -299,7 +294,6 @@ tools/column/test_score_0214.py	port	final controller-controls
 tools/column/test_score_0215.py	port	final controller-controls
 tools/column/test_simd_hot_loop.py	port	final controller-controls
 tools/column/test_simd_shape.py	port	final controller-controls
-tools/column/test_valgrind_resolution.py	port	final controller-controls
 tools/profile_recipes.py	port
 tools/project/scripts/notices.py	port
 tools/refresh_census.py	port

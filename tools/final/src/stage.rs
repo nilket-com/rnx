@@ -285,9 +285,23 @@ fn probe_environment(command: &[String], env: &Environment) -> Result<Vec<(Strin
 /// `valgrind` on PATH, as `fixed_route_gate.valgrind_root` resolves it:
 /// either way the root holds an executable `bin/valgrind`.
 pub fn valgrind_root(env: &Environment) -> Result<PathBuf> {
-	let root = match env.get("RNX_VALGRIND_ROOT").filter(|v| !v.is_empty()) {
+	valgrind_root_from(None, env)
+}
+
+/// The Valgrind installation: an explicit root first, then
+/// `RNX_VALGRIND_ROOT`, then the `valgrind` on PATH, resolved through any
+/// link before its root is derived.
+pub fn valgrind_root_from(explicit: Option<&Path>, env: &Environment) -> Result<PathBuf> {
+	let configured = explicit
+		.map(|p| p.to_string_lossy().into_owned())
+		.or_else(|| {
+			env.get("RNX_VALGRIND_ROOT")
+				.filter(|v| !v.is_empty())
+				.cloned()
+		});
+	let root = match configured {
 		Some(configured) => {
-			std::fs::canonicalize(configured).unwrap_or_else(|_| PathBuf::from(configured))
+			std::fs::canonicalize(&configured).unwrap_or_else(|_| PathBuf::from(&configured))
 		}
 		None => {
 			let binary = env
@@ -1426,6 +1440,9 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 		.collect();
 	if args.first().map(String::as_str) == Some("cross") {
 		return crate::cross::main(&args[1..], root, &std::env::vars().collect());
+	}
+	if args.first().map(String::as_str) == Some("fixed-route") {
+		return crate::fixed_route_stage::main(&args[1..], root, &std::env::vars().collect());
 	}
 	let value = |flag: &str| {
 		args.iter()

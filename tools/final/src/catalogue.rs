@@ -784,8 +784,10 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 	}
 	steps.push((
 		"fixed-route".into(),
-		python(&[
-			"tools/column/fixed_route_gate.py",
+		strings(&[
+			crate::stage::PROGRAM,
+			"stage",
+			"fixed-route",
 			"--out",
 			&out_text("fixed-route"),
 		]),

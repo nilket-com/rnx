@@ -1,0 +1,448 @@
+{
+ "expected": {
+  "build_environment: a PKG_CONFIG_ override": {
+   "error": "ValueError",
+   "message": "undeclared build variable: PKG_CONFIG_ALLOW_CROSS"
+  },
+  "build_environment: an unknown CC_ override": {
+   "error": "ValueError",
+   "message": "undeclared build variable: CC_x86_64"
+  },
+  "build_environment: an unknown override": {
+   "error": "ValueError",
+   "message": "undeclared build variable: RUST_SOMETHING"
+  },
+  "build_environment: another RUSTFLAGS": {
+   "ok": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "HOME": "/tmp",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTFLAGS": "-Copt-level=2",
+    "TZ": "UTC"
+   }
+  },
+  "build_environment: base": {
+   "ok": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "HOME": "/tmp",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTFLAGS": "-Copt-level=3",
+    "TZ": "UTC"
+   }
+  },
+  "build_environment: cargo variables kept, target dropped": {
+   "ok": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_HOME": "/h",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_RELEASE_LTO": "fat",
+    "CARGO_TERM_COLOR": "never",
+    "HOME": "/tmp",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTFLAGS": "-Copt-level=3",
+    "TZ": "UTC"
+   }
+  },
+  "build_environment: every declared key": {
+   "ok": {
+    "AR": "v-AR",
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_HOME": "v-CARGO_HOME",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "CC": "v-CC",
+    "CFLAGS": "v-CFLAGS",
+    "CXX": "v-CXX",
+    "CXXFLAGS": "v-CXXFLAGS",
+    "HOME": "v-HOME",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "LDFLAGS": "v-LDFLAGS",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "PKG_CONFIG_LIBDIR": "v-PKG_CONFIG_LIBDIR",
+    "PKG_CONFIG_PATH": "v-PKG_CONFIG_PATH",
+    "PKG_CONFIG_SYSROOT_DIR": "v-PKG_CONFIG_SYSROOT_DIR",
+    "RUSTC": "v-RUSTC",
+    "RUSTC_WORKSPACE_WRAPPER": "v-RUSTC_WORKSPACE_WRAPPER",
+    "RUSTC_WRAPPER": "v-RUSTC_WRAPPER",
+    "RUSTDOC": "v-RUSTDOC",
+    "RUSTDOCFLAGS": "v-RUSTDOCFLAGS",
+    "RUSTFLAGS": "v-RUSTFLAGS",
+    "RUSTUP_HOME": "v-RUSTUP_HOME",
+    "RUSTUP_TOOLCHAIN": "v-RUSTUP_TOOLCHAIN",
+    "SOURCE_DATE_EPOCH": "v-SOURCE_DATE_EPOCH",
+    "TMPDIR": "v-TMPDIR",
+    "TZ": "UTC"
+   }
+  },
+  "build_environment: locales and path one": {
+   "ok": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "TZ": "UTC"
+   }
+  },
+  "build_environment: locales and path two": {
+   "ok": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "TZ": "UTC"
+   }
+  },
+  "build_environment: no rustup": {
+   "error": "ValueError",
+   "message": "rustup unavailable"
+  },
+  "build_environment: unrelated variables": {
+   "ok": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "HOME": "/tmp",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/planted/rustup/bin:/planted/toolchain/bin:/usr/local/bin:/usr/bin:/bin",
+    "RUSTFLAGS": "-Copt-level=3",
+    "TZ": "UTC"
+   }
+  },
+  "capture_key: another binary": {
+   "ok": "9481e050fc377bd9bef1e3f33b5ae30cc494f1bded88c908909e2508527203f5"
+  },
+  "capture_key: base": {
+   "ok": "a75b063b893d3815b5c9d93fa51b4a9bd32f15f50546f4163519a6d4e6ee33d2"
+  },
+  "capture_key: build-only changes": {
+   "ok": "a75b063b893d3815b5c9d93fa51b4a9bd32f15f50546f4163519a6d4e6ee33d2"
+  },
+  "capture_key: cpu changed": {
+   "ok": "85d932470bb4645519a06b62b8354a87711b6ab26f31e15637fc93e73b7c43bf"
+  },
+  "capture_key: environment changed": {
+   "ok": "1bd1c02e3bbfb144d54bce366608690a3341f5122fa3490cc86f4fc30c8c4048"
+  },
+  "capture_key: fixtures changed": {
+   "ok": "2daf97bed1cc3e957e9058a2568af3247155809c1f593a4e600311ad38c2b3f8"
+  },
+  "capture_key: other tooling changed": {
+   "ok": "c7c213813b3eb1a2f28ae29c9da8c57ab52f49198a11f7dd91995175849d123f"
+  },
+  "capture_key: policy changed": {
+   "ok": "6a08d1f2be9486f12f6f7ef8e15d0e69def2a9c856a86f15bb0fc13366dfe122"
+  },
+  "capture_key: run_environment changed": {
+   "ok": "f3823601de07705995aaf670c509b11aa333bba02fc5b2ecc26a30da09cc5d68"
+  },
+  "capture_key: the planted recipe": {
+   "ok": "10bdadef3242ddb50240dc1dbbe5dbb5f08769e0b429bb260a5fa46d2c165e54"
+  },
+  "capture_key: valgrind changed": {
+   "ok": "04ea42d125a21a32dbc294e6c6999d48eddff7e902da012c720311e5a6160d1d"
+  },
+  "constants": {
+   "ok": {
+    "BUILD_KEYS": [
+     "AR",
+     "CARGO_HOME",
+     "CC",
+     "CFLAGS",
+     "CXX",
+     "CXXFLAGS",
+     "HOME",
+     "LANG",
+     "LC_ALL",
+     "LDFLAGS",
+     "PATH",
+     "PKG_CONFIG_LIBDIR",
+     "PKG_CONFIG_PATH",
+     "PKG_CONFIG_SYSROOT_DIR",
+     "RUSTC",
+     "RUSTC_WORKSPACE_WRAPPER",
+     "RUSTC_WRAPPER",
+     "RUSTDOC",
+     "RUSTDOCFLAGS",
+     "RUSTFLAGS",
+     "RUSTUP_HOME",
+     "RUSTUP_TOOLCHAIN",
+     "SOURCE_DATE_EPOCH",
+     "TMPDIR",
+     "TZ"
+    ],
+    "BUILD_PREFIXES": [
+     "CARGO_",
+     "LC_"
+    ],
+    "capture_environment": {
+     "GLIBC_TUNABLES": "glibc.malloc.arena_max=1:glibc.malloc.mmap_threshold=131072:glibc.malloc.trim_threshold=131072:glibc.malloc.top_pad=0:glibc.malloc.perturb=0",
+     "HOME": "/tmp",
+     "LC_ALL": "C",
+     "PATH": "/usr/local/bin:/usr/bin:/bin",
+     "POLARS_MAX_THREADS": "1",
+     "PYTHONDONTWRITEBYTECODE": "1"
+    }
+   }
+  },
+  "recipe: planted host": {
+   "ok": {
+    "build": [
+     "cargo",
+     "+1.98.1",
+     "build",
+     "--locked",
+     "--release",
+     "--bin",
+     "rnx"
+    ],
+    "build_environment": {
+     "allowlist": [
+      "AR",
+      "CARGO_HOME",
+      "CC",
+      "CFLAGS",
+      "CXX",
+      "CXXFLAGS",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "LDFLAGS",
+      "PATH",
+      "PKG_CONFIG_LIBDIR",
+      "PKG_CONFIG_PATH",
+      "PKG_CONFIG_SYSROOT_DIR",
+      "RUSTC",
+      "RUSTC_WORKSPACE_WRAPPER",
+      "RUSTC_WRAPPER",
+      "RUSTDOC",
+      "RUSTDOCFLAGS",
+      "RUSTFLAGS",
+      "RUSTUP_HOME",
+      "RUSTUP_TOOLCHAIN",
+      "SOURCE_DATE_EPOCH",
+      "TMPDIR",
+      "TZ"
+     ],
+     "keys": [
+      "CARGO_BUILD_JOBS",
+      "CARGO_HOME",
+      "CARGO_INCREMENTAL",
+      "CARGO_TERM_COLOR",
+      "HOME",
+      "LANG",
+      "LC_ALL",
+      "PATH",
+      "RUSTFLAGS",
+      "TZ"
+     ],
+     "prefixes": [
+      "CARGO_",
+      "LC_"
+     ],
+     "sha256": "373033ddcac5ee05a9afd8e2201d299749b20ef7b2f589ba70be2e64310fa118"
+    },
+    "cpu": [
+     "vendor_id\t: GenuineIntel",
+     "model name\t: Planted CPU",
+     "flags\t\t: fpu vme sse2"
+    ],
+    "environment": {
+     "keys": [
+      "GLIBC_TUNABLES",
+      "LC_ALL",
+      "PYTHONDONTWRITEBYTECODE"
+     ],
+     "sha256": "6b3d1bf123c8cadc01da8bd5ee7c7bab199ada9a523abddb9f462126ce3f73f4"
+    },
+    "fixtures": {
+     "awfy_permute.rn": "4557115a87b3ed5cfa197e9116c8b10a33cb32dd54c55879f22e0e071837278b",
+     "awfy_sieve.rn": "3009ca902eb160cec9ac37a620697d1368a227157413fcd30e2804a33d3a1aa7",
+     "fib.rn": "fe516bca9de5a2b1f00959a0cdcb5750084e11302e8cd33e4e2d01cdbd3bf994",
+     "loops.rn": "1cc7aec340af3575588eb944fec65b724080aa2f882512b5bed2cd65961d4d0b",
+     "numeric_calls.rn": "d73584ece532ecca5bb1d2e57543f4966ee84f11dba0ba5bd5e2a9310370c7f6",
+     "shared_rows.rn": "6c4ee251a8b68fe2c796efa2f2606e684e5a723f83e837872740211fcd64a7f2",
+     "vec_iter_bool.rn": "898336e853827eda0db403e110fbda4091ccdb7c4e3e235132885a5618f28487",
+     "vec_iter_i64.rn": "ccf573adb779dc3879d4581ed72105a56ef96ceabfffc168585bbb2a3b6d137f"
+    },
+    "policy": {
+     "anchor": "48fe3b15f48c92be91f04aa97f1f2f3fc31cf860",
+     "cumulative_per_mille": 10,
+     "kernels": [
+      "fib",
+      "loops",
+      "numeric_calls",
+      "shared_rows",
+      "awfy_sieve",
+      "awfy_permute",
+      "vec_iter_i64",
+      "vec_iter_bool"
+     ],
+     "modes": [
+      "off",
+      "on"
+     ],
+     "per_record_per_mille": 5,
+     "schema": 1,
+     "sizes": [
+      1,
+      5
+     ]
+    },
+    "run_environment": {
+     "GLIBC_TUNABLES": "glibc.malloc.arena_max=1:glibc.malloc.mmap_threshold=131072:glibc.malloc.trim_threshold=131072:glibc.malloc.top_pad=0:glibc.malloc.perturb=0",
+     "HOME": "/tmp",
+     "LC_ALL": "C",
+     "PATH": "/usr/local/bin:/usr/bin:/bin",
+     "POLARS_MAX_THREADS": "1",
+     "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "toolchain": {
+     "cargo": "9b67ea6d6b33852be2b95bae50945a1285b3158d4565e4e0ddbb60e839f240b9",
+     "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
+    },
+    "tooling": {
+     "tools/column/fixed_route_vectors.py": "dd646729d6b9c05f556891833c91036fe65ba4395be1fe0f10969f39662f3ebd",
+     "tools/column/ir_accounting.py": "a34961253d81822d13e3704a359a0e3b44fee1140dd62eb4fea1952e1de53489",
+     "tools/column/old_path_child.py": "545f92ef1473b9ec377d93f4300e9fd071cff7bfe594e6c467742b89eb8551a7",
+     "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
+     "tools/column/paired_build.py": "253e51479c2f4e523cf4a8ed3db21d034232c112f241028d2ab1b7cd360d9274"
+    }
+   }
+  },
+  "reuse_anchor: a wrong revision": {
+   "error": "ValueError",
+   "message": "wrong imported anchor revision"
+  },
+  "reuse_anchor: another binary": {
+   "error": "ValueError",
+   "message": "anchor binary differs; new capture required"
+  },
+  "reuse_anchor: cpu changed": {
+   "error": "ValueError",
+   "message": "anchor measurement inputs differ; new capture required"
+  },
+  "reuse_anchor: run_environment changed": {
+   "error": "ValueError",
+   "message": "anchor measurement inputs differ; new capture required"
+  },
+  "reuse_anchor: the planted capture": {
+   "ok": {
+    "artifacts": {
+     "<TMP>/legacy/MANIFEST.json": "<MANIFEST-DIGEST>",
+     "<TMP>/legacy/binary": "5694d08a2e53ffcae0c3103e5ad6f6076abd960eb1f8a56577040bc1028f702b",
+     "<TMP>/legacy/case/profile": "cdd93696b72b3de32dd12e38bdcae2eaf5a95080af38cbe347f3195ef9d56bf7",
+     "<TMP>/legacy/original.json": "<RECEIPT-DIGEST>"
+    },
+    "binary_sha256": "5694d08a2e53ffcae0c3103e5ad6f6076abd960eb1f8a56577040bc1028f702b",
+    "capture_key": "4e232effabffe38d5262ae89df9db795d6455b32740ec4d4f227d355b752c046",
+    "recipe": {
+     "build_environment": "old",
+     "cpu": [
+      "cpu"
+     ],
+     "environment": {
+      "keys": [
+       "GLIBC_TUNABLES",
+       "LC_ALL",
+       "PYTHONDONTWRITEBYTECODE"
+      ],
+      "sha256": "6b3d1bf123c8cadc01da8bd5ee7c7bab199ada9a523abddb9f462126ce3f73f4"
+     },
+     "fixtures": {},
+     "policy": {},
+     "run_environment": {
+      "GLIBC_TUNABLES": "glibc.malloc.arena_max=1:glibc.malloc.mmap_threshold=131072:glibc.malloc.trim_threshold=131072:glibc.malloc.top_pad=0:glibc.malloc.perturb=0",
+      "HOME": "/tmp",
+      "LC_ALL": "C",
+      "PATH": "/usr/local/bin:/usr/bin:/bin",
+      "POLARS_MAX_THREADS": "1",
+      "PYTHONDONTWRITEBYTECODE": "1"
+     },
+     "tooling": {},
+     "valgrind": "v"
+    },
+    "records": [
+     {
+      "profile": "<TMP>/legacy/case/profile",
+      "role": "baseline"
+     }
+    ],
+    "reuse_proof": {
+     "binary_sha256": "5694d08a2e53ffcae0c3103e5ad6f6076abd960eb1f8a56577040bc1028f702b",
+     "current_build": {
+      "binary": "<TMP>/legacy/binary",
+      "sha256": "5694d08a2e53ffcae0c3103e5ad6f6076abd960eb1f8a56577040bc1028f702b"
+     },
+     "current_recipe": {
+      "build_environment": "new",
+      "cpu": [
+       "cpu"
+      ],
+      "environment": {
+       "keys": [
+        "GLIBC_TUNABLES",
+        "LC_ALL",
+        "PYTHONDONTWRITEBYTECODE"
+       ],
+       "sha256": "6b3d1bf123c8cadc01da8bd5ee7c7bab199ada9a523abddb9f462126ce3f73f4"
+      },
+      "fixtures": {},
+      "policy": {},
+      "run_environment": {
+       "GLIBC_TUNABLES": "glibc.malloc.arena_max=1:glibc.malloc.mmap_threshold=131072:glibc.malloc.trim_threshold=131072:glibc.malloc.top_pad=0:glibc.malloc.perturb=0",
+       "HOME": "/tmp",
+       "LC_ALL": "C",
+       "PATH": "/usr/local/bin:/usr/bin:/bin",
+       "POLARS_MAX_THREADS": "1",
+       "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "tooling": {},
+      "valgrind": "v"
+     },
+     "manifest_sha256": "<MANIFEST-DIGEST>",
+     "original_receipt": "<TMP>/legacy/original.json",
+     "original_sha256": "<RECEIPT-DIGEST>"
+    },
+    "revision": "anchor",
+    "status": "PASS"
+   }
+  },
+  "reuse_anchor: valgrind changed": {
+   "error": "ValueError",
+   "message": "anchor measurement inputs differ; new capture required"
+  },
+  "verified: a tampered artifact": {
+   "error": "ValueError",
+   "message": "capture artifact changed: <TMP>/legacy/MANIFEST.json"
+  },
+  "verified: no artifacts": {
+   "error": "ValueError",
+   "message": "invalid capture receipt"
+  },
+  "verified: not PASS": {
+   "error": "ValueError",
+   "message": "invalid capture receipt"
+  },
+  "verified: the reused anchor": {
+   "ok": true
+  }
+ },
+ "method": "paired_build.build_environment over planted environments with shutil.which('rustup') answering /planted/rustup/bin/rustup and that absolute rustup's `which --toolchain 1.98.1 NAME` answering /planted/toolchain/bin/NAME (strings only); the recipe's own `rustup which --toolchain 1.98.1 NAME` answering <TMP>/toolchain/bin/NAME (files 'planted rustc', 'planted cargo'); BUILD_KEYS, BUILD_PREFIXES and ir_pool.capture_environment(); fixed_route_gate.recipe(live policy) under an environment of only PATH=/tools, HOME=/planted/home, RUSTFLAGS=-Copt-level=3, CARGO_HOME=/cargo, with /proc/cpuinfo read as a planted two-processor text (the checkout's own tooling and fixture digests); capture_key over that recipe (valgrind 'v'*64, binary 'a'*64) and over test_drift_band's cases; reuse_anchor and verified over test_drift_band's planted legacy capture. Each case is ok with the value or error with the class and message; <TMP> is the scratch root, and the legacy MANIFEST.json and receipt digests, which cover scratch paths, are <MANIFEST-DIGEST> and <RECEIPT-DIGEST>.",
+ "witness": "7991e30de16863b07289a8423678e8831c7687f4"
+}

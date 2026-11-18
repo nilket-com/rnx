@@ -1,0 +1,11 @@
+# ADR 0298: the fixed-route gate and its helpers, replaced by the Rust
+# stage mode `rnx-final stage fixed-route` (tools/final/src/fixed_route_stage.rs)
+# over the ADR 0296 port (tools/final/src/fixed_route.rs), and their tests,
+# whose cases are Rust witnesses and controls. tools/final/tests/deleted.rs
+# requires none to be tracked and no current file to run or name one.
+tools/column/fixed_route_gate.py
+tools/column/drift_band.py
+tools/column/anchor_cache.py
+tools/column/test_drift_band.py
+tools/column/test_anchor_cache.py
+tools/column/test_valgrind_resolution.py

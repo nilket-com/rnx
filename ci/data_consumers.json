@@ -1072,8 +1072,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 26532,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture."
+      "max_bytes": 26928,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0298 moves fixed-route to the Rust stage mode as a reviewed successor, recorded in the fixture."
     },
     "tools/final/tests/witness/cli-controls.json": {
       "class": "live-fixture",
@@ -1111,6 +1111,15 @@
       "max_bytes": 197353,
       "reason": "ADR 0296 witness fixture: drift_band's policy validation, anchor transitions, band comparisons (exact limits, high counts, decreases), measurement recipe and scores, generated once at 96a809fe from controlled values (method recorded inside); the Rust port is compared against it."
     },
+    "tools/final/tests/witness/fixed-route-gate.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/fixed_route_stage.rs"
+      },
+      "max_bytes": 845359,
+      "reason": "ADR 0298 witness fixture: the published fixed_route_gate.main() over a planted host (scratch checkout with the real tooling and kernels, intercepted git, cargo, rustup and children, a real anchor cache): every call, the receipt, the files and the cache state of eleven scenarios, generated once at 7991e30d (method recorded inside); the Rust stage is compared against it."
+    },
     "tools/final/tests/witness/fixed-route-git.json": {
       "class": "live-fixture",
       "consumer": {
@@ -1119,6 +1128,15 @@
       },
       "max_bytes": 5723,
       "reason": "ADR 0296 witness fixture: anchor_approval and source_condition over a planted repository signed with an ephemeral key, generated once at 96a809fe (method recorded inside); the Rust port is compared against it."
+    },
+    "tools/final/tests/witness/fixed-route-recipe.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "std::fs::read_to_string(&path)",
+        "path": "tools/final/tests/fixed_route_stage.rs"
+      },
+      "max_bytes": 14385,
+      "reason": "ADR 0298 witness fixture: paired_build.build_environment, ir_pool.capture_environment, the gate's recipe and capture_key, reuse_anchor and verified over planted inputs, generated once at 7991e30d (method recorded inside); the Rust port is compared against it."
     },
     "tools/final/tests/witness/inventories.json": {
       "class": "live-fixture",
@@ -1198,8 +1216,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 80808,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture."
+      "max_bytes": 81172,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0298 moves fixed-route to the Rust stage mode as a reviewed successor, recorded in the fixture."
     },
     "tools/final/tests/witness/suite-recipes.json": {
       "class": "live-fixture",

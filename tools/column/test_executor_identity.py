@@ -47,28 +47,6 @@ class Observation(unittest.TestCase):
 				status,r=self.run_case(error);self.assertEqual(status,1);self.assertIn('error',r)
 
 class GatePolicy(unittest.TestCase):
-	def test_observation_continues_but_tool_error_stops(self):
-		import tempfile, json
-		from pathlib import Path
-		from types import SimpleNamespace
-		import fixed_route_gate as gate
-		for fatal in (False,True):
-			with self.subTest(fatal=fatal), tempfile.TemporaryDirectory() as tmp:
-				out=Path(tmp)
-				identity={'status':'FAIL','reason':'instruction identity not established: unreviewed form'}
-				if fatal: identity['error']='tool failed'
-				(out/'IDENTITY.json').write_text(json.dumps(identity))
-				pair={'builds':[{'source_commit':n,'binary':n,'sha256':'sha'} for n in ('old','new')]}
-				with patch.object(gate.subprocess,'run',return_value=SimpleNamespace(returncode=1)), \
-					patch.object(gate,'stage',return_value={'records':[]}) as capture, \
-					patch.object(gate,'capture_key',return_value='key'):
-					if fatal:
-						with self.assertRaises(ValueError): gate.captures(out,pair,Path('vg'),{}, {})
-						capture.assert_not_called()
-					else:
-						gate.captures(out,pair,Path('vg'),{}, {})
-						capture.assert_called_once()
-
 	def test_kernel_identity_keeps_hard_failure(self):
 		import i64_compare_identity as kernel
 		with patch.object(kernel.subprocess,'check_output',return_value='source'), \

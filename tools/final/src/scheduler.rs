@@ -56,10 +56,7 @@ fn wrapper(script: &str) -> Option<&'static [(&'static str, &'static str)]> {
 		],
 		JUPYTER => &[("Cargo.toml", "debug"), ("jupyter/Cargo.toml", "debug")],
 		CLI => &[("adapters/polars/Cargo.toml", "release")],
-		CROSS
-		| "tools/column/fixed_route_gate.py"
-		| "ci/preflight.py"
-		| "tools/test_refresh_census.py" => &[],
+		CROSS | FIXED | "ci/preflight.py" | "tools/test_refresh_census.py" => &[],
 		_ => return None,
 	})
 }
@@ -115,6 +112,7 @@ pub fn script(command: &[String]) -> Option<&str> {
 			Some("jupyter") => Some(JUPYTER),
 			Some("inventories") => Some(INVENTORIES),
 			Some("cross") => Some(CROSS),
+			Some("fixed-route") => Some(FIXED),
 			_ => None,
 		};
 	}
@@ -131,6 +129,7 @@ pub const CLI: &str = "rnx-final stage cli";
 pub const JUPYTER: &str = "rnx-final stage jupyter";
 pub const INVENTORIES: &str = "rnx-final stage inventories";
 pub const CROSS: &str = "rnx-final stage cross";
+pub const FIXED: &str = "rnx-final stage fixed-route";
 
 fn is_cargo(command: &[String]) -> bool {
 	Path::new(&command[0])

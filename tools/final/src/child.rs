@@ -37,7 +37,7 @@ const ENV_KEYS: [&str; 20] = [
 	"TZ",
 ];
 const ENV_PREFIXES: [&str; 2] = ["CARGO_", "RNX_"];
-const COLUMN_PRODUCERS: [&str; 20] = [
+const COLUMN_PRODUCERS: [&str; 19] = [
 	"accept",
 	"final",
 	"verify",
@@ -55,7 +55,6 @@ const COLUMN_PRODUCERS: [&str; 20] = [
 	"accept_remote",
 	"cross_program_controls",
 	"cross_program_gate",
-	"fixed_route_gate",
 	"miri_exact",
 	"repl_session_controls",
 ];
@@ -242,7 +241,10 @@ pub fn contract(command: &[String], cwd: &Path, root: &Path) -> Result<&'static 
 		) {
 			(
 				Some("stage"),
-				Some("suite" | "clippy" | "cli" | "jupyter" | "inventories" | "cross"),
+				Some(
+					"suite" | "clippy" | "cli" | "jupyter" | "inventories" | "cross"
+					| "fixed-route",
+				),
 			) => Ok("producer"),
 			_ => Err(value_error(&format!(
 				"unregistered rnx-final child: {command:?}"
