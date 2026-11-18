@@ -106,6 +106,13 @@ may notify after exit; no messaging service is required by these tools.
 
 ## Record acceptance (ADR 0232)
 
+To see what is running and how far a final has come, run
+`tools/final/rnx-jobs` (`rnx-final jobs`; `-w` refreshes every 30 seconds
+for a person watching, `--final DIR` shows one final). It reads the
+running `rnx-*` user services and the finals' receipts under
+`RNX_FINALS` (default `target/`) and changes nothing; agents wait on a
+job's exit and read its terminal receipt instead.
+
 The Rust controller (`tools/final`) selects a record's stages from its plan
 and implementation commits, computing the whole record diff from the plan's
 parent; callers cannot choose a narrower baseline. Changes under `src/`,

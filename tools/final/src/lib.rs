@@ -13,6 +13,7 @@ pub mod cross;
 pub mod evidence;
 pub mod failure;
 pub mod guardian;
+pub mod jobs;
 pub mod outputs;
 pub mod owned;
 pub mod producer;

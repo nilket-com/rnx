@@ -1,0 +1,23 @@
+#!/bin/sh
+# rnx-jobs: what is running and how far a final has come (ADR 0295).
+#   rnx-jobs                 one snapshot
+#   rnx-jobs -w              refresh every 30 s, for a person watching
+#   rnx-jobs --final DIR     one final directory
+# It runs an already-built controller and never builds one: RNX_FINAL_BIN,
+# else this checkout's target/final-controller/release/rnx-final (the build
+# tools/final/final.sh makes), target/release/rnx-final or
+# target/debug/rnx-final. Finals are looked for under RNX_FINALS, by
+# default this checkout's target/.
+set -eu
+here=$(dirname "$(readlink -f "$0")")
+root=$(dirname "$(dirname "$here")")
+RNX_FINALS=${RNX_FINALS:-$root/target}
+export RNX_FINALS
+for bin in "${RNX_FINAL_BIN:-}" "$root/target/final-controller/release/rnx-final" \
+	"$root/target/release/rnx-final" "$root/target/debug/rnx-final"; do
+	if [ -n "$bin" ] && [ -x "$bin" ]; then
+		exec "$bin" jobs "$@"
+	fi
+done
+echo "rnx-jobs: no built rnx-final; set RNX_FINAL_BIN or run tools/final/final.sh once" >&2
+exit 1

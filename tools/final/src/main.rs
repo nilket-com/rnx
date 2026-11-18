@@ -86,6 +86,11 @@ fn main() {
 	let result = match arguments.first().and_then(|a| a.to_str()) {
 		Some("guardian") => rnx_final::guardian::main(&arguments[1..]),
 		Some("stage") => rnx_final::stage::main(&arguments[1..], &root()),
+		// Never resolved: a copied controller's build checkout may be gone.
+		Some("jobs") => rnx_final::jobs::main(
+			&arguments[1..],
+			&Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."),
+		),
 		Some("python-list") => {
 			rnx_final::pylist::check(&root(), rnx_final::pylist::BASELINE).map(|r| {
 				println!("{r}");
