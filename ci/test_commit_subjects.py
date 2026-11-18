@@ -282,6 +282,80 @@ class Sequence(Fixture, unittest.TestCase):
 			replace(self.policy, sequence_base=cutoff), require_sequence=True)
 
 
+class Fixes(Fixture, unittest.TestCase):
+	def reject_fix(self, commit, rule):
+		with self.assertRaises(HistoryError) as caught:
+			self.check(self.policy)
+		self.assertEqual(caught.exception.commit, commit)
+		self.assertEqual(caught.exception.rule, f"fix.{rule}")
+
+	def test_consecutive_fixes_leave_record_numbering_unchanged(self):
+		self.plan("0209")
+		self.commit("impl: adr 0209 implementation")
+		self.write("test", "repair")
+		first = self.commit("fix: relax the test timeout to 30 seconds")
+		self.write("test", "clarify")
+		second = self.commit("fix: clarify the test")
+		self.plan("0210")
+		result = self.check(self.policy)["host"]
+		fixes = [row for row in result["commits"] if row["kind"] == "fix"]
+		self.assertEqual([row["commit"] for row in fixes], [first, second])
+		self.assertTrue(all("number" not in row and "plan" not in row for row in fixes))
+		self.assertEqual(fixes[1]["parents"], [first])
+		self.git("reset", "--hard", second)
+		self.plan("0211")
+		self.reject("expected next record 0210", self.policy)
+
+	def test_fix_never_closes_an_open_plan(self):
+		self.plan("0209")
+		self.reject_fix(self.commit("fix: change a fixture"), "placement")
+
+	def test_fix_metadata_rules_are_named(self):
+		for subject, options, rule in [
+			("fix: valid summary\n\nbody", [], "body"),
+			("fix: unsigned", ["--no-gpg-sign"], "signature"),
+			("fix: adr 0209 numbered", [], "number"),
+			("fix: Uppercase", [], "subject"),
+			("fix: scoped(test) text", [], "subject"),
+			("fix: cut a1 details", [], "subject"),
+			("fix: unicode →", [], "subject"),
+		]:
+			with self.subTest(rule=rule, subject=subject):
+				self.reject_fix(self.commit(subject, *options), rule)
+				self.git("reset", "--hard", self.import_commit)
+		self.git("config", "user.name", "Wrong Person")
+		self.reject_fix(self.commit("fix: valid text"), "identity")
+
+	def test_fix_cannot_be_a_merge(self):
+		side = self.git("commit-tree", "-S", self.git("rev-parse", "HEAD^{tree}"),
+			"-p", self.import_commit, "-m", "unreviewed second parent")
+		bad = self.git("commit-tree", "-S", self.git("rev-parse", "HEAD^{tree}"),
+			"-p", self.import_commit, "-p", side, "-m", "fix: merge")
+		self.git("reset", "--hard", bad)
+		self.reject_fix(bad, "parents")
+
+	def test_every_edit_to_either_plan_root_is_refused(self):
+		for root, old in [("plans", "0208"), ("rune/plans", "0206")]:
+			path = f"{root}/adr/{old}_test.md"
+			for edit in ("add", "remove", "edit", "rename-in", "rename-out", "replace-root"):
+				with self.subTest(root=root, edit=edit):
+					if edit == "add":
+						self.write(f"{root}/extra-ñ.md", "new")
+					elif edit == "remove":
+						(self.repo / path).unlink()
+					elif edit == "edit":
+						self.write(path, "changed")
+					elif edit == "rename-in":
+						self.git("mv", "host", f"{root}/moved.txt")
+					elif edit == "rename-out":
+						self.git("mv", path, "moved.md")
+					else:
+						self.git("rm", "-r", root)
+						self.write(root, "replaced tree")
+					self.reject_fix(self.commit("fix: change a plan"), "plans")
+					self.git("reset", "--hard", self.import_commit)
+
+
 class Integration(unittest.TestCase):
 	def test_host_preflight_is_first(self):
 		# The stage list is the Rust controller's; its committed witness

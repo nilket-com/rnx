@@ -7,8 +7,8 @@ to this root policy. `ci/commit_subjects.py` produces the history receipt withou
 running controls. Both commands are read-only.
 
 The checker reads signed committed objects. A dirty working tree is not evidence
-for a missing plan or a valid signature. Subjects are `plan: adr NNNN summary`
-or `impl: adr NNNN summary`, lowercase-starting printable ASCII with no scopes,
+for a missing plan or a valid signature. Subjects are `plan: adr NNNN summary`,
+`impl: adr NNNN summary` or `fix: summary`, lowercase-starting printable ASCII with no scopes,
 parentheses, delivery labels or body. Author and committer use the repository's
 established identity. One plan precedes each implementation on first-parent
 history; `MAX_IMPLEMENTATIONS` is the single cap, currently one. Plans contain
@@ -56,10 +56,18 @@ parked bundles or acceptance receipts to satisfy admission.
 # One open record
 
 After `956ed4d5e89611ccb7140c54d4861390c94db49b`, first-parent history
-alternates a plan and its immediately following implementation. A pending plan
-is allowed only at HEAD. Each plan takes one more than the highest ADR number
+requires a plan and its immediately following implementation for each record.
+A pending plan is allowed only at HEAD. Each plan takes one more than the highest ADR number
 in its parent's committed tree, including `rune/plans/adr/`. Earlier history
 remains grandfathered; `MAX_IMPLEMENTATIONS = 1` is permanent.
+
+A signed `fix: summary` commit can follow a closed record or another fix.
+It uses no ADR number and cannot change either plan tree.
+Use it for a correction whose decision is already clear, such as a flaky or
+wrong test, a broken control, a typo or a formatting error. Changes to product
+behavior, public contracts, measurement identity or protected execution
+paths still use an ADR. Review and one passing final still apply. The fix's
+parent is the baseline for changed-path selection and data hygiene.
 
 To abandon a record, close it with its single implementation, changing only
 its paired documents and setting the ADR's opening `Status: Withdrawn`.

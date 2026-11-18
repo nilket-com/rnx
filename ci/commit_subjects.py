@@ -10,6 +10,8 @@ import subprocess
 IDENTITY = ("Joel Bondurant", "em@joelbondurant.com")
 MAX_IMPLEMENTATIONS = 1
 SUBJECT = re.compile(r"^(plan|impl): adr ([0-9]{4}) ([a-z0-9][\x20-\x7e]*)$")
+FIX_SUBJECT = re.compile(r"^fix: [a-z0-9][\x20-\x7e]*$")
+FIX_NUMBER = re.compile(r"^fix: adr [0-9]{4}\b")
 LABELS = re.compile(r"\b(?:cut [a-z][0-9]*|e[0-9]+(?:[._-][0-9]+)*|(?:crypto|pd|f-own|f-ctr)[-_][0-9]+)\b", re.I)
 DOC = re.compile(r"(?:rune/)?plans/(adr|impl)/([0-9]{4})[_-][a-z0-9_-]+\.md$")
 
@@ -45,14 +47,33 @@ def need(condition, message):
 	if not condition:
 		raise HistoryError(message)
 
+def fix_need(condition, commit, rule, message):
+	if not condition:
+		raise HistoryError(message, commit=commit, rule="fix." + rule)
+
+def fix_subject(subject):
+	return (FIX_SUBJECT.fullmatch(subject) is not None and not FIX_NUMBER.search(subject)
+		and not any(c in subject for c in "()") and not LABELS.search(subject))
+
 
 def metadata(repo, commit):
 	fields = git(repo, "show", "-s", "--format=%H%x00%P%x00%an%x00%ae%x00%cn%x00%ce", commit).rstrip("\n").split("\0")
 	need(len(fields) == 6 and fields[0] == commit, "malformed metadata")
 	message = git(repo, "show", "-s", "--format=%B", commit)
+	subject, _, body = message.partition("\n")
+	if subject.startswith("fix:"):
+		fix_need(tuple(fields[2:4]) == IDENTITY and tuple(fields[4:6]) == IDENTITY,
+			commit, "identity", "fix author/committer identity mismatch")
+		fix_need(not body.strip(), commit, "body", "fix commit body forbidden")
+		fix_need(not FIX_NUMBER.search(subject), commit, "number", "fix subject has an ADR number")
+		fix_need(fix_subject(subject), commit, "subject", "invalid fix subject")
+		try:
+			git(repo, "verify-commit", commit)
+		except HistoryError as error:
+			raise HistoryError(str(error), commit=commit, rule="fix.signature") from error
+		return {"commit": commit, "parents": fields[1].split(), "subject": subject, "kind": "fix"}
 	need(tuple(fields[2:4]) == IDENTITY and tuple(fields[4:6]) == IDENTITY, "author/committer identity mismatch")
-	need(not message.partition("\n")[2].strip(), "commit body forbidden")
-	subject = message.split("\n", 1)[0]
+	need(not body.strip(), "commit body forbidden")
 	match = SUBJECT.fullmatch(subject)
 	need(match is not None and not any(c in subject for c in "()") and not LABELS.search(subject), "invalid subject")
 	kind, number, _ = match.groups()
@@ -104,6 +125,18 @@ def segment(repo, base, head, policy, engine=False, occupied=None, require_seque
 	for commit in commits:
 		row = metadata(repo, commit)
 		need(row["parents"] and row["parents"][0] == previous, "cutoff not on complete first-parent chain")
+		if row["kind"] == "fix":
+			fix_need(sequenced and pending is None, commit, "placement", "fix must be between closed records")
+			fix_need(len(row["parents"]) == 1, commit, "parents", "fix must have a single parent")
+			changed = git(repo, "diff-tree", "--no-commit-id", "--name-only", "--no-renames",
+				"-r", "-z", previous, commit).split("\0")
+			for path in changed:
+				fix_need(not any(path == root or path.startswith(root + "/") for root in ("plans", "rune/plans")),
+					commit, "plans", "fix changes a protected plan path: " + repr(path))
+			rows.append(row)
+			previous = commit
+			previous_tree = paths(repo, commit)
+			continue
 		is_import = not engine and commit == policy.import_commit
 		if is_import:
 			import_proof(repo, row, policy)

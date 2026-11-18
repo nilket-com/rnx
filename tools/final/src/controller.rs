@@ -1567,6 +1567,11 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		"acceptance_scope": scope, "complete_final": scope == "complete" && pass, "publication_eligible": publication_eligible(scope)? && pass,
 		"free_bytes_before": free_before, "free_bytes_after": disk_free(&root)?, "records": records,
 	});
+	if let Some(selection) = &selection_value
+		&& selection["record"]["phase"] == "fix"
+	{
+		r["fix_subject"] = selection["record"]["subject"].clone();
+	}
 	if let Some(row) = &failed_row {
 		r["failed_stage"] = row["name"].clone();
 		if let Some(f) = row.get("failure") {

@@ -169,6 +169,39 @@ rnx-elsewhere  running 1m, memory 1G
 	);
 }
 
+#[test]
+fn a_fix_is_labeled_and_uses_the_same_scope_and_stage_reference() {
+	let s = scratch();
+	let prior = s.0.join("previous");
+	scoped_dir(&prior, "required", &["a"], 900);
+	result(&prior, "PASS", false, 240.0, &[]);
+	let current = s.0.join("fix");
+	scoped_dir(&current, "required", &["a"], 60);
+	let receipt = current.join("SELECTION.json");
+	let mut selection: serde_json::Value =
+		serde_json::from_slice(&std::fs::read(&receipt).unwrap()).unwrap();
+	selection["record"] = json!({
+		"phase": "fix", "candidate": "abcd1234".repeat(5), "baseline": "c".repeat(40),
+		"subject": "fix: clarify the 30 second timeout", "paths": [], "required": ["a"]
+	});
+	write(&receipt, &selection);
+	std::fs::File::options()
+		.write(true)
+		.open(&receipt)
+		.unwrap()
+		.set_modified(now() - Duration::from_secs(60))
+		.unwrap();
+	let view = jobs::final_view(&current, std::slice::from_ref(&prior), now(), true);
+	assert!(
+		view.iter()
+			.any(|l| l == "fix: clarify the 30 second timeout (abcd1234)")
+	);
+	assert!(
+		view.iter()
+			.any(|l| l.contains("against the last required PASS of the same 1 stages"))
+	);
+}
+
 /// Only a failed or incomplete earlier final, or only the final itself:
 /// no reference, said plainly.
 #[test]

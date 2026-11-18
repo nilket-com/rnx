@@ -6,6 +6,8 @@ from pathlib import Path
 import re
 import subprocess
 
+from commit_subjects import fix_subject
+
 DATA = {'.json', '.jsonl', '.gz', '.xz', '.tsv', '.csv', '.npy', '.npz', '.bin', '.der', '.pem', '.txt', '.log', '.stdout', '.stderr', '.out', '.elf', '.nm', '.exec', '.data', '.trace', '.pty', '.ansi', '.bundle', '.png', '.woff2', '.ttf', '.ipynb'}
 SOURCE = {'.rs', '.py', '.sh', '.rn', '.js', '.ts', '.c', '.h', '.cpp', '.rb', '.pl', '.lua', '.jl', '.R', '.java', '.in', '.html', '.css', '.scss', '.svg', '.md', '.rst', '.toml', '.lock', '.yaml', '.yml'}
 
@@ -67,11 +69,16 @@ def scan(root, revision=None, indexed=False):
 			files[path] = git('show', (revision or '') + ':' + path)
 		elif (root/path).is_file(): files[path] = (root/path).read_bytes()
 	manifest = json.loads(files['ci/data_consumers.json'])
-	# A record is measured from the parent of its own most recent plan.
-	plan = next((line.split('\t', 1)[0] for line in git('log', '--first-parent', '--format=%H%x09%s', rev).decode().splitlines() if re.match(r'[^\t]+\tplan: adr [0-9]{4} ', line)), None)
-	if plan is None: raise ValueError('data hygiene requires a record plan baseline')
+	subject = git('show', '-s', '--format=%s', rev).decode().removesuffix('\n')
+	if fix_subject(subject):
+		base = rev + '^'
+	else:
+		# A numbered record is measured from the parent of its own plan.
+		plan = next((line.split('\t', 1)[0] for line in git('log', '--first-parent', '--format=%H%x09%s', rev).decode().splitlines() if re.match(r'[^\t]+\tplan: adr [0-9]{4} ', line)), None)
+		if plan is None: raise ValueError('data hygiene requires a record plan baseline')
+		base = plan + '^'
 	baseline = {}
-	for row in filter(None, git('ls-tree', '-r', '-l', '-z', plan+'^').decode().split('\0')):
+	for row in filter(None, git('ls-tree', '-r', '-l', '-z', base).decode().split('\0')):
 		metadata, path = row.split('\t', 1)
 		size = metadata.split()[-1]
 		if size != '-': baseline[path] = int(size)

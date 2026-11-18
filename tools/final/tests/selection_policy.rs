@@ -1,5 +1,6 @@
 //! Ports of the Python selection controls (test_gate_policy.py), against a
 //! throwaway record history.
+mod common;
 use rnx_final::receipt::invocation_id;
 use rnx_final::selection::{self, close_prerequisites, finalize_with, select};
 use serde_json::{Map, Value, json};
@@ -114,6 +115,124 @@ fn stage_names(m: &Value) -> Vec<String> {
 		.iter()
 		.map(|s| s[0].as_str().unwrap().to_owned())
 		.collect()
+}
+
+#[test]
+fn a_fix_has_its_own_baseline_and_revalidatable_final() {
+	use rnx_final::child::{self, Done};
+	use rnx_final::controller::{self, Hooks, Settings, StageCall};
+	use rnx_final::receipt::{atomic_json, digest};
+	use std::sync::Arc;
+	use std::time::Instant;
+
+	struct Stages(PathBuf);
+	impl Hooks for Stages {
+		fn disk_check(
+			&self,
+			_: &Path,
+			_: &Path,
+			_: &BTreeMap<String, String>,
+		) -> anyhow::Result<()> {
+			Ok(())
+		}
+		fn tools_identity(&self, _: &Settings) -> anyhow::Result<Value> {
+			Ok(json!({}))
+		}
+		fn resources(
+			&self,
+			name: &str,
+			_: &[String],
+			_: &Path,
+			_: &rnx_final::scheduler::Targets,
+		) -> anyhow::Result<rnx_final::scheduler::Resources> {
+			Ok([name.to_owned()].into())
+		}
+		fn stage(&self, call: &StageCall) -> Option<anyhow::Result<Done>> {
+			Some((|| {
+				std::fs::create_dir(&call.directory)?;
+				let receipt = call.directory.join("RESULT.json");
+				let mut value = common::stage_receipt(true, 0, json!([]), json!({}));
+				value["command"] = json!(call.command);
+				value["context"]["command"] = json!(call.command);
+				value["context"]["candidate"] = json!(child::head(&self.0));
+				value["context"]["source"] = json!(child::source(&self.0)?);
+				atomic_json(&receipt, &value)?;
+				Ok(Done {
+					returncode: 0,
+					validation: json!({"path": receipt, "sha256": digest(&receipt)?}),
+					declared_output: None,
+				})
+			})())
+		}
+	}
+
+	let g = Gates::new();
+	assert!(g.check(&g.select(None, "required").unwrap()).is_err());
+	g.write(".gitignore", "runs/\ntarget/\n");
+	g.write("src/a.rs", "record implementation");
+	g.commit("impl: adr 9999 controls");
+	let numbered = selection::record(&g.0, "HEAD").unwrap();
+	assert_eq!(numbered["baseline"], g.1);
+	assert_eq!(numbered["phase"], "impl");
+
+	g.write("README.md", "first fix");
+	g.commit("fix: clarify the documentation");
+	let parent = g.git(&["rev-parse", "HEAD"]);
+	g.write("README.md", "second fix");
+	let subject = "fix: clarify the 30 second timeout";
+	g.commit(subject);
+	let candidate = g.git(&["rev-parse", "HEAD"]);
+	let selected = g.select(None, "required").unwrap();
+	assert_eq!(selected["record"]["candidate"], candidate);
+	assert_eq!(selected["record"]["baseline"], parent);
+	assert_eq!(selected["record"]["phase"], "fix");
+	assert_eq!(selected["record"]["subject"], subject);
+	assert_eq!(selected["record"]["paths"], json!(["README.md"]));
+	assert!(selected["record"].get("plan").is_none());
+	assert!(selected["record"].get("record").is_none());
+	assert!(!stage_names(&selected).iter().any(|n| n == "root-tests"));
+	g.check(&selected).unwrap();
+	let explicit = g.select(Some(&["commit-discipline"]), "explicit").unwrap();
+	assert_eq!(explicit["publication_eligible"], false);
+	let mut forged = selected.clone();
+	forged["record"]["record"] = json!("9999");
+	assert!(g.check(&forged).is_err());
+
+	g.write("dirty.txt", "untracked");
+	assert!(g.check(&g.select(None, "required").unwrap()).is_err());
+	std::fs::remove_file(g.0.join("dirty.txt")).unwrap();
+	let out = g.runs().join("final");
+	let result = controller::run(&Settings {
+		root: g.0.clone(),
+		out: out.clone(),
+		names: None,
+		scope: "required".into(),
+		fresh: false,
+		environment: g.env(),
+		guardian: PathBuf::from(env!("CARGO_BIN_EXE_rnx-final")),
+		started: Instant::now(),
+		bootstrap: None,
+		unit: None,
+		hooks: Arc::new(Stages(g.0.clone())),
+		tokens: Some(2),
+	})
+	.unwrap();
+	assert_eq!(result["status"], "PASS", "{result}");
+	assert_eq!(result["publication_eligible"], true);
+	assert_eq!(result["fix_subject"], subject);
+	let released = rnx_final::evidence::revalidate(&out).unwrap();
+	assert_eq!(released["fix_subject"], subject);
+
+	let receipt = out.join("SELECTION.json");
+	let mut selection: Value = serde_json::from_slice(&std::fs::read(&receipt).unwrap()).unwrap();
+	selection["record"]["baseline"] = json!(candidate);
+	atomic_json(&receipt, &selection).unwrap();
+	assert!(
+		rnx_final::evidence::revalidate(&out)
+			.unwrap_err()
+			.to_string()
+			.contains("fix selection differs")
+	);
 }
 
 #[test]

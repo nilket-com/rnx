@@ -300,6 +300,7 @@ struct Stages {
 	/// The selection's scope and stage names, for a comparable reference.
 	scope: Option<String>,
 	names: std::collections::BTreeSet<String>,
+	fix_label: Option<String>,
 }
 
 fn stages(dir: &Path) -> Option<Stages> {
@@ -325,6 +326,14 @@ fn stages(dir: &Path) -> Option<Stages> {
 		begun,
 		scope: selection["scope"].as_str().map(String::from),
 		names: names.iter().map(|n| (*n).to_owned()).collect(),
+		fix_label: serde_json::from_value::<crate::types::Fix>(selection["record"].clone())
+			.ok()
+			.filter(|f| {
+				crate::selection::fix_subject(&f.subject)
+					&& f.candidate.len() == 40
+					&& f.candidate.bytes().all(|b| b.is_ascii_hexdigit())
+			})
+			.map(|f| format!("{} ({})", f.subject, &f.candidate[..8])),
 	})
 }
 
@@ -369,6 +378,9 @@ pub fn final_view(dir: &Path, others: &[PathBuf], now: SystemTime, live: bool) -
 		lines.push("no readable selection receipt".into());
 		return lines;
 	};
+	if let Some(label) = stages.fix_label {
+		lines.push(label);
+	}
 	if let Some(t) = terminal(dir) {
 		let mut line = format!(
 			"{} in {}, {}/{} stages done",

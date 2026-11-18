@@ -508,11 +508,14 @@ pub fn compact(
 		.iter()
 		.map(|entry| Ok(json!({"owner": entry, "payload": tree(Path::new(&entry.path), &known)?})))
 		.collect::<Result<_>>()?;
-	let manifest = json!({
+	let mut manifest = json!({
 		"schema": 1, "candidate": selection["record"]["candidate"], "source": selection["source"], "policy": selection["policy"],
 		"acceptance_scope": selection.get("scope").cloned().unwrap_or(Value::Null), "selection_sha256": pyjson::identity(selection)?,
 		"tools": tools, "stages": stages, "roots": roots,
 	});
+	if selection["record"]["phase"] == "fix" {
+		manifest["fix_subject"] = selection["record"]["subject"].clone();
+	}
 	ensure!(
 		pyjson::pretty(&manifest)?.len() - 1 <= CAP,
 		"compact manifest exceeds 256 KiB"
@@ -597,6 +600,25 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 		"candidate differs"
 	);
 	ensure!(
+		result.fix_subject == m.fix_subject && !matches!(m.fix_subject, Field::Null),
+		"fix subject differs"
+	);
+	if let Some(subject) = m.fix_subject.value() {
+		let selection = read(&out.join("SELECTION.json"))?;
+		let typed: types::Selection = types::conform(&selection, "fix selection")?;
+		let types::Candidate::Fix(fix) = typed.record else {
+			bail!("fix has no fix selection");
+		};
+		ensure!(
+			m.selection_sha256 == Field::Value(pyjson::identity(&selection)?)
+				&& Some(&fix.candidate) == m.candidate.as_ref()
+				&& typed.scope == result.acceptance_scope
+				&& &fix.subject == subject
+				&& crate::selection::fix_subject(subject),
+			"fix selection differs"
+		);
+	}
+	ensure!(
 		r.acceptance_sha256.value() == result.records.get("ACCEPTANCE")
 			&& r.manifest_sha256.value() == result.records.get("MANIFEST"),
 		"release not bound"
@@ -623,10 +645,14 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 			&& result.complete_final == (scope == types::Scope::Complete),
 		"scope eligibility differs"
 	);
-	Ok(json!({
+	let mut verdict = json!({
 		"status": "PASS", "candidate": m.candidate, "bulk": "released; not rehashed", "release": result.records["RELEASE"],
 		"acceptance_scope": scope.name(), "complete_final": result.complete_final, "publication_eligible": result.publication_eligible,
-	}))
+	});
+	if let Some(subject) = result.fix_subject.value() {
+		verdict["fix_subject"] = json!(subject);
+	}
+	Ok(verdict)
 }
 
 /// Remove a failed final's general diagnostics on request, recording it.

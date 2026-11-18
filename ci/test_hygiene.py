@@ -1,4 +1,5 @@
 import subprocess
+import json
 import tempfile
 from pathlib import Path
 import unittest
@@ -77,6 +78,35 @@ class DataHygiene(unittest.TestCase):
 		self.assertFalse(self.check_data(files,{'a.json':entry}))
 		entry['max_bytes']-=1
 		self.assertTrue(self.check_data(files,{'a.json':entry}))
+
+	def test_consecutive_fixes_use_their_own_predecessor(self):
+		from data_hygiene import scan as scan_data
+		with tempfile.TemporaryDirectory() as tmp:
+			root = Path(tmp)
+			def git(*args):
+				return subprocess.check_output(['git', '-C', tmp, '-c', 'user.name=Test',
+					'-c', 'user.email=test@example.invalid', *args], text=True).strip()
+			def commit(subject):
+				git('add', '.')
+				git('commit', '-q', '--no-gpg-sign', '--allow-empty', '-m', subject)
+				return git('rev-parse', 'HEAD')
+			git('init', '-q')
+			(root / 'ci').mkdir()
+			manifest = root / 'ci/data_consumers.json'
+			entry = {'class':'reviewed-retention', 'reason':'fixture', 'max_bytes':1048576}
+			entries = {'entries':{'a.json':entry}, 'duplicate_exemptions':{}}
+			manifest.write_text(json.dumps(entries))
+			(root / 'a.json').write_bytes(b'x')
+			commit('baseline')
+			commit('plan: adr 0209 fixture')
+			commit('impl: adr 0209 fixture')
+			(root / 'a.json').write_bytes(b'x' * 1048576)
+			first = commit('fix: grow the planted fixture')
+			self.assertEqual(scan_data(root, first), [('a.json', 'new data reaches 1 MiB')])
+			(root / 'a.json').write_bytes(b'y' * 1048576)
+			second = commit('fix: repair the planted bytes')
+			self.assertEqual(scan_data(root, second), [])
+			self.assertEqual(scan_data(root, indexed=True), [])
 
 	def test_duplicate_exact_exemption(self):
 		import hashlib

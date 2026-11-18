@@ -151,31 +151,72 @@ fn collect_manifests(base: &Path, directory: &Path, out: &mut Vec<String>) -> Re
 	Ok(())
 }
 
-/// The candidate's record: its plan, baseline, changed paths and the
-/// stages those paths require.
+pub(crate) fn fix_subject(subject: &str) -> bool {
+	use std::sync::LazyLock;
+	static FORM: LazyLock<Regex> =
+		LazyLock::new(|| Regex::new(r"\Afix: [a-z0-9][ -~]*\z").unwrap());
+	static LABELS: LazyLock<Regex> = LazyLock::new(|| {
+		Regex::new(
+			r"(?i)\b(?:cut [a-z][0-9]*|e[0-9]+(?:[._-][0-9]+)*|(?:crypto|pd|f-own|f-ctr)[-_][0-9]+)\b",
+		)
+		.unwrap()
+	});
+	static ADR: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\Afix: adr [0-9]{4}\b").unwrap());
+	FORM.is_match(subject)
+		&& !subject.contains(['(', ')'])
+		&& !LABELS.is_match(subject)
+		&& !ADR.is_match(subject)
+}
+
+/// The candidate, its baseline and the stages its changed paths require.
 pub fn record(root: &Path, candidate: &str) -> Result<Value> {
+	use crate::types::{Candidate, Fix, FixPhase, Phase, Record};
+
 	let candidate = line(
 		root,
 		&["rev-parse", "--verify", &format!("{candidate}^{{commit}}")],
 	)?;
 	let subject = line(root, &["show", "-s", "--format=%s", &candidate])?;
 	let pattern = Regex::new(r"^(plan|impl): adr ([0-9]{4}) .+$").unwrap();
-	let Some(m) = pattern.captures(&subject) else {
-		return Err(value_error("candidate is not a record commit"));
-	};
-	let (phase, number) = (m[1].to_owned(), m[2].to_owned());
-	let plan = if phase == "plan" {
-		candidate.clone()
+	let (baseline, numbered) = if fix_subject(&subject) {
+		let parents = line(root, &["show", "-s", "--format=%P", &candidate])?;
+		let mut parents = parents.split_whitespace();
+		let parent = parents
+			.next()
+			.filter(|_| parents.next().is_none())
+			.ok_or_else(|| value_error("a fix candidate must have a single parent"))?;
+		let previous = line(root, &["show", "-s", "--format=%s", parent])?;
+		if !fix_subject(&previous) && !pattern.captures(&previous).is_some_and(|m| &m[1] == "impl")
+		{
+			return Err(value_error(
+				"fix must follow a closed record or another fix",
+			));
+		}
+		(parent.to_owned(), None)
 	} else {
-		line(root, &["rev-parse", &format!("{candidate}^")])?
+		let m = pattern
+			.captures(&subject)
+			.ok_or_else(|| value_error("candidate is neither a record nor a fix commit"))?;
+		let number = m[2].to_owned();
+		let (phase, plan) = if &m[1] == "plan" {
+			(Phase::Plan, candidate.clone())
+		} else {
+			(
+				Phase::Impl,
+				line(root, &["rev-parse", &format!("{candidate}^")])?,
+			)
+		};
+		let plan_subject = line(root, &["show", "-s", "--format=%s", &plan])?;
+		if !plan_subject.starts_with(&format!("plan: adr {number} ")) {
+			return Err(value_error(
+				"candidate does not immediately follow its plan",
+			));
+		}
+		(
+			line(root, &["rev-parse", &format!("{plan}^")])?,
+			Some((plan, number, phase)),
+		)
 	};
-	let plan_subject = line(root, &["show", "-s", "--format=%s", &plan])?;
-	if !plan_subject.starts_with(&format!("plan: adr {number} ")) {
-		return Err(value_error(
-			"candidate does not immediately follow its plan",
-		));
-	}
-	let baseline = line(root, &["rev-parse", &format!("{plan}^")])?;
 	// No rename folding: both removed and added names count.
 	let paths = nul_paths(&git(
 		root,
@@ -188,6 +229,14 @@ pub fn record(root: &Path, candidate: &str) -> Result<Value> {
 			&candidate,
 		],
 	)?)?;
+	if numbered.is_none()
+		&& paths.iter().any(|p| {
+			["plans", "rune/plans"]
+				.iter()
+				.any(|root| Path::new(p).starts_with(root))
+		}) {
+		return Err(value_error("fix changes a protected plan path"));
+	}
 	let graphs = if catalogue::graph_change(&paths) {
 		Some(vec![graph(root, &baseline)?, graph(root, &candidate)?])
 	} else {
@@ -195,9 +244,26 @@ pub fn record(root: &Path, candidate: &str) -> Result<Value> {
 	};
 	let manifests = package_manifests(root, &[&baseline, &candidate])?;
 	let required = catalogue::required(&paths, graphs.as_deref(), Some(&manifests))?;
-	Ok(
-		json!({"candidate": candidate, "baseline": baseline, "plan": plan, "record": number, "phase": phase, "paths": paths, "required": required}),
-	)
+	let info = match numbered {
+		Some((plan, record, phase)) => Candidate::Numbered(Record {
+			candidate,
+			baseline,
+			plan,
+			record,
+			phase,
+			paths,
+			required,
+		}),
+		None => Candidate::Fix(Fix {
+			candidate,
+			baseline,
+			subject,
+			phase: FixPhase::Fix,
+			paths,
+			required,
+		}),
+	};
+	Ok(serde_json::to_value(info)?)
 }
 
 /// The controller's policy identity: the digest of its own source.
@@ -397,7 +463,7 @@ pub fn check_selection(
 	if manifest.get("schema") != Some(&json!(1)) {
 		return Err(value_error("unknown selection schema"));
 	}
-	let _: crate::types::Selection = crate::types::conform(manifest, "selection")?;
+	let selection: crate::types::Selection = crate::types::conform(manifest, "selection")?;
 	let scope = manifest["scope"].as_str().unwrap_or_default();
 	let names: Option<Vec<String>> = (scope == "explicit").then(|| {
 		manifest["stages"]
@@ -425,11 +491,11 @@ pub fn check_selection(
 		return Err(value_error("selection is not for checkout candidate"));
 	}
 	if final_
-		&& (manifest["record"]["phase"] != "impl"
+		&& (!selection.record.is_publishable()
 			|| !git(root, &["status", "--porcelain", "-z"])?.is_empty())
 	{
 		return Err(value_error(
-			"final acceptance requires a clean implementation commit",
+			"final acceptance requires a clean implementation or fix commit",
 		));
 	}
 	Ok(())

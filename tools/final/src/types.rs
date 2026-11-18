@@ -66,13 +66,46 @@ pub struct Record {
 	pub required: Vec<String>,
 }
 
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+pub enum FixPhase {
+	Fix,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Fix {
+	pub candidate: String,
+	pub baseline: String,
+	pub subject: String,
+	pub phase: FixPhase,
+	pub paths: Vec<String>,
+	pub required: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum Candidate {
+	Numbered(Record),
+	Fix(Fix),
+}
+
+impl Candidate {
+	pub fn is_publishable(&self) -> bool {
+		match self {
+			Self::Numbered(record) => record.phase == Phase::Impl,
+			Self::Fix(_) => true,
+		}
+	}
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Selection {
 	pub schema: u64,
 	pub scope: Scope,
 	pub publication_eligible: bool,
-	pub record: Record,
+	pub record: Candidate,
 	pub policy: String,
 	pub source: String,
 	pub root: String,
@@ -322,6 +355,8 @@ pub struct Manifest {
 	pub schema: u64,
 	pub candidate: Option<String>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub fix_subject: Field<String>,
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub source: Field<String>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub policy: Field<String>,
@@ -368,6 +403,8 @@ pub struct ResultCheck {
 pub struct FinalResult {
 	pub status: Status,
 	pub candidate: Option<String>,
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub fix_subject: Field<String>,
 	pub seconds: f64,
 	pub checks: Vec<ResultCheck>,
 	pub error: Option<String>,
