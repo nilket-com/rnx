@@ -1,5 +1,5 @@
-//! Credit for the fresh two-dimensional CPU tensor produced by from_dense.
-use super::{CTensor, Data, Dense, Tensor, from_dense};
+//! Retained credit for checked CPU tensor and model producers.
+use super::{CTensor, Data, Dense, Mlp, Tensor, from_dense};
 use candle_core::{CpuStorage, Storage};
 use rnx::rune::{host::OpaqueProducerLimit as Limit, runtime::AnyObj};
 use std::{alloc::Layout, ops::Deref, sync::RwLock};
@@ -17,9 +17,9 @@ const fn arc_bytes<T>() -> usize {
 
 // Candle 0.11.0 builds two Arcs, a two-element shape Vec and a stride
 // Vec collected through scan (capacity four for the first two strides).
-const METADATA: usize = arc_bytes::<<CTensor as Deref>::Target>()
-	+ arc_bytes::<RwLock<Storage>>()
-	+ 6 * size_of::<usize>();
+const TENSOR_ARCS: usize =
+	arc_bytes::<<CTensor as Deref>::Target>() + arc_bytes::<RwLock<Storage>>();
+const METADATA: usize = TENSOR_ARCS + 6 * size_of::<usize>();
 
 pub(super) fn convert(block: &Dense, credit: usize) -> Result<Result<Tensor, String>, Limit> {
 	let width = match block.data() {
@@ -51,6 +51,30 @@ pub(super) fn tensor_bytes(value: &Tensor) -> usize {
 		.unwrap_or(usize::MAX)
 }
 
+/// Loading constructs four independent contiguous F32 CPU tensors. Their
+/// cloned handles in the worker's lookup table are gone at adoption.
+pub(super) fn model_bytes(model: &Mlp) -> usize {
+	let mut total = AnyObj::owned_allocation_bytes::<Mlp>();
+	for layer in [&model.fc1, &model.fc2] {
+		let Some(bias) = layer.bias() else {
+			return usize::MAX;
+		};
+		for tensor in [layer.weight(), bias] {
+			let (storage, layout) = tensor.storage_and_layout();
+			let Storage::Cpu(CpuStorage::F32(values)) = &*storage else {
+				return usize::MAX;
+			};
+			// The loader builds rank-one and rank-two shapes from a slice;
+			// the contiguous stride Vec starts with capacity four in both.
+			let metadata = TENSOR_ARCS + (layout.dims().len() + 4) * size_of::<usize>();
+			total = total
+				.saturating_add(values.capacity().saturating_mul(size_of::<f32>()))
+				.saturating_add(metadata);
+		}
+	}
+	total
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -79,6 +103,17 @@ mod tests {
 			);
 			return;
 		}
+		// Measure what is actually freed once the joined loader has released
+		// its transient buffers. The Rune box is added separately at adoption.
+		let model = crate::load(concat!(
+			env!("CARGO_MANIFEST_DIR"),
+			"/../../demos/data/mlp.safetensors"
+		))
+		.unwrap();
+		let expected = model_bytes(&model) - AnyObj::owned_allocation_bytes::<Mlp>();
+		let held = live().unwrap();
+		drop(model);
+		assert_eq!(held - live().unwrap(), expected, "four model tensors");
 		for rows in [1, 257, 65536] {
 			for width in [4, 8] {
 				let n = rows * 2;

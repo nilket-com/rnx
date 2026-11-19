@@ -415,3 +415,6 @@ fn complete_model_and_sales_keep_pre_effect_fallback() {
 		check(out, "rnx: engine=legacy ", 0);
 	}
 }
+
+#[path = "checked_file/model.rs"]
+mod model;

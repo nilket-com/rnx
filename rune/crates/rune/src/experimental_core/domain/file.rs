@@ -116,6 +116,21 @@ impl FileModules {
 								&& context.host(r.hash).is_some_and(|b| binding.same(b))
 						})
 						.ok_or_else(refuse)?;
+					if binding.signature.arity == 1 {
+						let valid = context
+							.opaque
+							.factories
+							.get(&reader.hash)
+							.and_then(|ty| context.opaque.types.get(&ty.hash))
+							.is_some_and(|r| {
+								r.descriptor.display.is_none()
+									&& r.witness_key == reader.hash
+									&& r.witness.same_allocation(&reader.file)
+							});
+						if !valid {
+							return Err(refuse());
+						}
+					}
 					rt.replace_execution_handler(reader.hash, reader.file.clone())?;
 					binding.handler = reader.file.clone();
 					selected = true;
@@ -283,7 +298,156 @@ mod tests {
 	use crate::experimental_core::error::Refusal;
 
 	#[derive(crate::Any)]
+	#[rune(item = ::fixture)]
 	struct Item;
+
+	#[test]
+	fn path_constructor_admits_only_its_sealed_file_handler() {
+		use crate::host::OutputCertificate;
+		use core::sync::atomic::{AtomicUsize, Ordering};
+		static STARTS: AtomicUsize = AtomicUsize::new(0);
+		fn load(path: &str) -> core::result::Result<Item, std::string::String> {
+			STARTS.fetch_add(1, Ordering::SeqCst);
+			assert_eq!(path, "weights");
+			Ok(Item)
+		}
+
+		let mut context = Context::with_default_modules().unwrap();
+		let mut module = Module::with_crate("fixture").unwrap();
+		module
+			.file_path_constructor("load", load, |_: &Item| 32)
+			.unwrap();
+		module
+			.opaque_method::<Item, _, _>(
+				"dims",
+				|_: &Item| (3i64, 8i64, 1i64),
+				Some(OutputCertificate::I64_TRIPLE),
+			)
+			.unwrap();
+		let mut installer = Installer::new(&mut context);
+		installer.install(module).unwrap();
+		let mut files = installer.finish().unwrap();
+		let compile = |files: &FileModules, source: &str| {
+			let mut src = Sources::new();
+			src.insert(crate::Source::memory(source).unwrap()).unwrap();
+			files.compile(
+				&mut src,
+				&context,
+				&mut Diagnostics::new(),
+				1,
+				&mut crate::compile::NoopSourceLoader::default(),
+			)
+		};
+		const MAIN: &str = "pub fn main(args){let m=fixture::Item::load(args[0])?; let (i,h,o)=m.dims(); if i != 3 || h != 8 || o != 1 {panic!(\"bad dims\");} 42}";
+		let FileProgram::Checked(main) = compile(&files, MAIN).unwrap() else {
+			panic!("ordinary file");
+		};
+		let mut run = main
+			.prepare(&["weights".into()], Limits::default(), false)
+			.unwrap();
+		assert!(matches!(
+			run.drive(10000, |_| true, || false).unwrap(),
+			FileOutcome::Complete
+		));
+		run.close().unwrap();
+		assert_eq!(STARTS.load(Ordering::SeqCst), 1);
+		assert_eq!(
+			compile(
+				&files,
+				"pub fn main(args){let m=fixture::Item::load(args[0])?; let s=`model ${m}`; 42}"
+			)
+			.err()
+			.unwrap()
+			.refusal,
+			Some(Refusal::OpaqueOperation)
+		);
+		assert!(compile(&files, "pub fn main(args){fixture::Item::load(args[0])?}").is_err());
+		assert!(compile(
+			&files,
+			"pub fn main(args){let f=fixture::Item::load; f(args[0])}"
+		)
+		.is_err());
+		for source in [
+			"pub async fn main(args){let m=fixture::Item::load(args[0])?; m.dims()}",
+			"fn main(args){let m=fixture::Item::load(args[0])?; m.dims()}",
+			"pub fn main(args){let m=fixture::Item::load(args[0])?; m.load(args[0])}",
+		] {
+			assert!(compile(&files, source).is_err(), "{source}");
+		}
+		let mut ordinary = Sources::new();
+		ordinary
+			.insert(crate::Source::memory(MAIN).unwrap())
+			.unwrap();
+		assert!(frontend::compile(&mut ordinary, &context, &mut Diagnostics::new(), 1).is_err());
+		let mut unsealed = Sources::new();
+		unsealed
+			.insert(crate::Source::memory(MAIN).unwrap())
+			.unwrap();
+		assert!(
+			frontend::compile_file(&mut unsealed, &context, &mut Diagnostics::new(), 1).is_err()
+		);
+		let original = files.readers[0].file.clone();
+		files.readers[0].file = files.readers[0].session.clone();
+		assert_eq!(
+			compile(&files, MAIN).err().unwrap().refusal,
+			Some(Refusal::OpaqueEntry)
+		);
+		files.readers[0].file = original;
+		files.readers.clear();
+		assert!(compile(&files, MAIN).is_err());
+		assert_eq!(STARTS.load(Ordering::SeqCst), 1);
+	}
+
+	#[test]
+	fn file_native_retention_is_charged_once_per_model() {
+		use crate::experimental_core::heap::Store;
+		use crate::function::host::opaque::Descriptor;
+		use crate::runtime::Value;
+		use core::sync::atomic::{AtomicUsize, Ordering::SeqCst};
+		static DROPS: AtomicUsize = AtomicUsize::new(0);
+		#[derive(crate::Any)]
+		struct Model;
+		impl Drop for Model {
+			fn drop(&mut self) {
+				DROPS.fetch_add(1, SeqCst);
+			}
+		}
+		let desc = Descriptor::new::<Model>(|_| 256, None).unwrap();
+		let import =
+			|store: &mut Store| store.host_value(&Value::new(Model).unwrap(), desc.clone());
+		let mut measure = Store::new(Limits::default()).unwrap();
+		let a = import(&mut measure).unwrap();
+		let bytes = measure.payload_bytes();
+		assert!(bytes >= 256);
+		measure.release(a).unwrap();
+		let mut short = Store::new(Limits {
+			bytes: bytes - 1,
+			..Limits::default()
+		})
+		.unwrap();
+		assert_eq!(
+			import(&mut short).unwrap_err().kind,
+			super::super::super::error::ErrorKind::StoreCapacity
+		);
+		assert_eq!((short.live_entries(), short.payload_bytes()), (0, 0));
+		let mut store = Store::new(Limits {
+			bytes: 2 * bytes,
+			..Limits::default()
+		})
+		.unwrap();
+		let a = import(&mut store).unwrap();
+		store.retain(a).unwrap();
+		let b = import(&mut store).unwrap();
+		assert_eq!(store.payload_bytes(), 2 * bytes);
+		store.release(a).unwrap();
+		assert_eq!(store.payload_bytes(), 2 * bytes);
+		store.release(a).unwrap();
+		assert_eq!(store.payload_bytes(), bytes);
+		let _c = import(&mut store).unwrap();
+		store.release(b).unwrap();
+		store.close().unwrap();
+		assert_eq!(DROPS.load(SeqCst), 5);
+	}
 
 	#[test]
 	fn file_registration_requires_both_matching_handler_allocations() {

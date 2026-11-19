@@ -42,12 +42,9 @@ impl RuntimeContext {
 		hash: Hash,
 	) -> Option<crate::sync::Arc<crate::function::host::opaque::Descriptor>> {
 		let registered = self.opaque.types.get(&hash)?;
-		let effective = self.function(&Hash::associated_function(
-			hash,
-			&super::Protocol::DISPLAY_FMT,
-		))?;
+		let effective = self.function(&registered.witness_key)?;
 		effective
-			.same_allocation(&registered.display_handler)
+			.same_allocation(&registered.witness)
 			.then(|| registered.descriptor.clone())
 	}
 	pub(crate) fn new(

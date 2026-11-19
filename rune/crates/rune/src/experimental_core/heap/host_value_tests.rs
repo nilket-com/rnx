@@ -699,7 +699,7 @@ struct HashTwin;
 fn a_rune_hash_collision_never_authorizes_a_native_cast() {
 	assert_eq!(Tracked::HASH, HashTwin::HASH);
 	let descriptor =
-		crate::function::host::opaque::Descriptor::new::<Tracked>(|_| 0, display).unwrap();
+		crate::function::host::opaque::Descriptor::new::<Tracked>(|_| 0, Some(display)).unwrap();
 	let twin = crate::Value::new(HashTwin).unwrap();
 	assert!(descriptor.inspect.call(&twin).is_err());
 	let mut module = Module::with_crate("opaque_test").unwrap();

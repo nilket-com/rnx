@@ -87,7 +87,8 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 	#[rune(item = ::children_test)]
 	struct NativeLeaf;
 	let descriptor =
-		crate::function::host::opaque::Descriptor::new::<NativeLeaf>(|_| 0, |_, _| Ok(())).unwrap();
+		crate::function::host::opaque::Descriptor::new::<NativeLeaf>(|_| 0, Some(|_, _| Ok(())))
+			.unwrap();
 	let mut cases = std::vec![
 		Payload::Host {
 			tag: Type::Host(super::super::value::Nominal(0)),

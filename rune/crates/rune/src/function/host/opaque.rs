@@ -41,22 +41,28 @@ pub(crate) struct Descriptor {
 	pub(crate) type_id: core::any::TypeId,
 	pub(crate) info: AnyTypeInfo,
 	pub(crate) inspect: Inspect,
-	pub(crate) display: Display,
+	pub(crate) display: Option<Display>,
 }
+
+type Render<T> = fn(&T, &mut Formatter) -> Result<(), VmError>;
 
 impl Descriptor {
 	pub(crate) fn new<T: Any>(
 		bytes: fn(&T) -> usize,
-		display: fn(&T, &mut Formatter) -> Result<(), VmError>,
+		display: Option<Render<T>>,
 	) -> alloc::Result<Arc<Self>> {
 		Arc::try_new(Self {
 			hash: T::HASH,
 			type_id: core::any::TypeId::of::<T>(),
 			info: T::ANY_TYPE_INFO,
 			inspect: Inspect::new(move |value| Ok(bytes(&*value.borrow_ref::<T>()?)))?,
-			display: Display::new(move |value, formatter| {
-				display(&*value.borrow_ref::<T>()?, formatter)
-			})?,
+			display: display
+				.map(|display| {
+					Display::new(move |value, formatter| {
+						display(&*value.borrow_ref::<T>()?, formatter)
+					})
+				})
+				.transpose()?,
 		})
 	}
 }
@@ -72,7 +78,8 @@ impl core::fmt::Debug for Descriptor {
 #[derive(Clone)]
 pub(crate) struct Registration {
 	pub(crate) descriptor: Arc<Descriptor>,
-	pub(crate) display_handler: crate::runtime::FunctionHandler,
+	pub(crate) witness_key: Hash,
+	pub(crate) witness: crate::runtime::FunctionHandler,
 }
 impl crate::alloc::clone::TryClone for Registration {
 	fn try_clone(&self) -> alloc::Result<Self> {

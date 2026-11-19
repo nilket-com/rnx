@@ -113,7 +113,7 @@ impl Module {
 			});
 		}
 		self.ty::<T>()?;
-		let descriptor = Descriptor::new(bytes, display)?;
+		let descriptor = Descriptor::new(bytes, Some(display))?;
 		self.associated_function(&Protocol::DISPLAY_FMT, display)?;
 		let Some(ModuleAssociated {
 			kind: ModuleAssociatedKind::Function(function),
@@ -128,7 +128,8 @@ impl Module {
 			T::HASH,
 			Registration {
 				descriptor,
-				display_handler: function.handler.clone(),
+				witness_key: Hash::associated_function(T::HASH, &Protocol::DISPLAY_FMT),
+				witness: function.handler.clone(),
 			},
 		)?;
 		// A compiler-selected scalar adapter renders once, after template
@@ -145,6 +146,82 @@ impl Module {
 			},
 			None,
 		)?;
+		Ok(())
+	}
+
+	/// Register a native type without a display protocol and its file-only path constructor.
+	/// Only a sealed file invocation may replace the inactive execution handler.
+	#[doc(hidden)]
+	pub fn file_path_constructor<T, F>(
+		&mut self,
+		name: &'static str,
+		load: F,
+		bytes: fn(&T) -> usize,
+	) -> Result<(), ContextError>
+	where
+		T: crate::Any + TypeOf + Named + InstallWith + MaybeTypeOf,
+		F: Function<(Ref<str>,), Plain, Return = Result<T, std::string::String>>,
+	{
+		use crate::host::AlternateHost;
+		if crate::function::host::opaque::reserved(T::HASH) {
+			return Err(ContextError::OpaqueBuiltin {
+				info: T::ANY_TYPE_INFO.into(),
+			});
+		}
+		let key = Hash::associated_function(T::HASH, Hash::ident(name));
+		let native = NativeType::of::<T>();
+		let descriptor = Descriptor::new::<T>(bytes, None)?;
+		let inactive = crate::runtime::FunctionHandler::new(|_, _, _, _| {
+			Err(VmError::panic("file constructor outside a checked file"))
+		})?;
+		self.file_readers.try_reserve(1)?;
+		self.opaque.types.try_reserve(1)?;
+		self.opaque.factories.try_reserve(1)?;
+		self.ty::<T>()?;
+		self.function(name, load).build_associated::<T>()?;
+		let Some(ModuleAssociated {
+			kind: ModuleAssociatedKind::Function(function),
+			..
+		}) = self.associated.last_mut()
+		else {
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "file constructor registration",
+			});
+		};
+		let original = function.handler.clone();
+		function.alternate_host = Some(AlternateHost {
+			await_only: false,
+			handler: inactive.clone(),
+			enrollment: HostEnrollment {
+				signature: HostSignature {
+					arity: 1,
+					arguments: [
+						HostType::String,
+						HostType::Unit,
+						HostType::Unit,
+						HostType::Unit,
+					],
+					output: HostOutputKind::OpaqueResultString,
+				},
+				certificate: None,
+			},
+		});
+		self.opaque.types.try_insert(
+			T::HASH,
+			Registration {
+				descriptor,
+				witness_key: key,
+				witness: original.clone(),
+			},
+		)?;
+		self.opaque.factories.try_insert(key, native)?;
+		self.file_readers
+			.try_push(crate::experimental_core::domain::file::Reader {
+				hash: key,
+				original: original.clone(),
+				session: inactive,
+				file: original,
+			})?;
 		Ok(())
 	}
 

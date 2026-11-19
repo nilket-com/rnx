@@ -506,6 +506,33 @@ impl Collector {
 				_ => None,
 			};
 			if let Some(hash) = used {
+				// A session may reuse the very Context used to seal a file. Its
+				// checked main is the only entry with authority to open this path.
+				if self.opaque_session.is_some()
+					&& context
+						.opaque
+						.factories
+						.get(&hash)
+						.and_then(|ty| context.opaque.types.get(&ty.hash))
+						.is_some_and(|r| r.witness_key == hash && r.descriptor.display.is_none())
+				{
+					let at = Location {
+						source,
+						revision: self.revision,
+						start: expr.span.start.0,
+						end: expr.span.end.0,
+					};
+					if let Some(item) = context
+						.lookup_meta_by_hash(hash)
+						.find_map(|m| m.item.as_ref())
+					{
+						use crate::alloc::clone::TryClone;
+						self.unenrolled_host = Some((at, item.try_clone()?));
+					}
+					let failure = Error::refused(Refusal::Native).at(at);
+					self.record_failure(failure);
+					return Err(failure);
+				}
 				if self.opaque_session.is_none()
 					&& (context.opaque.factories.contains_key(&hash)
 						|| context.opaque.methods.contains_key(&hash)

@@ -114,6 +114,14 @@ impl OutputCertificate {
 		],
 		root: 0,
 	};
+	/// A qualified model's three dimensions.
+	pub const I64_TRIPLE: Self = Self {
+		nodes: &[
+			OutputShape::Tuple(&[1, 1, 1]),
+			OutputShape::Scalar(HostType::I64),
+		],
+		root: 0,
+	};
 	/// A concrete shared-receiver list of names.
 	pub const STRING_LIST: Self = Self {
 		nodes: &[OutputShape::Vec(1), OutputShape::Scalar(HostType::String)],
@@ -242,6 +250,7 @@ impl HostSignature {
 			} && (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
 			&& (self.output != HostOutputKind::OpaqueResultString
 				|| self.shared_producer()
+				|| (self.arity == 1 && self.arguments[0] == HostType::String)
 				|| (self.arity == 2
 					&& self.arguments[..2] == [HostType::String, HostType::OwnedTreeInput]))
 			&& (self.output != HostOutputKind::OwnedTree
@@ -393,6 +402,10 @@ impl HostOutput for Result<OwnedTreeOutput, crate::runtime::VmError> {
 // an explicit output certificate at registration. No blanket ToValue admission.
 impl sealed::Output for std::vec::Vec<std::string::String> {}
 impl HostOutput for std::vec::Vec<std::string::String> {
+	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
+}
+impl sealed::Output for (i64, i64, i64) {}
+impl HostOutput for (i64, i64, i64) {
 	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
 }
 impl sealed::Output for (i64, i64) {}

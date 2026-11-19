@@ -217,12 +217,7 @@ fn load(path: &str) -> Result<Mlp, String> {
 			));
 		}
 		let params = hidden * input + hidden + output * hidden + output;
-		if params > interchange::MAX_VALUES {
-			return Err(format!(
-				"{op} {path:?}: {params} parameters, at most {}",
-				interchange::MAX_VALUES
-			));
-		}
+		check_parameter_count(&path, params)?;
 		Ok(Mlp {
 			fc1: candle_nn::Linear::new(w1, Some(b1)),
 			fc2: candle_nn::Linear::new(w2, Some(b2)),
@@ -231,6 +226,16 @@ fn load(path: &str) -> Result<Mlp, String> {
 			output,
 		})
 	})?
+}
+
+fn check_parameter_count(path: &str, params: usize) -> Result<(), String> {
+	if params > interchange::MAX_VALUES {
+		return Err(format!(
+			"Mlp::load {path:?}: {params} parameters, at most {}",
+			interchange::MAX_VALUES
+		));
+	}
+	Ok(())
 }
 
 /// `mlp.forward(tensor)`: a 2-D F32 input with `in` columns; `batch ×
@@ -292,18 +297,21 @@ fn err(e: impl std::fmt::Display) -> String {
 pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
 	m.opaque_type::<Tensor>(dense_credit::tensor_bytes, tensor_display)
 		.map_err(err)?;
-	m.ty::<Mlp>().map_err(err)?;
+	m.file_path_constructor("load", load, dense_credit::model_bytes)
+		.map_err(err)?;
 	m.opaque_shared_constructor("from_dense", from_dense, dense_credit::convert)
 		.map_err(err)?;
 	m.associated_function("to_dense", to_dense).map_err(err)?;
 	m.associated_function("shape", shape).map_err(err)?;
 	m.associated_function("dtype", dtype).map_err(err)?;
 
-	m.function("load", load)
-		.build_associated::<Mlp>()
-		.map_err(err)?;
 	m.associated_function("forward", forward).map_err(err)?;
-	m.associated_function("dims", mlp_dims).map_err(err)?;
+	m.opaque_method::<Mlp, _, _>(
+		"dims",
+		mlp_dims,
+		Some(rune::host::OutputCertificate::I64_TRIPLE),
+	)
+	.map_err(err)?;
 	let ops = tensor_ops::build(m).map_err(err)?;
 	let text = text::build(m).map_err(err)?;
 	let rerank = text::rerank::build(m).map_err(err)?;
@@ -380,6 +388,16 @@ mod tests {
 
 	fn names(v: &[&str]) -> rune::Value {
 		rune::to_value(v.iter().map(|s| s.to_string()).collect::<Vec<_>>()).unwrap()
+	}
+
+	#[test]
+	fn model_parameter_limit_accepts_equality() {
+		let limit = interchange::MAX_VALUES;
+		assert!(check_parameter_count("model", limit).is_ok());
+		assert_eq!(
+			check_parameter_count("model", limit + 1).unwrap_err(),
+			"Mlp::load \"model\": 16777217 parameters, at most 16777216"
+		);
 	}
 
 	/// A unique path per call, so parallel tests never share a file.

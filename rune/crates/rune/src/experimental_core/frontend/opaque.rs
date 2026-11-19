@@ -680,16 +680,13 @@ impl Builder<'_, '_> {
 		}
 		Ok(facts)
 	}
-	fn has_checked_display(&self, ty: Hash) -> bool {
+	fn has_checked_native(&self, ty: Hash) -> bool {
 		let Some(registered) = self.context.opaque.types.get(&ty) else {
 			return false;
 		};
 		self.context
-			.lookup_function(Hash::associated_function(
-				ty,
-				&crate::runtime::Protocol::DISPLAY_FMT,
-			))
-			.is_some_and(|handler| handler.same_allocation(&registered.display_handler))
+			.lookup_function(registered.witness_key)
+			.is_some_and(|handler| handler.same_allocation(&registered.witness))
 	}
 
 	fn validate(&self, item: &hir::ItemFn<'_>, facts: &[Fact], is_entry: bool) -> Result<()> {
@@ -756,7 +753,7 @@ impl Builder<'_, '_> {
 				{
 					return Err(fail(e.span, Refusal::OpaqueOperation));
 				}
-				if !self.has_checked_display(*error) {
+				if !self.has_checked_native(*error) {
 					return Err(fail(e.span, Refusal::OpaqueReceiver));
 				}
 			}
@@ -792,7 +789,7 @@ impl Builder<'_, '_> {
 						}
 						_ => None,
 					};
-					if introduced.is_some_and(|ty| !self.has_checked_display(ty)) {
+					if introduced.is_some_and(|ty| !self.has_checked_native(ty)) {
 						return Err(fail(e.span, Refusal::OpaqueReceiver));
 					}
 					let receiver = match c.call {
@@ -812,7 +809,7 @@ impl Builder<'_, '_> {
 							};
 							let key = Hash::associated_function(ty, hash);
 							let arity = match self.context.opaque.producer_outputs.get(&key) {
-								Some(output) if self.has_checked_display(output.hash) => 2,
+								Some(output) if self.has_checked_native(output.hash) => 2,
 								Some(_) => return Err(fail(e.span, Refusal::OpaqueReceiver)),
 								None => 0,
 							};
@@ -837,7 +834,7 @@ impl Builder<'_, '_> {
 						let [arg] = c.args else {
 							return Err(fail(e.span, Refusal::Arity));
 						};
-						if !self.has_checked_display(input.hash)
+						if !self.has_checked_native(input.hash)
 							|| facts.get(arg.index()) != Some(&Fact::Exact(input.hash))
 						{
 							return Err(fail(e.span, Refusal::OpaqueArgument));
@@ -928,7 +925,9 @@ impl Builder<'_, '_> {
 							E::Format(f) => f.value,
 							_ => *id,
 						};
-						if host(value) && !matches!(facts[value.index()], Fact::Exact(_)) {
+						if host(value)
+							&& !matches!(facts[value.index()], Fact::Exact(ty) if self.context.opaque.types.get(&ty).is_some_and(|r| r.descriptor.display.is_some()))
+						{
 							return Err(fail(e.span, Refusal::OpaqueOperation));
 						}
 					}

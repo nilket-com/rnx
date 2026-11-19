@@ -63,10 +63,13 @@ impl Store {
 			return Err(err(ErrorKind::Type));
 		};
 		let native = host.value()?;
+		let display = host
+			.descriptor
+			.display
+			.as_ref()
+			.ok_or_else(|| err(ErrorKind::Type))?;
 		let called = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-			runtime::Formatter::bounded(limit, |formatter| {
-				host.descriptor.display.call(native, formatter)
-			})
+			runtime::Formatter::bounded(limit, |formatter| display.call(native, formatter))
 		}));
 		let (result, text, exceeded) = called.map_err(|_| {
 			err(ErrorKind::Host).with_detail(super::super::error::Detail::HostPanicked)
