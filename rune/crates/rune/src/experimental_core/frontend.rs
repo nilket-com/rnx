@@ -145,6 +145,7 @@ pub(crate) mod receiver_proofs;
 #[derive(Clone, Copy)]
 pub(crate) enum BodyKind {
 	Function,
+	PublicFileMain,
 	FileAsyncMain,
 	Closure { owner: Hash },
 	AsyncBlock { owner: Hash },
@@ -152,13 +153,15 @@ pub(crate) enum BodyKind {
 impl BodyKind {
 	fn owner(self, hash: Hash) -> Hash {
 		match self {
-			Self::Function | Self::FileAsyncMain => hash,
+			Self::Function | Self::PublicFileMain | Self::FileAsyncMain => hash,
 			Self::Closure { owner } | Self::AsyncBlock { owner } => owner,
 		}
 	}
 }
 
 pub(crate) struct Collector {
+	checked_files: bool,
+	checked_main: bool,
 	opaque_session: Option<opaque::Envelope>,
 	file_entry: Option<FileEntry>,
 	revision: u64,
@@ -185,6 +188,10 @@ pub(crate) struct Collector {
 impl Collector {
 	pub(crate) fn allows_async_functions(&self) -> bool {
 		self.opaque_session.is_some()
+	}
+
+	pub(crate) fn allows_checked_file_main(&self) -> bool {
+		self.checked_files
 	}
 
 	pub(crate) fn allows_file_async_main(&self) -> bool {
@@ -473,6 +480,10 @@ impl Collector {
 		context: &Context,
 		refused_functions: &[(Hash, Refusal)],
 	) -> Result<()> {
+		let file_main = self.checked_files
+			&& matches!(body_kind, BodyKind::PublicFileMain)
+			&& item.args.len() == 1;
+		let mut uses_checked = false;
 		for expr in exprs.expressions() {
 			if self.opaque_session.is_none()
 				&& matches!(expr.kind, crate::hir::ExprKind::Type(ty) if context.opaque.types.contains_key(&ty.into_hash()))
@@ -500,14 +511,18 @@ impl Collector {
 						|| context.opaque.methods.contains_key(&hash)
 						|| context.opaque.types.contains_key(&hash))
 				{
-					let error = Error::refused(Refusal::OpaqueEntry).at(Location {
-						source,
-						revision: self.revision,
-						start: expr.span.start.0,
-						end: expr.span.end.0,
-					});
-					self.record_failure(error);
-					return Err(error);
+					if file_main {
+						uses_checked = true;
+					} else {
+						let error = Error::refused(Refusal::OpaqueEntry).at(Location {
+							source,
+							revision: self.revision,
+							start: expr.span.start.0,
+							end: expr.span.end.0,
+						});
+						self.record_failure(error);
+						return Err(error);
+					}
 				}
 				self.source_uses.try_push(hash)?;
 			}
@@ -536,21 +551,25 @@ impl Collector {
 			return Err(Error::new(ErrorKind::InvalidCode, "duplicate function"));
 		}
 
-		let opaque = match self
-			.opaque_session
-			.as_ref()
-			.map(|contract| {
-				opaque::analyze(
-					exprs,
-					item,
-					context,
-					Some(contract),
-					hash == Hash::type_hash(["main"]),
-					captures,
-				)
-			})
-			.transpose()
-		{
+		self.checked_main |= uses_checked;
+		let proof = if uses_checked {
+			opaque::analyze(exprs, item, context, None, false, captures).map(Some)
+		} else {
+			self.opaque_session
+				.as_ref()
+				.map(|contract| {
+					opaque::analyze(
+						exprs,
+						item,
+						context,
+						Some(contract),
+						hash == Hash::type_hash(["main"]),
+						captures,
+					)
+				})
+				.transpose()
+		};
+		let opaque = match proof {
 			Ok(proof) => proof,
 			Err(mut error) => {
 				let at = error.location.get_or_insert(function_at);
@@ -894,13 +913,14 @@ fn file_program(
 	revision: u64,
 	loader: Option<&mut dyn SourceLoader>,
 ) -> Result<(Program, FileEntry)> {
-	let (program, entry) = compile_with_entry(
+	let (program, entry, _) = compile_with_entry(
 		sources,
 		context,
 		diagnostics,
 		revision,
 		None,
 		Some(FileEntry::Sync),
+		false,
 		loader,
 	)?;
 	Ok((program, entry.unwrap_or(FileEntry::Sync)))
@@ -914,13 +934,14 @@ pub(crate) fn compile_inner(
 	revision: u64,
 	opaque_session: Option<opaque::Envelope>,
 ) -> Result<Program> {
-	let (program, _) = compile_with_entry(
+	let (program, _, _) = compile_with_entry(
 		sources,
 		context,
 		diagnostics,
 		revision,
 		opaque_session,
 		None,
+		false,
 		None,
 	)?;
 	Ok(program)
@@ -1012,15 +1033,17 @@ fn retain_sources(
 	Ok(retained)
 }
 
-fn compile_with_entry(
+#[allow(clippy::too_many_arguments)]
+pub(super) fn compile_with_entry(
 	sources: &mut Sources,
 	context: &Context,
 	diagnostics: &mut Diagnostics,
 	revision: u64,
 	opaque_session: Option<opaque::Envelope>,
 	file_entry: Option<FileEntry>,
+	checked_files: bool,
 	loader: Option<&mut dyn SourceLoader>,
-) -> Result<(Program, Option<FileEntry>)> {
+) -> Result<(Program, Option<FileEntry>, bool)> {
 	let mut bounds = SourceBounds::default();
 	bounds.admit_inserted(sources)?;
 	let retained = loader
@@ -1028,6 +1051,8 @@ fn compile_with_entry(
 		.then(|| retain_sources(sources, revision, bounds))
 		.transpose()?;
 	let mut collector = Collector {
+		checked_files,
+		checked_main: false,
 		opaque_session,
 		file_entry,
 		revision,
@@ -1120,6 +1145,7 @@ fn compile_with_entry(
 	}
 
 	let file_entry = collector.file_entry;
+	let checked_main = collector.checked_main;
 	let mut program = collector.finish(context, diagnostics)?;
 	program.sources = match retained {
 		Some(retained) => retained,
@@ -1128,7 +1154,7 @@ fn compile_with_entry(
 			retain_sources(sources, revision, bounds)?
 		}
 	};
-	Ok((program, file_entry))
+	Ok((program, file_entry, checked_main))
 }
 
 #[cfg(test)]

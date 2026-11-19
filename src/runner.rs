@@ -235,42 +235,30 @@ pub fn report_error(value: &Value, fields: Option<&Fields>) {
 	unplaced("error", &crate::format::error_text(value, fields));
 }
 
+/// Extension registration and lifecycle for this file invocation.
+pub(crate) struct FileContext<'a> {
+	pub(crate) context: &'a Context,
+	pub(crate) lifecycle: &'a crate::lifecycle::Lifecycle,
+	pub(crate) modules: Option<&'a rune::experimental_core::domain::file::FileModules>,
+}
+
 /// Run one file. Returns the process exit code, and prints everything it
 /// has to say itself: diagnostics to standard error, script output to
 /// standard output.
-#[cfg(not(feature = "project-sources"))]
-pub fn run(
-	context: &Context,
-	path: &str,
-	arguments: Value,
-	debug_source: bool,
-	budget: usize,
-	engine: crate::engine::Options,
-	lifecycle: &crate::lifecycle::Lifecycle,
-) -> i32 {
-	run_loaded(
-		context,
-		path,
-		arguments,
-		debug_source,
-		budget,
-		engine,
-		lifecycle,
-		Loader::new(),
-	)
-}
-
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn run_loaded(
-	context: &Context,
+	file: FileContext<'_>,
 	path: &str,
 	arguments: Value,
 	debug_source: bool,
 	budget: usize,
 	engine: crate::engine::Options,
-	lifecycle: &crate::lifecycle::Lifecycle,
 	mut loader: Loader,
 ) -> i32 {
+	let FileContext {
+		context,
+		lifecycle,
+		modules: file_modules,
+	} = file;
 	crate::host::running_a_script();
 	let source = match loader.entry(std::path::Path::new(path)) {
 		Ok(source) => source,
@@ -294,6 +282,7 @@ pub(crate) fn run_loaded(
 			budget,
 			engine,
 			lifecycle,
+			file_modules,
 			&mut loader,
 		) {
 			return code;

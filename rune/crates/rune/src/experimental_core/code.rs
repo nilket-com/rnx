@@ -2076,6 +2076,10 @@ impl Code {
 	pub(crate) fn host(&self, id: u32) -> Option<&crate::function::host::HostBinding> {
 		host_binding(&self.hosts, id)
 	}
+	pub(super) fn file_host_bindings_mut(&mut self) -> &mut [crate::function::host::HostBinding] {
+		&mut self.hosts
+	}
+
 	/// Immutable inputs for the cold entry boundary's equivalent host validation.
 	pub(crate) fn host_validation_parts(&self) -> (&[crate::function::host::HostBinding], bool) {
 		(&self.hosts, !self.absent.is_empty())

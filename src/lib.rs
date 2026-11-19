@@ -590,27 +590,31 @@ fn serve(
 		let snapshot: Arc<[String]> = Arc::from(rest[1..].to_vec());
 		let arguments = rune::to_value(snapshot.to_vec())?;
 		env::install(&mut context, snapshot)?;
-		install_extensions(extensions.take().unwrap(), &mut context, lifecycle);
-		#[cfg(feature = "project-sources")]
-		let code = runner::run_loaded(
-			&context,
-			path,
-			arguments,
-			debug_source,
-			budget,
-			engine,
-			lifecycle,
-			loader,
-		);
+		let file_modules = match extensions
+			.take()
+			.unwrap()
+			.install_file(&mut context, lifecycle)
+		{
+			Ok(modules) => modules,
+			Err(message) => {
+				eprintln!("error: {}", format::terminal_safe(&message));
+				terminal::exit(1)
+			}
+		};
 		#[cfg(not(feature = "project-sources"))]
-		let code = runner::run(
-			&context,
+		let loader = program::Loader::new();
+		let code = runner::run_loaded(
+			runner::FileContext {
+				context: &context,
+				lifecycle,
+				modules: Some(&file_modules),
+			},
 			path,
 			arguments,
 			debug_source,
 			budget,
 			engine,
-			lifecycle,
+			loader,
 		);
 		terminal::exit(code);
 	}

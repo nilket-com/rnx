@@ -252,7 +252,7 @@ impl Module {
 			+ Send
 			+ Sync,
 	{
-		use crate::host::{AlternateHost, OwnedTreeInput};
+		use crate::host::AlternateHost;
 		use crate::runtime::FunctionHandler;
 
 		let native = NativeType::of::<T>();
@@ -273,17 +273,7 @@ impl Module {
 			return Err(ContextError::ConflictingFunctionName { item: path, hash });
 		}
 
-		let checked = move |name: &str, tree: OwnedTreeInput| -> Result<Value, VmError> {
-			let result = match producer(name, tree) {
-				Ok(Ok(native)) => Ok(Value::new(native)?),
-				Ok(Err(message)) => Err(crate::to_value(message)?),
-				Err(limit) => return Ok(Value::new(limit)?),
-			};
-			Ok(Value::try_from(result)?)
-		};
-		let handler = FunctionHandler::new(move |stack, addr, args, out| {
-			Function::<(Ref<str>, OwnedTreeInput), Plain>::call(&checked, stack, addr, args, out)
-		})?;
+		let handler = opaque_result_handler(producer)?;
 		let mut data = FunctionData::from_raw(item, FunctionHandler::new(legacy)?);
 		data.alternate_host = Some(AlternateHost {
 			await_only: false,
@@ -307,6 +297,65 @@ impl Module {
 		self.opaque.factories.try_reserve(1)?;
 		self.opaque.factories.try_insert(hash, native)?;
 		self.insert_function_item(data, Docs::EMPTY, None, path, hash)
+	}
+
+	/// Also declare the unbounded-file implementation of this same typed producer.
+	/// Ordinary module installation uses only the session producer.
+	#[doc(hidden)]
+	pub fn file_opaque_result_function<F, T, G, H>(
+		&mut self,
+		name: &'static str,
+		legacy: F,
+		session: G,
+		file: H,
+	) -> Result<(), ContextError>
+	where
+		F: Fn(&mut dyn Memory, Address, usize, Output) -> Result<(), VmError>
+			+ 'static
+			+ Send
+			+ Sync,
+		T: crate::Any,
+		G: Fn(
+				&str,
+				crate::host::OwnedTreeInput,
+			) -> Result<Result<T, std::string::String>, crate::host::OpaqueProducerLimit>
+			+ 'static
+			+ Send
+			+ Sync,
+		H: Fn(
+				&str,
+				crate::host::OwnedTreeInput,
+			) -> Result<Result<T, std::string::String>, crate::host::OpaqueProducerLimit>
+			+ 'static
+			+ Send
+			+ Sync,
+	{
+		let file = opaque_result_handler(file)?;
+		self.file_readers.try_reserve(1)?;
+		self.opaque_result_function(name, legacy, session)?;
+		let Some(item) = self.items.last() else {
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "file producer registration",
+			});
+		};
+		let ModuleItemKind::Function(function) = &item.kind else {
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "file producer registration",
+			});
+		};
+		let Some(alternate) = &function.alternate_host else {
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "file producer alternate",
+			});
+		};
+		self.file_readers
+			.try_push(crate::experimental_core::domain::file::Reader {
+				hash: item.hash,
+				original: function.handler.clone(),
+				session: alternate.handler.clone(),
+				file,
+			})?;
+		Ok(())
 	}
 
 	/// Install a checked producer beside the existing method. Only the checked
@@ -547,6 +596,30 @@ impl Module {
 		self.opaque.methods.try_insert(key, NativeType::of::<T>())?;
 		Ok(())
 	}
+}
+
+fn opaque_result_handler<T: crate::Any>(
+	producer: impl Fn(
+			&str,
+			crate::host::OwnedTreeInput,
+		) -> Result<Result<T, std::string::String>, crate::host::OpaqueProducerLimit>
+		+ 'static
+		+ Send
+		+ Sync,
+) -> crate::alloc::Result<crate::runtime::FunctionHandler> {
+	use crate::host::OwnedTreeInput;
+	use crate::runtime::FunctionHandler;
+	let checked = move |name: &str, tree: OwnedTreeInput| -> Result<Value, VmError> {
+		let result = match producer(name, tree) {
+			Ok(Ok(native)) => Ok(Value::new(native)?),
+			Ok(Err(message)) => Err(crate::to_value(message)?),
+			Err(limit) => return Ok(Value::new(limit)?),
+		};
+		Ok(Value::try_from(result)?)
+	};
+	FunctionHandler::new(move |stack, addr, args, out| {
+		Function::<(Ref<str>, OwnedTreeInput), Plain>::call(&checked, stack, addr, args, out)
+	})
 }
 
 #[cfg(test)]

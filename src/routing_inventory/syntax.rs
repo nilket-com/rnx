@@ -310,6 +310,7 @@ impl<'ast> Visit<'ast> for Scan {
 		if [
             "opaque_method",
             "opaque_factory",
+			"file_opaque_result_function",
 			"opaque_result_function",
 			"opaque_columns_producer",
 			"opaque_shared_constructor",
@@ -355,6 +356,7 @@ impl<'ast> Visit<'ast> for Scan {
 				.unwrap_or_default();
 			let class = match method.as_str() {
 				"opaque_method" | "opaque_factory" => "host-value",
+				"file_opaque_result_function" => "file-opaque-result-factory",
 				"opaque_result_function" => "opaque-result-factory",
 				"opaque_columns_producer" => "opaque-columns-producer",
 				"opaque_shared_constructor" => "opaque-shared-constructor",
@@ -425,6 +427,7 @@ impl<'ast> Visit<'ast> for Scan {
 				};
 				let method = method.to_string();
 				if [
+					"file_opaque_result_function",
 					"opaque_result_function",
 					"opaque_columns_producer",
 					"opaque_shared_constructor",
@@ -445,6 +448,7 @@ impl<'ast> Visit<'ast> for Scan {
 				.contains(&method.as_str())
 				{
 					let class = match method.as_str() {
+						"file_opaque_result_function" => "file-opaque-result-factory",
 						"opaque_result_function" => "opaque-result-factory",
 						"opaque_columns_producer" => "opaque-columns-producer",
 						"opaque_shared_constructor" => "opaque-shared-constructor",

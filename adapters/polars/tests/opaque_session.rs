@@ -294,9 +294,8 @@ fn csv_on_the_checked_session_retains_the_frame_and_preserves_string_errors() {
 		"",
 	);
 	assert_eq!(file.stdout, b"file-effect\n2\n");
-	assert!(
-		String::from_utf8_lossy(&file.stderr).contains("rnx: engine=legacy refusal=OpaqueEntry")
-	);
+	// The explicit-schema file reader and width method are both enrolled.
+	assert_eq!(file.stderr, b"rnx: engine=execution native-requested=on\n");
 	fs::write(receipt, b"{\"status\":\"PASS\"}\n").unwrap();
 }
 
@@ -329,9 +328,8 @@ fn retained_csv_reports_height_after_load_and_reset() {
 		"",
 	);
 	assert_eq!(file.stdout, b"file-effect\n0\n");
-	assert!(
-		String::from_utf8_lossy(&file.stderr).contains("rnx: engine=legacy refusal=OpaqueEntry")
-	);
+	// Only session entries may propagate height's typed native error with ?.
+	assert_eq!(file.stderr, b"rnx: engine=legacy refusal=OpaqueOperation\n");
 }
 
 fn tempfile_for_height(label: &str) -> std::path::PathBuf {

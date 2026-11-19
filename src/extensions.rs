@@ -106,6 +106,26 @@ impl Extensions {
 		context: &mut Context,
 		lifecycle: &crate::lifecycle::Lifecycle,
 	) -> Result<Installed, String> {
+		self.install_by(lifecycle, |module| context.install(module))
+	}
+
+	pub(crate) fn install_file(
+		self,
+		context: &mut Context,
+		lifecycle: &crate::lifecycle::Lifecycle,
+	) -> Result<rune::experimental_core::domain::file::FileModules, String> {
+		let mut installer = rune::experimental_core::domain::file::Installer::new(context);
+		self.install_by(lifecycle, |module| installer.install(module))?;
+		installer
+			.finish()
+			.map_err(|err| format!("file extensions: {:?}", err.kind))
+	}
+
+	fn install_by(
+		self,
+		lifecycle: &crate::lifecycle::Lifecycle,
+		mut install: impl FnMut(Module) -> Result<(), rune::ContextError>,
+	) -> Result<Installed, String> {
 		let mut installed = Vec::new();
 		let mut functions = Vec::new();
 		for extension in self.builders {
@@ -153,9 +173,7 @@ impl Extensions {
 					)));
 				}
 			}
-			context
-				.install(module)
-				.map_err(|e| failure(e.to_string()))?;
+			install(module).map_err(|e| failure(e.to_string()))?;
 			functions.extend(
 				entries
 					.into_iter()

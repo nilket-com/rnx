@@ -35,6 +35,8 @@ fn indexed(text: &str, loader: &mut dyn compile::SourceLoader) -> (Result<Progra
 	sources.insert(Source::memory(text).unwrap()).unwrap();
 	let mut diagnostics = Diagnostics::new();
 	let mut collector = Collector {
+		checked_files: false,
+		checked_main: false,
 		opaque_session: None,
 		file_entry: None,
 		revision: 7,
@@ -196,6 +198,8 @@ fn custom_collector_keeps_unresolved_receiver_sites_as_located_method_refusals()
 #[test]
 fn invalid_break_marker_belongs_only_to_its_error() {
 	let mut collector = Collector {
+		checked_files: false,
+		checked_main: false,
 		opaque_session: None,
 		file_entry: None,
 		revision: 7,

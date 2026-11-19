@@ -11,6 +11,8 @@ use rune::experimental_core::{
 };
 
 mod awaiting;
+mod checked;
+use rune::experimental_core::domain::file::{FileModules, FileProgram};
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn run(
@@ -21,6 +23,7 @@ pub(super) fn run(
 	budget: usize,
 	options: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
+	file_modules: Option<&FileModules>,
 	loader: &mut Loader,
 ) -> Option<i32> {
 	let mut store = match Store::new(StoreLimits::default()) {
@@ -38,6 +41,7 @@ pub(super) fn run(
 		budget,
 		options,
 		lifecycle,
+		file_modules,
 		loader,
 		&mut store,
 	);
@@ -57,6 +61,7 @@ fn attempt(
 	budget: usize,
 	options: crate::engine::Options,
 	lifecycle: &crate::lifecycle::Lifecycle,
+	file_modules: Option<&FileModules>,
 	loader: &mut Loader,
 	store: &mut Store,
 ) -> Option<i32> {
@@ -80,22 +85,32 @@ fn attempt(
 			return Some(1);
 		}
 	};
-	let (program, mode) = match frontend::compile_file_with_loader(
-		&mut sources,
-		context,
-		&mut Diagnostics::new(),
-		1,
-		loader,
-	)
-	.and_then(|(program, mode)| {
-		if let Some(refusal) =
-			crate::engine::legacy_alias_entry_refusal(&program, &loader.texts[0].text)
+	let compiled = match file_modules {
+		Some(modules) => modules.compile(&mut sources, context, &mut Diagnostics::new(), 1, loader),
+		None => frontend::compile_file_with_loader(
+			&mut sources,
+			context,
+			&mut Diagnostics::new(),
+			1,
+			loader,
+		)
+		.map(|(program, mode)| FileProgram::Ordinary(program, mode)),
+	}
+	.and_then(|entry| {
+		if let FileProgram::Ordinary(program, _) = &entry
+			&& let Some(refusal) =
+				crate::engine::legacy_alias_entry_refusal(program, &loader.texts[0].text)
 		{
 			return Err(rune::experimental_core::error::Error::refused(refusal));
 		}
-		Ok((program, mode))
-	}) {
-		Ok(program) => program,
+		Ok(entry)
+	});
+	let (program, mode) = match compiled {
+		Ok(FileProgram::Ordinary(program, mode)) => (program, mode),
+		Ok(FileProgram::Checked(main)) => {
+			return checked::run(main, arguments, debug_source, budget, options, lifecycle);
+		}
+
 		Err(error) => {
 			if let Some(refusal) = error.refusal {
 				options.selected("legacy", Some(refusal.name()));
@@ -317,6 +332,13 @@ fn show(store: &Store, root: &Root, fields: &Fields, debug: bool) -> Result<i32,
 			},
 		)
 		.map_err(|e| format!("{}: {:?}", e.operation, e.kind))?;
+	show_view(view, fields, debug)
+}
+fn show_view(
+	view: rune::experimental_core::heap::RootView<'_>,
+	fields: &Fields,
+	debug: bool,
+) -> Result<i32, String> {
 	let node = view
 		.root()
 		.map_err(|e| format!("{}: {:?}", e.operation, e.kind))?;
@@ -399,13 +421,16 @@ mod tests {
 		}
 		let lifecycle = crate::lifecycle::Lifecycle::new(false).unwrap();
 		let code = super::super::run_loaded(
-			context,
+			crate::runner::FileContext {
+				context,
+				lifecycle: &lifecycle,
+				modules: None,
+			},
 			path.to_str().unwrap(),
 			rune::to_value(Vec::<String>::new()).unwrap(),
 			false,
 			budget,
 			options,
-			&lifecycle,
 			Loader::new(),
 		);
 		lifecycle.close().unwrap();

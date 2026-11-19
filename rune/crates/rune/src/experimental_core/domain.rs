@@ -97,6 +97,9 @@ struct SessionSchema {
 	entry: u32,
 	bindings: Vec<(String, Option<super::heap::host_value::Identity>)>,
 }
+/// Sealed synchronous file invocation.
+pub mod file;
+
 pub(crate) struct Member {
 	session: Option<SessionSchema>,
 	pub(crate) program: Program,

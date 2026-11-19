@@ -425,6 +425,15 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 							hash,
 							if file_async_main {
 								crate::experimental_core::frontend::BodyKind::FileAsyncMain
+							} else if collector.allows_checked_file_main()
+								&& matches!(f.call, crate::runtime::Call::Immediate)
+								&& f.impl_item.is_none() && matches!(
+								&f.ast,
+								FunctionAst::Node(..)
+							) && hash == crate::Hash::type_hash(["main"])
+								&& item_meta.is_public(self.q.pool)
+							{
+								crate::experimental_core::frontend::BodyKind::PublicFileMain
 							} else {
 								crate::experimental_core::frontend::BodyKind::Function
 							},

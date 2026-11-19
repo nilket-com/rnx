@@ -52,6 +52,9 @@ enum Name {
 /// [Context::install][crate::compile::Context::install].
 #[derive(Default)]
 pub struct Module {
+	/// Candidates consumed only by the checked-file installer.
+	#[cfg(feature = "execution")]
+	pub(crate) file_readers: Vec<crate::experimental_core::domain::file::Reader>,
 	#[cfg(feature = "execution")]
 	pub(crate) opaque: crate::function::host::opaque::State,
 	/// Uniqueness checks.
@@ -651,6 +654,8 @@ impl Module {
 
 	fn inner_new(item: ItemBuf) -> Self {
 		Self {
+			#[cfg(feature = "execution")]
+			file_readers: Vec::new(),
 			#[cfg(feature = "execution")]
 			opaque: Default::default(),
 			names: HashSet::new(),

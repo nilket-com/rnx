@@ -558,6 +558,12 @@ fn host_inventory(root: &Path) -> Result<Json> {
 			(
 				"adapters/polars/src/lib.rs",
 				"build",
+				"file-opaque-result-factory",
+				"m . file_opaque_result_function (\"read_csv\" , read_csv_either , read_csv_checked , read_csv_file)",
+			),
+			(
+				"adapters/polars/src/lib.rs",
+				"build",
 				"host-value",
 				"m . opaque_type :: < DataFrame > (dataframe_bytes , display_fmt)",
 			),
@@ -585,7 +591,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	life.close()?;
 	Ok(
 		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,
-			"adapter_enrollments":{"candle":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/candle/")).count(),"paths":["candle::Tensor","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"},"polars":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/polars/")).count(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
+			"adapter_enrollments":{"candle":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/candle/")).count(),"paths":["candle::Tensor","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"],"display":"opaque_type also installs the internal display adapter","checked_file":["candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"],"admission":"session or exact-local synchronous file main"},"polars":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/polars/")).count(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","checked_file":["polars::read_csv","polars::DataFrame::width","polars::DataFrame::to_dense"],"admission":"only listed checked_file sites in a sealed file main; other sites require a session"}},
 			"adapter_rule":"only the listed sites enroll for execution. Other adapter registrations remain undeclared"}),
 	)
 }
@@ -794,6 +800,8 @@ fn policy_rows(root: &Path) -> Result<Json> {
 	for (file, owner, call) in [
 		("src/runner.rs", "run_loaded", "METHOD record_module_reads"),
 		("src/runner.rs", "run_loaded", "METHOD replay_module_reads"),
+		("src/runner/execution.rs", "attempt", "CALL checked::run"),
+		("src/runner/execution/checked.rs", "run", "METHOD drive"),
 		("src/runner/execution.rs", "invoke", "METHOD prepare"),
 		("src/runner/execution.rs", "invoke", "METHOD invoke"),
 		(

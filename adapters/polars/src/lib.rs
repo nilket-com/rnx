@@ -229,6 +229,25 @@ fn read_csv_checked(
 	};
 	Ok(result.map(DataFrame))
 }
+/// File invocations use the same open handle for strict header and body
+/// parsing. The Store charges the retained frame when the producer returns.
+#[cfg(feature = "generated")]
+fn read_csv_file(
+	path: &str,
+	schema: rune::host::OwnedTreeInput,
+) -> Result<Result<DataFrame, String>, rune::host::OpaqueProducerLimit> {
+	let (schema_value, _) = match values::csv_schema_session(&schema, path.len())? {
+		Ok(parsed) => parsed,
+		Err(error) => return Ok(Err(error)),
+	};
+	drop(schema);
+	Ok(
+		engine::run("read_csv", move || files::csv(path, schema_value))
+			.map_err(err)
+			.and_then(|frame| frame)
+			.map(DataFrame),
+	)
+}
 /// Record 0125: `read_csv(path)` without a schema reads with Polars' own
 /// schema inference, date parsing off (the 0.55.2 date-parsing crash).
 fn read_csv_inferred(path: &str) -> Result<DataFrame, String> {
@@ -367,8 +386,13 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	m.ty::<LazyGroupBy>().map_err(err)?;
 	m.ty::<Expr>().map_err(err)?;
 	#[cfg(feature = "generated")]
-	m.opaque_result_function("read_csv", read_csv_either, read_csv_checked)
-		.map_err(err)?;
+	if std::env::var_os("POLARS_PANIC_ON_ERR").as_deref() == Some(std::ffi::OsStr::new("1")) {
+		m.opaque_result_function("read_csv", read_csv_either, read_csv_checked)
+			.map_err(err)?;
+	} else {
+		m.file_opaque_result_function("read_csv", read_csv_either, read_csv_checked, read_csv_file)
+			.map_err(err)?;
+	}
 	#[cfg(not(feature = "generated"))]
 	m.raw_function("read_csv", read_csv_either)
 		.build()
