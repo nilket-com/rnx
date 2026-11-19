@@ -2809,8 +2809,17 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				.transaction
 				.host(binding)
 				.map_err(|e| e.at(self.location(span)))?;
-			let value = self.operand(target)?;
-			let (args_start, args_len) = self.function.arguments(&[value])?;
+			let (args_start, args_len) = match call.args {
+				[] => {
+					let receiver = self.operand(target)?;
+					self.function.arguments(&[receiver])?
+				}
+				&[names, dtype] if binding.signature.shared_producer() => {
+					let slots = self.operands(&[target, names, dtype])?;
+					self.function.arguments(&slots)?
+				}
+				_ => return Err(self.refused(span, Refusal::Arity)),
+			};
 			self.emit(
 				Op::Call {
 					out,

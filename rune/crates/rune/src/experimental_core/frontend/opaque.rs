@@ -54,6 +54,15 @@ impl Projection {
 		match (self, input) {
 			(Self::Identity, value) => value,
 			(_, Fact::Bottom) => Fact::Bottom,
+			(Self::Method(name), Fact::Exact(receiver))
+				if let Some(native) = context
+					.opaque
+					.producer_outputs
+					.get(&Hash::associated_function(receiver, name)) =>
+			{
+				Fact::ResultOfNative(native.hash)
+			}
+			(Self::Success, Fact::ResultOfNative(hash)) => Fact::Exact(hash),
 			(Self::Method(name), Fact::Exact(receiver)) => context
 				.opaque
 				.method_errors
@@ -734,7 +743,10 @@ impl Builder<'_, '_> {
 			}
 			// The opaque Result itself is temporary. Only the direct checked '?'
 			// is allowed to consume it, so it cannot enter the REPL state envelope.
-			if matches!(facts.get(i), Some(Fact::ResultOfNative(_))) && !self.nodes[i].unwrapped {
+			if matches!(facts.get(i), Some(Fact::ResultOfNative(_)))
+				&& !self.nodes[i].unwrapped
+				&& self.nodes[i].typed_use != Some(TypedUse::Try)
+			{
 				return Err(fail(e.span, Refusal::OpaqueOperation));
 			}
 			if let Some(Fact::NativeErrorResult(error)) = facts.get(i) {
@@ -764,6 +776,10 @@ impl Builder<'_, '_> {
 					return Err(fail(e.span, Refusal::OpaqueIngress));
 				}
 				E::Call(c) => {
+					if matches!(c.call, hir::Call::Meta { hash } if self.context.opaque.producer_outputs.contains_key(&hash))
+					{
+						return Err(fail(e.span, Refusal::OpaqueReceiver));
+					}
 					let introduced = match c.call {
 						hir::Call::Meta { hash } => {
 							self.context.opaque.factories.get(&hash).map(|t| t.hash)
@@ -795,8 +811,13 @@ impl Builder<'_, '_> {
 								return Err(fail(e.span, Refusal::OpaqueReceiver));
 							};
 							let key = Hash::associated_function(ty, hash);
+							let arity = match self.context.opaque.producer_outputs.get(&key) {
+								Some(output) if self.has_checked_display(output.hash) => 2,
+								Some(_) => return Err(fail(e.span, Refusal::OpaqueReceiver)),
+								None => 0,
+							};
 							if hash != name_hash
-								|| !c.args.is_empty() || !self
+								|| c.args.len() != arity || !self
 								.context
 								.opaque
 								.methods
@@ -914,8 +935,14 @@ impl Builder<'_, '_> {
 					}
 				}
 				E::Try(v)
-					if !self.nodes.get(v.index()).is_some_and(|n| n.unwrapped)
-						&& !matches!(facts.get(v.index()), Some(Fact::NativeErrorResult(_))) =>
+					if !self.nodes.get(v.index()).is_some_and(|node| {
+						node.unwrapped
+							|| (node.typed_use == Some(TypedUse::Try)
+								&& matches!(
+									facts.get(v.index()),
+									Some(Fact::NativeErrorResult(_) | Fact::ResultOfNative(_))
+								))
+					}) =>
 				{
 					p(v, Refusal::OpaqueOperation)?;
 				}

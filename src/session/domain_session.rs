@@ -1437,6 +1437,156 @@ mod opaque_tests {
 		(c, made, drops, displays)
 	}
 	#[test]
+	fn shared_producer_receives_selected_names_and_call_credit() {
+		use std::result::Result;
+		use std::sync::{
+			Arc,
+			atomic::{AtomicUsize, Ordering::SeqCst},
+		};
+		#[derive(rune::Any)]
+		#[rune(item = ::producer_test)]
+		struct Source(i64);
+		#[derive(rune::Any)]
+		#[rune(item = ::product_test)]
+		struct Product(i64, Arc<AtomicUsize>);
+		impl Drop for Product {
+			fn drop(&mut self) {
+				self.1.fetch_add(1, SeqCst);
+			}
+		}
+		let calls = Arc::new(AtomicUsize::new(0));
+		let drops = Arc::new(AtomicUsize::new(0));
+		let invoked = calls.clone();
+		let destroyed = drops.clone();
+		let mut context = context();
+		let mut outputs = rune::Module::with_crate("product_test").unwrap();
+		outputs
+			.opaque_type::<Product>(|_| 8, |_, _| Ok(()))
+			.unwrap();
+		outputs
+			.opaque_method::<Product, _, _>("read", |p: &Product| p.0, None)
+			.unwrap();
+		let mut inputs = rune::Module::with_crate("producer_test").unwrap();
+		inputs.opaque_type::<Source>(|_| 8, |_, _| Ok(())).unwrap();
+		inputs.opaque_factory("source", || Source(5)).unwrap();
+		inputs
+			.opaque_columns_producer(
+				"matrix",
+				|_: &Source, _: rune::Value, _: &str| -> Result<Product, String> {
+					panic!("legacy handler entered")
+				},
+				move |source: &Source, selection, credit| {
+					invoked.fetch_add(1, SeqCst);
+					assert!(rune::runtime::budget::remaining().is_some());
+					rune::runtime::budget::consume(1).unwrap();
+					assert!(credit > 0 && credit < 512 * 1024 * 1024);
+					let (names, dtype) = match selection.0 {
+						Ok(s) => s,
+						Err(reason) => return Ok(Err(format!("{reason:?}"))),
+					};
+					if names == ["panic"] {
+						panic!("producer witness");
+					}
+					if names == ["limit"] {
+						return Err(rune::host::OpaqueProducerLimit);
+					}
+					assert_eq!(names, ["y", "x"]);
+					assert_eq!(dtype, rune::host::FloatDtype::F64);
+					Ok(Ok(Product(
+						source.0 + names.len() as i64,
+						destroyed.clone(),
+					)))
+				},
+			)
+			.unwrap();
+		context.install(inputs).unwrap();
+		let mut pending = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+		shown(&mut pending, "let source=producer_test::source();");
+		assert!(matches!(
+			pending.eval(r#"source.matrix(["y","x"],"f64")?"#),
+			Err(Failure::Refused(_))
+		));
+		assert_eq!(calls.load(SeqCst), 0);
+		let mut context = pending.context;
+		context.install(outputs).unwrap();
+		let mut sources = rune::Sources::new();
+		sources
+			.insert(
+				rune::Source::memory(
+					r#"pub fn main(){producer_test::source().matrix(["y","x"],"f64")?}"#,
+				)
+				.unwrap(),
+			)
+			.unwrap();
+		assert!(
+			rune::experimental_core::frontend::compile(
+				&mut sources,
+				&context,
+				&mut rune::Diagnostics::new(),
+				1
+			)
+			.is_err()
+		);
+		let mut session = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+		shown(&mut session, "let a=producer_test::source();");
+		shown(&mut session, r#"let m=a.matrix(["y","x"],"f64")?;"#);
+		assert!(session.binding("m").is_some());
+		assert_eq!(shown(&mut session, "m.read()"), "7");
+		assert_eq!(calls.load(SeqCst), 1);
+		shown(
+			&mut session,
+			r#"let n=["y","x"]; let ordered=a.matrix(n,{n=["wrong"]; "f64"})?;"#,
+		);
+		assert_eq!(shown(&mut session, "ordered.read()"), "7");
+		assert_eq!(shown(&mut session, "n"), r#"["wrong"]"#);
+		for input in [
+			r#"a.matrix(["x"],"f64")"#,
+			r#"let wrap=a.matrix(["x"],"f64");"#,
+		] {
+			assert!(
+				matches!(session.eval(input), Err(Failure::Refused(_))),
+				"{input}"
+			);
+		}
+		assert!(matches!(
+			session.eval_interruptible(r#"a.matrix(["y","x"],"f64")?"#, || true),
+			Err(Failure::Interrupted)
+		));
+		assert_eq!(calls.load(SeqCst), 2);
+		for (input, reason) in [
+			(r#"a.matrix(["x","x",3],"bad")?"#, "NotNames"),
+			(r#"a.matrix(["x","x"],"bad")?"#, "Duplicate"),
+			(r#"a.matrix(["x"],"bad")?"#, "Dtype"),
+		] {
+			assert!(
+				matches!(session.eval(input),Err(Failure::Returned(ref m)) if m.contains(reason)),
+				"{input}"
+			);
+		}
+		let before = calls.load(SeqCst);
+		assert!(matches!(
+			session.eval(r#"a.matrix(["x","x"],4)?"#),
+			Err(Failure::Runtime { .. })
+		));
+		assert!(matches!(
+			session.eval(r#"{let ns=["x"];std::mem::drop(ns);a.matrix(ns,"f64")?}"#),
+			Err(Failure::Runtime { .. })
+		));
+		assert_eq!(calls.load(SeqCst), before);
+		assert!(
+			matches!(session.eval(r#"a.matrix(["panic"],"f64")?"#),Err(Failure::Runtime{message,..}) if message.contains("producer witness"))
+		);
+		assert!(matches!(
+			session.eval(r#"a.matrix(["limit"],"f64")?"#),
+			Err(Failure::Runtime { .. })
+		));
+		assert_eq!(shown(&mut session, "m.read()"), "7");
+		assert_eq!(drops.load(SeqCst), 0);
+		session.reset_fallible().unwrap();
+		assert_eq!(drops.load(SeqCst), 2);
+	}
+
+	#[test]
 	fn propagated_native_error_uses_bounded_checked_display() {
 		use rune::alloc::fmt::TryWrite;
 		use std::result::Result;

@@ -85,6 +85,7 @@ pub(crate) struct State {
 	pub(crate) types: crate::hash::Map<Registration>,
 	pub(crate) factories: crate::hash::Map<NativeType>,
 	pub(crate) methods: crate::hash::Map<NativeType>,
+	pub(crate) producer_outputs: crate::hash::Map<NativeType>,
 	pub(crate) method_errors: crate::hash::Map<NativeType>,
 }
 
@@ -118,7 +119,14 @@ impl State {
 			.values()
 			.chain(self.methods.values())
 			.chain(self.method_errors.values())
-		{
+			// A standalone embedder may install the producer's module without
+			// the optional output module. Admission requires a checked display
+			// for that output, and every later installation revalidates the pair.
+			.chain(
+				self.producer_outputs
+					.values()
+					.filter(|ty| self.types.contains_key(&ty.hash)),
+			) {
 			let registered = self.types.get(&native.hash);
 			if !registered.is_some_and(|r| r.descriptor.type_id == native.id) {
 				return Err(crate::ContextError::OpaqueType {
@@ -129,10 +137,20 @@ impl State {
 		}
 		Ok(())
 	}
-	pub(crate) fn merged(&self, other: &Self) -> alloc::Result<Self> {
+	pub(crate) fn merged(&self, other: &Self) -> Result<Self, crate::ContextError> {
 		use crate::alloc::clone::TryClone;
 		let mut next = self.try_clone()?;
 		for (hash, value) in &other.types {
+			if let Some(old) = self
+				.types
+				.get(hash)
+				.filter(|old| old.descriptor.type_id != value.descriptor.type_id)
+			{
+				return Err(crate::ContextError::OpaqueType {
+					declared: value.descriptor.info.into(),
+					registered: Some(old.descriptor.info.into()),
+				});
+			}
 			next.types.try_insert(*hash, value.clone())?;
 		}
 		for (hash, value) in &other.factories {
@@ -140,6 +158,9 @@ impl State {
 		}
 		for (hash, value) in &other.methods {
 			next.methods.try_insert(*hash, *value)?;
+		}
+		for (hash, value) in &other.producer_outputs {
+			next.producer_outputs.try_insert(*hash, *value)?;
 		}
 		for (hash, value) in &other.method_errors {
 			next.method_errors.try_insert(*hash, *value)?;

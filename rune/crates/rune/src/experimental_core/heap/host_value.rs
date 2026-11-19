@@ -126,6 +126,23 @@ impl Store {
 		Ok(admitted)
 	}
 
+	pub(crate) fn producer_names(&self, value: Value) -> Result<Option<&[Value]>> {
+		let Value::Heap(handle) = value else {
+			return Ok(None);
+		};
+		match self.payload(handle)? {
+			Payload::List {
+				tag: Type::Vec,
+				values,
+			} => Ok(Some(values)),
+			_ => Ok(None),
+		}
+	}
+	/// Store::host_value and Store::variant charge these in addition to
+	/// the registered logical payload when a producer returns Ok(native).
+	pub(crate) fn producer_wrapper_bytes(&self) -> usize {
+		size_of::<HostValue>() + size_of::<Value>()
+	}
 	pub(crate) fn host_snapshot(&self, value: Value) -> Result<runtime::Value> {
 		let Value::Heap(handle) = value else {
 			return Err(err(ErrorKind::Type));

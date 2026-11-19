@@ -676,10 +676,18 @@ impl Context {
 		let module = module.as_ref();
 		tracing::trace!("installing");
 
+		if module.unique.is_some_and(|id| self.unique.contains(id)) {
+			return Ok(());
+		}
+
+		// Reject descriptor conflicts before claiming the module ID, publishing
+		// the crate name or changing any existing operation registrations.
+		#[cfg(feature = "execution")]
+		let prepared_opaque = self.opaque.merged(&module.opaque)?;
+		#[cfg(feature = "execution")]
+		prepared_opaque.validate()?;
 		if let Some(id) = module.unique {
-			if !self.unique.try_insert(id)? {
-				return Ok(());
-			}
+			self.unique.try_insert(id)?;
 		}
 
 		#[cfg(feature = "execution")]
@@ -762,10 +770,6 @@ impl Context {
 		}
 
 		#[cfg(feature = "execution")]
-		let prepared_opaque = self.opaque.merged(&module.opaque)?;
-		#[cfg(feature = "execution")]
-		prepared_opaque.validate()?;
-		#[cfg(feature = "execution")]
 		let (prepared_hosts, prepared_alternates, prepared_async) = {
 			let mut hosts = self.hosts.try_clone()?;
 			let mut alternates = self.alternate_hosts.try_clone()?;
@@ -809,12 +813,31 @@ impl Context {
 			}
 			for associated in &module.associated {
 				if let ModuleAssociatedKind::Function(function) = &associated.kind {
+					let key = associated
+						.name
+						.kind
+						.hash(associated.container)
+						.with_function_parameters(associated.name.function_parameters);
+					if let Some(alternate) = function
+						.alternate_host
+						.as_ref()
+						.filter(|a| a.enrollment.admitted())
+					{
+						alternates.try_insert(
+							key,
+							crate::function::host::InstalledAlternate {
+								await_only: alternate.await_only,
+								original: function.handler.clone(),
+								binding: crate::function::host::HostBinding {
+									hash: key,
+									handler: alternate.handler.clone(),
+									signature: alternate.enrollment.signature,
+									certificate: alternate.enrollment.certificate,
+								},
+							},
+						)?;
+					}
 					if let Some(enrollment) = function.host.filter(|e| e.admitted()) {
-						let key = associated
-							.name
-							.kind
-							.hash(associated.container)
-							.with_function_parameters(associated.name.function_parameters);
 						hosts.try_insert(
 							key,
 							crate::function::host::HostBinding {

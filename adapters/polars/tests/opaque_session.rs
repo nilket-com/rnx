@@ -416,3 +416,85 @@ fn height_exposes_a_typed_error_and_keeps_the_frame_after_propagation() {
 	let stderr = String::from_utf8(escape.stderr).unwrap();
 	assert_eq!(stderr.matches("refused:").count(), 4, "{stderr}");
 }
+
+#[test]
+fn retained_csv_produces_typed_dense_results_in_later_inputs() {
+	let root = tempfile_for_height("dense");
+	let csv = root.join("frame.csv");
+	fs::write(
+		&csv,
+		"a,b,n,label,big,inf,narrow\n1,4.5,7,x,16777217,1.0,1.0\n2,5.5,,y,9007199254740993,NaN,1e100\n",
+	)
+	.unwrap();
+	let path = serde_json::to_string(csv.to_str().unwrap()).unwrap();
+	let load = format!(
+		"let df=polars::read_csv({path},[(\"a\",\"i64\"),(\"b\",\"f64\"),(\"n\",\"i64\"),(\"label\",\"string\"),(\"big\",\"i64\"),(\"inf\",\"f64\"),(\"narrow\",\"f64\")])?;\n"
+	);
+	let success = load.clone()
+		+ concat!(
+			"let names=[\"b\",\"a\"];\nlet d=df.to_dense(names,\"f32\")?;\n",
+			"(d.shape(),d.names(),d.dtype())\n",
+			"let next=df.to_dense([\"a\",\"b\"],\"f64\")?;\n",
+			"(next.shape(),next.names(),next.dtype())\n",
+			"(df.width(),df.height()?)\n:reset\n:quit\n"
+		);
+	let args = ["repl", "--engine=execution"];
+	let out = capture(&root, "dense", &args, &success);
+	assert_eq!(String::from_utf8_lossy(&out.stderr), "");
+	assert_eq!(
+		transcript(&out.stdout),
+		"((2, 2), [\"b\", \"a\"], \"f32\")\n((2, 2), [\"a\", \"b\"], \"f64\")\n(7, 2)\nsession reset\n"
+	);
+	let cases = [
+		("7", "bad", "columns must be a vector of names"),
+		("[]", "bad", "a block needs at least one column"),
+		(r#"["a","a",3]"#, "bad", "columns must be a vector of names"),
+		(r#"["a","a"]"#, "bad", "duplicate column name \"a\""),
+		(
+			r#"["a"]"#,
+			"bad",
+			"dtype must be \"f32\" or \"f64\", found \"bad\"",
+		),
+		(
+			r#"["label","missing"]"#,
+			"f32",
+			"not found: \"missing\" not found",
+		),
+		(
+			r#"["label","n"]"#,
+			"f32",
+			"column \"label\" is str, not numeric",
+		),
+		(r#"["big","n"]"#, "f32", "a null in column \"n\" at row 1"),
+		(
+			r#"["big"]"#,
+			"f32",
+			"16777217 in column \"big\" at row 0 is outside the exact integer range (|v| <= 16777216)",
+		),
+		(
+			r#"["big"]"#,
+			"f64",
+			"9007199254740993 in column \"big\" at row 1 is outside the exact integer range (|v| <= 9007199254740992)",
+		),
+		(
+			r#"["inf"]"#,
+			"f64",
+			"a non-finite value in column \"inf\" at row 1",
+		),
+		(
+			r#"["narrow"]"#,
+			"f32",
+			"10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 in column \"narrow\" at row 1 is outside the f32 range",
+		),
+	];
+	let mut input = load;
+	let mut errors = String::new();
+	for (names, dtype, detail) in cases {
+		input.push_str(&format!("df.to_dense({names},{dtype:?})?\n"));
+		errors.push_str(&format!("error: to_dense: {detail}\n"));
+	}
+	input.push_str("df.width()\n:quit\n");
+	let out = capture(&root, "dense-errors", &args, &input);
+	assert_eq!(String::from_utf8_lossy(&out.stderr), errors);
+	assert!(String::from_utf8_lossy(&out.stdout).contains("7\n"));
+}

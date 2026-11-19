@@ -12,6 +12,9 @@
 //! - NaN and ±∞ are refused, with the column and row.
 //!
 //! Every limit is checked before anything proportional is allocated.
+#[cfg(feature = "generated")]
+pub(crate) mod checked;
+
 use crate::DataFrame;
 use polars::prelude as p;
 use rnx::interchange::{self, Data, Dense};

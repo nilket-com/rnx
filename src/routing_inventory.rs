@@ -540,6 +540,12 @@ fn host_inventory(root: &Path) -> Result<Json> {
 			(
 				"adapters/polars/src/lib.rs",
 				"build",
+				"opaque-columns-producer",
+				"m . opaque_columns_producer (\"to_dense\" , dense :: to_dense , dense :: checked :: convert)",
+			),
+			(
+				"adapters/polars/src/lib.rs",
+				"build",
 				"opaque-result-factory",
 				"m . opaque_result_function (\"read_csv\" , read_csv_either , read_csv_checked)",
 			),
@@ -555,7 +561,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	life.close()?;
 	Ok(
 		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,
-			"adapter_enrollments":{"polars":{"source_sites":enrolled.len(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
+			"adapter_enrollments":{"polars":{"source_sites":enrolled.len(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
 			"adapter_rule":"only the listed sites enroll for execution. Other adapter registrations remain undeclared"}),
 	)
 }

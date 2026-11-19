@@ -14,6 +14,23 @@ fn text(s: &mut DomainSession, source: &str) -> std::result::Result<Option<Strin
 	s.eval_rendered(source, &crate::format::Limits::default())
 }
 #[test]
+fn awaited_try_works_without_opaque_values() {
+	let mut s = session();
+	text(&mut s, "async fn increment(v){ let n=v?; Ok(n+1) }").unwrap();
+	assert_eq!(
+		text(&mut s, "increment(Ok(6)).await").unwrap().as_deref(),
+		Some("Ok(7)")
+	);
+	assert_eq!(
+		text(&mut s, r#"increment(Err("stop")).await"#)
+			.unwrap()
+			.as_deref(),
+		Some(r#"Err("stop")"#)
+	);
+	s.close().unwrap();
+}
+
+#[test]
 fn direct_await_arguments_body_try_and_early_return_preserve_order() {
 	let mut s = session();
 	for (source, value) in [

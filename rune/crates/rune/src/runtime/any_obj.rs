@@ -19,6 +19,12 @@ pub struct AnyObj {
 }
 
 impl AnyObj {
+	/// Allocation size used by `new`, including the access and reference-count header.
+	#[cfg(feature = "execution")]
+	pub(crate) const fn owned_allocation_bytes<T: Any>() -> usize {
+		core::mem::size_of::<AnyObjData<T>>()
+	}
+
 	/// Construct a new typed object.
 	///
 	/// # Safety

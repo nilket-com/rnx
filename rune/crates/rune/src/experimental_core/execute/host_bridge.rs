@@ -2,6 +2,7 @@
 use super::super::value::Type;
 use super::*;
 use crate as rune;
+mod shared_producer;
 
 use crate::function::host::{HostOutputKind, HostSignature, HostType, OpaqueProducerLimit};
 use crate::runtime::{self as stock, FromValue};

@@ -233,13 +233,21 @@ impl Executor {
 				}
 			}
 		}
-		if code.host(id).is_none() {
+		let Some(binding) = code.host(id) else {
 			return self.intrinsic(code, store, function, base, out, id, start, count);
-		}
+		};
 		use crate::runtime::budget;
 		let granted = *fuel;
 		let (result, remaining) = budget::with(granted, || {
-			let result = self.intrinsic(code, store, function, base, out, id, start, count);
+			let result = if binding.signature.shared_producer() {
+				if cross.is_none() {
+					Err(error(ErrorKind::InvalidCode))
+				} else {
+					self.sliced_shared_producer(store, binding, function, base, out, start, count)
+				}
+			} else {
+				self.intrinsic(code, store, function, base, out, id, start, count)
+			};
 			(result, budget::remaining())
 		})
 		.call();

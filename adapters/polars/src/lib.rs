@@ -375,6 +375,10 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 		.map_err(err)?;
 	m.function("read_json", read_json).build().map_err(err)?;
 	// record 0129: numeric columns to and from rnx's neutral block
+	#[cfg(feature = "generated")]
+	m.opaque_columns_producer("to_dense", dense::to_dense, dense::checked::convert)
+		.map_err(err)?;
+	#[cfg(not(feature = "generated"))]
 	m.function("to_dense", dense::to_dense)
 		.build_associated::<DataFrame>()
 		.map_err(err)?;

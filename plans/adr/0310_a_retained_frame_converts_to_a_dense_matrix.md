@@ -58,7 +58,7 @@ only with no other arguments.
    `host_call` failed the early screen: `shared_rows` native-on rose
    +0.87% (W) and +0.80% (T). A split build pinned the cause on the
    `host_call` body edit, which outlined two `BVec<u32>::push` sites in
-   native compilation, accounting for 86 extra calls versus 169. The
+   native compilation, accounting for the increase from 86 calls to 169. The
    carrier instead uses the session's existing host boundary.
    - Inside `Executor::budgeted_sliced_intrinsic`, within its existing
      budget scope, the exact registered three-argument shared producer

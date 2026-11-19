@@ -45,9 +45,11 @@ pub(crate) mod awaiting;
 pub(crate) mod opaque;
 pub(crate) mod owned_output;
 pub(crate) mod owned_tree;
+pub(crate) mod shared_producer;
 pub use awaiting::AwaitHostFunction;
 pub use owned_output::{OutputNode, OwnedOutputSource, OwnedTreeOutput};
 pub use owned_tree::{OwnedTreeInput, TreeKind, TreeNode};
+pub use shared_producer::{ColumnSelection, FloatDtype, SelectionError};
 /// Closed scalar/optional/result shapes and two concrete dynamic output certificates.
 #[doc(hidden)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -218,6 +220,18 @@ impl TryClone for HostSignature {
 	}
 }
 impl HostSignature {
+	pub(crate) fn shared_producer(self) -> bool {
+		self.output == HostOutputKind::OpaqueResultString
+			&& self.arity == 3
+			&& self.arguments
+				== [
+					HostType::OpaqueShared,
+					HostType::OwnedTreeInput,
+					HostType::String,
+					HostType::Unit,
+				]
+	}
+
 	pub(crate) fn valid(self) -> bool {
 		self.arity <= 4
 			&& match self.output {
@@ -229,11 +243,13 @@ impl HostSignature {
 				_ => true,
 			} && (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
 			&& (self.output != HostOutputKind::OpaqueResultString
+				|| self.shared_producer()
 				|| (self.arity == 2
 					&& self.arguments[..2] == [HostType::String, HostType::OwnedTreeInput]))
 			&& (self.output != HostOutputKind::OwnedTree
 				|| (self.arity == 1 && self.arguments[0] == HostType::String))
 			&& (!self.arguments.contains(&HostType::OpaqueShared)
+				|| self.shared_producer()
 				|| (self.arity == 1 && self.arguments[0] == HostType::OpaqueShared))
 			&& self.arguments[self.arity as usize..]
 				.iter()
