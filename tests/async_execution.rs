@@ -8,10 +8,13 @@
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpListener;
 use std::os::fd::AsRawFd;
-use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
+
+#[path = "harness/scratch.rs"]
+mod scratch;
+use scratch::Scratch;
 
 static NEXT: AtomicUsize = AtomicUsize::new(0);
 
@@ -252,15 +255,16 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 	}
 }
 
-fn script(name: &str, source: &str) -> PathBuf {
-	let dir = std::env::temp_dir().join(format!(
-		"rnx-0032-{}-{}",
-		std::process::id(),
-		NEXT.fetch_add(1, Ordering::Relaxed)
-	));
-	std::fs::create_dir_all(&dir).unwrap();
-	let path = dir.join(name);
-	std::fs::write(&path, source).unwrap();
+fn script(name: &str, source: &str) -> Scratch {
+	let path = Scratch::file(
+		std::env::temp_dir().join(format!(
+			"rnx-0032-{}-{}",
+			std::process::id(),
+			NEXT.fetch_add(1, Ordering::Relaxed)
+		)),
+		name,
+	);
+	std::fs::write(&*path, source).unwrap();
 	path
 }
 

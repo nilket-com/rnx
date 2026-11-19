@@ -10,6 +10,10 @@ use std::collections::BTreeMap;
 use std::path::Path;
 use std::process::Command;
 
+#[path = "harness/scratch.rs"]
+mod scratch;
+use scratch::Scratch;
+
 fn root() -> &'static Path {
 	Path::new(env!("CARGO_MANIFEST_DIR"))
 }
@@ -324,10 +328,11 @@ fn readme_excerpts_are_transcript_slices() {
 
 /// Runs a demo on another data file of the same shape, through the real executable.
 fn run_on(name: &str, json: &str) -> String {
-	let dir = std::env::temp_dir().join(format!("rnx-0155-{}-{name}", std::process::id()));
-	std::fs::create_dir_all(&dir).unwrap();
-	let path = dir.join(format!("{}.json", json.len()));
-	std::fs::write(&path, json).unwrap();
+	let path = Scratch::file(
+		std::env::temp_dir().join(format!("rnx-0155-{}-{name}", std::process::id())),
+		&format!("{}.json", json.len()),
+	);
+	std::fs::write(&*path, json).unwrap();
 	let out = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.args(["run", &format!("demos/{name}.rn"), path.to_str().unwrap()])
 		.current_dir(root())

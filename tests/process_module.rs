@@ -6,30 +6,42 @@ use std::sync::{
 	atomic::{AtomicUsize, Ordering},
 };
 static NEXT: AtomicUsize = AtomicUsize::new(0);
-fn scratch() -> PathBuf {
-	let dir = std::env::temp_dir().join(format!(
+
+#[path = "harness/scratch.rs"]
+mod scratch;
+use scratch::Scratch;
+fn scratch() -> Scratch {
+	Scratch::dir(std::env::temp_dir().join(format!(
 		"rnx-process-{}-{}",
 		std::process::id(),
 		NEXT.fetch_add(1, Ordering::Relaxed)
-	));
-	std::fs::create_dir_all(&dir).unwrap();
-	dir
+	)))
 }
 fn fixture() -> &'static Path {
 	static PATH: OnceLock<PathBuf> = OnceLock::new();
 	PATH.get_or_init(|| {
-		let dir = scratch();
+		// Shared by every test in this binary and outliving them all: one
+		// stable artifact under Cargo's per-target temporary directory, not
+		// /tmp. It is built under a private name and renamed into place, so
+		// concurrent test runs never see a partial file and nothing accumulates.
+		let dir = Path::new(env!("CARGO_TARGET_TMPDIR")).join("rnx-process-fixture");
+		std::fs::create_dir_all(&dir).unwrap();
 		let path = dir.join(format!("child{}", std::env::consts::EXE_SUFFIX));
+		let building = dir.join(format!(
+			"child-building-{}{}",
+			std::process::id(),
+			std::env::consts::EXE_SUFFIX
+		));
 		let out = Command::new("rustc")
 			.args(["--edition=2024", "tests/harness/process_child.rs", "-o"])
-			.arg(&path)
+			.arg(&building)
 			.output()
 			.unwrap();
-		assert!(
-			out.status.success(),
-			"{}",
-			String::from_utf8_lossy(&out.stderr)
-		);
+		if !out.status.success() {
+			let _ = std::fs::remove_file(&building);
+			panic!("{}", String::from_utf8_lossy(&out.stderr));
+		}
+		std::fs::rename(&building, &path).unwrap();
 		path
 	})
 }
@@ -460,12 +472,15 @@ fn git_status_example_uses_an_isolated_checkout() {
 fn help_survives_reset_and_the_ceiling_still_refuses_input() {
 	use std::io::Write;
 	use std::process::Stdio;
+	// Bound for the whole test: the child writes its history on exit.
+	let config = scratch();
+	let history = scratch();
 	let mut child = Command::new(env!("CARGO_BIN_EXE_rnx"))
 		.args(["--color=never", "--no-splash", "repl"])
 		.env("TERM", "xterm")
-		.env("RNX_CONFIG", scratch().join("absent-config"))
+		.env("RNX_CONFIG", config.join("absent-config"))
 		.env_remove("RNX_MEMORY_CEILING")
-		.env("RNX_HISTORY", scratch().join("history"))
+		.env("RNX_HISTORY", history.join("history"))
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())

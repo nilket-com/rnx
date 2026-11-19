@@ -8,6 +8,10 @@ use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, Stdio};
 use std::time::{Duration, Instant};
 
+#[path = "harness/scratch.rs"]
+mod scratch;
+use scratch::Scratch;
+
 struct Terminal {
 	master: std::fs::File,
 	child: Child,
@@ -187,11 +191,11 @@ fn raw_offset(raw: &[u8], clean_len: usize) -> usize {
 	}
 	end
 }
-fn history_file(tag: &str) -> std::path::PathBuf {
-	let dir = std::env::temp_dir().join(format!("rnx-repl-{}-{}", std::process::id(), tag));
-	let _ = std::fs::remove_dir_all(&dir);
-	let _ = std::fs::create_dir_all(&dir);
-	dir.join("history")
+fn history_file(tag: &str) -> Scratch {
+	Scratch::file(
+		std::env::temp_dir().join(format!("rnx-repl-{}-{}", std::process::id(), tag)),
+		"history",
+	)
 }
 
 #[test]
@@ -679,8 +683,11 @@ fn gate_0005_an_input_past_the_ceiling_is_not_interrupted() {
 	t.prompt();
 	let start = live_bytes(&mut t);
 	// A ceiling just above the current figure, reached by the next input.
+	// Bound before the terminal so it outlives the child, which writes its
+	// history on exit.
+	let history2 = history_file("nothard2");
 	let mut t2 = Terminal::spawn_with(
-		&history_file("nothard2"),
+		&history2,
 		&[("RNX_MEMORY_CEILING", &(start + 4 * 1024 * 1024).to_string())],
 	);
 	t.send(":quit\r");
@@ -735,7 +742,8 @@ fn gate_0005_a_self_referential_value_is_not_reclaimed_by_a_reset() {
 	t.wait_exit();
 
 	// The control: the same payload without the cycle is reclaimed.
-	let mut t = Terminal::spawn(&history_file("cycle_control"));
+	let history_control = history_file("cycle_control");
+	let mut t = Terminal::spawn(&history_control);
 	t.prompt();
 	let start = live_bytes(&mut t);
 	t.send(
@@ -759,15 +767,17 @@ fn gate_0005_a_failed_input_that_grew_shared_state_still_charges() {
 	// The first release record's rule, on the measured figure: an input that
 	// grows an already retained value and then fails has still grown it, and
 	// the sample after the failure charges it.
-	let probe = Terminal::spawn(&history_file("charge_probe"));
+	let probe_history = history_file("charge_probe");
+	let probe = Terminal::spawn(&probe_history);
 	let mut probe = probe;
 	probe.prompt();
 	let start = live_bytes(&mut probe);
 	probe.send(":quit\r");
 	probe.wait_exit();
 
+	let charge_history = history_file("charge");
 	let mut t = Terminal::spawn_with(
-		&history_file("charge"),
+		&charge_history,
 		&[("RNX_MEMORY_CEILING", &(start + 4 * 1024 * 1024).to_string())],
 	);
 	t.prompt();
