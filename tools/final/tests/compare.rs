@@ -34,6 +34,12 @@ impl Hooks for Fake {
 	fn disk_check(&self, _: &Path, _: &Path, _: &Environment) -> Result<()> {
 		Ok(())
 	}
+	/// The planted finals compare evidence, not disk: a fixed, ample answer
+	/// keeps their admission independent of how full the shared temporary
+	/// directory is.
+	fn disk_free(&self, _: &Path) -> Result<u64> {
+		Ok(1 << 50)
+	}
 	fn select(
 		&self,
 		root: &Path,
