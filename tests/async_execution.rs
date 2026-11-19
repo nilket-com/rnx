@@ -20,6 +20,9 @@ struct Ran {
 	stderr: String,
 	code: Option<i32>,
 	elapsed: Duration,
+	/// From the moment SIGINT was sent to the process's exit; zero when no
+	/// signal was sent.
+	since_signal: Duration,
 }
 
 fn rnx(args: &[&str], stdin: Option<&str>) -> Ran {
@@ -49,30 +52,39 @@ fn rnx(args: &[&str], stdin: Option<&str>) -> Ran {
 		stderr: String::from_utf8_lossy(&done.stderr).into_owned(),
 		code: done.status.code(),
 		elapsed: start.elapsed(),
+		since_signal: Duration::ZERO,
 	}
 }
 
 /// When a test sends `SIGINT`.
 enum Signal {
-	/// After a fixed delay: for inputs that run until interrupted.
-	After(Duration),
 	/// Once the first `rnx_test::test_pending` await is running, which it
 	/// reports from inside the operation; startup has its own bound.
 	WhenPending,
 	/// The Rune loop signals readiness on stdout just before entering.
 	WhenLoopRuns,
+	/// A line equal to the marker appears on stdout (after any banner), so a
+	/// session input is known to be executing; bounded by `within`. A piped
+	/// REPL may print its prompt on the same line, so fixtures print an empty
+	/// line first and the marker starts its own line.
+	WhenLine(&'static str, Duration),
 	/// Wait for the actual request and withhold a response.
 	WhenRequest(TcpListener),
 }
 
 fn ready_to_read(fd: &impl AsRawFd) -> std::io::Result<()> {
+	ready_within(fd, Duration::from_secs(60))
+}
+
+fn ready_within(fd: &impl AsRawFd, within: Duration) -> std::io::Result<()> {
 	let mut input = libc::pollfd {
 		fd: fd.as_raw_fd(),
 		events: libc::POLLIN,
 		revents: 0,
 	};
 	// SAFETY: poll borrows one initialized descriptor for the duration of the call.
-	match unsafe { libc::poll(&mut input, 1, 60_000) } {
+	let ms = i32::try_from(within.as_millis()).unwrap_or(i32::MAX);
+	match unsafe { libc::poll(&mut input, 1, ms) } {
 		1 => Ok(()),
 		0 => Err(std::io::Error::new(
 			std::io::ErrorKind::TimedOut,
@@ -82,18 +94,14 @@ fn ready_to_read(fd: &impl AsRawFd) -> std::io::Result<()> {
 	}
 }
 
-/// Start rnx, send it `SIGINT` after `after`, and collect what it did. The
-/// wait is bounded: a run that ignores the interrupt is killed and reported
-/// as such rather than hanging the suite.
-fn interrupted(args: &[&str], stdin: Option<&str>, after: Duration) -> Ran {
-	interrupt(args, stdin, Signal::After(after))
-}
-
-/// As [`interrupted`], signalling the pending await rather than a moment.
+/// [`interrupt`], signalling once the pending await is running.
 fn interrupted_when_pending(args: &[&str], stdin: Option<&str>) -> Ran {
 	interrupt(args, stdin, Signal::WhenPending)
 }
 
+/// Start rnx, send it `SIGINT` once `signal` shows the input is executing, and
+/// collect what it did. The wait is bounded: a run that ignores the interrupt
+/// is killed and reported as such rather than hanging the suite.
 fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 	let start = Instant::now();
 	let ready = std::env::temp_dir().join(format!(
@@ -127,7 +135,6 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 	let mut pending_connection = None;
 	let readiness = (|| -> std::io::Result<()> {
 		match signal {
-			Signal::After(after) => std::thread::sleep(after),
 			Signal::WhenPending => {
 				let deadline = Instant::now() + Duration::from_secs(60);
 				while !ready.exists()
@@ -153,6 +160,34 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 				}
 				consumed.push_str("ready\n");
 			}
+			Signal::WhenLine(marker, within) => {
+				let pipe = child.stdout.as_mut().unwrap();
+				let deadline = Instant::now() + within;
+				let mut line = Vec::new();
+				loop {
+					let left = deadline.saturating_duration_since(Instant::now());
+					if left.is_zero() || ready_within(pipe, left).is_err() {
+						return Err(std::io::Error::other(
+							"the fixture never printed its readiness line",
+						));
+					}
+					let mut byte = [0; 1];
+					if pipe.read(&mut byte)? == 0 {
+						return Err(std::io::Error::other(
+							"the fixture never printed its readiness line",
+						));
+					}
+					consumed.push(byte[0] as char);
+					if byte[0] == b'\n' {
+						if line == marker.as_bytes() {
+							break;
+						}
+						line.clear();
+					} else {
+						line.push(byte[0]);
+					}
+				}
+			}
 			Signal::WhenRequest(listener) => {
 				ready_to_read(&listener)?;
 				let (stream, _) = listener.accept()?;
@@ -177,6 +212,9 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 			String::from_utf8_lossy(&done.stderr)
 		);
 	}
+	// Started before the external kill: it can be descheduled between sending
+	// the signal and returning.
+	let signalled = Instant::now();
 	let sent = Command::new("kill")
 		.arg("-INT")
 		.arg(child.id().to_string())
@@ -210,6 +248,7 @@ fn interrupt(args: &[&str], stdin: Option<&str>, signal: Signal) -> Ran {
 		stderr: String::from_utf8_lossy(&done.stderr).into_owned(),
 		code: done.status.code(),
 		elapsed: start.elapsed(),
+		since_signal: signalled.elapsed(),
 	}
 }
 
@@ -619,10 +658,10 @@ fn a_nested_async_fn_that_outruns_a_slice_still_completes() {
 fn a_synchronous_session_input_in_a_loop_is_still_interrupted_within_a_slice() {
 	// Record 0002's promise for an input that never awaits, kept: the
 	// synchronous path and its slices are unchanged.
-	let ran = interrupted(
+	let ran = interrupt(
 		&["repl"],
-		Some("loop { }\n1 + 1\n"),
-		Duration::from_millis(400),
+		Some("println!(\"\"); println!(\"ready\"); loop { }\n1 + 1\n"),
+		Signal::WhenLine("ready", Duration::from_secs(60)),
 	);
 	assert_eq!(
 		ran.code,
@@ -633,15 +672,21 @@ fn a_synchronous_session_input_in_a_loop_is_still_interrupted_within_a_slice() {
 	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
-	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
+	assert!(
+		ran.since_signal < Duration::from_secs(3),
+		"{:?}",
+		ran.since_signal
+	);
 }
 
 #[test]
 fn native_heavy_session_work_is_interrupted_and_the_next_input_works() {
-	let ran = interrupted(
+	let ran = interrupt(
 		&["repl"],
-		Some("for _ in 0..100000 { (0..5000).iter().count(); }\n1 + 1\n"),
-		Duration::from_millis(400),
+		Some(
+			"println!(\"\"); println!(\"ready\"); for _ in 0..100000 { (0..5000).iter().count(); }\n1 + 1\n",
+		),
+		Signal::WhenLine("ready", Duration::from_secs(60)),
 	);
 	assert_eq!(
 		ran.code,
@@ -652,7 +697,11 @@ fn native_heavy_session_work_is_interrupted_and_the_next_input_works() {
 	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
-	assert!(ran.elapsed < Duration::from_secs(3), "{:?}", ran.elapsed);
+	assert!(
+		ran.since_signal < Duration::from_secs(3),
+		"{:?}",
+		ran.since_signal
+	);
 }
 
 // Classification: which wrapper and which path an input gets is the
@@ -741,10 +790,12 @@ fn an_awaited_async_block_is_recognised() {
 fn declaring_an_async_function_does_not_make_the_input_that_declares_it_async() {
 	// The declaration is hoisted above the wrapper, so an input that only
 	// declares an awaiting function keeps the synchronous path itself.
-	let ran = interrupted(
+	let ran = interrupt(
 		&["repl"],
-		Some("async fn helper() { rnx_test::test_pending(1).await }\nloop { }\n1 + 1\n"),
-		Duration::from_millis(500),
+		Some(
+			"async fn helper() { rnx_test::test_pending(1).await }\nprintln!(\"\"); println!(\"ready\"); loop { }\n1 + 1\n",
+		),
+		Signal::WhenLine("ready", Duration::from_secs(60)),
 	);
 	assert_eq!(
 		ran.code,
@@ -755,7 +806,11 @@ fn declaring_an_async_function_does_not_make_the_input_that_declares_it_async() 
 	);
 	assert!(ran.stderr.contains("interrupted"), "{}", ran.stderr);
 	assert!(ran.stdout.contains("2\n"), "{}", ran.stdout);
-	assert!(ran.elapsed < Duration::from_secs(4), "{:?}", ran.elapsed);
+	assert!(
+		ran.since_signal < Duration::from_secs(4),
+		"{:?}",
+		ran.since_signal
+	);
 }
 
 #[test]
@@ -859,4 +914,16 @@ fn a_session_error_after_an_await_names_its_input() {
 	assert_eq!(ran.code, Some(0));
 	assert!(ran.stderr.contains("runtime error"), "{}", ran.stderr);
 	assert!(ran.stderr.contains("input 2"), "{}", ran.stderr);
+}
+
+#[test]
+#[should_panic(expected = "the fixture never printed its readiness line")]
+fn a_session_that_never_signals_readiness_is_never_interrupted() {
+	// The control for the readiness line: without it, the harness reports the
+	// missing premise instead of sending SIGINT and judging the result.
+	interrupt(
+		&["repl"],
+		Some("1 + 1\n"),
+		Signal::WhenLine("ready", Duration::from_secs(2)),
+	);
 }
