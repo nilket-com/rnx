@@ -349,21 +349,7 @@ impl Module {
 		                    columns: crate::host::ColumnSelection,
 		                    _: ()|
 		      -> Result<Value, VmError> {
-			let borrowed = packet.receiver.borrow_ref::<T>()?;
-			// Native return objects coexist while the Store adopts the result.
-			use crate::runtime::AnyObj;
-			let wrappers = AnyObj::owned_allocation_bytes::<U>()
-				.max(AnyObj::owned_allocation_bytes::<crate::alloc::String>())
-				+ AnyObj::owned_allocation_bytes::<Result<Value, Value>>();
-			let Some(credit) = packet.remaining.checked_sub(wrappers) else {
-				return Ok(Value::new(crate::host::OpaqueProducerLimit)?);
-			};
-			let result = match producer(&borrowed, columns, credit) {
-				Ok(Ok(value)) => Ok(Value::new(value)?),
-				Ok(Err(message)) => Err(crate::to_value(message)?),
-				Err(limit) => return Ok(Value::new(limit)?),
-			};
-			Ok(Value::try_from(result)?)
+			packet.produce(|value, credit| producer(value, columns, credit))
 		};
 		let handler = FunctionHandler::new(move |stack, addr, args, out| {
 			Function::<(ProducerReceiver, crate::host::ColumnSelection, ()), Plain>::call(
@@ -401,6 +387,80 @@ impl Module {
 		});
 		self.opaque.methods.try_insert(key, receiver)?;
 		self.opaque.producer_outputs.try_insert(key, output)?;
+		Ok(())
+	}
+
+	/// Register a qualified constructor on U that borrows a registered T.
+	/// Its checked alternate receives credit for one synchronous conversion.
+	#[doc(hidden)]
+	pub fn opaque_shared_constructor<T, U, F, G>(
+		&mut self,
+		name: &'static str,
+		legacy: F,
+		producer: G,
+	) -> Result<(), ContextError>
+	where
+		T: crate::Any + MaybeTypeOf,
+		U: crate::Any + TypeOf + MaybeTypeOf,
+		F: Function<(Ref<T>,), Plain, Return = Result<U, std::string::String>>,
+		G: Fn(
+				&T,
+				usize,
+			) -> Result<Result<U, std::string::String>, crate::host::OpaqueProducerLimit>
+			+ Send
+			+ Sync
+			+ 'static,
+	{
+		use crate::host::shared_producer::ProducerReceiver;
+		use crate::runtime::FunctionHandler;
+		let input = NativeType::of::<T>();
+		let output = NativeType::of::<U>();
+		let registered = self.opaque.types.get(&output.hash);
+		if input.hash == output.hash
+			|| !registered.is_some_and(|r| r.descriptor.type_id == output.id)
+		{
+			return Err(ContextError::OpaqueType {
+				declared: output.info.into(),
+				registered: registered.map(|r| r.descriptor.info.into()),
+			});
+		}
+		let checked =
+			move |packet: ProducerReceiver| -> Result<Value, VmError> { packet.produce(&producer) };
+		let handler = FunctionHandler::new(move |stack, addr, args, out| {
+			Function::<(ProducerReceiver,), Plain>::call(&checked, stack, addr, args, out)
+		})?;
+		self.opaque.factories.try_reserve(1)?;
+		self.opaque.producer_inputs.try_reserve(1)?;
+		self.function(name, legacy).build_associated::<U>()?;
+		let Some(ModuleAssociated {
+			kind: ModuleAssociatedKind::Function(function),
+			..
+		}) = self.associated.last_mut()
+		else {
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "shared constructor registration",
+			});
+		};
+		function.alternate_host = Some(crate::host::AlternateHost {
+			await_only: false,
+			handler,
+			enrollment: HostEnrollment {
+				signature: HostSignature {
+					arity: 1,
+					arguments: [
+						HostType::OpaqueShared,
+						HostType::Unit,
+						HostType::Unit,
+						HostType::Unit,
+					],
+					output: HostOutputKind::OpaqueResultString,
+				},
+				certificate: None,
+			},
+		});
+		let key = Hash::associated_function(output.hash, Hash::ident(name));
+		self.opaque.factories.try_insert(key, output)?;
+		self.opaque.producer_inputs.try_insert(key, input)?;
 		Ok(())
 	}
 

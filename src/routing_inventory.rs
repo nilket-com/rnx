@@ -502,6 +502,30 @@ fn host_inventory(root: &Path) -> Result<Json> {
 		enrolled,
 		[
 			(
+				"adapters/candle/src/lib.rs",
+				"build",
+				"host-value",
+				"m . opaque_type :: < Tensor > (dense_credit :: tensor_bytes , tensor_display)"
+			),
+			(
+				"adapters/candle/src/lib.rs",
+				"build",
+				"opaque-shared-constructor",
+				"m . opaque_shared_constructor (\"from_dense\" , from_dense , dense_credit :: convert)"
+			),
+			(
+				"adapters/candle/src/tensor_ops.rs",
+				"build",
+				"host-value",
+				"m . opaque_method :: < Tensor , _ , _ > (\"elem_count\" , elem_count , None)"
+			),
+			(
+				"adapters/candle/src/tensor_ops.rs",
+				"build",
+				"host-value",
+				"m . opaque_method :: < Tensor , _ , _ > (\"rank\" , rank , None)"
+			),
+			(
 				"adapters/polars/src/generated/functions.rs",
 				"install_3",
 				"opaque-factory",
@@ -561,7 +585,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	life.close()?;
 	Ok(
 		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,
-			"adapter_enrollments":{"polars":{"source_sites":enrolled.len(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
+			"adapter_enrollments":{"candle":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/candle/")).count(),"paths":["candle::Tensor","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"},"polars":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/polars/")).count(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
 			"adapter_rule":"only the listed sites enroll for execution. Other adapter registrations remain undeclared"}),
 	)
 }

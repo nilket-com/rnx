@@ -1128,6 +1128,8 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 	m.function("arange_step", arange_step)
 		.build_associated::<Tensor>()?;
 	m.function("eye", eye).build_associated::<Tensor>()?;
+	m.opaque_method::<Tensor, _, _>("rank", rank, None)?;
+	m.opaque_method::<Tensor, _, _>("elem_count", elem_count, None)?;
 	assoc!(
 		zeros_like,
 		ones_like,
@@ -1137,8 +1139,6 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 		to_scalar,
 		to_dtype,
 		dims,
-		rank,
-		elem_count,
 		contiguous,
 		is_contiguous,
 		flatten_all,

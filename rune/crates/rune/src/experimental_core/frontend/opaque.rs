@@ -829,7 +829,20 @@ impl Builder<'_, '_> {
 						}
 					}
 					let drop = matches!(c.call,hir::Call::Meta{hash} if hash==Hash::type_hash(crate::item!(::std::mem::drop)));
-					if !drop {
+					let input = match c.call {
+						hir::Call::Meta { hash } => self.context.opaque.producer_inputs.get(&hash),
+						_ => None,
+					};
+					if let Some(input) = input {
+						let [arg] = c.args else {
+							return Err(fail(e.span, Refusal::Arity));
+						};
+						if !self.has_checked_display(input.hash)
+							|| facts.get(arg.index()) != Some(&Fact::Exact(input.hash))
+						{
+							return Err(fail(e.span, Refusal::OpaqueArgument));
+						}
+					} else if !drop {
 						for a in c.args {
 							p(*a, Refusal::OpaqueArgument)?;
 						}

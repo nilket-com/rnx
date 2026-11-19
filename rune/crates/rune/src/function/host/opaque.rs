@@ -85,6 +85,8 @@ pub(crate) struct State {
 	pub(crate) types: crate::hash::Map<Registration>,
 	pub(crate) factories: crate::hash::Map<NativeType>,
 	pub(crate) methods: crate::hash::Map<NativeType>,
+	/// Qualified producers keyed by the output type's associated function hash.
+	pub(crate) producer_inputs: crate::hash::Map<NativeType>,
 	pub(crate) producer_outputs: crate::hash::Map<NativeType>,
 	pub(crate) method_errors: crate::hash::Map<NativeType>,
 }
@@ -119,6 +121,11 @@ impl State {
 			.values()
 			.chain(self.methods.values())
 			.chain(self.method_errors.values())
+			.chain(
+				self.producer_inputs
+					.values()
+					.filter(|ty| self.types.contains_key(&ty.hash)),
+			)
 			// A standalone embedder may install the producer's module without
 			// the optional output module. Admission requires a checked display
 			// for that output, and every later installation revalidates the pair.
@@ -158,6 +165,9 @@ impl State {
 		}
 		for (hash, value) in &other.methods {
 			next.methods.try_insert(*hash, *value)?;
+		}
+		for (hash, value) in &other.producer_inputs {
+			next.producer_inputs.try_insert(*hash, *value)?;
 		}
 		for (hash, value) in &other.producer_outputs {
 			next.producer_outputs.try_insert(*hash, *value)?;

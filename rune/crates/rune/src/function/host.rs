@@ -221,15 +221,13 @@ impl TryClone for HostSignature {
 }
 impl HostSignature {
 	pub(crate) fn shared_producer(self) -> bool {
+		use HostType::{OpaqueShared, OwnedTreeInput, String, Unit};
 		self.output == HostOutputKind::OpaqueResultString
-			&& self.arity == 3
-			&& self.arguments
-				== [
-					HostType::OpaqueShared,
-					HostType::OwnedTreeInput,
-					HostType::String,
-					HostType::Unit,
-				]
+			&& matches!(
+				(self.arity, self.arguments),
+				(1, [OpaqueShared, Unit, Unit, Unit])
+					| (3, [OpaqueShared, OwnedTreeInput, String, Unit])
+			)
 	}
 
 	pub(crate) fn valid(self) -> bool {

@@ -312,6 +312,7 @@ impl<'ast> Visit<'ast> for Scan {
             "opaque_factory",
 			"opaque_result_function",
 			"opaque_columns_producer",
+			"opaque_shared_constructor",
 			"function",
 			"function_meta",
 			"raw_function",
@@ -356,6 +357,7 @@ impl<'ast> Visit<'ast> for Scan {
 				"opaque_method" | "opaque_factory" => "host-value",
 				"opaque_result_function" => "opaque-result-factory",
 				"opaque_columns_producer" => "opaque-columns-producer",
+				"opaque_shared_constructor" => "opaque-shared-constructor",
 				"host_function" => "typed",
 				"host_function_with_output" | "host_function_owned_output" => "dynamic-output",
 				"host_function_string_input" => "string-input",
@@ -425,6 +427,7 @@ impl<'ast> Visit<'ast> for Scan {
 				if [
 					"opaque_result_function",
 					"opaque_columns_producer",
+					"opaque_shared_constructor",
 					"function",
 					"function_meta",
 					"raw_function",
@@ -444,6 +447,7 @@ impl<'ast> Visit<'ast> for Scan {
 					let class = match method.as_str() {
 						"opaque_result_function" => "opaque-result-factory",
 						"opaque_columns_producer" => "opaque-columns-producer",
+						"opaque_shared_constructor" => "opaque-shared-constructor",
 						"host_function" => "typed",
 						"host_function_with_output" | "host_function_owned_output" => {
 							"dynamic-output"

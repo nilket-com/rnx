@@ -1437,6 +1437,103 @@ mod opaque_tests {
 		(c, made, drops, displays)
 	}
 	#[test]
+	fn shared_constructor_uses_qualified_call_and_typed_argument() {
+		use std::sync::{
+			Arc,
+			atomic::{AtomicUsize, Ordering::SeqCst},
+		};
+		#[derive(rune::Any)]
+		#[rune(item = ::constructor_input)]
+		struct Input(i64);
+		#[derive(rune::Any)]
+		#[rune(item = ::constructor_output)]
+		struct Output(i64);
+		let calls = Arc::new(AtomicUsize::new(0));
+		let invoked = calls.clone();
+		let mut inputs = rune::Module::with_crate("constructor_input").unwrap();
+		inputs.opaque_type::<Input>(|_| 8, |_, _| Ok(())).unwrap();
+		inputs.opaque_factory("input", || Input(3)).unwrap();
+		inputs.opaque_factory("bad", || Input(0)).unwrap();
+		let mut outputs = rune::Module::with_crate("constructor_output").unwrap();
+		outputs.opaque_type::<Output>(|_| 8, |_, _| Ok(())).unwrap();
+		outputs
+			.opaque_method::<Output, _, _>("read", |o: &Output| o.0, None)
+			.unwrap();
+		outputs
+			.opaque_shared_constructor(
+				"make",
+				|_: &Input| -> std::result::Result<Output, String> {
+					panic!("stock constructor entered")
+				},
+				move |v: &Input, credit| {
+					assert!(credit >= 8);
+					invoked.fetch_add(1, SeqCst);
+					if v.0 == 0 {
+						return Ok(Err("conversion refused".to_owned()));
+					}
+					Ok(Ok(Output(v.0)))
+				},
+			)
+			.unwrap();
+		let mut ctx = context();
+		ctx.install(outputs).unwrap();
+		let mut session = DomainSession::new(ctx, DEFAULT_CEILING).unwrap();
+		assert!(matches!(
+			session.eval("constructor_output::Output::make(3)?"),
+			Err(Failure::Refused(_))
+		));
+		let mut ctx = session.context;
+		ctx.install(inputs).unwrap();
+		let mut sources = rune::Sources::new();
+		sources
+			.insert(
+				rune::Source::memory("pub fn main(d){constructor_output::Output::make(d)?}")
+					.unwrap(),
+			)
+			.unwrap();
+		assert!(
+			rune::experimental_core::frontend::compile(
+				&mut sources,
+				&ctx,
+				&mut rune::Diagnostics::new(),
+				1
+			)
+			.is_err()
+		);
+		let mut session = DomainSession::new(ctx, DEFAULT_CEILING).unwrap();
+		shown(&mut session, "let d=constructor_input::input();");
+		shown(&mut session, "let t=constructor_output::Output::make(d)?;");
+		assert_eq!(shown(&mut session, "t.read()"), "3");
+		for src in [
+			"constructor_output::Output::make(3)?",
+			"constructor_output::Output::make(d,d)?",
+			"constructor_output::Output::make(d)",
+			"constructor_output::Output::make",
+			"let f=constructor_output::Output::make; f(d)?",
+			"t.make(d)?",
+			"d.make()?",
+		] {
+			assert!(
+				matches!(session.eval(src), Err(Failure::Refused(_))),
+				"{src}"
+			);
+		}
+		shown(&mut session, "drop(d);0");
+		let moved = session.eval("constructor_output::Output::make(d)?");
+		assert!(
+			matches!(&moved,Err(Failure::Runtime{message,..}) if message.contains("moved")),
+			"{moved:?}"
+		);
+		assert_eq!(calls.load(SeqCst), 1);
+		let failed = session.eval("constructor_output::Output::make(constructor_input::bad())?");
+		assert!(
+			matches!(&failed,Err(Failure::Returned(text)) if text.contains("conversion refused")),
+			"{failed:?}"
+		);
+		assert_eq!(calls.load(SeqCst), 2);
+	}
+
+	#[test]
 	fn shared_producer_receives_selected_names_and_call_credit() {
 		use std::result::Result;
 		use std::sync::{

@@ -112,7 +112,7 @@ fn project(
 // never cloned through the native payload's Clone implementation.
 struct Request {
 	receiver: stock::Value,
-	columns: ColumnSelection,
+	columns: Option<ColumnSelection>,
 	reserved: usize,
 }
 
@@ -132,7 +132,7 @@ impl Executor {
 	) -> Result<()> {
 		let invalid = || error(ErrorKind::InvalidCode);
 		let runtime = self.active_host_runtime.as_ref().ok_or_else(invalid)?;
-		if count != 3
+		if count != u32::from(binding.signature.arity)
 			|| !binding.signature.shared_producer()
 			|| !runtime
 				.function(&binding.hash)
@@ -140,16 +140,14 @@ impl Executor {
 		{
 			return Err(invalid());
 		}
-		let native = runtime
-			.opaque
-			.methods
-			.get(&binding.hash)
-			.ok_or_else(invalid)?;
-		let output = runtime
-			.opaque
-			.producer_outputs
-			.get(&binding.hash)
-			.ok_or_else(invalid)?;
+		let opaque = &runtime.opaque;
+		let (inputs, outputs) = match count {
+			1 => (&opaque.producer_inputs, &opaque.factories),
+			3 => (&opaque.methods, &opaque.producer_outputs),
+			_ => return Err(invalid()),
+		};
+		let native = inputs.get(&binding.hash).ok_or_else(invalid)?;
+		let output = outputs.get(&binding.hash).ok_or_else(invalid)?;
 		if native.hash == output.hash
 			|| [native, output].iter().any(|ty| {
 				!runtime
@@ -169,18 +167,12 @@ impl Executor {
 			Ok(abs)
 		};
 		let destination = slot(out)?;
-		let [r, n, t] = function
+		let (r, rest) = function
 			.args
 			.get(start as usize..end as usize)
-			.ok_or_else(invalid)?
-		else {
-			return Err(invalid());
-		};
-		let (receiver, names, dtype) = (
-			self.slots[slot(*r)?],
-			self.slots[slot(*n)?],
-			self.slots[slot(*t)?],
-		);
+			.and_then(|args| args.split_first())
+			.ok_or_else(invalid)?;
+		let receiver = self.slots[slot(*r)?];
 		if !store.host_tag(receiver)?.1 {
 			return Err(moved(0));
 		}
@@ -194,46 +186,57 @@ impl Executor {
 				}),
 			);
 		}
-		if !store.host_tag(names)?.1 {
-			return Err(moved(1));
-		}
-		let (tag, readable) = store.host_tag(dtype)?;
-		if !readable {
-			return Err(moved(2));
-		}
-		if tag != Type::String {
-			let actual = match dtype {
-				Value::Heap(_) if matches!(tag, Type::Host(_)) => {
-					store.host_snapshot(dtype)?.type_hash()
-				}
-				Value::Heap(_) => witness(tag)?.type_hash(),
-				Value::Function { .. } => stock::Function::HASH,
-				Value::Type(_) => stock::Type::HASH,
-				_ => snapshot(store, dtype)?.type_hash(),
-			};
-			return Err(
-				error(ErrorKind::Host).with_detail(Detail::HostExpectedType {
-					expected: crate::alloc::String::HASH,
-					actual,
-					arg: Some(2),
-				}),
-			);
-		}
-		let initial = store.host_remaining_bytes()?;
-		let mut available = initial;
-		// Two native argument boxes and their headers, plus the native/result
-		// Store wrappers. No general-purpose tree is traversed or snapshotted.
-		charge(
-			&mut available,
-			stock::AnyObj::owned_allocation_bytes::<ProducerReceiver>()
-				+ stock::AnyObj::owned_allocation_bytes::<ColumnSelection>()
-				+ store.producer_wrapper_bytes(),
-		)?;
-		let columns = project(store, names, store.text(dtype)?, &mut available)?;
+		let (columns, reserved) = if let [n, t] = rest {
+			let names = self.slots[slot(*n)?];
+			let dtype = self.slots[slot(*t)?];
+			if !store.host_tag(names)?.1 {
+				return Err(moved(1));
+			}
+			let (tag, readable) = store.host_tag(dtype)?;
+			if !readable {
+				return Err(moved(2));
+			}
+			if tag != Type::String {
+				let actual = match dtype {
+					Value::Heap(_) if matches!(tag, Type::Host(_)) => {
+						store.host_snapshot(dtype)?.type_hash()
+					}
+					Value::Heap(_) => witness(tag)?.type_hash(),
+					Value::Function { .. } => stock::Function::HASH,
+					Value::Type(_) => stock::Type::HASH,
+					_ => snapshot(store, dtype)?.type_hash(),
+				};
+				return Err(
+					error(ErrorKind::Host).with_detail(Detail::HostExpectedType {
+						expected: crate::alloc::String::HASH,
+						actual,
+						arg: Some(2),
+					}),
+				);
+			}
+			let initial = store.host_remaining_bytes()?;
+			let mut available = initial;
+			// Two native argument boxes and their headers, plus the native/result
+			// Store wrappers. No general-purpose tree is traversed or snapshotted.
+			charge(
+				&mut available,
+				stock::AnyObj::owned_allocation_bytes::<ProducerReceiver>()
+					+ stock::AnyObj::owned_allocation_bytes::<ColumnSelection>()
+					+ store.producer_wrapper_bytes(),
+			)?;
+			let columns = project(store, names, store.text(dtype)?, &mut available)?;
+			(Some(columns), initial - available)
+		} else {
+			(
+				None,
+				stock::AnyObj::owned_allocation_bytes::<ProducerReceiver>()
+					+ store.producer_wrapper_bytes(),
+			)
+		};
 		let request = Request {
 			receiver,
 			columns,
-			reserved: initial - available,
+			reserved,
 		};
 		let value = self.materialize_shared_producer(store, binding, request)?;
 		self.put(store, destination, value)
@@ -255,15 +258,21 @@ impl Executor {
 				receiver: request.receiver,
 				remaining,
 			})?,
-			stock::Value::new(request.columns)?,
+			stock::Value::empty(),
 			stock::Value::unit(),
 			stock::Value::empty(),
 		];
+		let count = if let Some(columns) = request.columns {
+			scratch[1] = stock::Value::new(columns)?;
+			3
+		} else {
+			1
+		};
 		match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
 			binding.handler.call(
 				&mut scratch,
 				stock::Address::new(0),
-				3,
+				count,
 				stock::Output::keep(3),
 			)
 		})) {
@@ -466,6 +475,155 @@ mod tests {
 		invoke(&mut vm, &mut store, &c).unwrap();
 		assert_eq!(calls.load(SeqCst), 2);
 	}
+	fn constructor_module(copies: Arc<AtomicUsize>) -> Module {
+		let mut m = Module::with_crate("matrix_fixture")
+			.unwrap()
+			.with_unique("constructor");
+		m.opaque_type::<Matrix>(|_| BYTES, |_, _| Ok(())).unwrap();
+		m.opaque_shared_constructor(
+			"from_source",
+			|_: &Source| -> core::result::Result<Matrix, Text> { panic!("legacy") },
+			move |_: &Source, credit| {
+				if credit < BYTES {
+					return Err(crate::host::OpaqueProducerLimit);
+				}
+				copies.fetch_add(1, SeqCst);
+				Ok(Ok(Matrix))
+			},
+		)
+		.unwrap();
+		m
+	}
+
+	#[test]
+	fn qualified_constructor_conflicts_in_either_order() {
+		#[derive(crate::Any)]
+		#[rune(item = ::matrix_fixture, name = Source)]
+		struct Wrong;
+		let mut wrong = Module::with_crate("matrix_fixture")
+			.unwrap()
+			.with_unique("input");
+		wrong.opaque_type::<Wrong>(|_| 0, |_, _| Ok(())).unwrap();
+		let constructors = constructor_module(Arc::default());
+		let mut bare = Module::with_crate("matrix_fixture").unwrap();
+		bare.function("from_source", |_: &Source| Matrix)
+			.build_associated::<Matrix>()
+			.unwrap();
+		assert!(matches!(
+			Context::new().install(bare),
+			Err(crate::ContextError::MissingContainer { .. })
+		));
+		for first in [true, false] {
+			let mut ctx = Context::new();
+			let (a, b) = if first {
+				(&constructors, &wrong)
+			} else {
+				(&wrong, &constructors)
+			};
+			ctx.install(a).unwrap();
+			assert!(matches!(
+				ctx.install(b),
+				Err(crate::ContextError::OpaqueType { .. })
+			));
+			assert_eq!(ctx.opaque.types.contains_key(&Matrix::HASH), first);
+		}
+	}
+
+	#[test]
+	fn qualified_constructor_rechecks_credit_and_releases_the_last_output_owner() {
+		let copies = Arc::new(AtomicUsize::new(0));
+		let module = constructor_module(copies.clone());
+		let mut inputs = Module::with_crate("matrix_fixture")
+			.unwrap()
+			.with_unique("input");
+		inputs.opaque_type::<Source>(|_| 19, |_, _| Ok(())).unwrap();
+		let mut ctx = Context::new();
+		ctx.install(&inputs).unwrap();
+		let qualified = crate::hash!(::matrix_fixture::Matrix::from_source);
+		assert!(ctx.lookup_function(qualified).is_none());
+		ctx.install(module).unwrap();
+		let mut store = Store::new(Limits {
+			bytes: 16384,
+			..Limits::default()
+		})
+		.unwrap();
+		let mut vm = Executor::new().unwrap();
+		vm.active_host_runtime = Some(ctx.execution_runtime().unwrap().inner);
+		let descriptor = ctx
+			.opaque
+			.types
+			.get(&Source::HASH)
+			.unwrap()
+			.descriptor
+			.clone();
+		let source = store
+			.host_value(&stock::Value::new(Source).unwrap(), descriptor)
+			.unwrap();
+		let input_charge = store.payload_bytes();
+		let mut f = Function::new(2, 1).unwrap();
+		let (start, n) = f.arguments(&[0]).unwrap();
+		vm.slots.try_push(source).unwrap();
+		vm.slots.try_push(Value::Unit).unwrap();
+		let key = Hash::associated_function(Matrix::HASH, Hash::ident("from_source"));
+		let invoke = |vm: &mut Executor, store: &mut Store| {
+			vm.sliced_shared_producer(store, ctx.host(key).unwrap(), &f, 0, 1, start, n)
+		};
+		assert!(ctx
+			.lookup_function(key)
+			.unwrap()
+			.same_allocation(ctx.lookup_function(qualified).unwrap()));
+		let mut foreign = Context::new();
+		foreign.install(&inputs).unwrap();
+		foreign.install(constructor_module(copies.clone())).unwrap();
+		let substituted =
+			vm.sliced_shared_producer(&mut store, foreign.host(key).unwrap(), &f, 0, 1, start, n);
+		assert_eq!(substituted.unwrap_err().kind, ErrorKind::InvalidCode);
+		let bad_slot =
+			vm.sliced_shared_producer(&mut store, ctx.host(key).unwrap(), &f, 0, 2, start, n);
+		assert_eq!(bad_slot.unwrap_err().kind, ErrorKind::InvalidCode);
+		assert_eq!(copies.load(SeqCst), 0);
+		let wrappers = store.producer_wrapper_bytes();
+		let threshold = BYTES
+			+ wrappers
+			+ stock::AnyObj::owned_allocation_bytes::<ProducerReceiver>()
+			+ stock::AnyObj::owned_allocation_bytes::<Matrix>()
+				.max(stock::AnyObj::owned_allocation_bytes::<crate::alloc::String>())
+			+ stock::AnyObj::owned_allocation_bytes::<
+				core::result::Result<stock::Value, stock::Value>,
+			>();
+		let used = store.host_remaining_bytes().unwrap() - threshold;
+		let filler = store.string(&"x".repeat(used)).unwrap();
+		let one = store.string("x").unwrap();
+		assert_eq!(store.host_remaining_bytes().unwrap(), threshold - 1);
+		assert_eq!(
+			invoke(&mut vm, &mut store).unwrap_err().kind,
+			ErrorKind::StoreCapacity
+		);
+		assert_eq!(copies.load(SeqCst), 0);
+		assert!(store
+			.host_snapshot(source)
+			.unwrap()
+			.borrow_ref::<Source>()
+			.is_ok());
+		store.release(one).unwrap();
+		invoke(&mut vm, &mut store).unwrap();
+		assert_eq!(copies.load(SeqCst), 1);
+		store.release(filler).unwrap();
+		let retained = vm.slots[1];
+		store.retain(retained).unwrap();
+		vm.put(&mut store, 1, Value::Unit).unwrap();
+		assert_eq!(store.payload_bytes(), input_charge + BYTES + wrappers);
+		store.release(retained).unwrap();
+		assert_eq!(store.payload_bytes(), input_charge);
+		let owner = store.take_capture(source).unwrap();
+		let unreadable = invoke(&mut vm, &mut store).unwrap_err();
+		assert_eq!(unreadable.detail, moved(0).detail);
+		assert_eq!(copies.load(SeqCst), 1);
+		store.release(owner).unwrap();
+		vm.put(&mut store, 0, Value::Unit).unwrap();
+		assert_eq!(store.payload_bytes(), 0);
+	}
+
 	#[test]
 	fn oversized_rejected_arguments_require_no_copy_credit() {
 		let mut store = Store::new(Limits::default()).unwrap();

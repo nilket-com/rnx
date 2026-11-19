@@ -8,6 +8,32 @@ pub(crate) struct ProducerReceiver {
 	pub(crate) remaining: usize,
 }
 
+impl ProducerReceiver {
+	pub(crate) fn produce<T: crate::Any, U: crate::Any>(
+		self,
+		producer: impl FnOnce(
+			&T,
+			usize,
+		) -> Result<Result<U, std::string::String>, super::OpaqueProducerLimit>,
+	) -> Result<crate::runtime::Value, crate::runtime::VmError> {
+		use crate::runtime::{AnyObj, Value};
+		let borrowed = self.receiver.borrow_ref::<T>()?;
+		// The native result and its child coexist while the Store adopts them.
+		let wrappers = AnyObj::owned_allocation_bytes::<U>()
+			.max(AnyObj::owned_allocation_bytes::<crate::alloc::String>())
+			+ AnyObj::owned_allocation_bytes::<Result<Value, Value>>();
+		let Some(credit) = self.remaining.checked_sub(wrappers) else {
+			return Ok(Value::new(super::OpaqueProducerLimit)?);
+		};
+		let result = match producer(&borrowed, credit) {
+			Ok(Ok(value)) => Ok(Value::new(value)?),
+			Ok(Err(message)) => Err(crate::to_value(message)?),
+			Err(limit) => return Ok(Value::new(limit)?),
+		};
+		Ok(Value::try_from(result)?)
+	}
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum FloatDtype {
 	F32,

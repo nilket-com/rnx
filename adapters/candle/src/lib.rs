@@ -19,6 +19,7 @@ use rnx::rune::{self, Any, Module};
 use std::io::Read;
 use std::sync::Arc;
 
+mod dense_credit;
 mod display;
 pub mod tensor_ops;
 pub mod text;
@@ -274,11 +275,14 @@ fn mlp_dims(this: &Mlp) -> (i64, i64, i64) {
 	(this.input as i64, this.hidden as i64, this.output as i64)
 }
 
-fn tensor_display(this: &Tensor, f: &mut rune::runtime::Formatter) -> rune::runtime::VmResult<()> {
+fn tensor_display(
+	this: &Tensor,
+	f: &mut rune::runtime::Formatter,
+) -> Result<(), rune::runtime::VmError> {
 	use rune::alloc::fmt::TryWrite;
 	let text = display::render(&this.0);
-	rune::vm_try!(f.try_write_str(&text));
-	rune::runtime::VmResult::Ok(())
+	f.try_write_str(&text)?;
+	Ok(())
 }
 
 fn err(e: impl std::fmt::Display) -> String {
@@ -286,16 +290,15 @@ fn err(e: impl std::fmt::Display) -> String {
 }
 
 pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
-	m.ty::<Tensor>().map_err(err)?;
+	m.opaque_type::<Tensor>(dense_credit::tensor_bytes, tensor_display)
+		.map_err(err)?;
 	m.ty::<Mlp>().map_err(err)?;
-	m.function("from_dense", from_dense)
-		.build_associated::<Tensor>()
+	m.opaque_shared_constructor("from_dense", from_dense, dense_credit::convert)
 		.map_err(err)?;
 	m.associated_function("to_dense", to_dense).map_err(err)?;
 	m.associated_function("shape", shape).map_err(err)?;
 	m.associated_function("dtype", dtype).map_err(err)?;
-	m.associated_function(&rune::runtime::Protocol::DISPLAY_FMT, tensor_display)
-		.map_err(err)?;
+
 	m.function("load", load)
 		.build_associated::<Mlp>()
 		.map_err(err)?;
