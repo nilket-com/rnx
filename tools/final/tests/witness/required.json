@@ -30,6 +30,7 @@
 			},
 			{
 				"expected": [
+					"async-test-support",
 					"clippy",
 					"commit-discipline",
 					"controller-controls",
@@ -552,6 +553,10 @@
 		{
 			"change": "case 11's path tools/verify.py, retired with its launcher, becomes tools/final/src/cross.rs, the Rust cross launcher, which requires cross as the Python file did, plus the final package's own stages (clippy-final, final-controls, format-final) as case 16's tools/final/src/controller.rs does. Edited by hand and reviewed; nothing was regenerated from the Rust output.",
 			"record": "0294"
+		},
+		{
+			"change": "case tests/async_execution.rs also requires async-test-support: root-tests builds without test-support and compiles that file out, so only async-test-support runs it. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
+			"fix": "the async test binary selects the stage that runs it"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

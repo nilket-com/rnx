@@ -81,6 +81,26 @@ fn runtime_and_adapter() {
 }
 
 #[test]
+fn the_async_test_binary_selects_the_stage_that_runs_it() {
+	// root-tests builds without `test-support`, so it compiles
+	// tests/async_execution.rs out; async-test-support is what runs it.
+	for path in ["tests/async_execution.rs", "tests/harness/scratch.rs"] {
+		assert!(
+			required(&s(&[path]), None, None)
+				.unwrap()
+				.contains(&"async-test-support".to_string()),
+			"{path}"
+		);
+	}
+	// A neighboring test file is not that binary.
+	assert!(
+		!required(&s(&["tests/repl.rs"]), None, None)
+			.unwrap()
+			.contains(&"async-test-support".to_string())
+	);
+}
+
+#[test]
 fn empty_discovery_and_execution_are_refused() {
 	assert!(discovered("0 tests").is_err());
 	assert!(executed("test result: ok. 0 passed;").is_err());

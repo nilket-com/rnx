@@ -819,6 +819,10 @@ pub fn graph_change(paths: &[String]) -> bool {
 	})
 }
 
+/// The sources compiled into the `async_execution` test binary, which only
+/// the async-test-support stage builds (with the `test-support` feature).
+const ASYNC_TEST_SOURCES: &[&str] = &["tests/async_execution.rs", "tests/harness/scratch.rs"];
+
 /// Stages a change requires from its paths alone.
 pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet<String>> {
 	let mut stages: BTreeSet<String> = ["commit-discipline", "controller-controls", "python-list"]
@@ -828,6 +832,12 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 	for p in paths {
 		if p.starts_with("src/") || p.starts_with("tests/") {
 			add(&["root-tests", "inventory", "cross"]);
+		}
+		// `tests/async_execution.rs` is gated on `test-support`, which
+		// root-tests leaves off; only async-test-support compiles and runs it.
+		// The helper it includes by path is part of the same test binary.
+		if ASYNC_TEST_SOURCES.contains(&p.as_str()) {
+			add(&["async-test-support"]);
 		}
 		if p.starts_with("rune/crates/") {
 			add(&["rune-suite", "rune-clippy", "cross"]);
@@ -1183,6 +1193,40 @@ mod witness {
 				})
 				.collect();
 			assert_eq!(json!(rust_bulk), fixture["bulk"][&name], "{name}");
+		}
+	}
+
+	#[test]
+	fn a_successor_names_exactly_one_valid_record_or_fix() {
+		use crate::witness::successor_is_valid;
+		let change = "x".repeat(41);
+		for (successor, valid) in [
+			(json!({"record": "0294", "change": change}), true),
+			(json!({"fix": "a real subject", "change": change}), true),
+			// Both tags, even when one is malformed, or neither.
+			(
+				json!({"record": "0294", "fix": "a real subject", "change": change}),
+				false,
+			),
+			(
+				json!({"record": "bad", "fix": "a real subject", "change": change}),
+				false,
+			),
+			(
+				json!({"record": "0294", "fix": "", "change": change}),
+				false,
+			),
+			(json!({"change": change}), false),
+			// A malformed sole tag.
+			(json!({"record": "abcd", "change": change}), false),
+			(json!({"record": "029", "change": change}), false),
+			(json!({"record": 294, "change": change}), false),
+			(json!({"fix": "   ", "change": change}), false),
+			(json!({"fix": null, "change": change}), false),
+			// A short change.
+			(json!({"fix": "a real subject", "change": "short"}), false),
+		] {
+			assert_eq!(successor_is_valid(&successor), valid, "{successor}");
 		}
 	}
 
