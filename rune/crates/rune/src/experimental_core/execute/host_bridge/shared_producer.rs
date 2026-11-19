@@ -110,9 +110,15 @@ fn project(
 
 // No slot or Store borrow escapes projection. The stock receiver is retained,
 // never cloned through the native payload's Clone implementation.
+enum ProducerInput {
+	Receiver,
+	Columns(ColumnSelection),
+	Native(stock::Value),
+}
+
 struct Request {
 	receiver: stock::Value,
-	columns: Option<ColumnSelection>,
+	input: ProducerInput,
 	reserved: usize,
 }
 
@@ -143,7 +149,7 @@ impl Executor {
 		let opaque = &runtime.opaque;
 		let (inputs, outputs) = match count {
 			1 => (&opaque.producer_inputs, &opaque.factories),
-			3 => (&opaque.methods, &opaque.producer_outputs),
+			2 | 3 => (&opaque.methods, &opaque.producer_outputs),
 			_ => return Err(invalid()),
 		};
 		let native = inputs.get(&binding.hash).ok_or_else(invalid)?;
@@ -186,7 +192,30 @@ impl Executor {
 				}),
 			);
 		}
-		let (columns, reserved) = if let [n, t] = rest {
+		let (input, reserved) = if let [arg] = rest {
+			if !receiver.is_readable() {
+				return Err(error(ErrorKind::AccessConflict));
+			}
+			let value = self.slots[slot(*arg)?];
+			if !store.host_tag(value)?.1 {
+				return Err(moved(1));
+			}
+			let argument = store.host_snapshot(value)?;
+			if argument.type_hash() != output.hash {
+				return Err(
+					error(ErrorKind::Host).with_detail(Detail::HostExpectedType {
+						expected: output.hash,
+						actual: argument.type_hash(),
+						arg: Some(1),
+					}),
+				);
+			}
+			(
+				ProducerInput::Native(argument),
+				stock::AnyObj::owned_allocation_bytes::<ProducerReceiver>()
+					+ store.producer_wrapper_bytes(),
+			)
+		} else if let [n, t] = rest {
 			let names = self.slots[slot(*n)?];
 			let dtype = self.slots[slot(*t)?];
 			if !store.host_tag(names)?.1 {
@@ -225,17 +254,17 @@ impl Executor {
 					+ store.producer_wrapper_bytes(),
 			)?;
 			let columns = project(store, names, store.text(dtype)?, &mut available)?;
-			(Some(columns), initial - available)
+			(ProducerInput::Columns(columns), initial - available)
 		} else {
 			(
-				None,
+				ProducerInput::Receiver,
 				stock::AnyObj::owned_allocation_bytes::<ProducerReceiver>()
 					+ store.producer_wrapper_bytes(),
 			)
 		};
 		let request = Request {
 			receiver,
-			columns,
+			input,
 			reserved,
 		};
 		let value = self.materialize_shared_producer(store, binding, request)?;
@@ -262,11 +291,16 @@ impl Executor {
 			stock::Value::unit(),
 			stock::Value::empty(),
 		];
-		let count = if let Some(columns) = request.columns {
-			scratch[1] = stock::Value::new(columns)?;
-			3
-		} else {
-			1
+		let count = match request.input {
+			ProducerInput::Receiver => 1,
+			ProducerInput::Columns(columns) => {
+				scratch[1] = stock::Value::new(columns)?;
+				3
+			}
+			ProducerInput::Native(value) => {
+				scratch[1] = value;
+				2
+			}
 		};
 		match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
 			binding.handler.call(

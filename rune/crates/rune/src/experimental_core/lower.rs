@@ -2814,7 +2814,13 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 					let receiver = self.operand(target)?;
 					self.function.arguments(&[receiver])?
 				}
-				&[names, dtype] if binding.signature.shared_producer() => {
+				&[arg] if binding.signature.file_pair() => {
+					let slots = self.operands(&[target, arg])?;
+					self.function.arguments(&slots)?
+				}
+				&[names, dtype]
+					if binding.signature.shared_producer() && binding.signature.arity == 3 =>
+				{
 					let slots = self.operands(&[target, names, dtype])?;
 					self.function.arguments(&slots)?
 				}

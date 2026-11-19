@@ -21,6 +21,8 @@ use std::sync::Arc;
 
 mod dense_credit;
 mod display;
+#[cfg(test)]
+mod forward_tests;
 pub mod tensor_ops;
 pub mod text;
 mod worker;
@@ -240,7 +242,7 @@ fn check_parameter_count(path: &str, params: usize) -> Result<(), String> {
 
 /// `mlp.forward(tensor)`: a 2-D F32 input with `in` columns; `batch ×
 /// hidden` and `batch × out` checked before anything runs.
-fn forward(this: &Mlp, x: &Tensor) -> Result<Tensor, String> {
+fn forward_shape(this: &Mlp, x: &Tensor) -> Result<(usize, usize), String> {
 	let op = "Mlp::forward";
 	if x.0.dtype() != DType::F32 {
 		return Err(format!("{op}: input must be F32, found {:?}", x.0.dtype()));
@@ -266,6 +268,16 @@ fn forward(this: &Mlp, x: &Tensor) -> Result<Tensor, String> {
 			}
 		}
 	}
+	Ok((batch * this.hidden, batch * this.output))
+}
+
+fn forward(this: &Mlp, x: &Tensor) -> Result<Tensor, String> {
+	forward_shape(this, x)?;
+	run_forward(this, x)
+}
+
+fn run_forward(this: &Mlp, x: &Tensor) -> Result<Tensor, String> {
+	let op = "Mlp::forward";
 	let (fc1, fc2, x) = (this.fc1.clone(), this.fc2.clone(), x.0.clone());
 	worker::run(op, move || {
 		fc1.forward(&x)
@@ -305,7 +317,8 @@ pub fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, String> {
 	m.associated_function("shape", shape).map_err(err)?;
 	m.associated_function("dtype", dtype).map_err(err)?;
 
-	m.associated_function("forward", forward).map_err(err)?;
+	m.file_pair_producer("forward", forward, dense_credit::forward)
+		.map_err(err)?;
 	m.opaque_method::<Mlp, _, _>(
 		"dims",
 		mlp_dims,
@@ -409,7 +422,7 @@ mod tests {
 		d.join(format!("{tag}-{n}.safetensors"))
 	}
 
-	fn weights(entries: Vec<(&str, CTensor)>) -> String {
+	pub(super) fn weights(entries: Vec<(&str, CTensor)>) -> String {
 		let p = path("w");
 		let map: HashMap<String, CTensor> = entries
 			.into_iter()
@@ -423,7 +436,7 @@ mod tests {
 		CTensor::from_vec(v, shape, &Device::Cpu).unwrap()
 	}
 
-	fn good(input: usize, hidden: usize, output: usize) -> Vec<(&'static str, CTensor)> {
+	pub(super) fn good(input: usize, hidden: usize, output: usize) -> Vec<(&'static str, CTensor)> {
 		vec![
 			(
 				"fc1.weight",

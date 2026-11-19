@@ -98,7 +98,8 @@ impl FileModules {
 		let mut selected = false;
 		for binding in program.code.file_host_bindings_mut() {
 			if context.opaque.producer_inputs.contains_key(&binding.hash)
-				|| context.opaque.producer_outputs.contains_key(&binding.hash)
+				|| (context.opaque.producer_outputs.contains_key(&binding.hash)
+					&& !binding.signature.file_pair())
 			{
 				continue;
 			}
@@ -502,3 +503,6 @@ mod tests {
 		);
 	}
 }
+
+#[cfg(test)]
+mod pair_tests;

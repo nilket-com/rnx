@@ -38,6 +38,40 @@ pub(super) fn convert(block: &Dense, credit: usize) -> Result<Result<Tensor, Str
 	Ok(from_dense(block))
 }
 
+// The first Linear's matmul and bias (and then ReLU) overlap at two hidden buffers.
+// The second bias overlaps the hidden activation and both output buffers.
+// Store/AnyObj wrappers are reserved by the bridge. Backend scratch is separate.
+fn activation_credit(hidden: usize, output: usize) -> Result<usize, Limit> {
+	let f32_tensor = |count: usize| {
+		count
+			.checked_mul(size_of::<f32>())
+			.and_then(|b| b.checked_add(METADATA))
+			.ok_or(Limit)
+	};
+	let h = f32_tensor(hidden)?;
+	let o = f32_tensor(output)?;
+	Ok(h.checked_mul(2).ok_or(Limit)?.max(
+		o.checked_mul(2)
+			.and_then(|v| v.checked_add(h))
+			.ok_or(Limit)?,
+	))
+}
+
+pub(super) fn forward(
+	model: &Mlp,
+	input: &Tensor,
+	credit: usize,
+) -> Result<Result<Tensor, String>, Limit> {
+	let (hidden, output) = match super::forward_shape(model, input) {
+		Ok(shape) => shape,
+		Err(message) => return Ok(Err(message)),
+	};
+	if activation_credit(hidden, output)? > credit {
+		return Err(Limit);
+	}
+	Ok(super::run_forward(model, input))
+}
+
 pub(super) fn tensor_bytes(value: &Tensor) -> usize {
 	// The native box stays live after the temporary Result and input packet
 	// disappear. Count backing storage, even when looking through a view.
@@ -110,6 +144,27 @@ mod tests {
 			"/../../demos/data/mlp.safetensors"
 		))
 		.unwrap();
+		for batch in [1, 64, 257] {
+			let input = Tensor(
+				CTensor::from_vec(vec![1f32; batch * 3], (batch, 3), &candle_core::Device::Cpu)
+					.unwrap(),
+			);
+			let needed = activation_credit(batch * 8, batch).unwrap();
+			reset_peak();
+			let base = peak();
+			assert!(forward(&model, &input, needed - 1).is_err());
+			assert_eq!(peak(), base, "short credit reached the worker");
+			let y = forward(&model, &input, needed).unwrap().unwrap();
+			let charge = tensor_bytes(&y);
+			let boxed = rnx::rune::runtime::Value::new(y).unwrap();
+			let before = live().unwrap();
+			drop(boxed);
+			assert_eq!(
+				before - live().unwrap(),
+				charge,
+				"forward storage plus native box"
+			);
+		}
 		let expected = model_bytes(&model) - AnyObj::owned_allocation_bytes::<Mlp>();
 		let held = live().unwrap();
 		drop(model);

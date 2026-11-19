@@ -228,12 +228,19 @@ impl TryClone for HostSignature {
 	}
 }
 impl HostSignature {
+	pub(crate) fn file_pair(self) -> bool {
+		use HostType::{OpaqueShared, Unit};
+		self.arity == 2
+			&& self.arguments == [OpaqueShared, OpaqueShared, Unit, Unit]
+			&& self.output == HostOutputKind::OpaqueResultString
+	}
 	pub(crate) fn shared_producer(self) -> bool {
 		use HostType::{OpaqueShared, OwnedTreeInput, String, Unit};
 		self.output == HostOutputKind::OpaqueResultString
 			&& matches!(
 				(self.arity, self.arguments),
 				(1, [OpaqueShared, Unit, Unit, Unit])
+					| (2, [OpaqueShared, OpaqueShared, Unit, Unit])
 					| (3, [OpaqueShared, OwnedTreeInput, String, Unit])
 			)
 	}

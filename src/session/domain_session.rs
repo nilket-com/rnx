@@ -1437,6 +1437,52 @@ mod opaque_tests {
 		(c, made, drops, displays)
 	}
 	#[test]
+	fn file_pair_refuses_before_effects_with_independent_session_inputs() {
+		use std::sync::{
+			Arc,
+			atomic::{AtomicUsize, Ordering::SeqCst},
+		};
+		#[derive(rune::Any)]
+		#[rune(item = ::pair_fixture)]
+		struct Model;
+		#[derive(rune::Any)]
+		#[rune(item = ::pair_fixture)]
+		struct Input;
+		let mut module = rune::Module::with_crate("pair_fixture").unwrap();
+		module.opaque_type::<Model>(|_| 1, |_, _| Ok(())).unwrap();
+		module.opaque_type::<Input>(|_| 1, |_, _| Ok(())).unwrap();
+		let calls = Arc::new(AtomicUsize::new(0));
+		let count = calls.clone();
+		module
+			.opaque_factory("model", move || {
+				count.fetch_add(1, SeqCst);
+				Model
+			})
+			.unwrap();
+		module.opaque_factory("input", || Input).unwrap();
+		module
+			.opaque_method::<Input, _, _>("read", |_: &Input| 42i64, None)
+			.unwrap();
+		module
+			.file_pair_producer(
+				"apply",
+				|_: &Model, _: &Input| Ok(Input),
+				|_, _, _| panic!("file handler ran"),
+			)
+			.unwrap();
+		let mut ctx = context();
+		ctx.install(module).unwrap();
+		let mut session = DomainSession::new(ctx, DEFAULT_CEILING).unwrap();
+		shown(
+			&mut session,
+			"let m=pair_fixture::model(); let x=pair_fixture::input();",
+		);
+		let outcome = session.eval("let side=pair_fixture::model();let y=m.apply(x)?;y.read()");
+		assert!(matches!(outcome, Err(Failure::Refused(_))), "{outcome:?}");
+		assert_eq!(calls.load(SeqCst), 1);
+		assert_eq!(shown(&mut session, "x.read()"), "42");
+	}
+	#[test]
 	fn shared_constructor_uses_qualified_call_and_typed_argument() {
 		use std::sync::{
 			Arc,

@@ -516,6 +516,92 @@ impl Module {
 		Ok(())
 	}
 
+	/// File-only checked method borrowing a receiver and a second native of the result type.
+	#[doc(hidden)]
+	pub fn file_pair_producer<R, A, F, G>(
+		&mut self,
+		name: &'static str,
+		legacy: F,
+		produce: G,
+	) -> Result<(), ContextError>
+	where
+		R: crate::Any + TypeOf + MaybeTypeOf,
+		A: crate::Any + MaybeTypeOf,
+		F: Function<(Ref<R>, Ref<A>), Plain, Return = Result<A, std::string::String>>,
+		G: Fn(
+				&R,
+				&A,
+				usize,
+			) -> Result<Result<A, std::string::String>, crate::host::OpaqueProducerLimit>
+			+ Send
+			+ Sync
+			+ 'static,
+	{
+		use crate::host::shared_producer::ProducerReceiver;
+		use crate::runtime::FunctionHandler;
+		let receiver = NativeType::of::<R>();
+		let argument = NativeType::of::<A>();
+		let registration = self.opaque.types.get(&receiver.hash);
+		if receiver.hash == argument.hash
+			|| !registration.is_some_and(|r| r.descriptor.type_id == receiver.id)
+		{
+			return Err(ContextError::OpaqueType {
+				declared: receiver.info.into(),
+				registered: registration.map(|r| r.descriptor.info.into()),
+			});
+		}
+		let key = Hash::associated_function(receiver.hash, Hash::ident(name));
+		let checked =
+			move |packet: ProducerReceiver, arg: Value| packet.produce_pair::<R, A>(&arg, &produce);
+		let file = FunctionHandler::new(move |stack, addr, args, out| {
+			Function::<(ProducerReceiver, Value), Plain>::call(&checked, stack, addr, args, out)
+		})?;
+		let inactive = FunctionHandler::new(|_, _, _, _| {
+			Err(VmError::panic("file method outside a checked file"))
+		})?;
+		self.file_readers.try_reserve(1)?;
+		self.opaque.methods.try_reserve(1)?;
+		self.opaque.producer_outputs.try_reserve(1)?;
+		self.function(name, legacy).build_associated::<R>()?;
+		let Some(ModuleAssociated {
+			kind: ModuleAssociatedKind::Function(function),
+			..
+		}) = self.associated.last_mut()
+		else {
+			return Err(ContextError::InternalAlreadyPresent {
+				name: "file pair method registration",
+			});
+		};
+		let original = function.handler.clone();
+		function.alternate_host = Some(crate::host::AlternateHost {
+			await_only: false,
+			handler: inactive.clone(),
+			enrollment: HostEnrollment {
+				certificate: None,
+				signature: HostSignature {
+					arity: 2,
+					arguments: [
+						HostType::OpaqueShared,
+						HostType::OpaqueShared,
+						HostType::Unit,
+						HostType::Unit,
+					],
+					output: HostOutputKind::OpaqueResultString,
+				},
+			},
+		});
+		self.opaque.methods.try_insert(key, receiver)?;
+		self.opaque.producer_outputs.try_insert(key, argument)?;
+		self.file_readers
+			.try_push(crate::experimental_core::domain::file::Reader {
+				hash: key,
+				original,
+				session: inactive,
+				file,
+			})?;
+		Ok(())
+	}
+
 	/// Register a qualified constructor on U that borrows a registered T.
 	/// Its checked alternate receives credit for one synchronous conversion.
 	#[doc(hidden)]

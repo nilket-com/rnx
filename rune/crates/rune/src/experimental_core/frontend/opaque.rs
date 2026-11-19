@@ -689,7 +689,13 @@ impl Builder<'_, '_> {
 			.is_some_and(|handler| handler.same_allocation(&registered.witness))
 	}
 
-	fn validate(&self, item: &hir::ItemFn<'_>, facts: &[Fact], is_entry: bool) -> Result<()> {
+	fn validate(
+		&self,
+		item: &hir::ItemFn<'_>,
+		facts: &[Fact],
+		is_entry: bool,
+		file_main: bool,
+	) -> Result<()> {
 		let host = |id: hir::ExprId| facts.get(id.index()).is_some_and(|f| f.opaque());
 		let variable = |v: hir::Variable| {
 			!facts.is_empty() && self.variables.get(&v).is_none_or(|i| facts[*i].opaque())
@@ -796,6 +802,7 @@ impl Builder<'_, '_> {
 						hir::Call::Associated { target, .. } => Some(target),
 						_ => None,
 					};
+					let mut pair_argument = None;
 					if let Some(target) = receiver {
 						if host(target) {
 							let Fact::Exact(ty) = facts[target.index()] else {
@@ -809,7 +816,21 @@ impl Builder<'_, '_> {
 							};
 							let key = Hash::associated_function(ty, hash);
 							let arity = match self.context.opaque.producer_outputs.get(&key) {
-								Some(output) if self.has_checked_native(output.hash) => 2,
+								Some(output) if self.has_checked_native(output.hash) => {
+									if self
+										.context
+										.host(key)
+										.is_some_and(|b| b.signature.file_pair())
+									{
+										if !file_main {
+											return Err(fail(e.span, Refusal::OpaqueEntry));
+										}
+										pair_argument = Some(output);
+										1
+									} else {
+										2
+									}
+								}
 								Some(_) => return Err(fail(e.span, Refusal::OpaqueReceiver)),
 								None => 0,
 							};
@@ -828,7 +849,7 @@ impl Builder<'_, '_> {
 					let drop = matches!(c.call,hir::Call::Meta{hash} if hash==Hash::type_hash(crate::item!(::std::mem::drop)));
 					let input = match c.call {
 						hir::Call::Meta { hash } => self.context.opaque.producer_inputs.get(&hash),
-						_ => None,
+						_ => pair_argument,
 					};
 					if let Some(input) = input {
 						let [arg] = c.args else {
@@ -1048,7 +1069,7 @@ pub(crate) fn analyze(
 	}
 	b.own(item)?;
 	if !bounded {
-		b.validate(item, &[], is_entry)?;
+		b.validate(item, &[], is_entry, contract.is_none())?;
 		return Ok(Proof {
 			facts: Vec::new(),
 			returned_delta: b.envelope.map(|(_, delta)| delta),
@@ -1062,7 +1083,7 @@ pub(crate) fn analyze(
 	}
 	b.graph(item)?;
 	let facts = b.solve()?;
-	b.validate(item, &facts, is_entry)?;
+	b.validate(item, &facts, is_entry, contract.is_none())?;
 	Ok(Proof {
 		facts,
 		returned_delta: b.envelope.map(|(_, delta)| delta),

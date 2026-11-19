@@ -16,16 +16,41 @@ impl ProducerReceiver {
 			usize,
 		) -> Result<Result<U, std::string::String>, super::OpaqueProducerLimit>,
 	) -> Result<crate::runtime::Value, crate::runtime::VmError> {
-		use crate::runtime::{AnyObj, Value};
 		let borrowed = self.receiver.borrow_ref::<T>()?;
+		Self::wrap(self.remaining, |credit| producer(&borrowed, credit))
+	}
+
+	pub(crate) fn produce_pair<R: crate::Any, A: crate::Any>(
+		self,
+		argument: &crate::runtime::Value,
+		producer: impl FnOnce(
+			&R,
+			&A,
+			usize,
+		) -> Result<Result<A, std::string::String>, super::OpaqueProducerLimit>,
+	) -> Result<crate::runtime::Value, crate::runtime::VmError> {
+		let receiver = self.receiver.borrow_ref::<R>()?;
+		let argument = argument.borrow_ref::<A>()?;
+		Self::wrap(self.remaining, |credit| {
+			producer(&receiver, &argument, credit)
+		})
+	}
+
+	fn wrap<U: crate::Any>(
+		remaining: usize,
+		producer: impl FnOnce(
+			usize,
+		) -> Result<Result<U, std::string::String>, super::OpaqueProducerLimit>,
+	) -> Result<crate::runtime::Value, crate::runtime::VmError> {
+		use crate::runtime::{AnyObj, Value};
 		// The native result and its child coexist while the Store adopts them.
 		let wrappers = AnyObj::owned_allocation_bytes::<U>()
 			.max(AnyObj::owned_allocation_bytes::<crate::alloc::String>())
 			+ AnyObj::owned_allocation_bytes::<Result<Value, Value>>();
-		let Some(credit) = self.remaining.checked_sub(wrappers) else {
+		let Some(credit) = remaining.checked_sub(wrappers) else {
 			return Ok(Value::new(super::OpaqueProducerLimit)?);
 		};
-		let result = match producer(&borrowed, credit) {
+		let result = match producer(credit) {
 			Ok(Ok(value)) => Ok(Value::new(value)?),
 			Ok(Err(message)) => Err(crate::to_value(message)?),
 			Err(limit) => return Ok(Value::new(limit)?),

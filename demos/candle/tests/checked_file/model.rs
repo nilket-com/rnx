@@ -130,7 +130,7 @@ fn file_failures_preserve_the_loader_diagnostics() {
 }
 
 #[test]
-fn forward_is_the_first_unsupported_model_step() {
+fn forward_runs_in_a_checked_file_and_tensor_export_falls_back() {
 	let dir = Scratch::new();
 	let demo = include_str!("../../model.rn").replacen(
 		"let dir =",
@@ -138,11 +138,25 @@ fn forward_is_the_first_unsupported_model_step() {
 		1,
 	);
 	let (prefix, _) = demo.split_once("let y = model.forward(x)?;").unwrap();
+	let checked = format!(
+		r#"{prefix}
+		let y=model.forward(x)?;
+		println!("rank={{}} count={{}}",y.rank(),y.elem_count()); Ok(()) }}"#
+	);
+	let (out, _) = check(
+		cli(&dir.script(&checked), &data_dir()).output().unwrap(),
+		EXEC,
+		0,
+	);
+	assert_eq!(
+		out.lines().collect::<Vec<_>>(),
+		["MODEL-START", "rank=2 count=64"]
+	);
 	for (body, route) in [
 		(format!("{prefix} model.dims() }}"), EXEC),
 		(
-			format!("{prefix} let y=model.forward(x)?; Ok(()) }}"),
-			"rnx: engine=legacy ",
+			format!("{prefix} let y=model.forward(x)?; let b=y.to_dense([\"score\"])?; Ok(()) }}"),
+			"rnx: engine=legacy refusal=OpaqueReceiver",
 		),
 		(demo, "rnx: engine=legacy "),
 	] {
@@ -233,5 +247,21 @@ fn wrong_and_moved_paths_fail_at_the_call() {
 		let (out, err) = check(cli(&script, &path).output().unwrap(), EXEC, 1);
 		assert_eq!(out.trim(), "MODEL-START");
 		assert!(err.contains(reason), "{err}");
+	}
+}
+
+#[test]
+fn forward_reports_moved_inputs_in_order() {
+	let dir = Scratch::new();
+	let demo = include_str!("../../model.rn");
+	let (prefix, _) = demo.split_once("let y = model.forward(x)?;").unwrap();
+	for drop_inputs in ["drop(model);", "drop(x);", "drop(model);drop(x);"] {
+		let src = format!("{prefix}{drop_inputs} let y=model.forward(x)?;y.rank()}}");
+		let (_, err) = check(
+			cli(&dir.script(&src), &data_dir()).output().unwrap(),
+			EXEC,
+			1,
+		);
+		assert!(err.contains("it has been moved"), "{err}");
 	}
 }
