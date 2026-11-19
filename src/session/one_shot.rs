@@ -27,7 +27,11 @@ impl FreshValue {
 				},
 			)
 			.map_err(fault)?;
-		let node = view.root().map_err(fault)?.child(1).map_err(fault)?;
+		let root = view.root().map_err(fault)?;
+		if let Some(payload) = crate::format::execution::entry_error(&root).map_err(fault)? {
+			return Err(crate::format::execution::entry_error_text(payload, fields)?);
+		}
+		let node = root.child(1).map_err(fault)?;
 		let returned = if let ViewKind::Result { ok } = node.kind().map_err(fault)? {
 			let child = node.child(0).map_err(fault)?;
 			if !ok {

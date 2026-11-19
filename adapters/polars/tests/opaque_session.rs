@@ -358,26 +358,29 @@ fn tempfile_for_height(label: &str) -> std::path::PathBuf {
 fn height_exposes_a_typed_error_and_keeps_the_frame_after_propagation() {
 	let root = tempfile_for_height("conversion");
 	let execution = ["repl", "--engine=execution"];
-	let input = concat!(
-		"let f=polars::height_overflow_fixture();\n",
-		"match f.height() { Ok(x)=>x,Err(e)=>e }\n",
-		"match f.height() { Err(e)=>e.kind(),Ok(x)=>format!(\"{x}\") }\n",
-		"match f.height() { Ok(x)=>format!(\"{x}\"),Err(e)=>format!(\"{e}\") }\n",
-		"f.height()?\nf.width()\n:quit\n"
-	);
-	let result = capture(&root, "conversion", &execution, input);
+	let csv = root.join("retained.csv");
+	fs::write(&csv, "n\n1\n2\n3\n").unwrap();
+	let path = serde_json::to_string(csv.to_str().unwrap()).unwrap();
+	let load = format!("let kept=polars::read_csv({path}, [(\"n\",\"i64\")])?;\n");
+	let input = load
+		+ concat!(
+			"let f=polars::height_overflow_fixture();\n",
+			"match f.height() { Ok(x)=>x,Err(e)=>e }\n",
+			"match f.height() { Err(e)=>e.kind(),Ok(x)=>format!(\"{x}\") }\n",
+			"match f.height() { Ok(x)=>format!(\"{x}\"),Err(e)=>format!(\"{e}\") }\n",
+			"let absent=3; println!(\"once\"); f.height()?\n",
+			"f.width()\nkept.height()?\nabsent\n:quit\n"
+		);
+	let result = capture(&root, "conversion", &execution, &input);
 	let message = "height: 9223372036854775808 does not fit a script integer";
 	assert_eq!(
 		transcript(&result.stdout),
-		format!("{message}\n\"ConversionError\"\n\"{message}\"\n0\n")
+		format!("{message}\n\"ConversionError\"\n\"{message}\"\nonce\n0\n3\n")
 	);
-	assert_eq!(
-		String::from_utf8(result.stderr).unwrap(),
-		concat!(
-			"runtime error (position not in your input; :debug shows the generated source): ",
-			"Error { kind: Type, location: None, operation: \"store\", refusal: None, detail: None }\n"
-		)
-	);
+	let stderr = String::from_utf8(result.stderr).unwrap();
+	let (failure, next) = stderr.split_once('\n').unwrap();
+	assert_eq!(failure, format!("error: {message}"));
+	assert!(next.contains("No local variable `absent`"), "{next}");
 	let helper = capture(
 		&root,
 		"helper",

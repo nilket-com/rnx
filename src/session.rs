@@ -75,6 +75,8 @@ pub enum Failure {
 		message: String,
 		origin: Option<Origin>,
 	},
+	/// An execution input returned an error before producing its session envelope.
+	Returned(String),
 	/// Ctrl-C was observed at a slice boundary.
 	Interrupted,
 	/// The instruction budget for one input ran out.
@@ -89,6 +91,7 @@ impl std::fmt::Display for Failure {
 			Failure::Refused(m) => write!(f, "refused: {m}"),
 			Failure::Compile { message, origin } => located(f, "error", message, origin),
 			Failure::Runtime { message, origin } => located(f, "runtime error", message, origin),
+			Failure::Returned(message) => write!(f, "error: {message}"),
 			Failure::Interrupted => write!(f, "interrupted"),
 			Failure::Budget(n) => write!(f, "halted: {n} instructions exceeded"),
 			Failure::OverCeiling { live, ceiling } => write!(

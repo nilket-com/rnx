@@ -175,6 +175,7 @@ fn failure(f: &Failure, epoch: u64) -> Value {
 		Failure::Refused(_) => ("refused", None),
 		Failure::Compile { origin, .. } => ("compile", origin.as_ref()),
 		Failure::Runtime { origin, .. } => ("runtime", origin.as_ref()),
+		Failure::Returned(_) => ("runtime", None),
 		Failure::Interrupted => ("interrupted", None),
 		Failure::Budget(_) => ("budget", None),
 		Failure::OverCeiling { .. } => ("over_ceiling", None),
@@ -366,6 +367,14 @@ mod tests {
 			assert!(options(&args.into_iter().map(str::to_owned).collect::<Vec<_>>()).is_err());
 		}
 	}
+	#[test]
+	fn returned_input_error_is_an_unplaced_runtime_diagnostic() {
+		let response = failure(&Failure::Returned("control".into()), 1);
+		assert_eq!(response["category"], "runtime");
+		assert_eq!(response["diagnostic"], "error: control");
+		assert!(response["origin"].is_null());
+	}
+
 	#[test]
 	fn diagnostics_are_capped_on_character_boundaries() {
 		let (s, cut) = bounded("é".repeat(20), 9);

@@ -11,6 +11,7 @@ fn diagnostic(f: Failure) -> Diagnostic {
 	let (category, origin) = match &f {
 		Failure::Compile { origin, .. } => ("compile", origin.clone()),
 		Failure::Runtime { origin, .. } => ("runtime", origin.clone()),
+		Failure::Returned(_) => ("runtime", None),
 		Failure::Refused(_) => ("refused", None),
 		Failure::Budget(_) => ("budget", None),
 		Failure::Interrupted => ("interrupted", None),

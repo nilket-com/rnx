@@ -22,6 +22,23 @@ fn run(source: &str, legacy: bool, budget: Option<usize>, debug: bool) -> Output
 }
 
 #[test]
+fn one_shot_reports_a_propagated_error_and_keeps_inner_result_handling() {
+	for input in [
+		"Err(\"control\")?",
+		"return Err(\"control\");",
+		"Err(\"control\")",
+	] {
+		let out = run(input, false, None, true);
+		assert_eq!(out.status.code(), Some(1), "{input}");
+		assert!(out.stdout.is_empty(), "{input}");
+		let stderr = String::from_utf8(out.stderr).unwrap();
+		let (route, diagnostic) = stderr.split_once('\n').unwrap();
+		assert!(route.contains("engine=execution"), "{route}");
+		assert_eq!(diagnostic, "error: control\n", "{input}");
+	}
+}
+
+#[test]
 fn one_shot_values_effects_errors_and_async_match_legacy() {
 	for source in [
 		"42",

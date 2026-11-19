@@ -311,21 +311,9 @@ impl DomainSession {
 				value.kind().map_err(|e| fault(format!("{e:?}")))?,
 				ViewKind::Opaque(rune::experimental_core::value::Type::Host(_))
 			) {
-				let outcome = value
-					.display_host(limits.total_bytes)
-					.map(|s| s.to_string())
-					.map_err(|e| format!("{e:?}"));
-				let label = format!(
-					"<{}>",
-					value
-						.host_type_name()
-						.map_err(|e| fault(format!("{e:?}")))?
-				);
-				return Ok(Some(crate::present::finish(
-					outcome,
-					&label,
-					limits.total_bytes,
-				)));
+				return crate::format::execution::checked_host_display(&value, limits.total_bytes)
+					.map(Some)
+					.map_err(fault);
 			}
 			crate::format::execution::render(
 				value,
@@ -690,6 +678,28 @@ impl DomainSession {
 			} else {
 				run()?
 			};
+			{
+				let view_fault = |e: rune::experimental_core::error::Error| fault(format!("{e:?}"));
+				let view = self
+					.domain
+					.view(
+						&output,
+						ViewLimits {
+							nodes: usize::MAX,
+							depth: usize::MAX,
+						},
+					)
+					.map_err(view_fault)?;
+				let root = view.root().map_err(view_fault)?;
+				if let Some(payload) =
+					crate::format::execution::entry_error(&root).map_err(view_fault)?
+				{
+					let message =
+						crate::format::execution::entry_error_text(payload, &self.fields())
+							.map_err(fault)?;
+					return Err(Failure::Returned(message));
+				}
+			}
 			let delta = self
 				.domain
 				.get(&output, 0)
@@ -1426,6 +1436,68 @@ mod opaque_tests {
 		c.install(m).unwrap();
 		(c, made, drops, displays)
 	}
+	#[test]
+	fn propagated_native_error_uses_bounded_checked_display() {
+		use rune::alloc::fmt::TryWrite;
+		use std::result::Result;
+
+		#[derive(rune::Any)]
+		#[rune(item = ::error_test)]
+		struct ReportError(bool);
+
+		#[rune::function(instance, path = fail, opaque_result_method)]
+		fn report_failure(value: &ReportError) -> Result<i64, ReportError> {
+			Err(ReportError(value.0))
+		}
+
+		let mut module = rune::Module::with_crate("error_test").unwrap();
+		module
+			.opaque_type::<ReportError>(
+				|_| 1,
+				|v, f| {
+					if v.0 {
+						return Err(rune::runtime::VmError::panic("display failed"));
+					}
+					f.try_write_str(
+						&"\x1b".repeat(crate::format::Limits::preview().total_bytes / 2),
+					)?;
+					Ok(())
+				},
+			)
+			.unwrap();
+		module.function_meta(report_failure).unwrap();
+		module
+			.opaque_factory("long", || ReportError(false))
+			.unwrap();
+		module
+			.opaque_factory("broken", || ReportError(true))
+			.unwrap();
+		let mut context = context();
+		context.install(module).unwrap();
+		let mut session = DomainSession::new(context, DEFAULT_CEILING).unwrap();
+		for (input, prefix) in [
+			("error_test::long().fail()?", "\\u{1b}"),
+			(
+				"error_test::broken().fail()?",
+				"<::error_test::ReportError> (preview unavailable:",
+			),
+		] {
+			let Err(Failure::Returned(text)) = session.eval(input) else {
+				panic!("{input}")
+			};
+			assert!(text.starts_with(prefix), "{text}");
+			assert!(text.len() <= crate::format::Limits::preview().total_bytes);
+			assert!(!text.contains('\x1b'));
+			if input.contains("long") {
+				assert!(text.contains("[presentation byte limit; remainder omitted]"));
+			}
+		}
+		assert_eq!(shown(&mut session, "Err(\"inner\")"), "Err(\"inner\")");
+		let err = session.eval("return Err(\"explicit\");").unwrap_err();
+		assert_eq!(err.to_string(), "error: explicit");
+		session.close().unwrap();
+	}
+
 	#[test]
 	fn host_refusals_precede_factory_effects() {
 		use std::sync::atomic::Ordering::SeqCst;

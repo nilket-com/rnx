@@ -42,6 +42,48 @@ pub(crate) fn document(
 	Ok((renderer.out, renderer.spans))
 }
 
+/// A propagated error is the whole entry result, outside the session tuple.
+pub(crate) fn entry_error<'v, 's>(
+	root: &ValueView<'v, 's>,
+) -> rune::experimental_core::error::Result<Option<ValueView<'v, 's>>> {
+	if matches!(root.kind()?, ViewKind::Result { ok: false }) {
+		Ok(Some(root.child(0)?))
+	} else {
+		Ok(None)
+	}
+}
+
+/// Registered native errors can provide a checked display. Other values use
+/// the same bounded diagnostic text as file execution.
+pub(crate) fn entry_error_text(
+	payload: ValueView<'_, '_>,
+	fields: &Fields,
+) -> Result<String, String> {
+	let fault = |e: rune::experimental_core::error::Error| format!("{e:?}");
+	if matches!(
+		payload.kind().map_err(fault)?,
+		ViewKind::Opaque(rune::experimental_core::value::Type::Host(_))
+	) {
+		return checked_host_display(&payload, Limits::preview().total_bytes);
+	}
+	error_text(payload, Some(fields))
+}
+
+pub(crate) fn checked_host_display(
+	value: &ValueView<'_, '_>,
+	budget: usize,
+) -> Result<String, String> {
+	let outcome = value
+		.display_host(budget)
+		.map(|s| s.to_string())
+		.map_err(|e| format!("{e:?}"));
+	let label = format!(
+		"<{}>",
+		value.host_type_name().map_err(|e| format!("{e:?}"))?
+	);
+	Ok(crate::present::finish(outcome, &label, budget))
+}
+
 pub(crate) fn error_text(
 	node: ValueView<'_, '_>,
 	fields: Option<&Fields>,
