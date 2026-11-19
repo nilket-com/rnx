@@ -361,7 +361,11 @@ impl Store {
 		}
 		// The remaining allocations are the owned capsule/value box, not a second tree.
 		budget.charge(size_of::<Capsule>() + 256)?;
-		Ok(runtime::Value::new(Capsule { nodes })?)
+		let remaining_bytes = self.host_remaining_bytes()?.saturating_sub(budget.used);
+		Ok(runtime::Value::new(Capsule {
+			nodes,
+			remaining_bytes,
+		})?)
 	}
 }
 

@@ -19,6 +19,14 @@ pub const BUDGET: usize = 2_000_000_000;
 /// otherwise. Generous enough that ordinary work never meets it, small
 /// enough that a runaway session stops before the machine notices.
 pub const DEFAULT_CEILING: usize = 512 * 1024 * 1024;
+const DEFAULT_STORE_BYTES: usize = 512 * 1024 * 1024;
+
+fn execution_store_limits() -> rune::experimental_core::heap::Limits {
+	rune::experimental_core::heap::Limits {
+		bytes: DEFAULT_STORE_BYTES,
+		..Default::default()
+	}
+}
 /// Longest accepted input.
 pub const INPUT_CAP: usize = 32 * 1024;
 

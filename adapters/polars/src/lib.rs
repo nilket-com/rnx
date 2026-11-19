@@ -216,11 +216,14 @@ fn read_csv_checked(
 	path: &str,
 	schema: rune::host::OwnedTreeInput,
 ) -> Result<Result<DataFrame, String>, rune::host::OpaqueProducerLimit> {
-	let schema = match values::csv_schema_session(&schema)? {
+	let (parsed_schema, remaining) = match values::csv_schema_session(&schema, path.len())? {
 		Ok(schema) => schema,
 		Err(error) => return Ok(Err(error)),
 	};
-	let result = match engine::run("read_csv", move || files::csv_session(path, schema)) {
+	drop(schema);
+	let result = match engine::run("read_csv", move || {
+		files::csv_session(path, parsed_schema, remaining)
+	}) {
 		Ok(result) => result?,
 		Err(error) => Err(err(error)),
 	};

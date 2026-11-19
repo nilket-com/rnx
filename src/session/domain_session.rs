@@ -2,7 +2,7 @@
 use super::*;
 use rune::experimental_core::{
 	domain::{CrossOutcome, DomainRoot, ProgramDomain},
-	heap::{ViewKind, ViewLimits},
+	heap::{Limits, ViewKind, ViewLimits},
 	value::Scalar,
 };
 
@@ -22,6 +22,7 @@ mod snapshot_hosts;
 pub(crate) struct DomainSession {
 	context: Context,
 	domain: ProgramDomain,
+	store_limits: Limits,
 	state: BTreeMap<String, DomainRoot>,
 	declarations: BTreeMap<String, Declaration>,
 	names: BTreeSet<String>,
@@ -59,12 +60,21 @@ impl DomainSession {
 		ceiling: usize,
 		frontend: remedy::FrontEnd,
 	) -> Result<Self> {
+		Self::with_store_limits(context, ceiling, frontend, super::execution_store_limits())
+	}
+	pub(crate) fn with_store_limits(
+		context: Context,
+		ceiling: usize,
+		frontend: remedy::FrontEnd,
+		store_limits: Limits,
+	) -> Result<Self> {
 		let runtime = context.execution_runtime()?;
-		let domain = ProgramDomain::new(Default::default(), Default::default(), runtime)
+		let domain = ProgramDomain::new(store_limits, Default::default(), runtime)
 			.map_err(|e| format!("{e:?}"))?;
 		Ok(Self {
 			context,
 			domain,
+			store_limits,
 			state: BTreeMap::new(),
 			declarations: BTreeMap::new(),
 			names: BTreeSet::new(),
@@ -122,7 +132,7 @@ impl DomainSession {
 			.context
 			.execution_runtime()
 			.map_err(|e| e.to_string())?;
-		let replacement = ProgramDomain::new(Default::default(), Default::default(), runtime)
+		let replacement = ProgramDomain::new(self.store_limits, Default::default(), runtime)
 			.map_err(|e| format!("{e:?}"))?;
 		let cleanup = self.lifecycle.clear();
 		self.http.cancel();

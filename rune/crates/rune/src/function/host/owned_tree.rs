@@ -60,6 +60,7 @@ impl TreeNode {
 #[derive(crate::Any)]
 pub(crate) struct Capsule {
 	pub(crate) nodes: std::vec::Vec<TreeNode>,
+	pub(crate) remaining_bytes: usize,
 }
 
 /// A sealed owned argument. Not a general Value input or a return type.
@@ -72,6 +73,15 @@ enum Repr {
 	Tree(Capsule),
 }
 impl OwnedTreeInput {
+	/// Store byte allowance remaining after the owned argument's scratch charge.
+	/// Scalar arguments carry no allowance.
+	pub fn remaining_bytes(&self) -> Option<usize> {
+		match &self.repr {
+			Repr::Leaf(_) => None,
+			Repr::Tree(capsule) => Some(capsule.remaining_bytes),
+		}
+	}
+
 	pub fn leaf(&self) -> Option<&Value> {
 		match &self.repr {
 			Repr::Leaf(v) => Some(v),

@@ -107,53 +107,105 @@ fn csv_body(
 }
 
 #[cfg(feature = "generated")]
-pub(crate) const CSV_SESSION_COLUMNS: usize = 16;
+mod csv_budget;
+
+#[cfg(feature = "generated")]
+fn csv_snapshot(
+	mut file: File,
+	allowance: usize,
+) -> Result<Result<Vec<u8>, std::io::Error>, crate::rune::host::OpaqueProducerLimit> {
+	use crate::rune::host::OpaqueProducerLimit;
+	use std::io::{ErrorKind, Read};
+	let limit = allowance.min(csv_budget::MAX_BYTES);
+	let hint = file
+		.metadata()
+		.ok()
+		.and_then(|meta| usize::try_from(meta.len()).ok())
+		.filter(|&len| len <= limit)
+		.unwrap_or(0);
+	let mut bytes = Vec::new();
+	let mut block = [0; 64 * 1024];
+	loop {
+		let room = (limit - bytes.len()).min(block.len());
+		// Once full, read the sentinel into the stack buffer.
+		let n = match file.read(&mut block[..room.max(1)]) {
+			Ok(0) => return Ok(Ok(bytes)),
+			Ok(n) => n,
+			Err(e) if e.kind() == ErrorKind::Interrupted => continue,
+			Err(e) => return Ok(Err(e)),
+		};
+		if room == 0 {
+			return Err(OpaqueProducerLimit);
+		}
+		let needed = bytes.len() + n;
+		let old = bytes.capacity();
+		if needed > old {
+			let growth = if old == 0 {
+				hint
+			} else {
+				old.saturating_mul(2).min(allowance - old)
+			};
+			let capacity = growth.max(needed).min(limit);
+			if capacity > allowance - old {
+				return Err(OpaqueProducerLimit);
+			}
+			bytes
+				.try_reserve_exact(capacity - bytes.len())
+				.map_err(|_| OpaqueProducerLimit)?;
+			if bytes.capacity() > allowance - old {
+				return Err(OpaqueProducerLimit);
+			}
+		}
+		bytes.extend_from_slice(&block[..n]);
+	}
+}
 
 #[cfg(feature = "generated")]
 pub(crate) fn csv_session(
 	path: &str,
 	schema: Arc<p::Schema>,
+	allowance: usize,
 ) -> Result<Result<p::DataFrame, String>, crate::rune::host::OpaqueProducerLimit> {
 	use crate::rune::host::OpaqueProducerLimit;
-	use polars_io::{csv::read::SplitLines, utils::compression::SupportedCompression};
-	use std::io::{Cursor, Read};
-	const BYTES: usize = 64 * 1024;
-	const LINES: usize = 2_048;
+	use polars_io::utils::compression::SupportedCompression;
+	use std::io::Cursor;
+
+	// The bounded normal formatter has no symbolized backtrace or forced panic.
+	for setting in ["POLARS_PANIC_ON_ERR", "POLARS_BACKTRACE_IN_ERR"] {
+		if std::env::var_os(setting).as_deref() == Some(std::ffi::OsStr::new("1")) {
+			return Ok(Err(format!(
+				"polars read_csv: {setting}=1 is unavailable in bounded execution sessions"
+			)));
+		}
+	}
 
 	let file = match regular(path) {
 		Ok(file) => file,
 		Err(error) => return Ok(Err(error)),
 	};
-	let mut bytes = Vec::new();
-	bytes
-		.try_reserve_exact(BYTES + 1)
-		.map_err(|_| OpaqueProducerLimit)?;
-	if let Err(error) = file.take((BYTES + 1) as u64).read_to_end(&mut bytes) {
-		return Ok(Err(format!("polars read_csv {path:?}: {error}")));
-	}
-	if bytes.len() > BYTES || SupportedCompression::check(&bytes).is_some() {
+	let bytes = match csv_snapshot(file, allowance)? {
+		Ok(bytes) => bytes,
+		Err(error) => return Ok(Err(format!("polars read_csv {path:?}: {error}"))),
+	};
+	if SupportedCompression::check(&bytes).is_some() {
 		return Err(OpaqueProducerLimit);
 	}
-	// Count physical lines even inside quotes as a conservative record-work bound.
-	let lines = bytes.iter().filter(|&&b| b == b'\n').count()
-		+ usize::from(!bytes.is_empty() && !bytes.ends_with(b"\n"));
-	if lines > LINES {
+	let remaining = allowance
+		.checked_sub(bytes.capacity())
+		.ok_or(OpaqueProducerLimit)?;
+	let layout =
+		csv_budget::Snapshot::scan(&bytes, &schema, remaining).ok_or(OpaqueProducerLimit)?;
+	let threads = polars_core::runtime::RAYON.current_num_threads();
+	let header = layout
+		.phase(&schema, threads, true)
+		.ok_or(OpaqueProducerLimit)?;
+	let body = layout
+		.phase(&schema, threads, false)
+		.ok_or(OpaqueProducerLimit)?;
+	if header.max(body) > remaining {
 		return Err(OpaqueProducerLimit);
 	}
-	// The header reader infers its width. Charge separators conservatively
-	// before that inference, including any that occur inside quoted fields.
-	if SplitLines::new(&bytes, Some(b'"'), b'\n', None).any(|record| {
-		record
-			.iter()
-			.filter(|&&b| b == b',')
-			.take(CSV_SESSION_COLUMNS)
-			.count() == CSV_SESSION_COLUMNS
-	}) {
-		return Err(OpaqueProducerLimit);
-	}
-	// The pinned parser derives body buffers from row counts and schema width.
-	// The byte/line/column limits cap both passes on the immutable snapshot.
-	// Keep the legacy options, including chunking, for parse-error parity.
+	// Preserve chunking and offsets for the legacy parse diagnostics.
 	let result = csv_header(Cursor::new(&bytes), &schema)
 		.and_then(|()| csv_body(Cursor::new(&bytes), schema));
 	Ok(result.map_err(|error| format!("polars read_csv {path:?}: {error}")))

@@ -1,6 +1,44 @@
 //! Sticky interactive engine choice shared by terminal and notebook sessions.
 use super::{Failure, Session, domain_session::DomainSession};
 pub(crate) use crate::dep_wire::EngineChoice;
+use rune::experimental_core::heap::Limits;
+
+fn store_limits(setting: Option<&std::ffi::OsStr>) -> crate::Result<Limits> {
+	let mut limits = super::execution_store_limits();
+	if let Some(setting) = setting {
+		limits.bytes = setting
+			.to_str()
+			.filter(|text| text.bytes().all(|byte| byte.is_ascii_digit()))
+			.and_then(|text| text.parse::<usize>().ok())
+			.filter(|&bytes| bytes > 0 && bytes <= isize::MAX as usize)
+			.ok_or(
+				"RNX_SESSION_STORE_BYTES must be a positive decimal byte count no greater than isize::MAX",
+			)?;
+	}
+	Ok(limits)
+}
+
+#[cfg(test)]
+#[test]
+fn execution_store_allowance_is_a_positive_supported_byte_count() {
+	use std::ffi::OsStr;
+	assert_eq!(store_limits(None).unwrap().bytes, 512 * 1024 * 1024);
+	assert_eq!(
+		store_limits(Some(OsStr::new("1048576"))).unwrap().bytes,
+		1048576
+	);
+	for rejected in ["", "0", "-1", "+1", "1 ", "1M", "999999999999999999999999"] {
+		assert!(
+			store_limits(Some(OsStr::new(rejected))).is_err(),
+			"{rejected}"
+		);
+	}
+	#[cfg(unix)]
+	{
+		use std::os::unix::ffi::OsStrExt;
+		assert!(store_limits(Some(OsStr::from_bytes(b"\xff"))).is_err());
+	}
+}
 pub(crate) enum InteractiveSession {
 	Legacy(Box<Session>),
 	Execution(Box<DomainSession>),
@@ -20,8 +58,9 @@ impl InteractiveSession {
 		presenters: crate::present::Presenters,
 	) -> crate::Result<Self> {
 		if engine == EngineChoice::Execution {
+			let limits = store_limits(std::env::var_os("RNX_SESSION_STORE_BYTES").as_deref())?;
 			Ok(Self::Execution(Box::new(
-				DomainSession::for_frontend(context, ceiling, frontend)?
+				DomainSession::with_store_limits(context, ceiling, frontend, limits)?
 					.with_http(http)
 					.with_lifecycle(lifecycle)
 					.with_presenters(presenters),

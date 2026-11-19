@@ -12,7 +12,18 @@ use std::{
 };
 
 fn capture(dir: &Path, label: &str, args: &[&str], input: &str) -> Output {
-	let mut child = Command::new("/usr/bin/timeout")
+	capture_with_allowance(dir, label, args, input, None)
+}
+
+fn capture_with_allowance(
+	dir: &Path,
+	label: &str,
+	args: &[&str],
+	input: &str,
+	allowance: Option<&str>,
+) -> Output {
+	let mut command = Command::new("/usr/bin/timeout");
+	command
 		.args([
 			"--kill-after=2s",
 			"60s",
@@ -24,6 +35,13 @@ fn capture(dir: &Path, label: &str, args: &[&str], input: &str) -> Output {
 		.env("RNX_CONFIG", "")
 		.env("RNX_HISTORY", "/dev/null")
 		.env_remove("RNX_MEMORY_CEILING")
+		.env_remove("RNX_SESSION_STORE_BYTES");
+	if let Some(allowance) = allowance {
+		command
+			.env("RNX_SESSION_STORE_BYTES", allowance)
+			.env("POLARS_MAX_THREADS", "1");
+	}
+	let mut child = command
 		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
@@ -202,10 +220,10 @@ fn csv_on_the_checked_session_retains_the_frame_and_preserves_string_errors() {
 	assert!(output.contains("could not parse `nope`"), "{output}");
 	assert!(String::from_utf8_lossy(&new.stderr).contains("No local variable `frame`"));
 
-	let bytes = write("bytes.csv", &vec![b'x'; 64 * 1024 + 1]);
+	let bytes = write("bytes.csv", &vec![b'x'; 1024 * 1024 + 1]);
 	let rows = write(
 		"rows.csv",
-		format!("name,amount\n{}", "a,1\n".repeat(2_048)).as_bytes(),
+		format!("name,amount\n{}", "a,1\n".repeat(100_000)).as_bytes(),
 	);
 	let compressed = write("compressed.csv", &[0x1f, 0x8b, 0, 0]);
 	let input = format!(
@@ -223,7 +241,8 @@ fn csv_on_the_checked_session_retains_the_frame_and_preserves_string_errors() {
 		schema = schema,
 		good = good
 	);
-	let bounded = capture(&root, "bounds", &["repl", "--engine=execution"], &input);
+	let execution = ["repl", "--engine=execution"];
+	let bounded = capture_with_allowance(&root, "bounds", &execution, &input, Some("1048576"));
 	let stderr = String::from_utf8(bounded.stderr).unwrap();
 	assert_eq!(stderr.matches("StoreCapacity").count(), 3, "{stderr}");
 	assert!(stderr.contains("arity"), "{stderr}");
@@ -231,6 +250,34 @@ fn csv_on_the_checked_session_retains_the_frame_and_preserves_string_errors() {
 	for name in ["bytes", "rows", "compressed", "prefix-effect"] {
 		assert!(!stdout.contains(name), "{stdout}");
 	}
+
+	// This file crosses both old limits. Each frame fits on its own. Retaining
+	// the first takes enough Store credit away to refuse the second parse.
+	let scaled = write(
+		"scaled.csv",
+		format!("name,amount\n{}", "abcdefghijkl,1\n".repeat(20_000)).as_bytes(),
+	);
+	let load = format!("let first = polars::read_csv({scaled}, {schema})?; first.width()\n");
+	let old = capture(
+		&root,
+		"scaled-legacy",
+		&["repl", "--engine=legacy"],
+		&format!("{load}:quit\n"),
+	);
+	assert_eq!(transcript(&old.stdout), "2\n");
+	let input = format!(
+		"{load}let second = polars::read_csv({scaled}, {schema})?; second.width()\n:reset\n{load}:quit\n"
+	);
+	let scaled = capture_with_allowance(
+		&root,
+		"scaled-execution",
+		&execution,
+		&input,
+		Some("2200000"),
+	);
+	assert_eq!(transcript(&scaled.stdout), "2\nsession reset\n2\n");
+	let stderr = String::from_utf8(scaled.stderr).unwrap();
+	assert_eq!(stderr.matches("StoreCapacity").count(), 1, "{stderr}");
 
 	let file = root.join("file.rn");
 	fs::write(

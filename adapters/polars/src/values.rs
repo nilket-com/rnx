@@ -52,7 +52,8 @@ fn schema_dtype(kind: &str) -> Result<p::DataType, String> {
 #[cfg(feature = "generated")]
 pub(crate) fn csv_schema_session(
 	tree: &rune::host::OwnedTreeInput,
-) -> Result<Result<Arc<p::Schema>, String>, rune::host::OpaqueProducerLimit> {
+	path_bytes: usize,
+) -> Result<Result<(Arc<p::Schema>, usize), String>, rune::host::OpaqueProducerLimit> {
 	use rune::host::{OpaqueProducerLimit, TreeKind};
 	let Some(root) = tree
 		.node(0)
@@ -60,16 +61,34 @@ pub(crate) fn csv_schema_session(
 	else {
 		return Ok(Err("polars read_csv: schema must be a vector".into()));
 	};
-	if root.frontier() || root.len() > crate::files::CSV_SESSION_COLUMNS {
+	if root.frontier() {
 		return Err(OpaqueProducerLimit);
 	}
 	if root.is_empty() {
 		return Ok(Err("polars read_csv: schema must not be empty".into()));
 	}
-	let result = (|| {
-		let mut fields = Vec::with_capacity(root.len());
-		let mut names = HashSet::with_capacity(root.len());
-		for i in 0..root.len() {
+	// The path bridge string and possible renderings stay live at this
+	// boundary. The per-column charge covers the field vector, duplicate
+	// set and both index and value storage of the final Polars Schema.
+	let planning = path_bytes
+		.checked_mul(16)
+		.and_then(|path| path.checked_add(4096))
+		.and_then(|path| path.checked_add(root.len().checked_mul(512)?))
+		.ok_or(OpaqueProducerLimit)?;
+	let mut remaining = tree
+		.remaining_bytes()
+		.and_then(|limit| limit.checked_sub(planning))
+		.ok_or(OpaqueProducerLimit)?;
+	let mut fields = Vec::new();
+	fields
+		.try_reserve_exact(root.len())
+		.map_err(|_| OpaqueProducerLimit)?;
+	let mut names = HashSet::new();
+	names
+		.try_reserve(root.len())
+		.map_err(|_| OpaqueProducerLimit)?;
+	for i in 0..root.len() {
+		let field = (|| -> Result<_, String> {
 			let tuple = root
 				.child(i)
 				.and_then(|(_, child)| tree.node(child))
@@ -99,11 +118,21 @@ pub(crate) fn csv_schema_session(
 				return Err("polars read_csv: schema names must be nonempty and unique".into());
 			}
 			let kind = field(1).ok_or("polars read_csv: dtype must be a string")?;
-			fields.push((p::PlSmallStr::from_str(name), schema_dtype(kind)?));
-		}
-		Ok(Arc::new(p::Schema::from_iter(fields)))
-	})();
-	Ok(result)
+			Ok((name, schema_dtype(kind)?))
+		})();
+		let (name, dtype) = match field {
+			Ok(field) => field,
+			Err(error) => return Ok(Err(error)),
+		};
+		remaining = name
+			.len()
+			.checked_mul(4)
+			.and_then(|bytes| remaining.checked_sub(bytes))
+			.ok_or(OpaqueProducerLimit)?;
+		fields.push((p::PlSmallStr::from_str(name), dtype));
+	}
+	drop(names);
+	Ok(Ok((Arc::new(p::Schema::from_iter(fields)), remaining)))
 }
 pub(crate) fn literal(value: rune::Value) -> Result<Expr, String> {
 	let expr = if let Ok(v) = value.as_bool() {

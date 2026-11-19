@@ -23,6 +23,18 @@ fn context(zero_charge: bool) -> rune::Context {
 	} else {
 		build(&mut module).unwrap();
 	}
+	module
+		.host_function_tree_input(
+			"remaining",
+			|_: rune::Value| -1i64,
+			|input: rune::host::OwnedTreeInput| {
+				input
+					.remaining_bytes()
+					.and_then(|bytes| i64::try_from(bytes).ok())
+					.unwrap_or(-1)
+			},
+		)
+		.unwrap();
 	context.install(module).unwrap();
 	context
 }
@@ -95,49 +107,42 @@ fn loaded_frame_charges_the_data_and_releases_the_allowance() {
 	let program = format!(
 		"pub fn main(s) {{ let frame = polars::read_csv({quoted}, [(\"a\", \"i64\")])?; (#{{}}, frame) }}"
 	);
-	let minimum = |context: &rune::Context| {
-		let (mut lower, mut upper) = (1, 64 * 1024);
-		while lower < upper {
-			let mid = lower + (upper - lower) / 2;
-			let mut domain = domain(context, mid);
-			match frame_from_program(&mut domain, context, &program) {
-				Ok(root) => {
-					domain.release(root).unwrap();
-					upper = mid;
-				}
-				Err(ErrorKind::StoreCapacity) => lower = mid + 1,
-				Err(error) => panic!("CSV charge control failed: {error:?}"),
-			}
-			domain.close().unwrap();
-		}
-		assert!(lower < 64 * 1024);
-		lower
+	let measured = |zero_charge| {
+		let context = context(zero_charge);
+		let mut domain = domain(&context, 16 * 1024 * 1024);
+		let remaining = |domain: &mut ProgramDomain| {
+			let envelope = frame_from_program(
+				domain,
+				&context,
+				"pub fn main(s) { let bytes = polars::remaining([]); (#{}, bytes) }",
+			)
+			.unwrap();
+			let answer = domain.get(&envelope, 1).unwrap();
+			let Some(rune::experimental_core::value::Scalar::I64(bytes)) =
+				domain.scalar(&answer).unwrap()
+			else {
+				panic!("unexpected allowance probe value");
+			};
+			domain.release(answer).unwrap();
+			domain.release(envelope).unwrap();
+			bytes
+		};
+		let before = remaining(&mut domain);
+		assert!(before > 0);
+		let root = frame_from_program(&mut domain, &context, &program).unwrap();
+		let during = remaining(&mut domain);
+		domain.release(root).unwrap();
+		domain.collect_programs().unwrap();
+		assert_eq!(domain.live_counts(), (0, 0, 0));
+		assert_eq!(remaining(&mut domain), before);
+		domain.close().unwrap();
+		before - during
 	};
-	let reference = minimum(&context(true));
 	let charge = std::mem::size_of::<DataFrame>() + ROWS * std::mem::size_of::<i64>();
-	let actual = context(false);
-	let required = minimum(&actual);
-	// The bounded schema snapshot can set the minimum in the zero-charge
-	// control. Its fixed scratch ceiling is independent of the retained frame.
-	assert!(reference < charge);
-	assert!((charge..=charge + reference).contains(&required));
-	let mut tight = domain(&actual, required - 1);
-	assert!(matches!(
-		frame_from_program(&mut tight, &actual, &program),
-		Err(ErrorKind::StoreCapacity)
-	));
-	tight.collect_programs().unwrap();
-	assert_eq!(tight.live_counts(), (0, 0, 0));
-	tight.close().unwrap();
-	let mut exact = domain(&actual, required);
-	for _ in 0..2 {
-		let root = frame_from_program(&mut exact, &actual, &program).unwrap();
-		assert_eq!(exact.live_counts().1, 1);
-		exact.release(root).unwrap();
-		exact.collect_programs().unwrap();
-		assert_eq!(exact.live_counts(), (0, 0, 0));
-	}
-	exact.close().unwrap();
+	assert_eq!(
+		measured(false) - measured(true),
+		i64::try_from(charge).unwrap()
+	);
 	std::fs::remove_file(path).unwrap();
 }
 
@@ -170,7 +175,7 @@ fn checked_csv_parser_bounded_input_edges() {
 	// Warm the shared parser pool before the focused allocation observation.
 	std::fs::write(&path, "n\n42\n").unwrap();
 	assert_eq!(
-		files::csv_session(path_str, numeric.clone())
+		files::csv_session(path_str, numeric.clone(), 64 * 1024 * 1024)
 			.unwrap()
 			.unwrap()
 			.height(),
@@ -201,7 +206,7 @@ fn checked_csv_parser_bounded_input_edges() {
 		std::fs::write(&path, csv).unwrap();
 		let live = rnx::allocation::live().unwrap();
 		rnx::allocation::reset_peak();
-		let parsed = files::csv_session(path_str, schema).unwrap();
+		let parsed = files::csv_session(path_str, schema, 64 * 1024 * 1024).unwrap();
 		let extra = rnx::allocation::peak().saturating_sub(live);
 		eprintln!("checked CSV {label}: peak tracked allocation above baseline {extra} bytes");
 		match height {

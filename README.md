@@ -84,6 +84,13 @@ REPL-only; file and one-shot eval routing are unchanged. REPL arguments are now
 validated: unknown options or trailing arguments that were previously ignored
 are reported as errors.
 
+Execution REPL, worker and Jupyter sessions have a separate data allowance.
+Set `RNX_SESSION_STORE_BYTES` to a positive decimal byte count before starting
+the session (default 512 MiB). The same allowance applies after `:reset`.
+Retained values consume this allowance, and the checked two-argument Polars CSV
+loader also uses the available allowance to check the input and parser's peak
+allocation before parsing. This setting is separate from `RNX_MEMORY_CEILING`.
+
 Execution sessions support direct `time::sleep(...).await`, `http::get(...).await`
 and `http::request(...).await` in the input, including blocks and loops, and in
 script `async fn` bodies called directly as `f(args).await`. Async declarations
