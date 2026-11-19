@@ -17,6 +17,7 @@ enum Path {
 enum Opaque {
 	Factory,
 	Method,
+	ResultMethod,
 }
 
 #[derive(Default)]
@@ -53,12 +54,17 @@ impl FunctionAttrs {
 				out.keep = true;
 			} else if ident == "vm_result" {
 				out.vm_result = true;
-			} else if ident == "opaque_factory" || ident == "opaque_method" {
+			} else if ident == "opaque_factory"
+				|| ident == "opaque_method"
+				|| ident == "opaque_result_method"
+			{
 				if out.opaque.is_some() {
 					return Err(syn::Error::new(ident.span(), "Duplicate opaque enrollment"));
 				}
 				out.opaque = Some(if ident == "opaque_factory" {
 					Opaque::Factory
+				} else if ident == "opaque_result_method" {
+					Opaque::ResultMethod
 				} else {
 					Opaque::Method
 				});
@@ -221,7 +227,7 @@ impl Function {
 				&& !attrs.vm_result
 				&& match opaque {
 					Opaque::Factory => !instance && attrs.self_type.is_some(),
-					Opaque::Method => instance,
+					Opaque::Method | Opaque::ResultMethod => instance,
 				};
 			if !valid {
 				return Err(syn::Error::new(
@@ -341,6 +347,7 @@ impl Function {
 		let meta_kind = syn::Ident::new(
 			match attrs.opaque {
 				Some(Opaque::Method) => "opaque_associated_method",
+				Some(Opaque::ResultMethod) => "opaque_associated_result_method",
 				_ if instance => "instance",
 				_ => "function",
 			},

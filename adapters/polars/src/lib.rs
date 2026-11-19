@@ -328,6 +328,17 @@ fn oracle_repr(v: rune::Value) -> Result<String, String> {
 	))
 }
 
+#[cfg(all(
+	feature = "generated",
+	feature = "test-support",
+	target_pointer_width = "64"
+))]
+fn install_height_fixture(m: &mut rune::Module) -> Result<(), rune::ContextError> {
+	m.opaque_factory("height_overflow_fixture", || {
+		DataFrame(p::DataFrame::empty_with_height(i64::MAX as usize + 1))
+	})
+}
+
 /// Install into an rnx-created `polars` module. All native values remain opaque.
 pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String> {
 	#[cfg(feature = "test-support")]
@@ -344,6 +355,12 @@ pub fn build(m: &mut rune::Module) -> Result<Vec<(String, &'static str)>, String
 	#[cfg(feature = "generated")]
 	m.opaque_type::<DataFrame>(dataframe_bytes, display_fmt)
 		.map_err(err)?;
+	#[cfg(all(
+		feature = "generated",
+		feature = "test-support",
+		target_pointer_width = "64"
+	))]
+	install_height_fixture(m).map_err(err)?;
 	#[cfg(not(feature = "generated"))]
 	m.ty::<DataFrame>().map_err(err)?;
 	m.ty::<LazyFrame>().map_err(err)?;

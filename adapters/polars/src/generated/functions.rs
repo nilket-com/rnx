@@ -6189,7 +6189,7 @@ fn f_8c496439__stable_polars_core__frame__dataframe__dataframe(this: &DataFrame,
 fn f_b53f857e_e__head_polars_core__frame__dataframe__dataframe(this: &DataFrame, length: Option<i64>) -> Result<DataFrame, Error> { let __arg0 = &this.0; let __arg1 = match length { Some(v) => Some(support::narrow::<usize>(v, "v")?), None => None }; let __r = crate::engine::run("polars::DataFrame::head", move || <polars::frame::DataFrame>::head(__arg0, __arg1)).map_err(Error::engine)?; Ok(DataFrame(__r)) }
 /// Get the height of the [`DataFrame`] which is the number of rows.
 /// Polars: `polars_core::frame::dataframe::DataFrame::height`. height() -> int (checked into range) (fallible)
-#[rune::function(instance, path = height)]
+#[rune::function(instance, path = height, opaque_result_method)]
 fn f_bc8385b3__height_polars_core__frame__dataframe__dataframe(this: &DataFrame) -> Result<i64, Error> { let __arg0 = &this.0; let __r = crate::engine::run("polars::DataFrame::height", move || <polars::frame::DataFrame>::height(__arg0)).map_err(Error::engine)?; Ok(support::widen::<usize>(__r, "height")?) }
 /// Add multiple [`Series`] to a [`DataFrame`]. The added `Series` are required to have the same length.
 /// Polars: `polars_core::frame::dataframe::DataFrame::hstack`. hstack(columns: vector of Column) -> result of DataFrame (fallible)

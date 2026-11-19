@@ -186,6 +186,7 @@ impl Scan {
 				let class = match mark.to_string().as_str() {
 					"opaque_factory" => "opaque-factory",
 					"opaque_method" => "opaque-method",
+					"opaque_result_method" => "opaque-result-method",
 					_ => continue,
 				};
 				self.opaque_marks.push((name.to_string(), class));

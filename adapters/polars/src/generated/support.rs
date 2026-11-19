@@ -1724,6 +1724,27 @@ pub(crate) fn materialize_unknown_with<I: Iterator, T>(
 	}
 }
 
+#[rune::function(instance, path = kind, opaque_method)]
+fn error_kind(error: &Error) -> String {
+	error.0.clone()
+}
+
+fn error_bytes(error: &Error) -> usize {
+	std::mem::size_of::<Error>()
+		.saturating_add(error.0.capacity())
+		.saturating_add(error.1.capacity())
+}
+
+#[cfg(test)]
+#[test]
+fn native_error_charge_includes_both_string_allocations() {
+	let error = Error(String::with_capacity(80), String::with_capacity(240));
+	assert_eq!(
+		error_bytes(&error),
+		std::mem::size_of::<Error>() + error.0.capacity() + error.1.capacity()
+	);
+}
+
 impl Error {
 	pub(crate) fn conversion(what: &str) -> Error {
 		Error("ConversionError".into(), what.to_string())
@@ -1736,15 +1757,10 @@ impl Error {
 			| crate::engine::EngineFailure::Reentry(text) => Error("CallbackError".into(), text),
 		}
 	}
-	#[rune::function(instance, path = kind)]
-	fn kind(&self) -> String {
-		self.0.clone()
-	}
 	#[rune::function(instance, path = message)]
 	fn message(&self) -> String {
 		self.1.clone()
 	}
-	#[rune::function(instance, protocol = DISPLAY_FMT)]
 	fn display(&self, f: &mut Formatter) -> rune::runtime::VmResult<()> {
 		use rune::alloc::fmt::TryWrite;
 		let s = &self.1;
@@ -2278,7 +2294,7 @@ impl ArrayRef {
 }
 
 pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
-	m.ty::<Error>()?;
+	m.opaque_type::<Error>(error_bytes, Error::display)?;
 	m.ty::<ArrayRef>()?;
 	m.function_meta(ArrayRef::values_i64)?;
 	m.function_meta(ArrayRef::values_str)?;
@@ -2292,9 +2308,8 @@ pub fn install(m: &mut rune::Module) -> Result<(), rune::ContextError> {
 	m.function_meta(Sink::limit)?;
 	m.function_meta(Sink::clear__meta)?;
 	m.function_meta(callback::set_callback_budget)?;
-	m.function_meta(Error::kind)?;
+	m.function_meta(error_kind)?;
 	m.function_meta(Error::message)?;
-	m.function_meta(Error::display)?;
 	#[cfg(feature = "test-support")]
 	m.function_meta(set_materialize_limit)?;
 	#[cfg(feature = "test-support")]

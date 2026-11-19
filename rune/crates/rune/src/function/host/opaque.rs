@@ -85,6 +85,7 @@ pub(crate) struct State {
 	pub(crate) types: crate::hash::Map<Registration>,
 	pub(crate) factories: crate::hash::Map<NativeType>,
 	pub(crate) methods: crate::hash::Map<NativeType>,
+	pub(crate) method_errors: crate::hash::Map<NativeType>,
 }
 
 #[derive(Clone, Copy, crate::alloc::prelude::TryClone)]
@@ -112,7 +113,12 @@ impl State {
 				});
 			}
 		}
-		for native in self.factories.values().chain(self.methods.values()) {
+		for native in self
+			.factories
+			.values()
+			.chain(self.methods.values())
+			.chain(self.method_errors.values())
+		{
 			let registered = self.types.get(&native.hash);
 			if !registered.is_some_and(|r| r.descriptor.type_id == native.id) {
 				return Err(crate::ContextError::OpaqueType {
@@ -134,6 +140,9 @@ impl State {
 		}
 		for (hash, value) in &other.methods {
 			next.methods.try_insert(*hash, *value)?;
+		}
+		for (hash, value) in &other.method_errors {
+			next.method_errors.try_insert(*hash, *value)?;
 		}
 		Ok(next)
 	}

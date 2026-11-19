@@ -65,6 +65,8 @@ pub enum HostOutputKind {
 	OwnedTree,
 	/// A checked producer's Result<native, String>, or a terminal resource limit.
 	OpaqueResultString,
+	/// The registered shared method returns Result<scalar, enrolled native error>.
+	ScalarResultNative(HostType),
 }
 
 /// A checked opaque producer reached its input or work ceiling.
@@ -218,7 +220,14 @@ impl TryClone for HostSignature {
 impl HostSignature {
 	pub(crate) fn valid(self) -> bool {
 		self.arity <= 4
-			&& (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
+			&& match self.output {
+				HostOutputKind::ScalarResultNative(ok) => {
+					self.arity == 1
+						&& self.arguments[0] == HostType::OpaqueShared
+						&& !matches!(ok, HostType::OpaqueShared | HostType::OwnedTreeInput)
+				}
+				_ => true,
+			} && (self.output != HostOutputKind::OpaqueOwned || self.arity == 0)
 			&& (self.output != HostOutputKind::OpaqueResultString
 				|| (self.arity == 2
 					&& self.arguments[..2] == [HostType::String, HostType::OwnedTreeInput]))

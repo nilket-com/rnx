@@ -12,6 +12,7 @@ pub(crate) enum Fact {
 	Plain,
 	Exact(Hash),
 	ResultOfNative(Hash),
+	NativeErrorResult(Hash),
 	Maybe,
 }
 impl Fact {
@@ -21,6 +22,9 @@ impl Fact {
 			(Self::Plain, Self::Plain) => Self::Plain,
 			(Self::Exact(a), Self::Exact(b)) if a == b => Self::Exact(a),
 			(Self::ResultOfNative(a), Self::ResultOfNative(b)) if a == b => Self::ResultOfNative(a),
+			(Self::NativeErrorResult(a), Self::NativeErrorResult(b)) if a == b => {
+				Self::NativeErrorResult(a)
+			}
 			_ => Self::Maybe,
 		}
 	}
@@ -35,10 +39,47 @@ pub(crate) struct Envelope {
 	pub(crate) delta: Vec<String>,
 }
 
+/// Transfer along the sole input of a checked call or pattern projection.
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum Projection {
+	#[default]
+	Identity,
+	Method(Hash),
+	Success,
+	Error,
+}
+
+impl Projection {
+	fn apply(self, input: Fact, context: &Context) -> Fact {
+		match (self, input) {
+			(Self::Identity, value) => value,
+			(_, Fact::Bottom) => Fact::Bottom,
+			(Self::Method(name), Fact::Exact(receiver)) => context
+				.opaque
+				.method_errors
+				.get(&Hash::associated_function(receiver, name))
+				.map_or(Fact::Plain, |native| Fact::NativeErrorResult(native.hash)),
+			(Self::Method(_), Fact::Plain) => Fact::Plain,
+			(Self::Method(_), _) => Fact::Maybe,
+			(Self::Success, Fact::NativeErrorResult(_)) => Fact::Plain,
+			(Self::Error, Fact::NativeErrorResult(hash)) => Fact::Exact(hash),
+			(_, value) => value,
+		}
+	}
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum TypedUse {
+	Try,
+	Match,
+}
+
 struct Node {
 	seed: Fact,
 	edges: Vec<usize>,
 	unwrapped: bool,
+	projection: Projection,
+	typed_use: Option<TypedUse>,
 }
 pub(crate) struct Proof {
 	facts: Vec<Fact>,
@@ -108,6 +149,29 @@ fn simple(pat: &hir::Pat<'_>) -> Option<hir::Variable> {
 	}
 }
 
+fn result_arm(branch: &hir::ExprMatchBranch<'_>) -> Option<(Projection, Option<hir::Variable>)> {
+	let hir::PatKind::Sequence(sequence) = branch.pat.pat.kind else {
+		return None;
+	};
+	let hir::PatSequenceKind::Type { hash, variant_hash } = sequence.kind else {
+		return None;
+	};
+	let [inner] = sequence.items else { return None };
+	if branch.condition.is_some() || hash != crate::hash_in!(crate, ::std::result::Result) {
+		return None;
+	}
+	let projection = if variant_hash == crate::hash_in!(crate, ::std::result::Result::Ok) {
+		Projection::Success
+	} else if variant_hash == crate::hash_in!(crate, ::std::result::Result::Err) {
+		Projection::Error
+	} else {
+		return None;
+	};
+	let variable = simple(inner);
+	(variable.is_some() || matches!(inner.kind, hir::PatKind::Ignore))
+		.then_some((projection, variable))
+}
+
 struct Builder<'a, 'hir> {
 	exprs: &'a hir::Exprs<'hir>,
 	context: &'a Context,
@@ -142,6 +206,8 @@ impl Builder<'_, '_> {
 			seed,
 			edges: Vec::new(),
 			unwrapped: false,
+			projection: Projection::Identity,
+			typed_use: None,
 		})?;
 		Ok(id)
 	}
@@ -414,6 +480,39 @@ impl Builder<'_, '_> {
 		}
 	}
 
+	fn direct_method(&self, id: hir::ExprId) -> bool {
+		matches!(self.exprs.get(id).kind, hir::ExprKind::Call(c) if matches!(c.call, hir::Call::Associated { .. }))
+	}
+
+	/// Only a resolved, exhaustive Ok/Err pair directly consuming a method
+	/// result can reveal an exact native error. Guards and nested patterns
+	/// retain the ordinary pattern checks.
+	fn match_projections(&mut self, m: &hir::ExprMatch<'_>) -> Result<bool> {
+		if !self.direct_method(m.expr) {
+			return Ok(false);
+		}
+		let [first, second] = m.branches else {
+			return Ok(false);
+		};
+		let (Some(a), Some(b)) = (result_arm(first), result_arm(second)) else {
+			return Ok(false);
+		};
+		if a.0 == b.0 {
+			return Ok(false);
+		}
+		for (kind, variable) in [a, b] {
+			if let Some(variable) = variable {
+				let projection = self.node(Fact::Bottom)?;
+				self.nodes[projection].projection = kind;
+				self.edge(projection, m.expr.index())?;
+				let binding = self.variable(variable)?;
+				self.edge(binding, projection)?;
+			}
+		}
+		self.nodes[m.expr.index()].typed_use = Some(TypedUse::Match);
+		Ok(true)
+	}
+
 	fn graph(&mut self, item: &hir::ItemFn<'_>) -> Result<()> {
 		self.block(&item.body)?;
 		for arg in item.args {
@@ -444,6 +543,10 @@ impl Builder<'_, '_> {
 							continue;
 						}
 					}
+					if self.direct_method(v) {
+						self.nodes[v.index()].typed_use = Some(TypedUse::Try);
+						self.nodes[i].projection = Projection::Success;
+					}
 					self.edge(i, v.index())?;
 				}
 				E::Return(Some(v)) | E::Yield(Some(v)) => self.edge(i, v.index())?,
@@ -467,8 +570,11 @@ impl Builder<'_, '_> {
 					}
 				}
 				E::Match(m) => {
+					let projected = self.match_projections(m)?;
 					for b in m.branches {
-						self.local(&b.pat, m.expr)?;
+						if !projected {
+							self.local(&b.pat, m.expr)?;
+						}
 						self.edge(i, b.body.index())?;
 					}
 				}
@@ -484,7 +590,13 @@ impl Builder<'_, '_> {
 					self.block(&f.body)?;
 					self.nodes[i].seed = Fact::Plain;
 				}
-				E::Call(c) => self.nodes[i].seed = self.factory_fact(c.call),
+				E::Call(c) => match c.call {
+					hir::Call::Associated { target, hash, .. } => {
+						self.nodes[i].projection = Projection::Method(hash);
+						self.edge(i, target.index())?;
+					}
+					_ => self.nodes[i].seed = self.factory_fact(c.call),
+				},
 				E::Tuple(s) | E::Vec(s) => {
 					self.nodes[i].seed = Fact::Plain;
 					for v in s.items {
@@ -537,7 +649,8 @@ impl Builder<'_, '_> {
 			while let Some(from) = pending.pop() {
 				self.charge(reverse[from].len() + 1)?;
 				for &to in &reverse[from] {
-					let next = facts[to].join(facts[from]);
+					let next =
+						facts[to].join(self.nodes[to].projection.apply(facts[from], self.context));
 					if next != facts[to] {
 						facts[to] = next;
 						pending.try_push(to)?;
@@ -558,6 +671,18 @@ impl Builder<'_, '_> {
 		}
 		Ok(facts)
 	}
+	fn has_checked_display(&self, ty: Hash) -> bool {
+		let Some(registered) = self.context.opaque.types.get(&ty) else {
+			return false;
+		};
+		self.context
+			.lookup_function(Hash::associated_function(
+				ty,
+				&crate::runtime::Protocol::DISPLAY_FMT,
+			))
+			.is_some_and(|handler| handler.same_allocation(&registered.display_handler))
+	}
+
 	fn validate(&self, item: &hir::ItemFn<'_>, facts: &[Fact], is_entry: bool) -> Result<()> {
 		let host = |id: hir::ExprId| facts.get(id.index()).is_some_and(|f| f.opaque());
 		let variable = |v: hir::Variable| {
@@ -612,6 +737,17 @@ impl Builder<'_, '_> {
 			if matches!(facts.get(i), Some(Fact::ResultOfNative(_))) && !self.nodes[i].unwrapped {
 				return Err(fail(e.span, Refusal::OpaqueOperation));
 			}
+			if let Some(Fact::NativeErrorResult(error)) = facts.get(i) {
+				let use_site = self.nodes[i].typed_use;
+				if !(use_site == Some(TypedUse::Match)
+					|| is_entry && use_site == Some(TypedUse::Try))
+				{
+					return Err(fail(e.span, Refusal::OpaqueOperation));
+				}
+				if !self.has_checked_display(*error) {
+					return Err(fail(e.span, Refusal::OpaqueReceiver));
+				}
+			}
 			use hir::ExprKind as E;
 			let p = |id, kind| plain(id, e.span, kind);
 			match e.kind {
@@ -640,22 +776,8 @@ impl Builder<'_, '_> {
 						}
 						_ => None,
 					};
-					if let Some(hash) = introduced {
-						let registered = self
-							.context
-							.opaque
-							.types
-							.get(&hash)
-							.ok_or_else(|| fail(e.span, Refusal::OpaqueReceiver))?;
-						let effective = self.context.lookup_function(Hash::associated_function(
-							hash,
-							&crate::runtime::Protocol::DISPLAY_FMT,
-						));
-						if !effective
-							.is_some_and(|h| h.same_allocation(&registered.display_handler))
-						{
-							return Err(fail(e.span, Refusal::OpaqueReceiver));
-						}
+					if introduced.is_some_and(|ty| !self.has_checked_display(ty)) {
+						return Err(fail(e.span, Refusal::OpaqueReceiver));
 					}
 					let receiver = match c.call {
 						hir::Call::Associated { target, .. } => Some(target),
@@ -791,7 +913,10 @@ impl Builder<'_, '_> {
 						R::RangeFull => {}
 					}
 				}
-				E::Try(v) if !self.nodes.get(v.index()).is_some_and(|n| n.unwrapped) => {
+				E::Try(v)
+					if !self.nodes.get(v.index()).is_some_and(|n| n.unwrapped)
+						&& !matches!(facts.get(v.index()), Some(Fact::NativeErrorResult(_))) =>
+				{
 					p(v, Refusal::OpaqueOperation)?;
 				}
 				E::Return(Some(v)) => p(v, Refusal::OpaqueReturn)?,
@@ -810,7 +935,9 @@ impl Builder<'_, '_> {
 					}
 				}
 				E::Match(m) => {
-					p(m.expr, Refusal::OpaquePattern)?;
+					if !matches!(facts.get(m.expr.index()), Some(Fact::NativeErrorResult(_))) {
+						p(m.expr, Refusal::OpaquePattern)?;
+					}
 					for b in m.branches {
 						if let Some(c) = b.condition {
 							p(c, Refusal::OpaqueOperation)?;

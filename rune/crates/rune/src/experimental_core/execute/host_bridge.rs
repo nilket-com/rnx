@@ -396,6 +396,15 @@ impl Executor {
 					Err(value) => self.host_variant(store, Type::Result, false, Some((value, err))),
 				}
 			}
+			HostOutputKind::ScalarResultNative(kind) => {
+				let result = value
+					.borrow_ref::<core::result::Result<stock::Value, stock::Value>>()
+					.map_err(|_| error(ErrorKind::InvalidCode))?;
+				match &*result {
+					Ok(value) => self.host_variant(store, Type::Result, true, Some((value, kind))),
+					Err(native) => self.host_native_variant(store, false, native),
+				}
+			}
 			HostOutputKind::OpaqueResultString => self.host_opaque_result(store, value),
 		}
 	}
@@ -426,8 +435,18 @@ impl Executor {
 			}
 		};
 
+		self.host_native_variant(store, true, native)
+	}
+
+	#[cold]
+	fn host_native_variant(
+		&mut self,
+		store: &mut Store,
+		success: bool,
+		native: &stock::Value,
+	) -> Result<Value> {
 		let child = self.host_output(store, native, HostOutputKind::OpaqueOwned)?;
-		let parent = store.variant(Type::Result, true, Some(child));
+		let parent = store.variant(Type::Result, success, Some(child));
 		let cleanup = store.release(child);
 		match (parent, cleanup) {
 			(Ok(parent), Ok(())) => Ok(parent),
@@ -656,6 +675,42 @@ mod tests {
 			self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
 			assert!(!self.1, "native destructor witness");
 		}
+	}
+
+	#[test]
+	fn native_error_result_rolls_back_a_failed_parent_allocation() {
+		use super::minimal_tests::{executor, installed};
+		use std::sync::{
+			atomic::{AtomicUsize, Ordering},
+			Arc,
+		};
+
+		let drops = Arc::new(AtomicUsize::new(0));
+		let mut module = Module::with_item(["tiny"]).unwrap();
+		module
+			.opaque_type::<ResultNative>(|_| 64, |_, _| Ok(()))
+			.unwrap();
+		let context = installed(module);
+		let mut executor = executor(&context);
+		executor.active_host_runtime = Some(context.execution_runtime().unwrap().inner);
+		let mut store = Store::new(Limits {
+			entries: 1,
+			..Limits::default()
+		})
+		.unwrap();
+		let native = stock::Value::new(ResultNative(drops.clone(), false)).unwrap();
+		let wrapped = stock::Value::try_from(Err::<stock::Value, _>(native)).unwrap();
+		let failure = executor
+			.host_output(
+				&mut store,
+				&wrapped,
+				HostOutputKind::ScalarResultNative(HostType::I64),
+			)
+			.unwrap_err();
+		assert_eq!(failure.kind, ErrorKind::StoreCapacity);
+		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+		drop(wrapped);
+		assert_eq!(drops.load(Ordering::SeqCst), 1);
 	}
 
 	#[test]

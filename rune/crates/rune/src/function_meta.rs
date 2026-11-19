@@ -374,6 +374,7 @@ pub enum FunctionMetaKind {
 pub(crate) enum OpaqueAssociatedKind {
 	Factory,
 	Method(crate::function::host::HostType),
+	ResultMethod(crate::function::host::HostType, NativeType),
 }
 
 /// Typed enrollment minted alongside the associated handler.
@@ -409,6 +410,59 @@ impl FunctionMetaKind {
 		Ok(Self::AssociatedFunction(
 			AssociatedFunctionData::from_instance_function(name.to_instance()?, f)?,
 		))
+	}
+
+	/// Enroll the same shared-receiver handler on both engines, with a closed
+	/// scalar success and an owned, nominally checked error.
+	///
+	/// ```
+	/// #[derive(rune::Any)] struct Native;
+	/// #[derive(rune::Any)] struct ReadError;
+	/// #[rune::function(instance, opaque_result_method)]
+	/// fn read(_: &Native) -> Result<i64, ReadError> { Ok(7) }
+	/// ```
+	///
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[derive(rune::Any)] struct ReadError;
+	/// #[rune::function(instance, opaque_result_method)]
+	/// fn read(_: Native) -> Result<i64, ReadError> { Ok(7) }
+	/// ```
+	///
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[derive(rune::Any)] struct ReadError;
+	/// #[rune::function(instance, opaque_result_method)]
+	/// fn read(_: &mut Native) -> Result<i64, ReadError> { Ok(7) }
+	/// ```
+	///
+	/// ```compile_fail
+	/// #[derive(rune::Any)] struct Native;
+	/// #[derive(rune::Any)] struct ReadError;
+	/// #[rune::function(instance, opaque_result_method)]
+	/// fn read(_: &Native) -> Result<Native, ReadError> { Ok(Native) }
+	/// ```
+	#[cfg(feature = "execution")]
+	pub fn opaque_associated_result_method<T, F, S, E>(
+		name: &'static str,
+		f: F,
+	) -> alloc::Result<Self>
+	where
+		T: crate::Any + TypeOf + MaybeTypeOf,
+		S: HostScalar + MaybeTypeOf,
+		E: crate::Any + MaybeTypeOf,
+		F: for<'a> Fn(&'a T) -> Result<S, E>
+			+ InstanceFunction<(Ref<T>,), Plain, Return = Result<S, E>>,
+		Result<S, E>: MaybeTypeOf,
+	{
+		let data = AssociatedFunctionData::from_instance_function(name.to_instance()?, f)?;
+		Ok(Self::OpaqueAssociated(Box::try_new(
+			OpaqueAssociatedData {
+				data,
+				native: NativeType::of::<T>(),
+				kind: OpaqueAssociatedKind::ResultMethod(S::KIND, NativeType::of::<E>()),
+			},
+		)?))
 	}
 
 	/// An associated opaque read must use one shared receiver and return a scalar.

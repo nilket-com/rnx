@@ -807,6 +807,9 @@ pub(crate) fn emit_method_with(
 		("DataFrame", "polars_core::frame::dataframe::DataFrame::width", "&self") => {
 			", opaque_method"
 		}
+		("DataFrame", "polars_core::frame::dataframe::DataFrame::height", "&self") => {
+			", opaque_result_method"
+		}
 		_ => "",
 	};
 	let attr = if wide.is_some() {

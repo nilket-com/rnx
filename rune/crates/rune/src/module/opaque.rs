@@ -41,6 +41,19 @@ impl Module {
 		{
 			return Err(Self::associated_conflict(association)?);
 		}
+		let error_type = if let OpaqueAssociatedKind::ResultMethod(_, error) = kind {
+			let registration = self.opaque.types.get(&error.hash);
+			if !registration.is_some_and(|r| r.descriptor.type_id == error.id) {
+				return Err(ContextError::OpaqueType {
+					declared: error.info.into(),
+					registered: registration.map(|r| r.descriptor.info.into()),
+				});
+			}
+			self.opaque.method_errors.try_reserve(1)?;
+			Some(error)
+		} else {
+			None
+		};
 		let (map, arity, input, output) = match kind {
 			OpaqueAssociatedKind::Factory => (
 				&mut self.opaque.factories,
@@ -54,12 +67,21 @@ impl Module {
 				HostType::OpaqueShared,
 				HostOutputKind::Scalar(result),
 			),
+			OpaqueAssociatedKind::ResultMethod(result, _) => (
+				&mut self.opaque.methods,
+				1,
+				HostType::OpaqueShared,
+				HostOutputKind::ScalarResultNative(result),
+			),
 		};
 		map.try_reserve(1)?;
 		self.names.try_reserve(1)?;
 		self.associated.try_reserve(1)?;
 		self.names.try_insert(name)?;
 		map.try_insert(key, native)?;
+		if let Some(error) = error_type {
+			self.opaque.method_errors.try_insert(key, error)?;
+		}
 		self.push_associated_function(
 			data,
 			docs,
@@ -432,6 +454,54 @@ mod associated_metadata_tests {
 		));
 		assert_eq!(module.items.len(), 1);
 		assert_eq!(module.opaque.factories.len(), 1);
+	}
+
+	#[rune::function(instance, path = checked_read, opaque_result_method)]
+	fn checked_read(value: &Native) -> Result<i64, Impostor> {
+		Ok(value.0)
+	}
+
+	#[derive(rune::Any)]
+	#[rune(item = ::opaque_test)]
+	struct ReadError;
+
+	#[rune::function(instance, path = fallible_read, opaque_result_method)]
+	fn fallible_read(value: &Native) -> Result<i64, ReadError> {
+		Ok(value.0)
+	}
+
+	#[test]
+	fn result_method_checks_error_type_before_installing_any_association() {
+		let mut module = Module::with_crate("opaque_test").unwrap();
+		module.opaque_type::<Native>(|_| 0, |_, _| Ok(())).unwrap();
+		let before = (
+			module.associated.len(),
+			module.names.len(),
+			module.opaque.methods.len(),
+		);
+		assert!(matches!(
+			module.function_meta(fallible_read),
+			Err(ContextError::OpaqueType {
+				registered: None,
+				..
+			})
+		));
+		assert!(matches!(
+			module.function_meta(checked_read),
+			Err(ContextError::OpaqueType {
+				registered: Some(_),
+				..
+			})
+		));
+		assert_eq!(
+			before,
+			(
+				module.associated.len(),
+				module.names.len(),
+				module.opaque.methods.len()
+			)
+		);
+		assert!(module.opaque.method_errors.is_empty());
 	}
 
 	#[test]

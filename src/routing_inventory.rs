@@ -514,6 +514,24 @@ fn host_inventory(root: &Path) -> Result<Json> {
 				"m . function_meta (f_d8d3a8e8___width_polars_core__frame__dataframe__dataframe)",
 			),
 			(
+				"adapters/polars/src/generated/functions.rs",
+				"install_3",
+				"opaque-result-method",
+				"m . function_meta (f_bc8385b3__height_polars_core__frame__dataframe__dataframe)",
+			),
+			(
+				"adapters/polars/src/generated/support.rs",
+				"install",
+				"host-value",
+				"m . opaque_type :: < Error > (error_bytes , Error :: display)",
+			),
+			(
+				"adapters/polars/src/generated/support.rs",
+				"install",
+				"opaque-method",
+				"m . function_meta (error_kind)",
+			),
+			(
 				"adapters/polars/src/lib.rs",
 				"build",
 				"host-value",
@@ -537,7 +555,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	life.close()?;
 	Ok(
 		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,
-			"adapter_enrollments":{"polars":{"source_sites":enrolled.len(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
+			"adapter_enrollments":{"polars":{"source_sites":enrolled.len(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","admission":"checked-session-only"}},
 			"adapter_rule":"only the listed sites enroll for execution. Other adapter registrations remain undeclared"}),
 	)
 }

@@ -125,7 +125,7 @@ fn dataframe_crosses_checked_inputs_and_file_route_refuses_before_effects() {
 		&["repl", "--engine=execution"],
 		concat!(
 			"let frame=polars::DataFrame::empty();\n",
-			"println!(\"prefix-effect\");frame.height()\n",
+			"println!(\"prefix-effect\");frame.shape()\n",
 			"frame.width()\n",
 			":quit\n",
 		),
@@ -298,4 +298,118 @@ fn csv_on_the_checked_session_retains_the_frame_and_preserves_string_errors() {
 		String::from_utf8_lossy(&file.stderr).contains("rnx: engine=legacy refusal=OpaqueEntry")
 	);
 	fs::write(receipt, b"{\"status\":\"PASS\"}\n").unwrap();
+}
+
+#[test]
+fn retained_csv_reports_height_after_load_and_reset() {
+	let root = tempfile_for_height("retained");
+	let csv = root.join("rows.csv");
+	fs::write(&csv, "n\n10\n20\n30\n").unwrap();
+	let input = format!(
+		"let frame = polars::read_csv({}, [(\"n\",\"i64\")])?;\nframe.height()?\n:reset\npolars::DataFrame::empty().height()?\n:quit\n",
+		serde_json::to_string(csv.to_str().unwrap()).unwrap()
+	);
+	let result = capture(&root, "retained", &["repl", "--engine=execution"], &input);
+	assert!(
+		result.stderr.is_empty(),
+		"{}",
+		String::from_utf8_lossy(&result.stderr)
+	);
+	assert_eq!(transcript(&result.stdout), "3\nsession reset\n0\n");
+	let path = root.join("file.rn");
+	fs::write(
+		&path,
+		"pub fn main(args) { println!(\"file-effect\"); polars::DataFrame::empty().height()? }",
+	)
+	.unwrap();
+	let file = capture(
+		&root,
+		"file",
+		&["run", "--debug-engine", path.to_str().unwrap()],
+		"",
+	);
+	assert_eq!(file.stdout, b"file-effect\n0\n");
+	assert!(
+		String::from_utf8_lossy(&file.stderr).contains("rnx: engine=legacy refusal=OpaqueEntry")
+	);
+}
+
+fn tempfile_for_height(label: &str) -> std::path::PathBuf {
+	let root = final_output::assigned(
+		"RNX_FINAL_ROUTING_ROOT",
+		&format!("adapter-polars-height-{label}"),
+	)
+	.unwrap_or_else(|| {
+		Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+			"target/routing-cli/height-{label}-{}-{}",
+			std::process::id(),
+			SystemTime::now()
+				.duration_since(UNIX_EPOCH)
+				.unwrap()
+				.as_nanos()
+		))
+	});
+	fs::create_dir_all(&root).unwrap();
+	root
+}
+
+#[cfg(all(feature = "test-support", target_pointer_width = "64"))]
+#[test]
+fn height_exposes_a_typed_error_and_keeps_the_frame_after_propagation() {
+	let root = tempfile_for_height("conversion");
+	let execution = ["repl", "--engine=execution"];
+	let input = concat!(
+		"let f=polars::height_overflow_fixture();\n",
+		"match f.height() { Ok(x)=>x,Err(e)=>e }\n",
+		"match f.height() { Err(e)=>e.kind(),Ok(x)=>format!(\"{x}\") }\n",
+		"match f.height() { Ok(x)=>format!(\"{x}\"),Err(e)=>format!(\"{e}\") }\n",
+		"f.height()?\nf.width()\n:quit\n"
+	);
+	let result = capture(&root, "conversion", &execution, input);
+	let message = "height: 9223372036854775808 does not fit a script integer";
+	assert_eq!(
+		transcript(&result.stdout),
+		format!("{message}\n\"ConversionError\"\n\"{message}\"\n0\n")
+	);
+	assert_eq!(
+		String::from_utf8(result.stderr).unwrap(),
+		concat!(
+			"runtime error (position not in your input; :debug shows the generated source): ",
+			"Error { kind: Type, location: None, operation: \"store\", refusal: None, detail: None }\n"
+		)
+	);
+	let helper = capture(
+		&root,
+		"helper",
+		&execution,
+		concat!(
+			"fn caught() { let f=polars::height_overflow_fixture(); match f.height() { Ok(x)=>format!(\"{x}\"),Err(e)=>e.kind() } }\n",
+			"caught()\n",
+			"fn denied() { println!(\"effect\"); let f=polars::height_overflow_fixture(); let x=f.height()?; Ok(x) }\n",
+			"denied()\n:quit\n"
+		),
+	);
+	assert_eq!(transcript(&helper.stdout), "\"ConversionError\"\n");
+	let stderr = String::from_utf8(helper.stderr).unwrap();
+	assert!(
+		stderr.contains("refused: this operation on a host value") && stderr.contains("(input 3,"),
+		"{stderr}"
+	);
+	assert!(stderr.contains("Missing item denied"), "{stderr}");
+	let escape = capture(
+		&root,
+		"escapes",
+		&execution,
+		concat!(
+			"let f=polars::height_overflow_fixture();\n",
+			"println!(\"effect\"); [f.height()]\n",
+			"println!(\"effect\"); { let wrapped=f.height(); || wrapped }\n",
+			"println!(\"effect\"); std::mem::drop(f.height())\n",
+			"println!(\"effect\"); match f.height() { Ok(x)=>x,_=>0 }\n",
+			":quit\n"
+		),
+	);
+	assert_eq!(transcript(&escape.stdout), "");
+	let stderr = String::from_utf8(escape.stderr).unwrap();
+	assert_eq!(stderr.matches("refused:").count(), 4, "{stderr}");
 }
