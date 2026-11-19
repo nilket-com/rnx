@@ -118,16 +118,22 @@ fn verify_outcome(root: &Path, extra: &[&Path], route: &str, success: bool) {
 		root.join("RESULT.json").display()
 	);
 }
+/// The decoy that layout precedence must not compile when `helper/mod.rn`
+/// exists. Checked by its whole text: the debug output also contains the
+/// scratch path, whose process id and timestamp can contain any digits.
+const DECOY: &str = "pub fn value(){999}";
+
 #[test]
 fn nested_module_files_use_execution_and_keep_layout_precedence() {
-	let root = scratch("modules");
+	// "999" in the directory name keeps the path-collision case exercised.
+	let root = scratch("modules-999");
 	fs::write(
 		root.join("main.rn"),
 		"mod helper;pub fn main(args){println!(\"once\");[helper::value(),args]}",
 	)
 	.unwrap();
 	fs::create_dir(root.join("helper")).unwrap();
-	fs::write(root.join("helper.rn"), "pub fn value(){999}").unwrap();
+	fs::write(root.join("helper.rn"), DECOY).unwrap();
 	fs::write(
 		root.join("helper/mod.rn"),
 		"mod nested;pub fn value(){nested::value()}",
@@ -141,7 +147,24 @@ fn nested_module_files_use_execution_and_keep_layout_precedence() {
 		let mark = format!("--- compiled source of {}", root.join(file).display());
 		assert_eq!(text.matches(&mark).count(), 1, "{text}");
 	}
-	assert!(!text.contains("999"), "{text}");
+	assert!(text.contains("999"), "the scratch path should contain 999");
+	assert!(!text.contains(DECOY), "{text}");
+}
+
+#[test]
+fn the_layout_check_sees_the_decoy_when_it_is_compiled() {
+	// The control for the check above: with no `helper/` directory the
+	// decoy is the module, so its text must appear in the debug output.
+	let root = scratch("modules-999-flat");
+	fs::write(
+		root.join("main.rn"),
+		"mod helper;pub fn main(args){println!(\"once\");[helper::value(),args]}",
+	)
+	.unwrap();
+	fs::write(root.join("helper.rn"), DECOY).unwrap();
+	let debug = run(&root, &[], false, false, &["--debug-source"], "source");
+	let text = String::from_utf8(debug.stderr).unwrap();
+	assert_eq!(text.matches(DECOY).count(), 1, "{text}");
 }
 
 #[test]
