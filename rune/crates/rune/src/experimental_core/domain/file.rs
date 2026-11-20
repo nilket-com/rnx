@@ -97,8 +97,10 @@ impl FileModules {
 		let rt = Arc::get_mut(&mut runtime.inner).ok_or_else(invalid)?;
 		let mut selected = false;
 		for binding in program.code.file_host_bindings_mut() {
+			let unary = context.opaque.file_unary.get(&binding.hash);
 			if context.opaque.producer_inputs.contains_key(&binding.hash)
 				|| (context.opaque.producer_outputs.contains_key(&binding.hash)
+					&& unary.is_none()
 					&& !binding.signature.file_pair())
 			{
 				continue;
@@ -117,7 +119,14 @@ impl FileModules {
 								&& context.host(r.hash).is_some_and(|b| binding.same(b))
 						})
 						.ok_or_else(refuse)?;
-					if binding.signature.arity == 1 {
+					if let Some(handler) = unary {
+						if !handler.same_allocation(&reader.file)
+							|| binding.signature.arity != 1
+							|| !binding.signature.shared_producer()
+						{
+							return Err(refuse());
+						}
+					} else if binding.signature.arity == 1 {
 						let valid = context
 							.opaque
 							.factories

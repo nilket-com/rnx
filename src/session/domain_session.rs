@@ -1470,6 +1470,11 @@ mod opaque_tests {
 				|_, _, _| panic!("file handler ran"),
 			)
 			.unwrap();
+		module
+			.file_unary_producer("unary", |_: &Input| -> std::result::Result<Input, String> {
+				panic!("file unary ran in session")
+			})
+			.unwrap();
 		let mut ctx = context();
 		ctx.install(module).unwrap();
 		let mut session = DomainSession::new(ctx, DEFAULT_CEILING).unwrap();
@@ -1478,6 +1483,8 @@ mod opaque_tests {
 			"let m=pair_fixture::model(); let x=pair_fixture::input();",
 		);
 		let outcome = session.eval("let side=pair_fixture::model();let y=m.apply(x)?;y.read()");
+		assert!(matches!(outcome, Err(Failure::Refused(_))), "{outcome:?}");
+		let outcome = session.eval("let side=pair_fixture::model();let y=x.unary()?;y.read()");
 		assert!(matches!(outcome, Err(Failure::Refused(_))), "{outcome:?}");
 		assert_eq!(calls.load(SeqCst), 1);
 		assert_eq!(shown(&mut session, "x.read()"), "42");

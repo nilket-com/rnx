@@ -281,3 +281,136 @@ fn file_pair_requires_matching_descriptors_in_either_install_order() {
 		));
 	}
 }
+
+#[test]
+fn file_unary_methods_keep_their_receiver_and_handler_identity() {
+	use core::sync::atomic::{AtomicUsize, Ordering};
+	static CALLS: AtomicUsize = AtomicUsize::new(0);
+
+	let mut context = Context::with_default_modules().unwrap();
+	let mut m = Module::with_crate("fixture").unwrap();
+	m.file_path_constructor("load", |_: &str| Ok(Item), |_: &Item| 0)
+		.unwrap();
+	m.file_path_constructor("load", |_: &str| Ok(Sample(2)), |_: &Sample| 16)
+		.unwrap();
+	m.file_unary_producer("double", |v: &Sample| {
+		CALLS.fetch_add(1, Ordering::SeqCst);
+		Ok(Sample(2 * v.0))
+	})
+	.unwrap();
+	m.file_unary_producer("increment", |v: &Sample| Ok(Sample(v.0 + 1)))
+		.unwrap();
+	m.file_unary_producer("fail", |_: &Sample| Err("worker failed".into()))
+		.unwrap();
+	m.opaque_method::<Sample, _, _>("value", |v: &Sample| v.0, None)
+		.unwrap();
+	let mut installer = Installer::new(&mut context);
+	installer.install(m).unwrap();
+	let mut files = installer.finish().unwrap();
+	let compile = |files: &FileModules, body: &str| {
+		let src =
+			std::format!("pub fn main(args) {{let x=fixture::Sample::load(args[0])?; {body} }}");
+		let mut sources = Sources::new();
+		sources
+			.insert(crate::Source::memory(&src).unwrap())
+			.unwrap();
+		files.compile(
+			&mut sources,
+			&context,
+			&mut Diagnostics::new(),
+			1,
+			&mut crate::compile::NoopSourceLoader::default(),
+		)
+	};
+	for (body, reason) in [
+		(
+			"let other=fixture::Item::load(args[0])?;other.double()?.value()",
+			Refusal::OpaqueReceiver,
+		),
+		(
+			"fixture::Sample::double(x)?.value()",
+			Refusal::OpaqueReceiver,
+		),
+	] {
+		assert_eq!(compile(&files, body).err().unwrap().refusal, Some(reason));
+	}
+	let drive = |body: &str| {
+		let FileProgram::Checked(main) = compile(&files, body).unwrap() else {
+			panic!("not checked")
+		};
+		let mut run = main
+			.prepare(&["x".into()], Limits::default(), false)
+			.unwrap();
+		let outcome = run.drive(10000, |_| true, || false).unwrap();
+		run.close().unwrap();
+		outcome
+	};
+	assert!(matches!(
+		drive(
+			"let y=x.double()?.increment()?; if y.value()!=5 || x.value()!=2 {panic!(\"value\");} 0"
+		),
+		FileOutcome::Complete
+	));
+	let FileOutcome::Failed { error, .. } = drive("drop(x); x.double()?.value()") else {
+		panic!("moved")
+	};
+	use crate::experimental_core::error::{Detail, MovedAccess};
+	assert_eq!(
+		error.detail,
+		Detail::MovedArgument {
+			arg: 0,
+			access: MovedAccess::Read
+		}
+	);
+	assert_eq!(CALLS.load(Ordering::SeqCst), 1);
+	let FileProgram::Checked(main) = compile(&files, "let y=x.fail()?; y.value()").unwrap() else {
+		panic!("not checked")
+	};
+	let mut run = main
+		.prepare(&["x".into()], Limits::default(), false)
+		.unwrap();
+	assert!(matches!(
+		run.drive(10000, |_| true, || false).unwrap(),
+		FileOutcome::Complete
+	));
+	{
+		use crate::experimental_core::heap::ViewKind;
+		let view = run.result(Default::default()).unwrap();
+		let root = view.root().unwrap();
+		assert_eq!(root.kind().unwrap(), ViewKind::Result { ok: false });
+		assert_eq!(
+			root.child(0).unwrap().kind().unwrap(),
+			ViewKind::String("worker failed")
+		);
+	}
+	run.close().unwrap();
+	let key = |name: &str| {
+		Hash::associated_function(<Sample as crate::TypeHash>::HASH, Hash::ident(name))
+	};
+	let mut missing = crate::alloc::clone::TryClone::try_clone(&context.opaque).unwrap();
+	missing.file_unary.remove(&key("double"));
+	assert!(missing.validate().is_err());
+	let mut forged = crate::alloc::clone::TryClone::try_clone(&context.opaque).unwrap();
+	forged.producer_outputs.get_mut(&key("double")).unwrap().id = core::any::TypeId::of::<Item>();
+	assert!(forged.validate().is_err());
+	let wrong = files
+		.readers
+		.iter()
+		.find(|r| r.hash == key("increment"))
+		.unwrap()
+		.file
+		.clone();
+	files
+		.readers
+		.iter_mut()
+		.find(|r| r.hash == key("double"))
+		.unwrap()
+		.file = wrong;
+	assert_eq!(
+		compile(&files, "x.double()?.value()")
+			.err()
+			.unwrap()
+			.refusal,
+		Some(Refusal::OpaqueEntry)
+	);
+}

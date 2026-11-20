@@ -516,6 +516,34 @@ impl Module {
 		Ok(())
 	}
 
+	/// A file-only method returning a newly owned value of the receiver's type.
+	#[doc(hidden)]
+	pub fn file_unary_producer<T: crate::Any + TypeOf + MaybeTypeOf>(
+		&mut self,
+		name: &'static str,
+		method: fn(&T) -> Result<T, std::string::String>,
+	) -> Result<(), ContextError>
+	where
+		fn(&T) -> Result<T, std::string::String>:
+			Function<(Ref<T>,), Plain, Return = Result<T, std::string::String>>,
+	{
+		use crate::host::shared_producer::ProducerReceiver;
+		let receiver = NativeType::of::<T>();
+		let registered = self.opaque.types.get(&receiver.hash);
+		if !registered.is_some_and(|r| r.descriptor.type_id == receiver.id) {
+			return Err(ContextError::OpaqueType {
+				declared: receiver.info.into(),
+				registered: registered.map(|r| r.descriptor.info.into()),
+			});
+		}
+		let checked =
+			move |packet: ProducerReceiver| packet.produce::<T, T>(|value, _| Ok(method(value)));
+		let file = crate::runtime::FunctionHandler::new(move |stack, addr, args, out| {
+			Function::<(ProducerReceiver,), Plain>::call(&checked, stack, addr, args, out)
+		})?;
+		self.install_file_method::<T, _, (Ref<T>,)>(name, method, receiver, file)
+	}
+
 	/// File-only checked method borrowing a receiver and a second native of the result type.
 	#[doc(hidden)]
 	pub fn file_pair_producer<R, A, F, G>(
@@ -550,12 +578,34 @@ impl Module {
 				registered: registration.map(|r| r.descriptor.info.into()),
 			});
 		}
-		let key = Hash::associated_function(receiver.hash, Hash::ident(name));
 		let checked =
 			move |packet: ProducerReceiver, arg: Value| packet.produce_pair::<R, A>(&arg, &produce);
 		let file = FunctionHandler::new(move |stack, addr, args, out| {
 			Function::<(ProducerReceiver, Value), Plain>::call(&checked, stack, addr, args, out)
 		})?;
+		self.install_file_method::<R, _, (Ref<R>, Ref<A>)>(name, legacy, argument, file)
+	}
+
+	fn install_file_method<R, F, Args>(
+		&mut self,
+		name: &'static str,
+		legacy: F,
+		output: NativeType,
+		file: crate::runtime::FunctionHandler,
+	) -> Result<(), ContextError>
+	where
+		R: crate::Any + TypeOf,
+		Args: crate::function_meta::FunctionArgs,
+		F: Function<Args, Plain, Return: MaybeTypeOf>,
+	{
+		use crate::runtime::FunctionHandler;
+		let receiver = NativeType::of::<R>();
+		let unary = receiver.hash == output.hash;
+		let key = Hash::associated_function(receiver.hash, Hash::ident(name));
+		if unary {
+			self.opaque.file_unary.try_reserve(1)?;
+		}
+
 		let inactive = FunctionHandler::new(|_, _, _, _| {
 			Err(VmError::panic("file method outside a checked file"))
 		})?;
@@ -569,7 +619,7 @@ impl Module {
 		}) = self.associated.last_mut()
 		else {
 			return Err(ContextError::InternalAlreadyPresent {
-				name: "file pair method registration",
+				name: "file method registration",
 			});
 		};
 		let original = function.handler.clone();
@@ -579,10 +629,14 @@ impl Module {
 			enrollment: HostEnrollment {
 				certificate: None,
 				signature: HostSignature {
-					arity: 2,
+					arity: if unary { 1 } else { 2 },
 					arguments: [
 						HostType::OpaqueShared,
-						HostType::OpaqueShared,
+						if unary {
+							HostType::Unit
+						} else {
+							HostType::OpaqueShared
+						},
 						HostType::Unit,
 						HostType::Unit,
 					],
@@ -591,7 +645,10 @@ impl Module {
 			},
 		});
 		self.opaque.methods.try_insert(key, receiver)?;
-		self.opaque.producer_outputs.try_insert(key, argument)?;
+		self.opaque.producer_outputs.try_insert(key, output)?;
+		if unary {
+			self.opaque.file_unary.try_insert(key, file.clone())?;
+		}
 		self.file_readers
 			.try_push(crate::experimental_core::domain::file::Reader {
 				hash: key,

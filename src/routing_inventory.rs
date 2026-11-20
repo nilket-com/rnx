@@ -332,7 +332,36 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	let mut rows = Vec::new();
 	let actual = syntax::registrations(root)?;
 	let templates = syntax::registration_templates(root)?;
-	for r in templates.iter().filter(|r| !r.file.starts_with("src/")) {
+	let unary_file = "adapters/candle/src/tensor_ops.rs";
+	let unary_class = "file-unary-producer";
+	let unary: Vec<_> = actual.iter().filter(|r| r.class == unary_class).collect();
+	let methods: Vec<_> = unary.iter().map(|r| r.path.as_str()).collect();
+	assert!(
+		unary
+			.iter()
+			.all(|r| r.file == unary_file && r.owner.is_empty())
+	);
+	assert_eq!(
+		methods,
+		[
+			"exp", "log", "sqrt", "sqr", "abs", "neg", "recip", "tanh", "relu", "gelu", "gelu_erf",
+			"silu", "sin", "cos", "floor", "ceil", "round", "sign", "erf",
+		]
+	);
+	let mut unary_templates = templates.iter().filter(|r| r.class == unary_class);
+	assert!(unary_templates.next().is_some_and(|r| r.file == unary_file));
+	assert!(unary_templates.next().is_none());
+	let candle_paths = |base: &[&str]| {
+		base.iter()
+			.map(|s| (*s).to_owned())
+			.chain(methods.iter().map(|name| format!("candle::Tensor::{name}")))
+			.collect::<Vec<_>>()
+	};
+
+	for r in templates
+		.iter()
+		.filter(|r| !r.file.starts_with("src/") && r.class != unary_class)
+	{
 		assert_eq!(
 			r.class, "undeclared",
 			"adapter template enrolled without a routing review: {}",
@@ -487,7 +516,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	assert!(!adapters.is_empty());
 	let mut enrolled = adapters
 		.iter()
-		.filter(|r| r.class != "undeclared")
+		.filter(|r| r.class != "undeclared" && r.class != unary_class)
 		.map(|r| {
 			(
 				r.file.as_str(),
@@ -609,7 +638,7 @@ fn host_inventory(root: &Path) -> Result<Json> {
 	life.close()?;
 	Ok(
 		json!({"rows":rows,"counts":counts,"registration_evidence":actual,"registration_templates":templates,"rust_function_shapes":syntax::function_shapes(root)?,"adapter_registrations":adapters,
-			"adapter_enrollments":{"candle":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/candle/")).count(),"paths":["candle::Mlp::load","candle::Mlp::dims","candle::Mlp::forward","candle::Tensor","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"],"display":"Tensor has a display; Mlp has none","file_only":["candle::Mlp::load","candle::Mlp::dims","candle::Mlp::forward"],"checked_file":["candle::Mlp::load","candle::Mlp::dims","candle::Mlp::forward","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"],"admission":"Mlp requires a sealed synchronous file main; Tensor also supports sessions"},"polars":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/polars/")).count(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","checked_file":["polars::read_csv","polars::DataFrame::width","polars::DataFrame::to_dense"],"admission":"only listed checked_file sites in a sealed file main; other sites require a session"}},
+			"adapter_enrollments":{"candle":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/candle/")).count()+methods.len(),"paths":candle_paths(&["candle::Mlp::load","candle::Mlp::dims","candle::Mlp::forward","candle::Tensor","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"]),"display":"Tensor has a display; Mlp has none","file_only":candle_paths(&["candle::Mlp::load","candle::Mlp::dims","candle::Mlp::forward"]),"checked_file":candle_paths(&["candle::Mlp::load","candle::Mlp::dims","candle::Mlp::forward","candle::Tensor::from_dense","candle::Tensor::rank","candle::Tensor::elem_count"]),"admission":"Mlp requires a sealed synchronous file main; Tensor also supports sessions"},"polars":{"source_sites":enrolled.iter().filter(|site| site.0.starts_with("adapters/polars/")).count(),"paths":["polars::DataFrame","polars::DataFrame::empty","polars::DataFrame::width","polars::DataFrame::height","polars::DataFrame::to_dense","polars::Error","polars::Error::kind","polars::read_csv"],"display":"opaque_type also installs the internal display adapter","checked_file":["polars::read_csv","polars::DataFrame::width","polars::DataFrame::to_dense"],"admission":"only listed checked_file sites in a sealed file main; other sites require a session"}},
 			"adapter_rule":"only the listed sites enroll for execution. Other adapter registrations remain undeclared"}),
 	)
 }

@@ -265,3 +265,44 @@ fn forward_reports_moved_inputs_in_order() {
 		assert!(err.contains("it has been moved"), "{err}");
 	}
 }
+
+#[test]
+fn unary_tensor_methods_each_select_the_checked_file() {
+	let dir = Scratch::new();
+	let prefix = include_str!("../../model.rn")
+		.split_once("let model =")
+		.unwrap()
+		.0;
+	for method in [
+		"exp",
+		"log",
+		"sqrt",
+		"sqr",
+		"abs",
+		"neg",
+		"recip",
+		"tanh",
+		"relu",
+		"gelu",
+		"gelu_erf",
+		"silu",
+		"sin",
+		"cos",
+		"floor",
+		"ceil",
+		"round",
+		"sign",
+		"erf",
+		"abs()?.sqrt()?.tanh",
+	] {
+		let src = format!(
+			"{prefix}let y=x.{method}()?; println!(\"{{}} {{}}\", y.rank(), y.elem_count()); Ok(()) }}"
+		);
+		let (out, _) = check(
+			cli(&dir.script(&src), &data_dir()).output().unwrap(),
+			EXEC,
+			0,
+		);
+		assert_eq!(out.trim(), "2 192", "{method}");
+	}
+}

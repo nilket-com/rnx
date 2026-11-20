@@ -95,6 +95,7 @@ pub(crate) struct State {
 	/// Qualified producers keyed by the output type's associated function hash.
 	pub(crate) producer_inputs: crate::hash::Map<NativeType>,
 	pub(crate) producer_outputs: crate::hash::Map<NativeType>,
+	pub(crate) file_unary: crate::hash::Map<crate::runtime::FunctionHandler>,
 	pub(crate) method_errors: crate::hash::Map<NativeType>,
 }
 
@@ -116,6 +117,28 @@ impl NativeType {
 }
 impl State {
 	pub(crate) fn validate(&self) -> Result<(), crate::ContextError> {
+		for (key, output) in &self.producer_outputs {
+			if self.methods.get(key).is_some_and(|r| r.hash == output.hash)
+				!= self.file_unary.contains_key(key)
+			{
+				return Err(crate::ContextError::InternalAlreadyPresent {
+					name: "missing or inconsistent unary producer descriptor",
+				});
+			}
+		}
+		for key in self.file_unary.keys() {
+			let receiver = self.methods.get(key);
+			let output = self.producer_outputs.get(key);
+			if !matches!((receiver, output), (Some(r), Some(o)) if r.hash == o.hash && r.id == o.id)
+				|| self.factories.contains_key(key)
+				|| self.producer_inputs.contains_key(key)
+				|| self.method_errors.contains_key(key)
+			{
+				return Err(crate::ContextError::InternalAlreadyPresent {
+					name: "conflicting unary producer descriptor",
+				});
+			}
+		}
 		for (hash, registered) in &self.types {
 			if reserved(*hash) {
 				return Err(crate::ContextError::OpaqueBuiltin {
@@ -178,6 +201,17 @@ impl State {
 		}
 		for (hash, value) in &other.producer_outputs {
 			next.producer_outputs.try_insert(*hash, *value)?;
+		}
+		for (hash, handler) in &other.file_unary {
+			if next
+				.file_unary
+				.try_insert(*hash, handler.clone())?
+				.is_some()
+			{
+				return Err(crate::ContextError::InternalAlreadyPresent {
+					name: "duplicate unary producer descriptor",
+				});
+			}
 		}
 		for (hash, value) in &other.method_errors {
 			next.method_errors.try_insert(*hash, *value)?;

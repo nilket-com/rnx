@@ -314,6 +314,7 @@ impl<'ast> Visit<'ast> for Scan {
 			"opaque_result_function",
 			"opaque_columns_producer",
 			"file_pair_producer",
+			"file_unary_producer",
 			"file_path_constructor",
 			"opaque_shared_constructor",
 			"function",
@@ -362,6 +363,7 @@ impl<'ast> Visit<'ast> for Scan {
 				"opaque_result_function" => "opaque-result-factory",
 				"opaque_columns_producer" => "opaque-columns-producer",
 				"file_pair_producer" => "file-pair-producer",
+				"file_unary_producer" => "file-unary-producer",
 				"file_path_constructor" => "file-path-constructor",
 				"opaque_shared_constructor" => "opaque-shared-constructor",
 				"host_function" => "typed",
@@ -435,6 +437,7 @@ impl<'ast> Visit<'ast> for Scan {
 					"opaque_result_function",
 					"opaque_columns_producer",
 					"file_pair_producer",
+					"file_unary_producer",
 					"file_path_constructor",
 					"opaque_shared_constructor",
 					"function",
@@ -458,6 +461,7 @@ impl<'ast> Visit<'ast> for Scan {
 						"opaque_result_function" => "opaque-result-factory",
 						"opaque_columns_producer" => "opaque-columns-producer",
 						"file_pair_producer" => "file-pair-producer",
+						"file_unary_producer" => "file-unary-producer",
 						"file_path_constructor" => "file-path-constructor",
 						"opaque_shared_constructor" => "opaque-shared-constructor",
 						"host_function" => "typed",
@@ -480,7 +484,10 @@ impl<'ast> Visit<'ast> for Scan {
 			}
 		}
 		let name = n.path.segments.last().unwrap().ident.to_string();
-		if ["reg", "register", "simple", "request", "assoc"].contains(&name.as_str()) {
+		let candle_unary = name == "unary" && self.file == "adapters/candle/src/tensor_ops.rs";
+		if candle_unary
+			|| ["reg", "register", "simple", "request", "assoc"].contains(&name.as_str())
+		{
 			// Parse comma-separated macro arguments as syntax tokens. Macro definitions
 			// are not invocations; their dollar metavariables never become registrations.
 			let tokens: Vec<_> = n.tokens.clone().into_iter().collect();
@@ -508,7 +515,10 @@ impl<'ast> Visit<'ast> for Scan {
 				class = "tree-input";
 				at += 1;
 			}
-			if name == "assoc" {
+			if candle_unary {
+				class = "file-unary-producer";
+			}
+			if name == "assoc" || candle_unary {
 				for t in &tokens {
 					if let proc_macro2::TokenTree::Ident(i) = t {
 						self.registration(i.to_string(), class, n.tokens.to_string());

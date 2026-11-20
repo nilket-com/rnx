@@ -817,7 +817,12 @@ impl Builder<'_, '_> {
 							let key = Hash::associated_function(ty, hash);
 							let arity = match self.context.opaque.producer_outputs.get(&key) {
 								Some(output) if self.has_checked_native(output.hash) => {
-									if self
+									if self.context.opaque.file_unary.contains_key(&key) {
+										if !file_main {
+											return Err(fail(e.span, Refusal::OpaqueEntry));
+										}
+										0
+									} else if self
 										.context
 										.host(key)
 										.is_some_and(|b| b.signature.file_pair())

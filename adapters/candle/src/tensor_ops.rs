@@ -743,13 +743,19 @@ fn where_cond(this: &Tensor, on_true: &Tensor, on_false: &Tensor) -> Result<Tens
 }
 
 macro_rules! unary {
-	($($name:ident),*) => {$(
-		fn $name(this: &Tensor) -> Result<Tensor, String> {
-			let op = concat!("Tensor::", stringify!($name));
-			float_only(op, &this.0)?;
-			wrap(op, || this.0.$name())
+	($($name:ident),* $(,)?) => {
+		$(
+			fn $name(this: &Tensor) -> Result<Tensor, String> {
+				let op = concat!("Tensor::", stringify!($name));
+				float_only(op, &this.0)?;
+				wrap(op, || this.0.$name())
+			}
+		)*
+		fn register_unary(m: &mut Module) -> Result<(), ContextError> {
+			$(m.file_unary_producer(stringify!($name), $name)?;)*
+			Ok(())
 		}
-	)*};
+	};
 }
 unary!(
 	exp, log, sqrt, sqr, abs, neg, recip, tanh, relu, gelu, gelu_erf, silu, sin, cos, floor, ceil,
@@ -1128,6 +1134,7 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 	m.function("arange_step", arange_step)
 		.build_associated::<Tensor>()?;
 	m.function("eye", eye).build_associated::<Tensor>()?;
+	register_unary(m)?;
 	m.opaque_method::<Tensor, _, _>("rank", rank, None)?;
 	m.opaque_method::<Tensor, _, _>("elem_count", elem_count, None)?;
 	assoc!(
@@ -1170,25 +1177,6 @@ pub(crate) fn build(m: &mut Module) -> Result<Vec<(String, &'static str)>, Conte
 		powf,
 		clamp,
 		where_cond,
-		exp,
-		log,
-		sqrt,
-		sqr,
-		abs,
-		neg,
-		recip,
-		tanh,
-		relu,
-		gelu,
-		gelu_erf,
-		silu,
-		sin,
-		cos,
-		floor,
-		ceil,
-		round,
-		sign,
-		erf,
 		sum,
 		sum_keepdim,
 		mean,
@@ -1850,3 +1838,6 @@ mod tests {
 		);
 	}
 }
+
+#[cfg(test)]
+mod unary_tests;

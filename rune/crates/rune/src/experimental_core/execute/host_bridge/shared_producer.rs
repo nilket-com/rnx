@@ -147,14 +147,19 @@ impl Executor {
 			return Err(invalid());
 		}
 		let opaque = &runtime.opaque;
+		let unary = opaque.file_unary.get(&binding.hash);
+		if unary.is_some_and(|h| count != 1 || !h.same_allocation(&binding.handler)) {
+			return Err(invalid());
+		}
 		let (inputs, outputs) = match count {
+			1 if unary.is_some() => (&opaque.methods, &opaque.producer_outputs),
 			1 => (&opaque.producer_inputs, &opaque.factories),
 			2 | 3 => (&opaque.methods, &opaque.producer_outputs),
 			_ => return Err(invalid()),
 		};
 		let native = inputs.get(&binding.hash).ok_or_else(invalid)?;
 		let output = outputs.get(&binding.hash).ok_or_else(invalid)?;
-		if native.hash == output.hash
+		if (native.hash == output.hash) != unary.is_some()
 			|| [native, output].iter().any(|ty| {
 				!runtime
 					.opaque
