@@ -482,10 +482,10 @@ impl Fake {
 		self.until("the controller blocked behind the refusal", |f| {
 			f.blocks >= 1
 		});
-		if matches!(r.handoff, Some((Handoff::AfterRecheck, _))) {
-			// The first refusal follows the gate's completion. The second
-			// follows consumption of the gate's only token notice. Let it
-			// clear the flag before writing the chunk that arms the handoff.
+		if r.handoff.is_some() {
+			// The first refusal follows the gate's completion. Its token
+			// notice triggers the second. Wait for that recheck so the
+			// first chunk gets its own notice to drive either handoff.
 			self.until("the controller rechecked the gate's token notice", |f| {
 				f.gate_refusals >= 2
 			});
