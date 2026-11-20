@@ -17,7 +17,7 @@ use rune::runtime::{Unit, Value, VmError};
 use rune::sync::Arc;
 use rune::{Context, Diagnostics, Sources, Vm};
 
-mod execution;
+pub(crate) mod execution;
 
 /// Instructions one script may spend unless the command line says otherwise.
 /// This is the limit `run` has always had; the session's is far larger
@@ -67,13 +67,24 @@ pub const LARGEST_BUDGET: usize = usize::MAX - 1;
 /// script path; everything after the path belongs to the script.
 pub const DEBUG_SOURCE: &str = "--debug-source";
 
+macro_rules! report_line {
+	($($arg:tt)*) => {{
+		#[cfg(feature = "engine-image")]
+		if !crate::image_file::diagnostic(format_args!($($arg)*)) {
+			eprintln!($($arg)*);
+		}
+		#[cfg(not(feature = "engine-image"))]
+		eprintln!($($arg)*);
+	}}
+}
+
 /// Report a failure with a place in the file, in the shape the session uses.
 fn located(kind: &str, path: &str, text: &str, offset: usize, message: &str) {
 	let (line, column, line_text) = position(text, offset);
 	// The reported column stays a position in the source, counted in
 	// characters, because that is what a person or an editor uses to find the
 	// place. The caret is a display artifact and is placed separately.
-	eprintln!(
+	report_line!(
 		"{}",
 		presentation::error(&format!(
 			"{kind} at {}, line {line}, column {column}: {}",
@@ -81,12 +92,12 @@ fn located(kind: &str, path: &str, text: &str, offset: usize, message: &str) {
 			terminal_safe(message)
 		))
 	);
-	eprintln!("  {}", source_line(&line_text));
+	report_line!("  {}", source_line(&line_text));
 	// Placed by the display width of the rendered prefix that was actually
 	// printed above: escaped controls, four-column tabs and wide text occupy
 	// something other than the one column a character count assumes.
 	let prefix: String = line_text.chars().take(column.saturating_sub(1)).collect();
-	eprintln!(
+	report_line!(
 		"{}",
 		presentation::caret(&format!(
 			"  {}^",
@@ -99,7 +110,7 @@ fn located(kind: &str, path: &str, text: &str, offset: usize, message: &str) {
 /// that could not be read, or an error a script returned. Nothing is
 /// invented for it, and it does not claim a position was looked for.
 fn unplaced(kind: &str, message: &str) {
-	eprintln!(
+	report_line!(
 		"{}",
 		presentation::error(&format!("{kind}: {}", terminal_safe(message)))
 	);
@@ -109,7 +120,7 @@ fn unplaced(kind: &str, message: &str) {
 /// be resolved. Unlike the above, a position was expected here, so the
 /// absence is stated rather than passed over in silence.
 fn unlocated(kind: &str, message: &str) {
-	eprintln!(
+	report_line!(
 		"{}",
 		presentation::error(&format!(
 			"{kind} (no source position is available for this fault): {}",

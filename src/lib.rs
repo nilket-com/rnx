@@ -75,6 +75,9 @@ mod process;
 // Record 0025's gate 5 mechanism control. Only where the mechanism it
 // gates exists, and only under `test-support`: an ordinary build has no
 // such module and no such command.
+#[cfg(feature = "engine-image")]
+#[doc(hidden)]
+pub mod image_file;
 #[cfg(all(windows, feature = "test-support"))]
 mod pipe_control;
 mod program;

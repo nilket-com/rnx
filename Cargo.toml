@@ -29,7 +29,7 @@ publish = false
 [workspace]
 resolver = "3"
 default-members = ["."]
-members = ["rune/crates/rune", "rune/crates/rune-alloc", "rune/crates/rune-alloc-macros", "rune/crates/rune-cli", "rune/crates/rune-core", "rune/crates/rune-languageserver", "rune/crates/rune-macros", "rune/crates/rune-modules", "rune/crates/rune-tracing", "rune/crates/rune-tracing-macros", "rune/crates/rune-wasm", "rune/tools/builder", "rune/tools/generate", "rune/tools/site", "rune/tools/xtask", "rune/tools/budget", "tools/final", "rune/examples", "rune/benches", "rune/no-std"]
+members = ["rune/crates/rune", "rune/crates/rune-alloc", "rune/crates/rune-alloc-macros", "rune/crates/rune-cli", "rune/crates/rune-core", "rune/crates/rune-languageserver", "rune/crates/rune-macros", "rune/crates/rune-modules", "rune/crates/rune-tracing", "rune/crates/rune-tracing-macros", "rune/crates/rune-wasm", "rune/tools/builder", "rune/tools/generate", "rune/tools/site", "rune/tools/xtask", "rune/tools/budget", "tools/final", "engine/image", "rune/examples", "rune/benches", "rune/no-std"]
 exclude = ["tools/project"]
 
 [features]
@@ -39,6 +39,7 @@ stock-management = ["dep:rnx-project"]
 # Allocation accounting. Without it no ceiling is enforced and no figure is
 # reported; the build says so rather than reporting zero.
 count-allocations = []
+engine-image = []
 # Only for gates that must inject what cannot be provoked. Off by default, and
 # nothing in an ordinary build reads it: record 0022 explains why the
 # delivery's failure path needs one.

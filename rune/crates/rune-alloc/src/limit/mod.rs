@@ -23,7 +23,23 @@
 //! [global allocator]:
 //!     https://doc.rust-lang.org/alloc/alloc/trait.GlobalAlloc.html
 
+#[cfg(not(all(
+	feature = "std",
+	feature = "engine-image-tls",
+	target_arch = "x86_64",
+	target_os = "linux",
+	target_env = "gnu"
+)))]
 #[cfg_attr(feature = "std", path = "std.rs")]
+mod no_std;
+#[cfg(all(
+	feature = "std",
+	feature = "engine-image-tls",
+	target_arch = "x86_64",
+	target_os = "linux",
+	target_env = "gnu"
+))]
+#[path = "initial_exec.rs"]
 mod no_std;
 
 use core::future::Future;

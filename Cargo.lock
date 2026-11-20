@@ -2912,6 +2912,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "rnx-engine-image"
+version = "0.0.0"
+dependencies = [
+ "rnx",
+ "rune-alloc",
+]
+
+[[package]]
 name = "rnx-final"
 version = "0.0.0"
 dependencies = [

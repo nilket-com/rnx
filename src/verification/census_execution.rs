@@ -11,6 +11,8 @@ use serde_json::{Value, json};
 use std::{
 	collections::{BTreeMap, BTreeSet},
 	fs,
+	io::{BufRead, BufReader, Read, Write},
+	os::{fd::AsRawFd, unix::process::CommandExt},
 	path::Path,
 	process::{Command, Stdio},
 	time::{Instant, SystemTime, UNIX_EPOCH},
@@ -269,6 +271,55 @@ fn snapshot(root: &Path) -> Result<Value, Box<dyn std::error::Error>> {
 	Ok(json!(items))
 }
 
+const CASE_MOUNTS: [(&str, usize); 2] = [("/work", 64 << 20), ("/report", 4 << 20)];
+
+fn case_mounts(command: &mut Command) {
+	for (path, bytes) in CASE_MOUNTS {
+		command.args(["--size", &bytes.to_string(), "--tmpfs", path]);
+	}
+}
+
+// Exercise the filesystem caps independently of the observer's file-size limit.
+fn check_case_mounts() -> super::Result<()> {
+	for (path, bytes) in CASE_MOUNTS {
+		let mut command = Command::new("/usr/bin/bwrap");
+		command.args([
+			"--die-with-parent",
+			"--ro-bind",
+			"/usr",
+			"/usr",
+			"--ro-bind",
+			"/lib",
+			"/lib",
+			"--ro-bind",
+			"/lib64",
+			"/lib64",
+		]);
+		case_mounts(&mut command);
+		let output = command
+			.args([
+				"--",
+				"/usr/bin/fallocate",
+				"-l",
+				&(bytes + 4096).to_string(),
+				&format!("{path}/control"),
+			])
+			.env_clear()
+			.output()?;
+		if output.status.success()
+			|| !String::from_utf8_lossy(&output.stderr).contains("No space left on device")
+		{
+			return Err(format!(
+				"census tmpfs cap control {path}: {}: {}",
+				output.status,
+				String::from_utf8_lossy(&output.stderr)
+			)
+			.into());
+		}
+	}
+	Ok(())
+}
+
 fn invoke(
 	binary: &Path,
 	input: &Path,
@@ -279,21 +330,8 @@ fn invoke(
 ) -> Result<Value, Box<dyn std::error::Error>> {
 	let run_dir = output.join(item.id).join(engine);
 	fs::create_dir_all(&run_dir)?;
-	let work = run_dir.join("work");
-	fs::create_dir(&work)?;
-	let report = run_dir.join("report");
-	fs::create_dir(&report)?;
-	fs::create_dir(work.join("run"))?;
-	if item.fixture == "orders" {
-		fs::create_dir(work.join("data"))?;
-		fs::copy(
-			repo.join("demos/data/orders.json"),
-			work.join("data/orders.json"),
-		)?;
-	}
-	if item.fixture == "journey" {
-		super::journey::setup(repo, &work)?;
-	}
+	let source = fs::File::open(input)?;
+	let input_fd = source.as_raw_fd();
 	let mut command = Command::new("/usr/bin/timeout");
 	command
 		.args([
@@ -325,20 +363,18 @@ fn invoke(
 			"/dev",
 			"--tmpfs",
 			"/tmp",
-			"--ro-bind",
+			"--ro-bind-data",
 		])
-		.arg(input)
+		.arg(input_fd.to_string())
 		.arg("/input.rn")
 		.arg("--ro-bind")
 		.arg(binary)
-		.arg("/observer")
-		.arg("--bind")
-		.arg(&work)
-		.arg("/work")
-		.arg("--bind")
-		.arg(&report)
-		.arg("/report")
+		.arg("/observer");
+	case_mounts(&mut command);
+	command
 		.args([
+			"--dir",
+			"/work/run",
 			"--chdir",
 			"/work/run",
 			"--setenv",
@@ -357,6 +393,12 @@ fn invoke(
 			"TMPDIR",
 			"/tmp",
 			"--",
+			"/usr/bin/sh",
+			"-c",
+			// The host opens both case directories and installs the fixture
+			// before letting the shell exec the observer with its ordinary stdin.
+			"echo $$; IFS= read -r ready && [ \"$ready\" = ready ] && exec \"$@\" </dev/null",
+			"census",
 			"/observer",
 			"--child",
 			"census-exec",
@@ -367,12 +409,78 @@ fn invoke(
 			item.fixture,
 		])
 		.env_clear()
-		.stdin(Stdio::null())
+		.stdin(Stdio::piped())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped());
-	let result = command.output()?;
+	// SAFETY: fcntl only changes this inherited descriptor in the child.
+	// bwrap consumes it to make a read-only copy of the script.
+	unsafe {
+		command.pre_exec(move || {
+			if libc::fcntl(input_fd, libc::F_SETFD, 0) < 0 {
+				return Err(std::io::Error::last_os_error());
+			}
+			Ok(())
+		});
+	}
+	let mut child = command.spawn()?;
+	let prepare = (|| -> super::Result<(fs::File, fs::File)> {
+		let mut pid = String::new();
+		let stdout = child.stdout.as_mut().ok_or("missing census stdout")?;
+		BufReader::new(stdout.take(32)).read_line(&mut pid)?;
+		let pid: u32 = pid.trim_end().parse()?;
+		let root = Path::new("/proc").join(pid.to_string()).join("root");
+		let work_fd = fs::File::open(root.join("work"))?;
+		let report_fd = fs::File::open(root.join("report"))?;
+		let work = Path::new("/proc/self/fd").join(work_fd.as_raw_fd().to_string());
+		if item.fixture == "orders" {
+			fs::create_dir(work.join("data"))?;
+			fs::copy(
+				repo.join("demos/data/orders.json"),
+				work.join("data/orders.json"),
+			)?;
+		}
+		if item.fixture == "journey" {
+			super::journey::setup(repo, &work)?;
+		}
+		child
+			.stdin
+			.as_mut()
+			.ok_or("missing census stdin")?
+			.write_all(b"ready\n")?;
+		Ok((work_fd, report_fd))
+	})();
+	drop(child.stdin.take());
+	let result = child.wait_with_output()?;
 	fs::write(run_dir.join("stdout"), &result.stdout)?;
 	fs::write(run_dir.join("stderr"), &result.stderr)?;
+	let (work_fd, report_fd) = prepare.map_err(|e| {
+		format!(
+			"census {} {engine} setup: {e}; {}",
+			item.id,
+			String::from_utf8_lossy(&result.stderr)
+		)
+	})?;
+	// The directory handles keep both mounts alive after exit, even on
+	// timeout. Preserve diagnostic paths and symlinks outside the watchdog.
+	let handles = Path::new("/proc")
+		.join(std::process::id().to_string())
+		.join("fd");
+	let work = run_dir.join("work");
+	let report = run_dir.join("report");
+	for (fd, dest) in [(&work_fd, &work), (&report_fd, &report)] {
+		let export = Command::new("/usr/bin/cp")
+			.args(["-aT", "--no-preserve=ownership", "--"])
+			.arg(handles.join(fd.as_raw_fd().to_string()).join("."))
+			.arg(dest)
+			.output()?;
+		if !export.status.success() {
+			return Err(format!(
+				"census evidence copy: {}",
+				String::from_utf8_lossy(&export.stderr)
+			)
+			.into());
+		}
+	}
 	if !result.status.success() {
 		return Err(format!(
 			"census execution {} {engine} failed: {}",
@@ -412,6 +520,7 @@ pub(super) fn run(
 	out: &Path,
 	admissions: &BTreeMap<&str, &str>,
 ) -> Result<Value, Box<dyn std::error::Error>> {
+	check_case_mounts()?;
 	let policies = plan()?;
 	let output = out.join("live-execution");
 	fs::create_dir(&output)?;

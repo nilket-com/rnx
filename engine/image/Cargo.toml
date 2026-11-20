@@ -1,0 +1,28 @@
+[package]
+name = "rnx-engine-image"
+version = "0.0.0"
+edition = "2024"
+publish = false
+autolib = false
+
+# Cargo supports required-features on named example cdylibs. A stock
+# workspace resolve must not activate private image features on rnx.
+[[example]]
+name = "engine_image"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+required-features = ["linked"]
+
+[[test]]
+name = "contracts"
+path = "tests/contracts.rs"
+required-features = ["linked"]
+
+[features]
+linked = ["rnx/engine-image", "rnx/count-allocations", "rune-alloc/engine-image-tls"]
+
+[dependencies]
+rnx = { path = "../..", default-features = false, optional = true }
+
+[target.'cfg(all(target_arch = "x86_64", target_os = "linux", target_env = "gnu"))'.dependencies]
+rune-alloc = { path = "../../rune/crates/rune-alloc", features = ["std"], optional = true }

@@ -25,6 +25,12 @@ impl Default for Options {
 
 impl Options {
 	pub fn selected(self, engine: &str, refusal: Option<&str>) {
+		#[cfg(feature = "engine-image")]
+		if let Some(reason) = refusal
+			&& crate::image_file::diagnostic(format_args!("execution refused: {reason}"))
+		{
+			return;
+		}
 		if self.debug {
 			eprint!("rnx: engine={engine}");
 			if engine == "execution" {

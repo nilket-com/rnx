@@ -73,8 +73,11 @@
 			[],
 			[],
 			[],
+			[],
+			[],
+			[],
 			[
-				71
+				74
 			],
 			[],
 			[],
@@ -82,7 +85,7 @@
 			[],
 			[],
 			[
-				77
+				80
 			],
 			[],
 			[],
@@ -1006,6 +1009,46 @@
 					"RNX_FINAL_STAGE_TOKENS": "7",
 					"RUST_TEST_THREADS": "4"
 				},
+				"name": "engine-image-controls",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-engine-image",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-engine-image",
+				"resources": [
+					"<ROOT>/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
 				"name": "adapter-candle",
 				"resources": [
 					"<ROOT>/adapters/candle/target/debug"
@@ -1475,6 +1518,10 @@
 		{
 			"change": "the cross stage runs as the controller's stage mode, [rnx-final, stage, cross, --suite, all, --out, OUT] in place of [python3, -B, tools/verify.py, cross, --suite, all, --out, OUT], and the pin-controls (python3 -I -B tools/test_verify_pins.py) and engine-source-controls (python3 -B tools/test_engine_source.py) stages are removed, their checks now Rust tests in the final-controls route; the producer prerequisites keep their stages, their indices two lower past the removed rows; the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
 			"record": "0294"
+		},
+		{
+			"change": "The three direct engine image Cargo stages follow the existing workspace controls. Build and test share the workspace debug directory, format takes no lane, and none has a producer.",
+			"record": "0318"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

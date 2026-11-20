@@ -15,7 +15,7 @@ mod checked;
 use rune::experimental_core::domain::file::{FileModules, FileProgram};
 
 #[allow(clippy::too_many_arguments)]
-pub(super) fn run(
+pub(crate) fn run(
 	context: &Context,
 	originals: &Sources,
 	arguments: &Value,

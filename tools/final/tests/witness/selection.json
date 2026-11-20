@@ -989,6 +989,48 @@
 						]
 					],
 					[
+						"engine-image-controls",
+						[
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"engine/image/Cargo.toml",
+							"--features",
+							"linked"
+						]
+					],
+					[
+						"format-engine-image",
+						[
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"engine/image/Cargo.toml",
+							"--check"
+						]
+					],
+					[
+						"clippy-engine-image",
+						[
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"engine/image/Cargo.toml",
+							"--all-targets",
+							"--features",
+							"linked",
+							"--no-deps",
+							"--",
+							"-D",
+							"warnings"
+						]
+					],
+					[
 						"adapter-candle",
 						[
 							"cargo",
@@ -3854,6 +3896,10 @@
 		{
 			"change": "fixed-route runs as the controller's stage mode, [rnx-final, stage, fixed-route, --out, OUT] in place of [python3, -B, tools/column/fixed_route_gate.py, --out, OUT]; its exclusive lane, bulk root, the arguments, order, scheduling and every other stage are unchanged. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output.",
 			"record": "0298"
+		},
+		{
+			"change": "Add direct Cargo test, format and deny-warning lint stages for the new engine image package to the complete catalogue. The historical selection still uses its original Cargo graphs.",
+			"record": "0318"
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

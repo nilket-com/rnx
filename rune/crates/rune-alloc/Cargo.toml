@@ -17,6 +17,7 @@ categories = ["parser-implementations"]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(rune_nightly, rune_docsrs)'] }
 
 [features]
+engine-image-tls = []
 default = ["std", "serde"]
 std = ["alloc", "ahash/std", "serde?/std"]
 alloc = ["musli-core?/alloc"]

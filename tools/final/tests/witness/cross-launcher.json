@@ -527,6 +527,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -885,6 +886,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -1248,6 +1250,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -1556,6 +1559,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -1905,6 +1909,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -2216,6 +2221,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -2567,6 +2573,7 @@
      ],
      "manifests": [
       "Cargo.toml",
+      "engine/image/Cargo.toml",
       "rune/benches/Cargo.toml",
       "rune/crates/rune/Cargo.toml",
       "rune/crates/rune-alloc/Cargo.toml",
@@ -2638,6 +2645,7 @@
    }
   }
  },
+ "successors": [{"record": "0318", "change": "The image package adds engine/image/Cargo.toml to the checkout's canonical-path manifest inventory."}],
  "method": "verify.main() under an environment of only PATH=/planted/bin, HOME=<HOME> (holding .cargo), MAKEFLAGS='-j7 --jobserver-auth=fifo:/nonexistent', CARGO_ENCODED_RUSTFLAGS=-Cplanted (plus the shown additions per refusal), CPU affinity of 8, shutil.which answering /usr/bin/bwrap and /planted/bin/cargo (or nothing for no-bwrap/no-cargo), subprocess.check_output answering 'bubblewrap 0.11.0', subprocess.run (git check-ignore) answering 0 (1 for not-ignored), and owned_build.run_process intercepted: metadata answers one canonical rune package, the --no-run build one rnx test executable under CARGO_TARGET_DIR, the controller writes bound-verification-child (not for controller-fails-no-child or missing-child) and RESULT.json PASS (or exits 1 for controller-fails-bound-child, controller-fails-no-child, both-fail and census-failure, the last also writing a census summary naming case 0002 with its stock and fresh report and stderr), the host check exits 1 for both-fail and host-check-fails. refusals keep argv, the added environment, the exit code, any raised repr, the last stderr line and the calls; runs keep the calls (kind, command, check, log names, shown environment values, all keys), the exit or raised repr, the receipt with cleanup reduced to status, removed and retained names, REQUEST.json, PIN-CONSISTENCY.json (the real check over the checkout) and the output's files outside target/.",
  "substitutions": {
   "<HOME>": "the planted home",

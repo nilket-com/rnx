@@ -345,6 +345,14 @@ pub fn packages() -> BTreeMap<String, Quality> {
 		"tools/final/Cargo.toml".into(),
 		owned(&["final-controls"], "format-final", "clippy-final"),
 	);
+	rows.insert(
+		"engine/image/Cargo.toml".into(),
+		owned(
+			&["engine-image-controls"],
+			"format-engine-image",
+			"clippy-engine-image",
+		),
+	);
 	rows
 }
 
@@ -650,33 +658,30 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 	for (stage, manifest) in [
 		("budget", "rune/tools/budget/Cargo.toml"),
 		("final", "tools/final/Cargo.toml"),
+		("engine-image", "engine/image/Cargo.toml"),
 	] {
-		let tests = if stage == "budget" {
-			"budget-controls"
-		} else {
-			"final-controls"
-		};
-		steps.push((
-			tests.into(),
-			cargo(&["test", "--locked", "--manifest-path", manifest]),
-		));
+		let mut tests = cargo(&["test", "--locked", "--manifest-path", manifest]);
+		if stage == "engine-image" {
+			tests.extend(strings(&["--features", "linked"]));
+		}
+		steps.push((format!("{stage}-controls"), tests));
 		steps.push((
 			format!("format-{stage}"),
 			cargo(&["fmt", "--manifest-path", manifest, "--check"]),
 		));
-		steps.push((
-			format!("clippy-{stage}"),
-			cargo(&[
-				"clippy",
-				"--locked",
-				"--manifest-path",
-				manifest,
-				"--all-targets",
-				"--",
-				"-D",
-				"warnings",
-			]),
-		));
+		let mut lint = cargo(&[
+			"clippy",
+			"--locked",
+			"--manifest-path",
+			manifest,
+			"--all-targets",
+		]);
+		if stage == "engine-image" {
+			// The product's existing lints have their own baseline comparison.
+			lint.extend(strings(&["--features", "linked", "--no-deps"]));
+		}
+		lint.extend(strings(&["--", "-D", "warnings"]));
+		steps.push((format!("clippy-{stage}"), lint));
 	}
 	for adapter in ["candle", "polars", "postgres"] {
 		let manifest = format!("adapters/{adapter}/Cargo.toml");
@@ -838,6 +843,13 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 		// The helper it includes by path is part of the same test binary.
 		if ASYNC_TEST_SOURCES.contains(&p.as_str()) {
 			add(&["async-test-support"]);
+		}
+		if p.starts_with("engine/image/") {
+			add(&[
+				"engine-image-controls",
+				"format-engine-image",
+				"clippy-engine-image",
+			]);
 		}
 		if p.starts_with("rune/crates/") {
 			add(&["rune-suite", "rune-clippy", "cross"]);
@@ -1002,7 +1014,10 @@ pub fn required(
 			add(&[&format!("check-{}", manifest.replace('/', "-"))]);
 		} else if manifest.starts_with("ci/") || manifest.starts_with("rune/tools/") {
 			add(&["controller-controls"]);
-		} else if manifest == "tools/final/Cargo.toml" {
+		} else if matches!(
+			manifest.as_str(),
+			"tools/final/Cargo.toml" | "engine/image/Cargo.toml"
+		) {
 			// The final controller: its quality stages, added above.
 		} else {
 			bail!("affected package needs a registered suite: {manifest}");
