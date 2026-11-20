@@ -15,6 +15,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::os::unix::fs::MetadataExt as _;
 use std::path::{Component, Path, PathBuf};
 
+#[path = "fixed_route_phases.rs"]
+mod phases;
+pub(crate) use phases::validate_setup_context;
+
 /// The policy, under the checkout.
 pub const POLICY: &str = "tools/column/fixed_route_policy.json";
 pub const INITIAL_ANCHOR: &str = "3fe44bf9245c780cf784554293e0a1b1e7c00c26";
@@ -87,7 +91,15 @@ pub fn validate_policy(policy: &Value) -> Result<()> {
 		_ => BTreeSet::new(),
 	};
 	let expected: BTreeSet<String> = KERNELS.iter().map(|k| json!(k).to_string()).collect();
-	if *at(policy, "schema")? != json!(1) || kernels != expected {
+	let version = at(policy, "schema")?;
+	let reviewed = (*version == 1 && policy.get("native_setup").is_none())
+		|| (*version == 2
+			&& policy
+				.get("native_setup")
+				.map(identity)
+				.transpose()?
+				.as_deref() == Some(phases::TABLE_DIGEST));
+	if !reviewed || kernels != expected {
 		bail!(value_error(
 			"policy schema/kernel set changed: review required"
 		));
@@ -271,6 +283,9 @@ pub fn source_condition(
 	validate_policy(policy)?;
 	match baseline_policy(root, baseline)? {
 		Some(old) => {
+			if old["schema"] == 2 && policy["schema"] != 2 {
+				bail!(value_error("phase policy downgrade"));
+			}
 			for field in [
 				"inventory",
 				"kernels",
@@ -387,6 +402,9 @@ fn index(records: &Value, policy: &Value) -> Result<BTreeMap<String, Value>> {
 		if !truthy(row.get("stdout_sha256")) || !truthy(row.get("fixture_sha256")) {
 			bail!(value_error("missing output/fixture"));
 		}
+		if policy["schema"] == 2 {
+			phases::validate_row(row, policy)?;
+		}
 		result.insert(key, row.clone());
 	}
 	let mut expected = BTreeSet::new();
@@ -401,6 +419,10 @@ fn index(records: &Value, policy: &Value) -> Result<BTreeMap<String, Value>> {
 		bail!(value_error("incomplete or extraneous case matrix"));
 	}
 	Ok(result)
+}
+
+pub(crate) fn validate_capture_matrix(records: &Value, policy: &Value) -> Result<()> {
+	index(records, policy).map(|_| ())
 }
 
 /// The level and growth bands, in per mille, per kernel, mode and metric
@@ -445,9 +467,21 @@ pub fn compare(left: &Value, right: &Value, policy: &Value, limit: i128) -> Resu
 				let n = |v: i128| -> Value {
 					serde_json::from_str(&v.to_string()).unwrap_or(Value::Null)
 				};
-				rows.push(json!({"kind": kind, "mode": mode, "metric": metric,
+				let mut row = json!({"kind": kind, "mode": mode, "metric": metric,
 					"B1": n(b1), "B5": n(b5), "C1": n(c1), "C5": n(c5),
-					"level_pass": level, "growth_pass": growth, "pass_all": level && growth}));
+					"level_pass": level, "growth_pass": growth, "pass_all": level && growth});
+				if policy["schema"] == 2 && mode == "on" {
+					phases::score_row(
+						&mut row,
+						[
+							[case(0, sizes[0]), case(0, sizes[1])],
+							[case(1, sizes[0]), case(1, sizes[1])],
+						],
+						policy,
+						limit,
+					)?;
+				}
+				rows.push(row);
 			}
 		}
 	}
@@ -496,6 +530,27 @@ pub fn score(
 	for (i, receipt) in [baseline, candidate, anchor].into_iter().enumerate() {
 		if *at(receipt, "status")? != json!("PASS") {
 			bail!(value_error("failed capture"));
+		}
+		if policy["schema"] == 2 {
+			anyhow::ensure!(
+				receipt["capture_paths"]["launch_sha256"]
+					== policy["native_setup"]["launch_sha256"]
+					&& receipt["recipe"]["policy"]["launch_sha256"]
+						== policy["native_setup"]["launch_sha256"],
+				"incomparable native setup capture: measured argv paths or ordered environment differ from the setup reference"
+			);
+			anyhow::ensure!(
+				receipt["recipe"]["policy"]["schema"] == 2
+					&& receipt["capture_key"]
+						== crate::fixed_route_stage::contextual_key(
+							receipt["binary_sha256"]
+								.as_str()
+								.context("missing measured binary identity")?,
+							at(receipt, "recipe")?,
+							at(receipt, "capture_paths")?
+						)?,
+				"split capture recipe/binary binding"
+			);
 		}
 		if *at(receipt, "policy_sha256")? != json!(policy_sha) {
 			bail!(value_error("stale policy"));
@@ -811,7 +866,8 @@ impl Cache {
 	pub fn verify(path: &Path, key: &str) -> Result<Value> {
 		let path = canon(path)?;
 		let r: Value = serde_json::from_slice(&std::fs::read(canon(&path.join("ANCHOR.json"))?)?)?;
-		if r.get("schema") != Some(&json!(2))
+		let split = r["recipe"]["policy"]["schema"] == 2;
+		if r.get("schema") != Some(&json!(if split { 3 } else { 2 }))
 			|| r.get("status") != Some(&json!("PASS"))
 			|| r.get("capture_key") != Some(&json!(key))
 			|| !truthy(r.get("artifacts"))
@@ -845,15 +901,13 @@ impl Cache {
 					&format!("'{}' object is not subscriptable", py_type(record)),
 				));
 			}
-			let p = PathBuf::from(at(record, "profile")?.as_str().unwrap_or_default());
-			let dir = p.parent().unwrap_or(Path::new(""));
-			for (f, sha) in [
-				(p.clone(), at(record, "profile_sha256")?),
-				(dir.join("program.rn"), at(record, "fixture_sha256")?),
-				(dir.join("program.stdout"), at(record, "stdout_sha256")?),
-			] {
-				if artifacts.get(&*f.to_string_lossy()) != Some(sha) {
+			for file in case_files(record, split)? {
+				if artifacts.get(&*file.source.to_string_lossy()) != Some(&file.sha) {
 					bail!(value_error("unbound anchor row"));
+				}
+				if file.name == "GDB.json" {
+					let saved: Value = serde_json::from_slice(&std::fs::read(&file.source)?)?;
+					anyhow::ensure!(record["boundary"] == saved, "unbound invocation boundary");
 				}
 			}
 		}
@@ -912,10 +966,11 @@ impl Cache {
 		pending: &Path,
 		dest: &Path,
 	) -> Result<Value> {
+		let split = receipt["recipe"]["policy"]["schema"] == 2;
 		let mut r = receipt.clone();
 		let object = r.as_object_mut().context("receipt is not an object")?;
 		object.remove("reuse_proof");
-		object.insert("schema".into(), json!(2));
+		object.insert("schema".into(), json!(if split { 3 } else { 2 }));
 		object.insert("provenance".into(), provenance.clone());
 		object.insert("artifacts".into(), json!({}));
 		object.insert(
@@ -929,29 +984,18 @@ impl Cache {
 		)];
 		let records = r["records"].as_array_mut().context("receipt records")?;
 		for (i, record) in records.iter_mut().enumerate() {
-			let profile = PathBuf::from(at(record, "profile")?.as_str().unwrap_or_default());
-			let dir = profile.parent().unwrap_or(Path::new("")).to_path_buf();
 			let base = PathBuf::from("cases").join(format!("{i:02}"));
-			for (source, name, sha) in [
-				(
-					profile.clone(),
-					"profile",
-					at(record, "profile_sha256")?.clone(),
-				),
-				(
-					dir.join("program.rn"),
-					"program.rn",
-					at(record, "fixture_sha256")?.clone(),
-				),
-				(
-					dir.join("program.stdout"),
-					"program.stdout",
-					at(record, "stdout_sha256")?.clone(),
-				),
-			] {
-				copies.push((source, base.join(name), sha));
+			for f in case_files(record, split)? {
+				let relative = base.join(f.name);
+				let final_path = json!(dest.join(&relative).to_string_lossy());
+				match f.name {
+					"setup.callgrind" => record["phases"]["setup"]["profile"] = final_path,
+					"execution.callgrind" => record["phases"]["execution"]["profile"] = final_path,
+					"profile" => record["profile"] = final_path,
+					_ => {}
+				}
+				copies.push((f.source, relative, f.sha));
 			}
-			record["profile"] = json!(dest.join(&base).join("profile").to_string_lossy());
 		}
 		let mut artifacts = Map::new();
 		for (source, relative, sha) in copies {
@@ -1025,4 +1069,76 @@ fn uuid_hex() -> String {
 		let _ = std::io::Read::read_exact(&mut f, &mut bytes);
 	}
 	crate::pyjson::hex(&bytes)
+}
+
+/// The names in an owned case bundle are fixed. Only the source paths
+/// move when the stage publishes a cache entry.
+pub(crate) struct CaseFile {
+	pub source: PathBuf,
+	pub name: &'static str,
+	pub sha: Value,
+}
+
+pub(crate) fn case_files(row: &Value, split: bool) -> Result<Vec<CaseFile>> {
+	let phased = split && row["policy"] == "on";
+	let mut files = Vec::new();
+	let mut profile = |part: &Value, name| -> Result<PathBuf> {
+		let path = PathBuf::from(
+			at(part, "profile")?
+				.as_str()
+				.context("invalid profile path")?,
+		);
+		let dir = path
+			.parent()
+			.context("profile has no directory")?
+			.to_owned();
+		files.push(CaseFile {
+			source: path,
+			name,
+			sha: at(part, "profile_sha256")?.clone(),
+		});
+		Ok(dir)
+	};
+	let dir = if phased {
+		let setup = profile(&row["phases"]["setup"], "setup.callgrind")?;
+		let execution = profile(&row["phases"]["execution"], "execution.callgrind")?;
+		anyhow::ensure!(
+			setup == execution && files[0].source != files[1].source,
+			"phase profile paths"
+		);
+		execution
+	} else {
+		profile(row, "profile")?
+	};
+	for (name, key) in [
+		("program.rn", "fixture_sha256"),
+		("program.stdout", "stdout_sha256"),
+	] {
+		files.push(CaseFile {
+			source: dir.join(name),
+			name,
+			sha: at(row, key)?.clone(),
+		});
+	}
+	if split {
+		for (name, key) in [
+			("CONFIG.json", "config_sha256"),
+			("LAUNCH.json", "launch_sha256"),
+			("program.stderr", "stderr_sha256"),
+		] {
+			files.push(CaseFile {
+				source: dir.join(name),
+				name,
+				sha: at(row, key)?.clone(),
+			});
+		}
+	}
+	if phased {
+		files.push(CaseFile {
+			source: dir.join("GDB.json"),
+			name: "GDB.json",
+			sha: at(row, "boundary_sha256")?.clone(),
+		});
+	}
+	Ok(files)
 }

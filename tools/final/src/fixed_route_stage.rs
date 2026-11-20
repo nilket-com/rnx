@@ -232,9 +232,25 @@ pub fn recipe(
 				.ok_or_else(|| raise("KeyError", &format!("'{k}'")))?,
 		);
 	}
+	if policy["schema"] == 2 {
+		subset.insert(
+			"launch_sha256".into(),
+			policy["native_setup"]["launch_sha256"].clone(),
+		);
+	}
 	let mut tooling = Map::new();
 	for p in TOOLING {
 		tooling.insert(p.into(), json!(digest(&root.join(p))?));
+	}
+	if policy["schema"] == 2 {
+		for p in [
+			"tools/column/cli_symbols.py",
+			"tools/column/ir_pool.py",
+			"tools/column/old_path_gdb.py",
+			"rune/tools/xtask/measure/callgrind.py",
+		] {
+			tooling.insert(p.into(), json!(digest(&root.join(p))?));
+		}
 	}
 	let mut kernels: Vec<PathBuf> = std::fs::read_dir(root.join("tools/routing-bench/kernels"))?
 		.filter_map(|e| e.ok().map(|e| e.path()))
@@ -274,6 +290,43 @@ pub fn capture_key(binary_sha256: &str, current: &Value) -> Result<String> {
 	)
 }
 
+/// The setup counts also depend on the path strings visible to the measured process.
+fn capture_paths(
+	binary: &Value,
+	vectors: &Path,
+	role: &str,
+	root: &Path,
+	valgrind: &Path,
+	launches: &Value,
+) -> Value {
+	json!({"binary":binary["binary"], "vectors":vectors,"role":role,"cwd":root,"valgrind_root":valgrind,"launch_sha256":launches})
+}
+pub fn contextual_key(sha: &str, recipe: &Value, paths: &Value) -> Result<String> {
+	let key = capture_key(sha, recipe)?;
+	if recipe["policy"]["schema"] != 2 {
+		return Ok(key);
+	}
+	anyhow::ensure!(
+		paths["launch_sha256"]
+			.as_object()
+			.is_some_and(|m| !m.is_empty()),
+		"missing ordered launch evidence in capture key"
+	);
+	for name in ["binary", "vectors", "cwd", "valgrind_root"] {
+		anyhow::ensure!(
+			paths[name]
+				.as_str()
+				.is_some_and(|p| Path::new(p).is_absolute()),
+			"missing absolute capture path: {name}"
+		);
+	}
+	anyhow::ensure!(
+		matches!(paths["role"].as_str(), Some("baseline" | "candidate")),
+		"missing role in path configuration"
+	);
+	identity(&json!({"measurement_key":key,"launch_sha256":paths["launch_sha256"]}))
+}
+
 /// A capture receipt whose every artifact still has its digest.
 pub fn verified(receipt: Value) -> Result<Value> {
 	if receipt.get("status") != Some(&json!("PASS"))
@@ -307,6 +360,9 @@ fn text(path: &Path) -> String {
 
 /// A legacy capture of the anchor, imported under the binary identity rule.
 pub fn reuse_anchor(path: &Path, binary: &Value, current: &Value, policy: &Value) -> Result<Value> {
+	if policy["schema"] == 2 {
+		bail!(value_error("fresh split capture required"));
+	}
 	let original = verified(read(path)?)?;
 	if at(&original, "revision")? != at(policy, "anchor")? {
 		bail!(value_error("wrong imported anchor revision"));
@@ -618,11 +674,7 @@ fn captures(
 	host: &mut dyn Host,
 ) -> Result<Vec<Value>> {
 	let builds = at(pair, "builds")?.as_array().cloned().unwrap_or_default();
-	let revisions: Vec<String> = builds
-		.iter()
-		.map(|b| b["source_commit"].as_str().unwrap_or_default().to_owned())
-		.collect();
-	if revisions.first() != revisions.get(1) {
+	if builds[0]["source_commit"] != builds[1]["source_commit"] {
 		let command = [
 			py.to_string(),
 			"-B".into(),
@@ -646,7 +698,7 @@ fn captures(
 			bail!(value_error("identity tool failed, not a measured mismatch"));
 		}
 	}
-	let command = [
+	let mut command = vec![
 		py.to_string(),
 		"-B".into(),
 		"tools/column/fixed_route_vectors.py".into(),
@@ -658,6 +710,10 @@ fn captures(
 		"--valgrind-root".into(),
 		text(valgrind),
 	];
+	let split = policy["schema"] == 2;
+	if split {
+		command.push("--native-phases".into());
+	}
 	let vectors = stage(
 		out,
 		root,
@@ -667,18 +723,40 @@ fn captures(
 		env,
 		host,
 	)?;
+	capture_receipts(
+		&vectors,
+		&builds,
+		policy,
+		current,
+		&out.join("vectors"),
+		root,
+		valgrind,
+	)
+}
+
+/// Bind the measured role matrices to their binary, recipe and on-disk evidence.
+pub fn capture_receipts(
+	vectors: &Value,
+	builds: &[Value],
+	policy: &Value,
+	current: &Value,
+	vectors_dir: &Path,
+	root: &Path,
+	valgrind: &Path,
+) -> Result<Vec<Value>> {
+	anyhow::ensure!(
+		vectors["status"] == "PASS" && builds.len() == 2,
+		"incomplete paired capture"
+	);
+	let split = policy["schema"] == 2;
 	let mut rows = Vec::new();
-	for p in at(&vectors, "records")?.as_array().into_iter().flatten() {
+	for p in at(vectors, "records")?.as_array().into_iter().flatten() {
 		rows.push(read(Path::new(p.as_str().unwrap_or_default()))?);
 	}
 	let policy_sha = identity(policy)?;
 	let mut result = Vec::new();
-	for ((role, revision), binary) in ["baseline", "candidate"]
-		.iter()
-		.zip(&revisions)
-		.zip(&builds)
-	{
-		let selected: Vec<Value> = rows
+	for (role, binary) in ["baseline", "candidate"].iter().zip(builds) {
+		let mut selected: Vec<Value> = rows
 			.iter()
 			.filter(|r| r["role"] == *role)
 			.cloned()
@@ -688,19 +766,71 @@ fn captures(
 			binary["binary"].as_str().unwrap_or_default().into(),
 			binary["sha256"].clone(),
 		);
-		for r in &selected {
-			let profile = PathBuf::from(r["profile"].as_str().unwrap_or_default());
-			let dir = profile.parent().unwrap_or(Path::new(""));
-			artifacts.insert(text(&profile), r["profile_sha256"].clone());
-			artifacts.insert(text(&dir.join("program.rn")), r["fixture_sha256"].clone());
-			artifacts.insert(
-				text(&dir.join("program.stdout")),
-				r["stdout_sha256"].clone(),
-			);
+		let mut launches = json!({});
+		for row in &mut selected {
+			if split {
+				let mode = row["policy"].as_str().context("capture mode")?.to_owned();
+				let kind = row["kind"].as_str().context("capture kernel")?;
+				let dir = vectors_dir.join(format!("{kind}-{mode}-{}-{role}", row["n"]));
+				let profile = if mode == "on" {
+					&row["phases"]["setup"]
+				} else {
+					&*row
+				};
+				anyhow::ensure!(
+					Path::new(profile["profile"].as_str().context("capture profile")?).parent()
+						== Some(dir.as_path()),
+					"capture profile directory differs"
+				);
+				let config_path = dir.join("CONFIG.json");
+				let config = read(&config_path)?;
+				anyhow::ensure!(
+					config["canonical_layout"] == true
+						&& config["binary"] == binary["binary"]
+						&& config["fixture"] == json!(dir.join("program.rn"))
+						&& config["out"] == json!(dir)
+						&& config["valgrind_root"] == json!(valgrind),
+					"capture mount sources differ"
+				);
+				row["config_sha256"] = json!(digest(&config_path)?);
+				row["launch_sha256"] = json!(digest(&dir.join("LAUNCH.json"))?);
+				fr::validate_setup_context(row, policy)?;
+				launches[&mode] = row["launch_sha256"].clone();
+				let stderr = dir.join("program.stderr");
+				let output = std::fs::read_to_string(&stderr)?;
+				let route: Vec<_> = output
+					.lines()
+					.filter(|s| s.starts_with("rnx: engine="))
+					.collect();
+				anyhow::ensure!(
+					route == [format!("rnx: engine=execution native-requested={mode}")],
+					"wrong measured execution route"
+				);
+				if mode == "on" {
+					let boundary = dir.join("GDB.json");
+					anyhow::ensure!(
+						read(&boundary)? == row["boundary"],
+						"capture boundary mismatch"
+					);
+					row["boundary_sha256"] = json!(digest(&boundary)?);
+				}
+				row["stderr_sha256"] = json!(digest(&stderr)?);
+			}
+			for file in fr::case_files(row, split)? {
+				artifacts.insert(text(&file.source), file.sha);
+			}
+		}
+		if split {
+			fr::validate_capture_matrix(&Value::Array(selected.clone()), policy)?;
 		}
 		let sha = binary["sha256"].as_str().unwrap_or_default();
-		result.push(json!({"status": "PASS", "revision": revision, "recipe": current, "policy_sha256": policy_sha,
-			"binary_sha256": sha, "capture_key": capture_key(sha, current)?, "records": selected, "artifacts": artifacts}));
+		let paths = capture_paths(binary, vectors_dir, role, root, valgrind, &launches);
+		let mut receipt = json!({"status": "PASS", "revision": binary["source_commit"], "recipe": current, "policy_sha256": policy_sha,
+			"binary_sha256": sha, "capture_key": contextual_key(sha,current,&paths)?, "records": selected, "artifacts": artifacts});
+		if split {
+			receipt["capture_paths"] = paths;
+		}
+		result.push(receipt);
 	}
 	Ok(result)
 }
@@ -908,6 +1038,22 @@ fn run_gate(
 	let mut current = recipe(root, &policy, env, host)?;
 	// Valgrind's executable is an explicit recipe input, never merely a path.
 	current["valgrind"] = json!(digest(&valgrind.join("bin/valgrind"))?);
+	if policy["schema"] == 2 {
+		for (name, path) in [
+			("vgdb", valgrind.join("bin/vgdb")),
+			(
+				"callgrind",
+				valgrind.join("libexec/valgrind/callgrind-amd64-linux"),
+			),
+			("bwrap", PathBuf::from("/usr/bin/bwrap")),
+			("gdb", PathBuf::from("/usr/bin/gdb")),
+			("nm", PathBuf::from("/usr/bin/nm")),
+			("python", PathBuf::from(&py)),
+		] {
+			current["tooling"][name] = json!(digest(&path)?);
+		}
+		r.insert("policy".into(), policy.clone());
+	}
 	let anchor_started = Instant::now();
 	let attempt = out.join("anchor");
 	std::fs::create_dir(&attempt)?;
@@ -927,9 +1073,17 @@ fn run_gate(
 	)?;
 	let anchor_build_seconds = anchor_started.elapsed().as_secs_f64();
 	let anchor_binary = anchor_pair["builds"][0].clone();
-	let key = capture_key(
+	let key = contextual_key(
 		anchor_binary["sha256"].as_str().unwrap_or_default(),
 		&current,
+		&capture_paths(
+			&anchor_binary,
+			&attempt.join("vectors"),
+			"baseline",
+			root,
+			&valgrind,
+			&policy["native_setup"]["launch_sha256"],
+		),
 	)?;
 	let mut cache = Cache::open(&root.join(CACHE))?;
 	let (found, reason) = cache.lookup(&key)?;

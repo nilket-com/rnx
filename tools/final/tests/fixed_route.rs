@@ -26,7 +26,11 @@ fn witness(name: &str) -> Value {
 }
 
 fn policy() -> Value {
-	serde_json::from_str(&std::fs::read_to_string(root().join(fr::POLICY)).unwrap()).unwrap()
+	let mut p: Value =
+		serde_json::from_str(&std::fs::read_to_string(root().join(fr::POLICY)).unwrap()).unwrap();
+	p["schema"] = json!(1);
+	p.as_object_mut().unwrap().remove("native_setup");
+	p
 }
 
 struct Scratch(PathBuf);
@@ -1228,4 +1232,91 @@ fn the_cache_answers_as_the_published_python() {
 		},
 	);
 	assert_eq!(seen, expected.as_object().unwrap().len());
+}
+
+#[test]
+fn split_capture_key_refuses_the_whole_map_cache_entry() {
+	let temp = scratch();
+	let (_, binary, mut receipt) = source(&temp.0, &policy());
+	let sha = digest(&binary).unwrap();
+	let mut recipe = json!({
+		"cpu": ["test"], "environment": {}, "run_environment": {},
+		"valgrind": "test", "fixtures": {}, "tooling": {}, "policy": {"schema": 1}
+	});
+	let key = |r: &Value| rnx_final::fixed_route_stage::capture_key(&sha, r).unwrap();
+	let whole_key = key(&recipe);
+	receipt["recipe"] = recipe.clone();
+	receipt["capture_key"] = json!(whole_key);
+	recipe["policy"]["schema"] = json!(2);
+	let split_key = key(&recipe);
+	assert_ne!(whole_key, split_key);
+
+	let mut cache = Cache::open(&temp.0.join("cache")).unwrap();
+	assert_eq!(cache.lookup(&split_key).unwrap(), (None, "absent"));
+	let cached = cache.publish(&receipt, &binary, &json!({})).unwrap();
+	assert_eq!(cache.lookup(&whole_key).unwrap().1, "hit");
+	assert_eq!(cache.lookup(&split_key).unwrap(), (None, "key differs"));
+
+	let profile = cached["records"][0]["profile"].as_str().unwrap();
+	std::fs::write(profile, "changed profile").unwrap();
+	assert_eq!(
+		cache.lookup(&whole_key).unwrap(),
+		(None, "verification failed")
+	);
+}
+
+#[test]
+fn canonical_cache_key_tracks_measured_launch_and_preserves_mount_provenance() {
+	use rnx_final::fixed_route_stage::contextual_key;
+	let sha = "a".repeat(64);
+	let recipe = json!({"cpu":[],"environment":{},"run_environment":{},"valgrind":"v","fixtures":{},"tooling":{},"policy":{"schema":2}});
+	let original = json!({"binary":"/build/rnx","vectors":"/original/vectors","cwd":"/checkout","valgrind_root":"/opt/valgrind","role":"baseline","launch_sha256":{"on":"original-digest"}});
+	let key = contextual_key(&sha, &recipe, &original).unwrap();
+	let mut reordered = original.clone();
+	reordered["launch_sha256"]["on"] = json!("reordered-env-digest");
+	assert_ne!(contextual_key(&sha, &recipe, &reordered).unwrap(), key);
+	for (field, change) in [
+		("binary", "/other/rnx"),
+		("vectors", "/other/vectors"),
+		("cwd", "/other"),
+		("valgrind_root", "/other/valgrind"),
+		("role", "candidate"),
+	] {
+		let mut paths = original.clone();
+		paths[field] = json!(change);
+		assert_eq!(contextual_key(&sha, &recipe, &paths).unwrap(), key);
+		paths.as_object_mut().unwrap().remove(field);
+		assert!(contextual_key(&sha, &recipe, &paths).is_err());
+	}
+}
+
+#[test]
+fn same_image_at_another_launch_configuration_is_incomparable_before_scoring() {
+	use rnx_final::fixed_route_stage::contextual_key;
+	let policy: Value =
+		serde_json::from_slice(&std::fs::read(root().join(fr::POLICY)).unwrap()).unwrap();
+	let expected = &policy["native_setup"]["launch_sha256"];
+	let recipe = json!({"policy":{"schema":2,"launch_sha256":expected},"cpu":[],"environment":{},"run_environment":{},"valgrind":"v","fixtures":{},"tooling":{}});
+	let mut paths = json!({"binary":"/test/rnx","vectors":"/test/vectors","role":"candidate","cwd":"/test","valgrind_root":"/test/vg","launch_sha256":expected});
+	let image = "a".repeat(64);
+	let mut r = json!({"status":"PASS","policy_sha256":identity(&policy).unwrap(),"revision":policy["anchor"],"recipe":recipe,"binary_sha256":image,"capture_paths":paths,"capture_key":contextual_key(&image,&recipe,&paths).unwrap()});
+	// The reference binding is valid; absence of the capture matrix is detected later.
+	let original = r.clone();
+	assert!(
+		fr::score(&r, &r, Some(&r), &policy)
+			.unwrap_err()
+			.to_string()
+			.contains("case matrix")
+	);
+	paths["vectors"] = json!("/other/vectors");
+	paths["launch_sha256"]["on"] = json!("b".repeat(64));
+	r["capture_paths"] = paths.clone();
+	r["capture_key"] = json!(contextual_key(&image, &recipe, &paths).unwrap());
+	assert_ne!(r["capture_key"], original["capture_key"]);
+	let err = fr::score(&original, &r, Some(&original), &policy).unwrap_err();
+	assert!(
+		err.to_string()
+			.contains("incomparable native setup capture"),
+		"{err}"
+	);
 }

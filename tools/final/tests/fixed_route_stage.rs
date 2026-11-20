@@ -18,6 +18,8 @@ fn root() -> PathBuf {
 		.unwrap()
 }
 
+// ADR 0316 updates only the changed capture-script hashes and the keys derived
+// from them under the original schema-1 recipe in both witnesses.
 fn witness(name: &str) -> Value {
 	let path = root().join("tools/final/tests/witness").join(name);
 	let value: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
@@ -217,10 +219,7 @@ fn the_recipe_identities_answer_as_the_published_python() {
 		"constants".into(),
 		json!({"ok": {"BUILD_KEYS": keys, "BUILD_PREFIXES": frs::BUILD_PREFIXES, "capture_environment": frs::capture_environment()}}),
 	));
-	let policy: Value = serde_json::from_str(
-		&std::fs::read_to_string(root().join(rnx_final::fixed_route::POLICY)).unwrap(),
-	)
-	.unwrap();
+	let policy = legacy_policy();
 	let recipe_env = env(&[
 		("PATH", "/tools"),
 		("HOME", "/planted/home"),
@@ -625,6 +624,16 @@ impl Host for Gate {
 
 /// The scratch checkout: the real tooling, kernels and policy, and a
 /// planted guard.
+fn legacy_policy() -> Value {
+	let mut policy: Value = serde_json::from_slice(
+		&std::fs::read(root().join(rnx_final::fixed_route::POLICY)).unwrap(),
+	)
+	.unwrap();
+	policy["schema"] = json!(1);
+	policy.as_object_mut().unwrap().remove("native_setup");
+	policy
+}
+
 fn checkout(tmp: &Path) -> PathBuf {
 	let root = tmp.join("checkout");
 	for rel in frs::TOOLING
@@ -636,6 +645,7 @@ fn checkout(tmp: &Path) -> PathBuf {
 		std::fs::create_dir_all(to.parent().unwrap()).unwrap();
 		std::fs::copy(self::root().join(rel), to).unwrap();
 	}
+	atomic_json(&root.join(rnx_final::fixed_route::POLICY), &legacy_policy()).unwrap();
 	std::fs::create_dir_all(root.join("tools/routing-bench/kernels")).unwrap();
 	for entry in std::fs::read_dir(self::root().join("tools/routing-bench/kernels")).unwrap() {
 		let p = entry.unwrap().path();

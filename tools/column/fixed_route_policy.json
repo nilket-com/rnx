@@ -1,5 +1,53 @@
 {
-  "schema": 1,
+  "schema": 2,
+  "native_setup": {
+    "reference": "ff5bf81efba559573d0b8f0de84fd9fba919ef89",
+    "launch_sha256": {"off":"407bd3e940fc6d53d3bcca8b08f3c3c13078caa5048fc07a16f1e72eb85f600f","on":"b9690f039f7cbd7da0cd5c9dd598cd7f205b9d873053198b8e0b8dacb8fb00af"},
+    "freeze": "184a212df5304bb004fea1afe8e760510e4c4231",
+    "kernels": {
+      "fib": {
+        "fixtures": [["9d3e625ef86a6c129c9fcfb5da9916786e53155f9751dcccd9141228d7f90a5c","224979edcd31c844074c446cc006b13aceb706e4249734a4a37a96395c6bfcb6"],["68b79d075b89838fd4511df774deab2392f54a50bfbfa5cb71d74aba500f1748","c881eac91974c39e6ce1d20c53d9e5b9f7ee8895c95983f964e550abc43f75e6"]],
+        "W":{"reference":[45316758,45316758],"per_record":{"level":1645,"growth":0},"cumulative":{"level":1645,"growth":0}},
+        "T":{"reference":[48553519,48553519],"per_record":{"level":77067,"growth":0},"cumulative":{"level":77067,"growth":0}}
+      },
+      "loops": {
+        "fixtures": [["89be783847335445f14155f58e9b5729bb7644c8a816c2bd9106167aa53722f5","c2c0dbcb2a4693972585a46c488e8daa9d2af65f392616c9bc1fcbcaae264e73"],["a36a477c96fb3d9fa706de13516103a23939c1a9d9dd9437c7efc8056bee11cb","a0da8c02f341243d79dfef1ec8e210fbd564e090d20a79c62747cc1389a4350a"]],
+        "W":{"reference":[4728646,4728646],"per_record":{"level":37,"growth":22},"cumulative":{"level":37,"growth":22}},
+        "T":{"reference":[5216771,5216771],"per_record":{"level":15046,"growth":22},"cumulative":{"level":15046,"growth":22}}
+      },
+      "numeric_calls": {
+        "fixtures": [["3f7cf2418a36bf30e868c14415b1dc525153b4face70dc7837c7a491dcb7bdcd","49b747fbaa3d16de31dd08c487f51d7f43b4b6d71bae2fd55901f4ceba4147e6"],["76e9c13e00080a90f5729a0c1ab455f6c613d17f51da5220c032b6231651f150","4664dcf75c94b46166b82a3e81400b2711ec4707fb689e670756124e23dcc3b0"]],
+        "W":{"reference":[6876180,6876180],"per_record":{"level":185,"growth":5},"cumulative":{"level":185,"growth":5}},
+        "T":{"reference":[7637311,7637311],"per_record":{"level":28015,"growth":5},"cumulative":{"level":28015,"growth":5}}
+      },
+      "shared_rows": {
+        "fixtures": [["3b7c7f8d14d23779c9b7febc9ea767a83c4ca525daa9dd1220bfadcf178a03c7","628cdd6f4acd85ca09ee29b7f548ee67831ac70be0d75a9de96cc8db3ad7adbe"],["e0fdb1640c85e7b313fbea7c32b54d77f53bb15725db8e1678f56c5018456fd5","6c5249b2071b2078b8be70a9c7f5f655bbfc716ad3825443fcc0584d005e822f"]],
+        "W":{"reference":[153004,153004],"per_record":{"level":37,"growth":0},"cumulative":{"level":37,"growth":0}},
+        "T":{"reference":[160851,160851],"per_record":{"level":11,"growth":0},"cumulative":{"level":11,"growth":0}}
+      },
+      "awfy_sieve": {
+        "fixtures": [["077218e0b802f1e8ac56d44cd8287fb2239c06501702fd1453d9a24b5c4e8200","be41cde8c9abcde3699cd84c112b27b0dd5a2dffa30cef105fb3cec659c25bfa"],["674035da9abb9fef4977879f92f423521a8b41c3dbfd9fbce3c95d9ba052376b","a513c5be432a40a15b58584a886eb28f4629a711427b7cc304a76640e04b9b69"]],
+        "W":{"reference":[15654743,15654743],"per_record":{"level":314,"growth":0},"cumulative":{"level":314,"growth":0}},
+        "T":{"reference":[17222863,17222863],"per_record":{"level":49109,"growth":0},"cumulative":{"level":49109,"growth":0}}
+      },
+      "awfy_permute": {
+        "fixtures": [["890a603371c8df0b63a51a5f3eeaaa517de7c4ae09dc26d4a4089d559d538797","4e3b40474e2048eff584dcbb2d4a729f1e6e07f48ff664986e6c9fa9aa9f85c4"],["590ec68c8576cb885cab7933af53d9051f9599cf733434ee8c3d0e5f5e2b061b","5b173424b1436f04c970da0ab11c20f4592deb7a5d51f833050f50433d054d1e"]],
+        "W":{"reference":[190935217,190935217],"per_record":{"level":3970,"growth":0},"cumulative":{"level":3970,"growth":0}},
+        "T":{"reference":[200716997,200716997],"per_record":{"level":213276,"growth":0},"cumulative":{"level":213276,"growth":0}}
+      },
+      "vec_iter_i64": {
+        "fixtures": [["9a3aaa358be791fed3171c76839bc826336e0f8580bac1b14c91a4e0b9050049","640ac3d03d9e6edf55df28c9cbdcef9b050c7f9d2d564cf2b5b9d58eaeb0e5b2"],["eace17d8024ad64442d83740aa0c5d42d970ca51ba5133a93bf411c62282a575","1aab6764cdce5e3f24d51958bbdab0dc0f25cd35d9539e7fee8385d7e7bc4012"]],
+        "W":{"reference":[9505844,9505844],"per_record":{"level":233,"growth":0},"cumulative":{"level":233,"growth":0}},
+        "T":{"reference":[10674438,10674438],"per_record":{"level":33096,"growth":0},"cumulative":{"level":33096,"growth":0}}
+      },
+      "vec_iter_bool": {
+        "fixtures": [["6459b4f4ebc519f39e2fb30e2429717938d75862af1cd655bb01085ce8ef0c59","ec96ebafea25e847860c6f784d393bf184574adb57b2af0ed0613ff2810fe45b"],["dc34d16d4dd395dc8f78798e3b25fee247a2a71421c90034c10899e87b61245a","3c0f994c36d01290a05c4bacb857532a0d035430ada67cdfd344d0729f6b18d4"]],
+        "W":{"reference":[8634606,8634606],"per_record":{"level":199,"growth":0},"cumulative":{"level":199,"growth":0}},
+        "T":{"reference":[9610446,9610446],"per_record":{"level":27819,"growth":0},"cumulative":{"level":27819,"growth":0}}
+      }
+    },
+    "reference_binary_sha256": "e2de11eb544ad2bcf65073a8fdd3f8a7fe48e3f8b32ee0af02867f50256bfb4f"
+  },
   "anchor": "48fe3b15f48c92be91f04aa97f1f2f3fc31cf860",
   "anchor_transition": {
     "old": "3fe44bf9245c780cf784554293e0a1b1e7c00c26",

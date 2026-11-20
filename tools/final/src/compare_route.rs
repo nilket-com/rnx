@@ -89,6 +89,43 @@ impl Screen {
 			"candidate".to_owned(),
 			records(&receipt["candidate"], "candidate")?,
 		);
+		if receipt["candidate"]["recipe"]["policy"]["schema"] == 2
+			|| receipt["policy"]["schema"] == 2
+		{
+			let policy = &receipt["policy"];
+			anyhow::ensure!(policy["schema"] == 2, "missing split capture policy");
+			let scored = crate::fixed_route::score(
+				&receipt["baseline"],
+				&receipt["candidate"],
+				Some(&anchor),
+				policy,
+			)?;
+			for field in ["status", "per_record", "cumulative", "dynamic"] {
+				anyhow::ensure!(
+					scored[field] == receipt[field],
+					"split screen differs from recomputed {field}"
+				);
+			}
+			for (role, source) in [
+				("anchor", &anchor),
+				("baseline", &receipt["baseline"]),
+				("candidate", &receipt["candidate"]),
+			] {
+				for phase in ["setup", "execution"] {
+					let mut rows = Vec::new();
+					for row in source["records"].as_array().context("split records")? {
+						if row["policy"] == "on" {
+							rows.push(serde_json::json!({"kind":row["kind"],"policy":row["policy"],"n":row["n"],"accounting":row["phases"][phase]["accounting"]}));
+						}
+					}
+					roles.insert(
+						format!("{role}/{phase}"),
+						records(&serde_json::json!({"records":rows}), role)?,
+					);
+				}
+			}
+			return Ok(Self { roles });
+		}
 		let screen = Self { roles };
 		let mut all_pass = true;
 		for (section, left, limit) in [
@@ -206,6 +243,13 @@ impl Screen {
 	/// case's bound. The derived rows were checked against these counts.
 	pub fn counts_differ(&self, other: &Self) -> Vec<String> {
 		let mut out = Vec::new();
+		for role in other
+			.roles
+			.keys()
+			.filter(|role| !self.roles.contains_key(*role))
+		{
+			out.push(format!("{role}: in one screen only"));
+		}
 		for (role, cases) in &self.roles {
 			let Some(theirs) = other.roles.get(role) else {
 				out.push(format!("{role}: in one screen only"));

@@ -117,3 +117,32 @@ def evaluate(records, policy, whole_map_evaluator):
 				failures.append(dict(band, rule="system library growth"))
 	return {"status": "FAIL" if failures else "PASS", "failures": failures,
 		"system_bands": bands, "raw_whole_map_verdict": raw, "reviewed_exceptions_applied": []}
+
+
+def phase_accounts(directory, binary):
+	"""Validate the ordered parts and reconstruct the original invocation window."""
+	import hashlib
+	directory = Path(directory)
+	files = sorted(directory.glob("map.callgrind.*"))
+	if [p.name for p in files] != ["map.callgrind.1", "map.callgrind.2"]:
+		raise ValueError("expected exactly two invocation dumps")
+	parts = {}
+	whole = {key: {} for key in ("rnx_functions", "other_functions", "dynamic_functions")}
+	for label, path in zip(("setup", "execution"), files, strict=True):
+		raw = path.read_bytes()
+		if re.findall(rb"^desc: Trigger: (.*)$", raw, re.M) != [b"dump " + label.encode()]:
+			raise ValueError("unexpected phase trigger: " + label)
+		a = account(path, binary)
+		for group, totals in whole.items():
+			for function, cost in a[group].items():
+				totals[function] = totals.get(function, 0) + cost
+		parts[label] = {"profile": str(path), "profile_sha256": hashlib.sha256(raw).hexdigest(),
+			"accounting": a}
+	for group in tuple(whole):
+		whole[group.replace("_functions", "_Ir")] = sum(whole[group].values())
+	whole["total_Ir"] = whole["rnx_Ir"] + whole["other_Ir"] + whole["dynamic_Ir"]
+	stderr = (directory / "program.stderr").read_text()
+	collected = re.findall(r"^==\d+== Collected\s*:\s*(\d+)$", stderr, re.M)
+	if collected != [str(whole["total_Ir"])]:
+		raise ValueError("phase dumps do not reconcile with process-wide Collected Ir")
+	return whole, parts

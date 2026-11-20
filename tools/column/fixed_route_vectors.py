@@ -9,11 +9,13 @@ from old_path_programs import KERNELS,fixture
 from ir_pool import capture_environment
 from ir_resources import resources,fixed_budget
 import callgrind,ir_accounting
+from cli_symbols import invocation_phase_symbols
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--out',type=Path,required=True)
 parser.add_argument('--build-receipt',type=Path,required=True)
 parser.add_argument('--valgrind-root',type=Path,required=True)
 parser.add_argument('--capture-only', action='store_true', help='Validate complete captures without applying the historical exact-vector verdict')
+parser.add_argument('--native-phases', action='store_true', help='Measure preparation and execution separately for native-on cells')
 args=parser.parse_args()
 out=args.out.resolve();out.mkdir(exist_ok=False)
 result={'status':'FAIL','purpose':'exact unchanged program and unknown-object function vectors; system deltas reported separately'}
@@ -22,6 +24,7 @@ try:
  pair=json.loads(args.build_receipt.read_text());assert pair['status']=='PASS'
  binaries=dict(zip(('baseline','candidate'),pair['builds']))
  entries={}
+ phase_symbols={}
  for role,b in binaries.items():
   assert sha(b['binary'])==b['sha256']
   raw=subprocess.check_output(['nm','--defined-only',b['binary']],text=True).splitlines()
@@ -29,6 +32,10 @@ try:
   a=[s.split()[0] for s in dem if s.endswith(' <rune::experimental_core::execute::PreparedInvocation>::invoke')];assert len(a)==1
   names=[s.split()[-1] for s in raw if s.split()[0]==a[0]];assert len(names)==1
   entries[role]=names[0]
+  if args.native_phases:
+   src=subprocess.check_output(['git','show',b['source_commit']+':rune/crates/rune/src/experimental_core/execute.rs'],cwd=root,text=True)
+   phase_entry,phase_symbols[role]=invocation_phase_symbols(b['binary'],src)
+   assert phase_entry==entries[role]
  observation=resources();workers=fixed_budget(observation);available=observation['mem_available_bytes'];headroom=observation['ancestor_headroom_bytes']
  atomic_json(out/'MANIFEST.json',{'binaries':binaries,'entries':entries,'workers':workers,'mem_available':available,'cgroup_headroom':headroom,'per_worker_admission':2*1024**3,'environment':capture_environment(),'sizes':[1,5],'kernels':KERNELS,'policies':['off','on']})
  def job(spec):
@@ -40,14 +47,28 @@ try:
    (d/'direct.stdout').write_bytes(direct.stdout);(d/'direct.stderr').write_bytes(direct.stderr)
    assert direct.returncode==0 and b'rnx: engine=execution' in direct.stderr,(direct.returncode,direct.stderr.decode())
    cfg={'binary':b['binary'],'entry':entries[role],'arm':None,'options':opts,'budget':1000000000,'out':str(d),'valgrind_root':str(args.valgrind_root.resolve()),'fixture':str(src),'gdb_receipt':str(d/'GDB.json')}
+   phased=args.native_phases and policy=='on'
+   measured_binary=b['binary']
+   if args.native_phases:
+    cfg['canonical_layout']=True
+    measured_binary='/run/rnx-route/rnx'
+   if phased:cfg['phase_symbols']=phase_symbols[role]
    atomic_json(d/'CONFIG.json',cfg)
    with (d/'child.log').open('w') as log:p=subprocess.run([sys.executable,'-B',str(root/'tools/column/old_path_child.py'),str(d/'CONFIG.json')],env=capture_environment(),stdout=log,stderr=subprocess.STDOUT,timeout=720)
    assert p.returncode==0
    assert (d/'program.stdout').read_bytes()==direct.stdout
-   profiles=list(d.glob('map.callgrind.*'));assert len(profiles)==1
-   profile=callgrind.parse(profiles[0]);assert profile['total_Ir']>0
-   assert sum(v['self_Ir'] for k,v in profile['functions'].items() if 'Executor' in k and 'invoke_args' in k)>0
-   r.update(status='PASS',accounting=ir_accounting.account(profiles[0],b['binary']),profile=str(profiles[0]),profile_sha256=sha(profiles[0]),stdout_sha256=sha(d/'program.stdout'),fixture_sha256=sha(src))
+   if phased:
+    whole,parts=ir_accounting.phase_accounts(d,measured_binary)
+    boundary=json.loads((d/'GDB.json').read_text())
+    assert boundary['status']=='PASS' and boundary['split'] in phase_symbols[role]
+    assert sum(v for k,v in parts['execution']['accounting']['rnx_functions'].items() if k==boundary['split'])>0
+    r.update(accounting=whole,phases=parts,boundary=boundary)
+   else:
+    profiles=list(d.glob('map.callgrind.*'));assert len(profiles)==1
+    profile=callgrind.parse(profiles[0]);assert profile['total_Ir']>0
+    assert sum(v['self_Ir'] for k,v in profile['functions'].items() if 'Executor' in k and 'invoke_args' in k)>0
+    r.update(accounting=ir_accounting.account(profiles[0],measured_binary),profile=str(profiles[0]),profile_sha256=sha(profiles[0]))
+   r.update(status='PASS',stdout_sha256=sha(d/'program.stdout'),fixture_sha256=sha(src))
   except Exception:r['error']=traceback.format_exc()
   atomic_json(d/'RESULT.json',r);return r
  specs=[(k,p,n,r) for k in KERNELS for p in ('off','on') for n in (1,5) for r in binaries]

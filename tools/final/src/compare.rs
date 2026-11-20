@@ -70,7 +70,7 @@ pub const CROSS_RUN_SPECIFIC: [&str; 16] = [
 /// its binaries, profiles and anchor key are built and captured inside the
 /// final's own directory, so their digests differ in any two finals; and
 /// its anchor build's times.
-pub const FIXED_ROUTE_RUN_SPECIFIC: [&str; 11] = [
+pub const FIXED_ROUTE_RUN_SPECIFIC: [&str; 19] = [
 	"anchor_cache.anchor_build_seconds",
 	"anchor_cache.anchor_total_seconds",
 	"anchor_cache.key",
@@ -82,13 +82,21 @@ pub const FIXED_ROUTE_RUN_SPECIFIC: [&str; 11] = [
 	"candidate.binary_sha256",
 	"candidate.capture_key",
 	"candidate.records[].profile_sha256",
+	"baseline.records[].boundary.thread",
+	"candidate.records[].boundary.thread",
+	"baseline.records[].phases.*.profile_sha256",
+	"candidate.records[].phases.*.profile_sha256",
+	"baseline.records[].boundary_sha256",
+	"candidate.records[].boundary_sha256",
+	"baseline.records[].stderr_sha256",
+	"candidate.records[].stderr_sha256",
 ];
 
 /// The fixed-route screen's counts and the values derived from them. They
 /// are left out of the whole-receipt comparison and checked by `route`
 /// instead: each screen's derived values against its own counts, and the
 /// counts exactly at one path length, with one named bounded case.
-pub const FIXED_ROUTE_COUNTS: [&str; 11] = [
+pub const FIXED_ROUTE_COUNTS: [&str; 15] = [
 	"baseline.records[].accounting",
 	"candidate.records[].accounting",
 	"per_record[].B1",
@@ -100,6 +108,10 @@ pub const FIXED_ROUTE_COUNTS: [&str; 11] = [
 	"cumulative[].C1",
 	"cumulative[].C5",
 	"dynamic[].Ir",
+	"baseline.records[].phases.*.accounting",
+	"candidate.records[].phases.*.accounting",
+	"per_record[].phases",
+	"cumulative[].phases",
 ];
 
 /// The Jupyter controls' receipt binds each nested check's own receipt by

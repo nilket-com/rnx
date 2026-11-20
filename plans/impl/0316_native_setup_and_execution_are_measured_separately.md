@@ -1,6 +1,6 @@
 # Implementation plan 0316: Native setup and execution are measured separately
 
-Status: Proposed
+Status: Implemented
 
 Paired ADR: ../adr/0316_native_setup_and_execution_are_measured_separately.md.
 
@@ -275,3 +275,171 @@ the two historical shared_rows replays, the first 0316 native-on fib
 execution refusal, 0302 A and 0301 integrated, then the setup, fixed-execution
 and per-row execution plants. Finish with the scorer and capture-failure
 controls. Record a separate verdict for each. The v1 reserve stays sealed.
+
+## Results
+
+The fixed-route gate now scores native-on workloads in two phases,
+measured directly at the entry of the outer `Executor::invoke_args`
+closure:
+- one-time native setup (region analysis, the cache decision, emission);
+- execution (frame entry, the dispatch loop, export and teardown).
+Setup plus execution reconciles exactly with the whole invocation, and
+with Callgrind's process total.
+
+Execution keeps the 0.5% per-record and 1% cumulative bands on W and T,
+the growth checks, and the recombined-whole checks. Setup has its own
+per-change and cumulative limits, calibrated from independent layout
+changes. A saving in one phase cannot pay for a regression in the other.
+
+The user's rulings shaped the record:
+- hit the twice-recurring `shared_rows` failure head on rather than
+  routing features around it;
+- measure the phases directly, with separate budgets;
+- freeze the limits on independent calibration before replaying the
+  historical failures;
+- size the setup limit from the anchor's independent layout flip;
+- re-anchor cumulative setup at the published ff5bf81e and record the
+  historical setup growth.
+
+The acceptance criterion was the user's: the gate names the phase that
+got more expensive, and a real regression in either phase can still stop
+publication.
+
+The Rust scorer reads both Callgrind dumps for each native-on case through
+the production observer's accounting. The cache owns both profiles, the
+ordered debugger receipt, process stderr, fixture, stdout and binary.
+Schema 1 retains its whole-invocation scoring. Schema 2 uses the separate
+setup limits, execution bands and recombined checks in this record.
+
+ROOT-REPLAY-v1 failed. Forcing the push to inline stabilized that call
+edge while 274 to 390 instructions of drift remained. The rename-only
+calibration also failed its coverage screen. The structural sample
+exposed a compiler-layout flip on the anchor only. The failed screens
+and the signed decision to use the anchor flip remain part of calibration.
+The table above records all 16 original setup migration comparisons,
+including the eight failures and the re-anchor at the published baseline.
+
+The sealed v2 reserve passed all 9,728 checks on 256 captures. The earlier
+v1 reserve stayed sealed. The held-out replays used the second signed
+freeze. Both historical shared_rows changes passed execution and failed
+setup: +1,597 W / +1,525 T for 0310 and +2,183 W/T for 0316. The historical
+expectation had been corrected before replay using the disclosed
+exploratory counts. The native-on fib replay also exposed a size-5
+execution regression of 389,780 W against a 370,237 allowance. The 0302
+A replay retained its execution failure (+1,296 W), and 0301 integrated
+retained both its setup and execution failures (+13,221 and +19,002 W).
+
+The setup plant added 7,179 instructions. The original fixed-execution
+plant also changed the loop slope (+784). Its replacement used the same
+ELF for OFF and ON and added exactly 7,170 instructions at each size
+with zero setup and growth deltas. The per-row plant added 9,075 at
+size 5 and 7,260 to growth. The replay scorer passed 57 controls, and
+the observer passed 15 capture controls. The original failed plant and
+the interrupted hard-link staging attempt remain in the evidence.
+
+### Published baseline in the production capture
+
+The initial migration under the calibration clean01 reference failed
+two of 32 cumulative rows. At both sizes shared_rows T exceeded its
+setup allowance (+285 against 11) and awfy_sieve W exceeded its setup
+allowance (+370 against 314). Every required execution and recombined
+check passed. The shared_rows difference was entirely in libc. The
+sieve difference in W came from one unidentified address.
+
+A crossed diagnostic used both binaries built from the same ff5bf81e
+source archive (SHA-256 1f3b733135533fdeb4417b8fb19be6adf3a12070870679bcc258f26ddeaecd53).
+Each binary ran at both original path configurations, twice at each
+size, with identical script bytes. The first diagnostic wrapper added
+PWD to the capture environment and failed to reproduce the original
+levels. The corrected wrapper verified the ordered environment inside
+each private mount. All 32 captures reproduced their respective counts.
+Changing paths added exactly 285 or 370 instructions as above. Changing
+the binary at a fixed path changed the affected metric by zero. These
+observations attribute the differences to the combined path configuration.
+
+Before that diagnostic the decision was made to use the published
+production capture for cumulative setup if the difference followed
+measurement context. The production binary SHA-256 is
+e2de11eb544ad2bcf65073a8fdd3f8a7fe48e3f8b32ee0af02867f50256bfb4f.
+The reference values for sizes 1 and 5 follow. Every setup allowance
+still comes from the signed calibration table.
+
+| Kernel | Metric | Calibration reference, 1 / 5 | Production reference, 1 / 5 |
+|---|---|---:|---:|
+| fib | W | 45316758 / 45316758 | 45316936 / 45316936 |
+| fib | T | 48557752 / 48557752 | 48472850 / 48472850 |
+| loops | W | 4728644 / 4728644 | 4728630 / 4728630 |
+| loops | T | 5218517 / 5218517 | 5215369 / 5215369 |
+| numeric_calls | W | 6876180 / 6876180 | 6876180 / 6876180 |
+| numeric_calls | T | 7636451 / 7636451 | 7633804 / 7633804 |
+| shared_rows | W | 153004 / 153004 | 153004 / 153004 |
+| shared_rows | T | 160725 / 160725 | 161010 / 161010 |
+| awfy_sieve | W | 15654389 / 15654389 | 15654759 / 15654759 |
+| awfy_sieve | T | 17258519 / 17258519 | 17218292 / 17218292 |
+| awfy_permute | W | 190935217 / 190935217 | 190935249 / 190935249 |
+| awfy_permute | T | 200731550 / 200731550 | 200741466 / 200741466 |
+| vec_iter_i64 | W | 9505948 / 9505948 | 9505920 / 9505920 |
+| vec_iter_i64 | T | 10669019 / 10669019 | 10663256 / 10663256 |
+| vec_iter_bool | W | 8634532 / 8634532 | 8634602 / 8634602 |
+| vec_iter_bool | T | 9605698 / 9605698 | 9593662 / 9593662 |
+
+The production-format anchor at 48fe3b15 was freshly captured alongside
+the published ff5bf81e baseline. The cold cache accepted the anchor and
+a reopened cache verified its 145 artifacts and hit the same key.
+Rescoring the retained captures under the production reference passed
+32/32 cumulative rows. The per-record self-comparison also passed 32/32.
+A replay using the Rust receipt comparator accepted the verdict and
+rejected a corrupted verdict and a corrupted phase total. The observed
+path effects apply to these measured path configurations. The complete
+final uses its own paired builds and capture paths.
+
+The first path guard keyed the physical payload and role paths. A fresh
+shared_rows size-1 control with the same ELF measured setup T of 161,010
+under the production launch and 160,725 under the calibration launch.
+The scorer refused the mismatched launch before scoring. Each ordinary
+final allocates new payload directories, making this physical reference
+unsuitable for comparing future captures.
+
+Under signed plan ebd3289d each measured process runs in its own mount
+namespace. CONFIG.json records real inputs and outputs. LAUNCH.json records
+the actual argv, cwd and ordered environment. Both are retained in each
+capture receipt. The cache binds the measured launch and content digests.
+The signed fixed_route_policy.json contains the recaptured ff5bf81e setup
+values and one launch digest per mode. All frozen allowances were retained.
+
+In CANONICAL-v1 the same ELF at different real paths had identical setup
+and execution W and T at both shared_rows sizes (setup T 160,851 each).
+Changing the order of its environment produced an incomparable-capture
+refusal before scoring. Both roles had identical launch bytes at all 32
+matched cells. Migration scored 32/32 for both per-record and cumulative
+comparisons; the reopened execution-anchor cache verified 225 artifacts.
+Relative to its pre-layout capture, execution anchor 48fe3b15 had exact W
+in every cell. T moved in 12 native-on cells (−156 to +6 instructions)
+and eight native-off cells (−484,731 to +327). The largest change was
+native-off awfy_permute at size 5. ANCHOR-MOVEMENT.json lists every cell.
+
+Consequences:
+- The 0310 and 0316 `shared_rows` flips are not noise. By independently
+  measured layout noise (a `shared_rows` setup limit of 37 W and 11 T),
+  their +1,597 and +2,183 setup instructions are real setup regressions,
+  and the gate now rejects them as setup.
+- The first 0316 binary-family candidate also carried a real execution
+  regression on native-on `fib`, which the old whole-invocation gate
+  diluted with about 48 million setup instructions. The binary family,
+  now ADR 0317, must address both costs.
+- The first fixed-execution plant showed that unrelated code can also
+  move execution-loop code generation (+784 growth on `shared_rows`).
+  The execution bands catch such a slope as a real cost.
+
+A required final on 3d8d2d79 passed its six selected stages in 2.6
+minutes. The complete final on the same commit then passed all 101
+stages on its first attempt, including the fixed-route gate scored by
+phase under the canonical launch layout. All 32 per-record and 32
+cumulative rows passed. For example, native-on `fib` execution was
+allowed 370,237 instructions at size 5, 5 per mille of 74,047,589, which
+is the allowance that rejects the first 0316 candidate. The final took
+43.5 minutes of accepted run and 44.5 end to end, with no memory.high,
+memory.max or OOM events.
+
+No product source, engine code, codegen flag or inventoried item changed.
+Every change is in `tools/` and `plans/`.
