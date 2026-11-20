@@ -13,6 +13,7 @@ pub mod cross;
 pub mod evidence;
 pub mod failure;
 pub mod fixed_route;
+mod fixed_route_images;
 pub mod fixed_route_stage;
 pub mod guardian;
 pub mod jobs;

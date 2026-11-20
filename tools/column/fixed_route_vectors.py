@@ -21,21 +21,33 @@ out=args.out.resolve();out.mkdir(exist_ok=False)
 result={'status':'FAIL','purpose':'exact unchanged program and unknown-object function vectors; system deltas reported separately'}
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 try:
- pair=json.loads(args.build_receipt.read_text());assert pair['status']=='PASS'
+ pair=json.loads(args.build_receipt.read_text());assert pair['status']=='PASS' and len(pair['builds'])==2
  binaries=dict(zip(('baseline','candidate'),pair['builds']))
  entries={}
  phase_symbols={}
  for role,b in binaries.items():
   assert sha(b['binary'])==b['sha256']
-  raw=subprocess.check_output(['nm','--defined-only',b['binary']],text=True).splitlines()
-  dem=subprocess.check_output(['nm','-C','--defined-only',b['binary']],text=True).splitlines()
+  owner=b.get('engine_binary',b['binary'])
+  desc=b.get('measured')
+  if desc is not None:
+   assert desc['version']==1 and type(desc['version']) is int and desc['target']=='x86_64-unknown-linux-gnu'
+   assert desc['runner']=={'path':'/run/rnx-route/rnx','sha256':b['sha256']}
+   assert set(desc)==({'version','target','runner','engine'} if 'engine_binary' in b else {'version','target','runner'})
+  if 'engine_binary' in b:
+   assert desc['engine']['path']=='/run/rnx-route/libengine_image.so'
+   assert args.native_phases and sha(owner)==b['measured']['engine']['sha256']
+  raw=subprocess.check_output(['nm','--defined-only',owner],text=True).splitlines()
+  dem=subprocess.check_output(['nm','-C','--defined-only',owner],text=True).splitlines()
   a=[s.split()[0] for s in dem if s.endswith(' <rune::experimental_core::execute::PreparedInvocation>::invoke')];assert len(a)==1
   names=[s.split()[-1] for s in raw if s.split()[0]==a[0]];assert len(names)==1
   entries[role]=names[0]
   if args.native_phases:
    src=subprocess.check_output(['git','show',b['source_commit']+':rune/crates/rune/src/experimental_core/execute.rs'],cwd=root,text=True)
-   phase_entry,phase_symbols[role]=invocation_phase_symbols(b['binary'],src)
+   phase_entry,phase_symbols[role]=invocation_phase_symbols(owner,src)
    assert phase_entry==entries[role]
+   if 'engine_binary' in b:
+    runner_names={line.split()[-1] for line in subprocess.check_output(['nm','--defined-only',b['binary']],text=True).splitlines() if line.split()}
+    if runner_names.intersection([phase_entry,*phase_symbols[role].values()]):raise ValueError("engine selector also defined in runner")
  observation=resources();workers=fixed_budget(observation);available=observation['mem_available_bytes'];headroom=observation['ancestor_headroom_bytes']
  atomic_json(out/'MANIFEST.json',{'binaries':binaries,'entries':entries,'workers':workers,'mem_available':available,'cgroup_headroom':headroom,'per_worker_admission':2*1024**3,'environment':capture_environment(),'sizes':[1,5],'kernels':KERNELS,'policies':['off','on']})
  def job(spec):
@@ -52,13 +64,17 @@ try:
    if args.native_phases:
     cfg['canonical_layout']=True
     measured_binary='/run/rnx-route/rnx'
+   engine=None
+   if 'measured' in b:cfg['measured']=b['measured']
+   if 'engine_binary' in b:
+    cfg['engine_binary']=b['engine_binary'];engine=b['measured']['engine']['path']
    if phased:cfg['phase_symbols']=phase_symbols[role]
    atomic_json(d/'CONFIG.json',cfg)
    with (d/'child.log').open('w') as log:p=subprocess.run([sys.executable,'-B',str(root/'tools/column/old_path_child.py'),str(d/'CONFIG.json')],env=capture_environment(),stdout=log,stderr=subprocess.STDOUT,timeout=720)
    assert p.returncode==0
    assert (d/'program.stdout').read_bytes()==direct.stdout
    if phased:
-    whole,parts=ir_accounting.phase_accounts(d,measured_binary)
+    whole,parts=ir_accounting.phase_accounts(d,measured_binary,engine)
     boundary=json.loads((d/'GDB.json').read_text())
     assert boundary['status']=='PASS' and boundary['split'] in phase_symbols[role]
     assert sum(v for k,v in parts['execution']['accounting']['rnx_functions'].items() if k==boundary['split'])>0
@@ -67,7 +83,8 @@ try:
     profiles=list(d.glob('map.callgrind.*'));assert len(profiles)==1
     profile=callgrind.parse(profiles[0]);assert profile['total_Ir']>0
     assert sum(v['self_Ir'] for k,v in profile['functions'].items() if 'Executor' in k and 'invoke_args' in k)>0
-    r.update(accounting=ir_accounting.account(profiles[0],measured_binary),profile=str(profiles[0]),profile_sha256=sha(profiles[0]))
+    r.update(accounting=ir_accounting.account(profiles[0],measured_binary,engine),profile=str(profiles[0]),profile_sha256=sha(profiles[0]))
+   if engine and not phased:r['image_boundary']=json.loads((d/'GDB.json').read_text())
    r.update(status='PASS',stdout_sha256=sha(d/'program.stdout'),fixture_sha256=sha(src))
   except Exception:r['error']=traceback.format_exc()
   atomic_json(d/'RESULT.json',r);return r

@@ -6,6 +6,9 @@
 #[path = "harness/commands.rs"]
 mod commands;
 mod harness;
+#[cfg(unix)]
+#[path = "harness/scratch.rs"]
+mod scratch;
 
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
@@ -32,7 +35,7 @@ fn reported_with(
 	std::fs::write(
 		&path,
 		format!(
-			"pub fn main(_) {{\n\tlet r = process::run({child}, #{{timeout_ms: {deadline_ms}}})?;\n\tprintln!(\"timed_out={{}} cancelled={{}} truncated={{}} cut_short={{}} unreadable={{}} out={{}} err={{}}\", r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len(), r.stderr.len());\n\tOk(())\n}}\n"
+			"pub fn main(_) {{\n\tlet r = process::run({child}, #{{timeout_ms: {deadline_ms}}})?;\n\tprintln!(\"code={{:?}} timed_out={{}} cancelled={{}} truncated={{}} cut_short={{}} unreadable={{}} out={{}} err={{}}\", r.code, r.timed_out, r.cancelled, r.truncated, r.cut_short, r.unreadable, r.stdout.len(), r.stderr.len());\n\tOk(())\n}}\n"
 		),
 	)
 	.unwrap();
@@ -118,6 +121,78 @@ fn a_child_that_ends_its_streams_spends_none_of_the_allowance() {
 	);
 }
 
+/// The supervised shell may exit only after its holder has left the process
+/// group. Keep stdout on the capture pipe even while creating the marker.
+#[cfg(unix)]
+fn held_stdout(prefix: &str, delay: &str, acknowledge: bool) -> (bool, String, Duration) {
+	let dir = scratch::Scratch::dir(
+		std::env::temp_dir().join(format!("rnx-held-stdout-{}", std::process::id())),
+	);
+	let ready = dir.join("ready");
+	let script = r#"
+		printf '%s' "$2"
+		(
+			if [ "$3" != 0 ]; then sleep "$3" || exit 1; fi
+			exec setsid sh -c '
+				if [ "$2" = ready ]; then : 3>"$1" || exit 1; fi
+				exec sleep 6
+			' sh "$1" "$4"
+		) 2>/dev/null &
+		i=0
+		while [ ! -f "$1" ] && [ "$i" -lt 200 ]; do
+			sleep 0.005
+			i=$((i+1))
+		done
+		[ -f "$1" ] || exit 42
+	"#;
+	let child = commands::shell_with(
+		script,
+		&[
+			ready.to_str().expect("scratch paths are UTF-8"),
+			prefix,
+			delay,
+			if acknowledge { "ready" } else { "silent" },
+		],
+	);
+	let (line, took) = reported(&child, 30_000, None);
+	(ready.is_file(), line, took)
+}
+
+#[cfg(unix)]
+fn assert_held_stdout(prefix: &str, delay: &str) {
+	let (ready, line, took) = held_stdout(prefix, delay, true);
+	assert!(
+		ready,
+		"detached stdout holder did not acknowledge startup: {line}"
+	);
+	assert!(line.starts_with("code=0 "), "holder parent failed: {line}");
+	assert_eq!(
+		line.trim_end(),
+		format!(
+			"code=0 timed_out=false cancelled=false truncated=false cut_short=true unreadable=false out={} err=0",
+			prefix.len()
+		)
+	);
+	assert!(
+		took < Duration::from_secs(2),
+		"call waited for the holder: {took:?}"
+	);
+}
+
+#[test]
+#[cfg(unix)]
+fn delayed_stdout_holder_requires_its_acknowledgement() {
+	// Force startup past the old parent's entire 100 ms wait. An escaped but
+	// silent holder can still produce cut_short=true; its parent must fail.
+	assert_held_stdout("partial", "0.35");
+	let (ready, line, _) = held_stdout("partial", "0.35", false);
+	assert!(!ready);
+	assert!(
+		line.starts_with("code=42 "),
+		"missing readiness was accepted: {line}"
+	);
+}
+
 #[test]
 #[cfg(unix)]
 fn a_child_that_exits_while_a_pipe_is_held_returns_after_the_cleanup() {
@@ -130,17 +205,7 @@ fn a_child_that_exits_while_a_pipe_is_held_returns_after_the_cleanup() {
 	// Thirty second deadline, child gone in milliseconds, descendant holding
 	// standard output for six seconds: the call must come back after the
 	// allowance rather than after the deadline or the descendant.
-	let (line, took) = reported(
-		&commands::shell("setsid sleep 6 2>/dev/null & sleep 0.1"),
-		30000,
-		None,
-	);
-	assert!(line.contains("timed_out=false"), "{line}");
-	assert!(line.contains("cut_short=true"), "{line}");
-	assert!(
-		took < Duration::from_secs(2),
-		"the call took {took:?}: it waited for the deadline or the descendant"
-	);
+	assert_held_stdout("", "0");
 }
 
 #[test]
@@ -276,16 +341,7 @@ fn a_completeness_check_can_see_a_prefix_that_truncation_cannot() {
 	// returns a prefix. `truncated` is false — nothing hit the size cap — so
 	// a check written against it alone reports success from partial output,
 	// which is what the ports did and what decision 3 corrects.
-	let (line, _) = reported(
-		&commands::shell("printf 'partial'; setsid sleep 6 2>/dev/null & sleep 0.1"),
-		30000,
-		None,
-	);
-	assert!(line.contains("truncated=false"), "{line}");
-	assert!(line.contains("cut_short=true"), "{line}");
-	// And there really is output, so this is a prefix rather than nothing:
-	// the case is only interesting because the bytes look like an answer.
-	assert!(line.contains("out=7"), "{line}");
+	assert_held_stdout("partial", "0");
 }
 
 /// Needs the allowance stretched so an interrupt can land inside it: with the

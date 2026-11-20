@@ -8,6 +8,7 @@
 use crate::child::{Raised, raise, value_error};
 use crate::failure::Environment;
 use crate::fixed_route::{self as fr, Cache};
+use crate::fixed_route_images as images;
 use crate::pyjson::identity;
 use crate::receipt::{atomic_json, digest};
 use anyhow::{Context as _, Result, bail};
@@ -299,11 +300,19 @@ fn capture_paths(
 	valgrind: &Path,
 	launches: &Value,
 ) -> Value {
-	json!({"binary":binary["binary"], "vectors":vectors,"role":role,"cwd":root,"valgrind_root":valgrind,"launch_sha256":launches})
+	let mut paths = json!({"binary":binary["binary"], "vectors":vectors,"role":role,"cwd":root,"valgrind_root":valgrind,"launch_sha256":launches});
+	if let Some(desc) = binary.get("measured") {
+		paths["measured"] = desc.clone();
+	}
+	paths
 }
 pub fn contextual_key(sha: &str, recipe: &Value, paths: &Value) -> Result<String> {
 	let key = capture_key(sha, recipe)?;
 	if recipe["policy"]["schema"] != 2 {
+		anyhow::ensure!(
+			paths["measured"].get("engine").is_none(),
+			"split images require the canonical capture recipe"
+		);
 		return Ok(key);
 	}
 	anyhow::ensure!(
@@ -324,7 +333,12 @@ pub fn contextual_key(sha: &str, recipe: &Value, paths: &Value) -> Result<String
 		matches!(paths["role"].as_str(), Some("baseline" | "candidate")),
 		"missing role in path configuration"
 	);
-	identity(&json!({"measurement_key":key,"launch_sha256":paths["launch_sha256"]}))
+	let mut context = json!({"measurement_key":key,"launch_sha256":paths["launch_sha256"]});
+	if let Some(desc) = paths.get("measured") {
+		images::validate(desc, &json!(sha))?;
+		context["measured"] = desc.clone();
+	}
+	identity(&context)
 }
 
 /// A capture receipt whose every artifact still has its digest.
@@ -604,6 +618,21 @@ fn checked_pair(pair: Value) -> Result<Value> {
 		bail!(value_error("build receipt must name exactly two builds"));
 	};
 	for b in builds {
+		let owner = images::owner(b)?;
+		if let Some(desc) = b.get("measured") {
+			anyhow::ensure!(
+				json!(digest(Path::new(
+					b["binary"].as_str().context("runner file")?
+				))?) == desc["runner"]["sha256"],
+				"runner build digest differs"
+			);
+			if let Some(engine) = desc.get("engine") {
+				anyhow::ensure!(
+					json!(digest(Path::new(owner))?) == engine["sha256"],
+					"engine build digest differs"
+				);
+			}
+		}
 		let field = |k: &str| {
 			b.get(k)
 				.and_then(Value::as_str)
@@ -680,14 +709,18 @@ fn captures(
 			"-B".into(),
 			"tools/column/executor_identity.py".into(),
 			"--baseline".into(),
-			builds[0]["binary"].as_str().unwrap_or_default().into(),
+			images::owner(&builds[0])?.into(),
 			"--candidate".into(),
-			builds[1]["binary"].as_str().unwrap_or_default().into(),
+			images::owner(&builds[1])?.into(),
 			"--out".into(),
 			text(&out.join("IDENTITY.json")),
 		];
 		let status = host.run(&command, Some(root), create(&out.join("identity.log"))?)?;
-		let ident = read(&out.join("IDENTITY.json"))?;
+		let mut ident = read(&out.join("IDENTITY.json"))?;
+		if ident.is_object() && builds.iter().any(|b| b["measured"]["engine"].is_object()) {
+			ident["measured_roles"] = json!([builds[0]["measured"], builds[1]["measured"]]);
+			atomic_json(&out.join("IDENTITY.json"), &ident)?;
+		}
 		let verdict = ident
 			.as_object()
 			.and_then(|o| o.get("status"))
@@ -767,6 +800,18 @@ pub fn capture_receipts(
 			binary["sha256"].clone(),
 		);
 		let mut launches = json!({});
+		if let Some(desc) = binary.get("measured") {
+			images::owner(binary)?;
+			let manifest = read(&vectors_dir.join("MANIFEST.json"))?;
+			anyhow::ensure!(
+				manifest["binaries"][role] == *binary
+					&& desc["runner"]["sha256"] == binary["sha256"],
+				"capture manifest image binding differs"
+			);
+		}
+		if let Some(path) = binary.get("engine_binary").and_then(Value::as_str) {
+			artifacts.insert(path.into(), binary["measured"]["engine"]["sha256"].clone());
+		}
 		for row in &mut selected {
 			if split {
 				let mode = row["policy"].as_str().context("capture mode")?.to_owned();
@@ -785,7 +830,9 @@ pub fn capture_receipts(
 				let config_path = dir.join("CONFIG.json");
 				let config = read(&config_path)?;
 				anyhow::ensure!(
-					config["canonical_layout"] == true
+					config.get("measured") == binary.get("measured")
+						&& config.get("engine_binary") == binary.get("engine_binary")
+						&& config["canonical_layout"] == true
 						&& config["binary"] == binary["binary"]
 						&& config["fixture"] == json!(dir.join("program.rn"))
 						&& config["out"] == json!(dir)
@@ -806,10 +853,18 @@ pub fn capture_receipts(
 					route == [format!("rnx: engine=execution native-requested={mode}")],
 					"wrong measured execution route"
 				);
-				if mode == "on" {
+				if let Some(desc) = binary.get("measured") {
+					images::validate_row(row, desc)?;
+				}
+				if mode == "on" || binary.get("engine_binary").is_some() {
 					let boundary = dir.join("GDB.json");
 					anyhow::ensure!(
-						read(&boundary)? == row["boundary"],
+						read(&boundary)?
+							== row[if mode == "on" {
+								"boundary"
+							} else {
+								"image_boundary"
+							}],
 						"capture boundary mismatch"
 					);
 					row["boundary_sha256"] = json!(digest(&boundary)?);
@@ -829,6 +884,9 @@ pub fn capture_receipts(
 			"binary_sha256": sha, "capture_key": contextual_key(sha,current,&paths)?, "records": selected, "artifacts": artifacts});
 		if split {
 			receipt["capture_paths"] = paths;
+			if let Some(path) = binary.get("engine_binary") {
+				receipt["engine_binary"] = path.clone();
+			}
 		}
 		result.push(receipt);
 	}
@@ -1151,7 +1209,8 @@ fn run_gate(
 		}
 	};
 	// The cache owns the anchor bytes; the current-build proof is ephemeral.
-	if anchor["revision"] != anchor_revision
+	if anchor["capture_paths"].get("measured") != anchor_binary.get("measured")
+		|| anchor["revision"] != anchor_revision
 		|| anchor["binary_sha256"] != anchor_binary["sha256"]
 		|| fr::measurement_recipe(&anchor["recipe"])? != fr::measurement_recipe(&current)?
 	{

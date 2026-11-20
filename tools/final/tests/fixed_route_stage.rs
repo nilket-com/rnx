@@ -550,9 +550,17 @@ impl Host for Gate {
 				let b = out.join(role).join("rnx");
 				std::fs::create_dir_all(b.parent().unwrap()).unwrap();
 				std::fs::write(&b, format!("binary {rev}")).unwrap();
-				builds.push(
-					json!({"role": role, "source_commit": rev, "binary": b, "sha256": digest(&b)?}),
-				);
+				let mut build =
+					json!({"role":role,"source_commit":rev,"binary":b,"sha256":digest(&b)?});
+				if self.scenario == "a split pair" && which == "record" {
+					let engine = b.with_file_name("engine.so");
+					std::fs::write(&engine, format!("engine {rev}"))?;
+					build["measured"] = json!({"version":1,"target":"x86_64-unknown-linux-gnu",
+						"runner":{"path":"/run/rnx-route/rnx","sha256":build["sha256"]},
+						"engine":{"path":"/run/rnx-route/libengine_image.so","sha256":digest(&engine)?}});
+					build["engine_binary"] = json!(engine);
+				}
+				builds.push(build);
 			}
 			atomic_json(
 				&out.join("RESULT.json"),
@@ -1115,4 +1123,19 @@ fn a_final_failure_keeps_its_evidence_after_the_payload_is_released() {
 		got["receipt"]["payload_lifetime"],
 		"artifact paths valid through live final validation; after release see PAYLOAD-RELEASE.json and final MANIFEST.json"
 	);
+}
+
+#[test]
+fn identity_precheck_compares_the_owning_elf_of_each_revision() {
+	let result = scenario("a split pair", &[], None);
+	let calls = result["calls"].as_array().unwrap();
+	let call = calls
+		.iter()
+		.find(|c| c.to_string().contains("executor_identity.py"))
+		.unwrap();
+	let command = call.to_string();
+	for role in ["baseline", "candidate"] {
+		assert!(command.contains(&format!("/{role}/engine.so")), "{command}");
+		assert!(!command.contains(&format!("/{role}/rnx")), "{command}");
+	}
 }

@@ -1320,3 +1320,38 @@ fn same_image_at_another_launch_configuration_is_incomparable_before_scoring() {
 		"{err}"
 	);
 }
+
+#[test]
+fn a_cached_pair_retains_both_files_and_misses_on_either_digest_change() {
+	use rnx_final::fixed_route_stage::contextual_key;
+	let temp = scratch();
+	let d = &temp.0;
+	let runner = d.join("runner");
+	let engine = d.join("shared.so");
+	std::fs::write(&runner, "runner").unwrap();
+	std::fs::write(&engine, "engine").unwrap();
+	let sha = digest(&runner).unwrap();
+	let recipe = json!({"cpu":[],"environment":{},"run_environment":{},"valgrind":"v","fixtures":{},"tooling":{},"policy":{"schema":2}});
+	let paths = json!({"binary":runner,"vectors":d,"cwd":d,"valgrind_root":d,"role":"baseline","launch_sha256":{"on":"fixture"},
+		"measured":{"version":1,"target":"x86_64-unknown-linux-gnu","runner":{"path":"/run/rnx-route/rnx","sha256":sha},
+		"engine":{"path":"/run/rnx-route/libengine_image.so","sha256":digest(&engine).unwrap()}}});
+	let key = contextual_key(&sha, &recipe, &paths).unwrap();
+	let receipt = json!({"status":"PASS","records":[],"artifacts":{},"binary_sha256":sha,"engine_binary":engine,"capture_paths":paths,"capture_key":key,"recipe":recipe});
+	let mut cache = Cache::open(&d.join("cache")).unwrap();
+	let stored = cache.publish(&receipt, &runner, &json!({})).unwrap();
+	std::fs::remove_file(engine).unwrap();
+	assert_eq!(cache.lookup(&key).unwrap().1, "hit");
+	for role in ["runner", "engine"] {
+		let mut other = paths.clone();
+		other["measured"][role]["sha256"] = json!("a".repeat(64));
+		let changed = contextual_key(
+			other["measured"]["runner"]["sha256"].as_str().unwrap(),
+			&recipe,
+			&other,
+		)
+		.unwrap();
+		assert_eq!(cache.lookup(&changed).unwrap(), (None, "key differs"));
+	}
+	std::fs::write(stored["engine_binary"].as_str().unwrap(), "wrong").unwrap();
+	assert_eq!(cache.lookup(&key).unwrap(), (None, "verification failed"));
+}

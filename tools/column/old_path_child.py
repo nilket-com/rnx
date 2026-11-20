@@ -1,4 +1,5 @@
 """One blocking GDB/Callgrind run, started under the measurement lease."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,11 @@ if config.get("canonical_layout"):
 				(config["valgrind_root"], "valgrind"), (__file__, "old_path_child.py"),
 				(Path(__file__).with_name("old_path_gdb.py"), "old_path_gdb.py")]:
 			command.extend(["--ro-bind", str(source), str(layout / name)])
+		if "engine_binary" in config:
+			engine = config["measured"]["engine"]
+			if engine["path"] != str(layout / "libengine_image.so"):
+				raise ValueError("invalid engine mount")
+			command.extend(["--ro-bind", config["engine_binary"], engine["path"]])
 		command.extend(["--bind", config["out"], str(layout / "out"), "--chdir", str(layout),
 			"--", "/usr/bin/env", "-i", *(f"{k}={v}" for k, v in os.environ.items()),
 			f"VALGRIND_LIB={layout}/valgrind/libexec/valgrind", "/usr/bin/python3", "-B",
@@ -24,6 +30,13 @@ if config.get("canonical_layout"):
 		os.execv(command[0], command)
 	config.update(binary=str(layout / "rnx"), fixture=str(layout / "program.rn"),
 		out=str(layout / "out"), valgrind_root=str(layout / "valgrind"))
+	if "engine_binary" in config:
+		config["engine_binary"] = config["measured"]["engine"]["path"]
+	if "measured" in config:
+		for role in ("runner", "engine"):
+			artifact = config["measured"].get(role)
+			if artifact and hashlib.sha256(Path(artifact["path"]).read_bytes()).hexdigest() != artifact["sha256"]:
+				raise ValueError("mounted artifact differs: " + role)
 	config_path = layout / "out/OBSERVER.json"
 	config["gdb_receipt"] = str(layout / "out/GDB.json")
 	with config_path.open("x") as observer:
@@ -53,10 +66,10 @@ with (out / "program.stdout").open("x") as stdout, (out / "program.stderr").open
 		]))
 		with (out / "gdb.stdout").open("x") as gout, (out / "gdb.stderr").open("x") as gerr:
 			done = subprocess.run(["/usr/bin/gdb", "--nx", "--batch", "-x", str(commands)],
-				env=dict(os.environ, COLUMN_BOUNDARY_CONFIG=str(config_path)), stdout=gout, stderr=gerr, timeout=600)
+				env=dict(os.environ, COLUMN_BOUNDARY_CONFIG=str(config_path), COLUMN_CLIENT_PID=str(process.pid)), stdout=gout, stderr=gerr, timeout=600)
 		assert done.returncode == 0, "GDB failed"
-		assert process.wait(timeout=60) == 0, "CLI failed"
 		assert json.loads(Path(config["gdb_receipt"]).read_text())["status"] == "PASS", "boundary failed"
+		assert process.wait(timeout=60) == 0, "CLI failed"
 	finally:
 		if process.returncode is None:
 			process.kill()

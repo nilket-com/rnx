@@ -555,6 +555,11 @@ pub fn score(
 		if *at(receipt, "policy_sha256")? != json!(policy_sha) {
 			bail!(value_error("stale policy"));
 		}
+		if let Some(desc) = receipt["capture_paths"].get("measured") {
+			for row in receipt["records"].as_array().context("missing records")? {
+				crate::fixed_route_images::validate_row(row, desc)?;
+			}
+		}
 		if at(receipt, "recipe")? != at(candidate, "recipe")? {
 			let empty = json!({});
 			let proof = receipt.get("reuse_proof").unwrap_or(&empty);
@@ -570,6 +575,8 @@ pub fn score(
 			if !truthy(binary)
 				|| proof.get("binary_sha256") != binary
 				|| proof.get("current_build").and_then(|b| b.get("sha256")) != binary
+				|| proof["current_build"].get("measured")
+					!= receipt["capture_paths"].get("measured")
 			{
 				bail!(value_error("anchor reuse lacks identical current binary"));
 			}
@@ -887,6 +894,26 @@ impl Cache {
 		if artifacts.get(binary) != Some(at(&r, "binary_sha256")?) {
 			bail!(value_error("unbound anchor binary"));
 		}
+		if let Some(desc) = r["capture_paths"].get("measured") {
+			crate::fixed_route_images::validate(desc, &r["binary_sha256"])?;
+			anyhow::ensure!(
+				crate::fixed_route_stage::contextual_key(
+					r["binary_sha256"].as_str().unwrap_or_default(),
+					&r["recipe"],
+					&r["capture_paths"]
+				)? == key,
+				"unbound artifact identity"
+			);
+			if let Some(engine) = desc.get("engine") {
+				let file = r["engine_binary"]
+					.as_str()
+					.context("missing cached engine")?;
+				anyhow::ensure!(
+					artifacts.get(file) == engine.get("sha256"),
+					"unbound cached engine"
+				);
+			}
+		}
 		let records = at(&r, "records")?;
 		let Value::Array(records) = records else {
 			bail!(raise(
@@ -901,13 +928,21 @@ impl Cache {
 					&format!("'{}' object is not subscriptable", py_type(record)),
 				));
 			}
+			if let Some(desc) = r["capture_paths"].get("measured") {
+				crate::fixed_route_images::validate_row(record, desc)?;
+			}
 			for file in case_files(record, split)? {
 				if artifacts.get(&*file.source.to_string_lossy()) != Some(&file.sha) {
 					bail!(value_error("unbound anchor row"));
 				}
 				if file.name == "GDB.json" {
 					let saved: Value = serde_json::from_slice(&std::fs::read(&file.source)?)?;
-					anyhow::ensure!(record["boundary"] == saved, "unbound invocation boundary");
+					let boundary = if record["policy"] == "on" {
+						"boundary"
+					} else {
+						"image_boundary"
+					};
+					anyhow::ensure!(record[boundary] == saved, "unbound invocation boundary");
 				}
 			}
 		}
@@ -982,6 +1017,17 @@ impl Cache {
 			PathBuf::from("rnx-anchor"),
 			at(&r, "binary_sha256")?.clone(),
 		)];
+		if let Some(engine) = receipt["capture_paths"]["measured"].get("engine") {
+			let source = receipt["engine_binary"]
+				.as_str()
+				.context("missing engine source")?;
+			copies.push((
+				PathBuf::from(source),
+				PathBuf::from("engine.so"),
+				engine["sha256"].clone(),
+			));
+			r["engine_binary"] = json!(dest.join("engine.so"));
+		}
 		let records = r["records"].as_array_mut().context("receipt records")?;
 		for (i, record) in records.iter_mut().enumerate() {
 			let base = PathBuf::from("cases").join(format!("{i:02}"));
@@ -1133,7 +1179,7 @@ pub(crate) fn case_files(row: &Value, split: bool) -> Result<Vec<CaseFile>> {
 			});
 		}
 	}
-	if phased {
+	if phased || row.get("image_boundary").is_some() {
 		files.push(CaseFile {
 			source: dir.join("GDB.json"),
 			name: "GDB.json",

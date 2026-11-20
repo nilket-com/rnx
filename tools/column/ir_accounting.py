@@ -7,7 +7,7 @@ import re
 DYNAMIC_OBJECTS = {"libc.so.6", "ld-linux-x86-64.so.2"}
 
 
-def account(path, binary):
+def account(path, binary, engine=None):
 	text = Path(path).read_text()
 	if not re.search(r"^positions: instr line$", text, re.M) or not re.search(r"^events: Ir$", text, re.M):
 		raise ValueError("unsupported profile format")
@@ -40,8 +40,15 @@ def account(path, binary):
 	if sum(own.values()) != total:
 		raise ValueError("object self costs do not reconcile with summary")
 	rnx, dynamic, other = {}, {}, {}
+	products = {str(Path(binary).resolve()): 0}
+	if engine is not None:
+		products[str(Path(engine).resolve())] = 0
+		if len(products) != 2:
+			raise ValueError("runner and engine coincide")
 	for (obj, fn), cost in own.items():
-		if obj != "???" and Path(obj).resolve() == Path(binary).resolve():
+		name = str(Path(obj).resolve()) if obj != "???" else obj
+		if name in products:
+			products[name] += cost
 			rnx[fn] = rnx.get(fn, 0) + cost
 		elif Path(obj).name in DYNAMIC_OBJECTS:
 			dynamic[obj + "::" + fn] = cost
@@ -50,7 +57,7 @@ def account(path, binary):
 			other[obj + "::" + fn] = cost
 	if not rnx:
 		raise ValueError("measured binary has no self instructions")
-	return {"total_Ir": total, "rnx_Ir": sum(rnx.values()),
+	return {**({"product_objects": products} if engine is not None else {}), "total_Ir": total, "rnx_Ir": sum(rnx.values()),
 		"dynamic_Ir": sum(dynamic.values()), "other_Ir": sum(other.values()),
 		"rnx_functions": rnx, "dynamic_functions": dynamic, "other_functions": other}
 
@@ -119,7 +126,7 @@ def evaluate(records, policy, whole_map_evaluator):
 		"system_bands": bands, "raw_whole_map_verdict": raw, "reviewed_exceptions_applied": []}
 
 
-def phase_accounts(directory, binary):
+def phase_accounts(directory, binary, engine=None):
 	"""Validate the ordered parts and reconstruct the original invocation window."""
 	import hashlib
 	directory = Path(directory)
@@ -132,7 +139,7 @@ def phase_accounts(directory, binary):
 		raw = path.read_bytes()
 		if re.findall(rb"^desc: Trigger: (.*)$", raw, re.M) != [b"dump " + label.encode()]:
 			raise ValueError("unexpected phase trigger: " + label)
-		a = account(path, binary)
+		a = account(path, binary, engine)
 		for group, totals in whole.items():
 			for function, cost in a[group].items():
 				totals[function] = totals.get(function, 0) + cost
@@ -141,6 +148,9 @@ def phase_accounts(directory, binary):
 	for group in tuple(whole):
 		whole[group.replace("_functions", "_Ir")] = sum(whole[group].values())
 	whole["total_Ir"] = whole["rnx_Ir"] + whole["other_Ir"] + whole["dynamic_Ir"]
+	if engine is not None:
+		whole["product_objects"] = {name: sum(p["accounting"]["product_objects"][name] for p in parts.values())
+			for name in a["product_objects"]}
 	stderr = (directory / "program.stderr").read_text()
 	collected = re.findall(r"^==\d+== Collected\s*:\s*(\d+)$", stderr, re.M)
 	if collected != [str(whole["total_Ir"])]:

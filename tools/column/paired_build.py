@@ -103,6 +103,8 @@ def run(out, baseline, candidate, cargo):
 					binary=str(binary), sha256=digest(binary), archive_sha256=digest(archive),
 					command=command, environment=environment(env), target_directory=str(target),
 					compiled_crates=compiled, log_sha256=digest(log))
+				row['measured'] = {'version': 1, 'target': 'x86_64-unknown-linux-gnu',
+					'runner': {'path': '/run/rnx-route/rnx', 'sha256': row['sha256']}}
 				receipt = out / (role + '-BUILD.json')
 				atomic_json(receipt, dict(status='PASS', **row))
 				row['retained_copy'] = verify_copy(target, binary, row['sha256'], receipt)
