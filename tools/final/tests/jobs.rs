@@ -1,12 +1,22 @@
 //! `rnx-final jobs` (ADR 0295) over planted finals and a planted user
 //! manager, each view checked against its recorded snapshot.
+#[path = "common/jobs_fixture.rs"]
+mod jobs_fixture;
+use jobs_fixture::{Executable, FixtureCommand};
 use rnx_final::jobs::{self, Manager, Unit, Units};
 use serde_json::json;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::{Duration, SystemTime};
 
+#[test]
+fn jobs_fixtures_use_the_guarded_helpers() {
+	jobs_fixture::check_source(include_str!("jobs.rs"));
+}
+
 struct Scratch(PathBuf);
+
 impl Drop for Scratch {
 	fn drop(&mut self) {
 		let _ = std::fs::remove_dir_all(&self.0);
@@ -35,7 +45,7 @@ fn now() -> SystemTime {
 
 fn write(path: &Path, value: &serde_json::Value) {
 	std::fs::create_dir_all(path.parent().unwrap()).unwrap();
-	std::fs::write(path, serde_json::to_vec(value).unwrap()).unwrap();
+	jobs_fixture::write_fixture(path, serde_json::to_vec(value).unwrap()).unwrap();
 }
 
 /// A complete final directory selecting `names`, begun `ago` seconds
@@ -116,7 +126,7 @@ fn running(root: &Path) -> PathBuf {
 	finished(&dir, &["a", "b"]);
 	std::fs::create_dir_all(dir.join("c-child")).unwrap();
 	std::fs::create_dir_all(dir.join("zz-child")).unwrap();
-	std::fs::write(dir.join("notes.txt"), "unrelated").unwrap();
+	jobs_fixture::write_fixture(dir.join("notes.txt"), "unrelated").unwrap();
 	dir
 }
 
@@ -300,7 +310,7 @@ fn an_unreadable_selection_is_reported() {
 	let s = scratch();
 	let dir = s.0.join("0295/FINAL-bad");
 	std::fs::create_dir_all(&dir).unwrap();
-	std::fs::write(dir.join("SELECTION.json"), "{").unwrap();
+	jobs_fixture::write_fixture(dir.join("SELECTION.json"), "{").unwrap();
 	assert_eq!(
 		jobs::final_view(&dir, &[], now(), false),
 		vec![
@@ -397,10 +407,12 @@ fn the_alias_runs_the_built_controller() {
 	let text = std::fs::read_to_string(&alias).unwrap();
 	assert!(!text.contains("cargo"), "the alias must not build");
 	assert!(text.contains("jobs"));
-	let status = std::process::Command::new("sh")
+	let status = Command::new("sh")
 		.arg("-n")
 		.arg(&alias)
-		.status()
+		.start()
+		.unwrap()
+		.wait()
 		.unwrap();
 	assert!(status.success());
 }
@@ -419,7 +431,7 @@ fn bars_hold_their_width_and_build_caches_are_not_searched() {
 	final_dir(&dir, &["a", "b"], 600);
 	let cached = root.join("debug/hidden");
 	final_dir(&cached, &["a"], 1);
-	std::fs::write(root.join("debug/.cargo-lock"), "").unwrap();
+	jobs_fixture::write_fixture(root.join("debug/.cargo-lock"), "").unwrap();
 	assert_eq!(jobs::finals(root), vec![dir.clone(), quick.clone()]);
 	let view = jobs::final_view(&dir, &jobs::finals(root), now(), true);
 	assert_eq!(view[1], "stages [------------------------------] 0/2 done");
@@ -455,38 +467,28 @@ fn the_alias_answers_from_a_fresh_checkout_over_a_scripted_manager() {
 	let checkout = root.join("fresh checkout");
 	let alias = checkout.join("tools/final/rnx-jobs");
 	std::fs::create_dir_all(alias.parent().unwrap()).unwrap();
-	std::fs::copy(
-		Path::new(env!("CARGO_MANIFEST_DIR")).join("rnx-jobs"),
-		&alias,
-	)
-	.unwrap();
+	Executable::Copy(&Path::new(env!("CARGO_MANIFEST_DIR")).join("rnx-jobs"))
+		.install(&alias)
+		.unwrap();
 	let bin = root.join("bin");
 	std::fs::create_dir(&bin).unwrap();
 	let systemctl = bin.join("systemctl");
-	std::fs::write(
-		&systemctl,
-		"#!/bin/sh\ncase \"$MANAGER\" in\nfailed) echo 'Failed to connect to bus: No medium found' >&2; exit 1 ;;\nempty) exit 0 ;;\nesac\ncase \"$2\" in\nlist-units) echo 'rnx-0295-final.service loaded active running final' ;;\nshow) printf 'Id=rnx-0295-final.service\\nMemoryCurrent=3221225472\\nMainPID=%s\\n' \"$PLANTED_PID\" ;;\nesac\n",
-	)
+	Executable::Script("#!/bin/sh\ncase \"$MANAGER\" in\nfailed) echo 'Failed to connect to bus: No medium found' >&2; exit 1 ;;\nempty) exit 0 ;;\nesac\ncase \"$2\" in\nlist-units) echo 'rnx-0295-final.service loaded active running final' ;;\nshow) printf 'Id=rnx-0295-final.service\\nMemoryCurrent=3221225472\\nMainPID=%s\\n' \"$PLANTED_PID\" ;;\nesac\n").install(&systemctl)
 	.unwrap();
-	std::fs::set_permissions(
-		&systemctl,
-		std::os::unix::fs::PermissionsExt::from_mode(0o755),
-	)
-	.unwrap();
-	let mut process = std::process::Command::new("sh")
+	let mut process = Command::new("sh")
 		.args(["-c", "sleep 60", "final.sh", "--complete", "--out"])
 		.arg(&dir)
-		.spawn()
+		.start()
 		.unwrap();
 	let run = |manager: &str| {
-		let output = std::process::Command::new(&alias)
+		let output = Command::new(&alias)
 			.env_clear()
 			.env("PATH", format!("{}:/usr/bin:/bin", bin.display()))
 			.env("RNX_FINAL_BIN", env!("CARGO_BIN_EXE_rnx-final"))
 			.env("RNX_FINALS", &finals)
 			.env("MANAGER", manager)
 			.env("PLANTED_PID", process.id().to_string())
-			.output()
+			.capture()
 			.unwrap();
 		assert!(output.status.success(), "{output:?}");
 		shown(String::from_utf8(output.stdout).unwrap(), &finals)
@@ -518,16 +520,18 @@ rnx-0295-final  running ?, memory 3G
 	// own target, which also holds the finals; nothing else is set.
 	let built = checkout.join("target/final-controller/release/rnx-final");
 	std::fs::create_dir_all(built.parent().unwrap()).unwrap();
-	std::fs::copy(env!("CARGO_BIN_EXE_rnx-final"), &built).unwrap();
+	Executable::Copy(Path::new(env!("CARGO_BIN_EXE_rnx-final")))
+		.install(&built)
+		.unwrap();
 	let mine = checkout.join("target/0297/FINAL-v1");
 	final_dir(&mine, &["a"], 60);
 	finished(&mine, &["a"]);
 	result(&mine, "PASS", true, 61.0, &[]);
-	let default = std::process::Command::new(&alias)
+	let default = Command::new(&alias)
 		.env_clear()
 		.env("PATH", format!("{}:/usr/bin:/bin", bin.display()))
 		.env("MANAGER", "empty")
-		.output()
+		.capture()
 		.unwrap();
 	assert!(default.status.success(), "{default:?}");
 	assert_eq!(
@@ -539,10 +543,10 @@ rnx-0295-final  running ?, memory 3G
 	);
 	std::fs::remove_file(&built).unwrap();
 	// With no built controller and none named, the alias refuses; it never builds.
-	let refused = std::process::Command::new(&alias)
+	let refused = Command::new(&alias)
 		.env_clear()
 		.env("PATH", "/usr/bin:/bin")
-		.output()
+		.capture()
 		.unwrap();
 	assert_eq!(refused.status.code(), Some(1));
 	assert!(String::from_utf8_lossy(&refused.stderr).contains("no built rnx-final"));
@@ -565,12 +569,9 @@ fn only_regular_receipts_are_read() {
 	let bin = root.join("bin");
 	std::fs::create_dir(&bin).unwrap();
 	let systemctl = bin.join("systemctl");
-	std::fs::write(&systemctl, "#!/bin/sh\nexit 0\n").unwrap();
-	std::fs::set_permissions(
-		&systemctl,
-		std::os::unix::fs::PermissionsExt::from_mode(0o755),
-	)
-	.unwrap();
+	Executable::Script("#!/bin/sh\nexit 0\n")
+		.install(&systemctl)
+		.unwrap();
 	let finals = root.join("finals");
 	let reference = finals.join("0294/FINAL-ref");
 	final_dir(&reference, &["a"], 10_000);
@@ -600,14 +601,14 @@ fn only_regular_receipts_are_read() {
 	let selection = finals.join("0295/FINAL-selection");
 	fifo(&selection.join("SELECTION.json"));
 	let view = |dir: &Path| {
-		let mut child = std::process::Command::new(env!("CARGO_BIN_EXE_rnx-final"))
+		let mut child = Command::new(env!("CARGO_BIN_EXE_rnx-final"))
 			.args(["jobs", "--final"])
 			.arg(dir)
 			.env_clear()
 			.env("PATH", format!("{}:/usr/bin:/bin", bin.display()))
 			.env("RNX_FINALS", &finals)
 			.stdout(std::process::Stdio::piped())
-			.spawn()
+			.start()
 			.unwrap();
 		let deadline = std::time::Instant::now() + Duration::from_secs(20);
 		while child.try_wait().unwrap().is_none() {
