@@ -10,6 +10,10 @@ use crate::function::host::HostOutputKind;
 use crate::runtime::FunctionHandler;
 use crate::{Hash, Module};
 
+#[cfg(all(feature = "native-code", target_arch = "x86_64", target_os = "linux"))]
+#[doc(hidden)]
+pub use crate::experimental_core::region::cache::initialize_image_thread;
+
 pub(crate) struct Reader {
 	pub(crate) hash: Hash,
 	pub(crate) original: FunctionHandler,

@@ -23,7 +23,7 @@ readelf -d "$out/relocated/rnx" > "$out/dynamic"
 grep -Fq '[libengine_image.so]' "$out/dynamic"
 grep -Fq '[$ORIGIN]' "$out/dynamic"
 nm -D --defined-only "$image" | awk '{print $3}' > "$out/exports"
-test "$(cat "$out/exports")" = rnx_engine_run_file_v1
+test "$(cat "$out/exports")" = "$(printf 'rnx_engine_handles_v2\nrnx_engine_run_file_v1')"
 cc -Wall -Wextra -Werror -O2 -pthread "$src/tests/contracts.c" "-L$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -o "$out/contracts"
 "$out/contracts" "$out/main.rn" "$out/refused.rn" "$out/failed.rn" > "$out/calls"
 sort -n "$out/calls" > "$out/sorted"
@@ -54,3 +54,19 @@ rustc --edition=2024 --crate-name image_tls_control -O "$src/tests/support/tls.r
 	-C link-arg=-Wl,--no-as-needed -C "link-arg=-L$out/tagged" -C link-arg=-lengine_image \
 	-C "link-arg=-Wl,-rpath,$out/tagged" -o "$out/tls"
 "$out/tls" "$take" "$release" "$out/provider.so"
+printf '%s\n' 'pub fn main(args){let item=probe::make("item", [])?; let alias=item; item.read()+alias.read()}' > "$out/checked.rn"
+printf '%s\n' 'pub fn main(args){let item=probe::make("item", [])?; item.read(); panic!("after reading");}' > "$out/effect.rn"
+printf '%s\n' 'pub fn main(args){42}' > "$out/ordinary.rn"
+printf '%s\n' 'pub fn main(args){let a=probe::make("a", [])?; let alias=a; let b=probe::make("b", [])?; a.read()+alias.read()+b.read()}' > "$out/pair.rn"
+for role in plain tagged; do
+	set -- cc -std=c11 -Wall -Wextra -Werror -O2 -pthread
+	if [ "$role" = tagged ]; then set -- "$@" -DTAGGED; fi
+	"$@" "$src/tests/handles.c" "-L$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -o "$out/handles-$role"
+	"$out/handles-$role" "$out/checked.rn" "$out/effect.rn" "$out/ordinary.rn" "$out/pair.rn" > "$out/$role-answer"
+done
+grep -Fxq 'checked scalar=42' "$out/plain-answer"
+grep -Fxq 'checked scalar=44' "$out/tagged-answer"
+cc -std=c11 -Wall -Wextra -Werror -O2 -pthread -Wl,--export-dynamic-symbol=getenv \
+	"$src/tests/eligibility.c" "-L$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -ldl -o "$out/eligibility"
+env -u PERF_BUILDID_DIR "$out/eligibility" "$out/ordinary.rn" 0
+PERF_BUILDID_DIR=/nonexistent "$out/eligibility" "$out/ordinary.rn" 1

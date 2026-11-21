@@ -110,3 +110,13 @@ pub fn run(
 	};
 	Ok((outcome, REPORT.take().ok_or("missing file diagnostic")?))
 }
+
+/// Open the checked file entry and retain its loader for any module reads.
+pub fn checked_sources(path: &Path) -> Result<(Sources, impl rune::compile::SourceLoader), String> {
+	let mut sources = Sources::new();
+	let mut loader = crate::program::Loader::new();
+	sources
+		.insert(loader.entry(path)?)
+		.map_err(|error| error.to_string())?;
+	Ok((sources, loader))
+}

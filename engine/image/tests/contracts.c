@@ -15,9 +15,20 @@ struct invocation {
 	int offset;
 	pthread_barrier_t *overlap;
 };
+static int32_t unused_create(void *p, size_t n, struct rnx_created *v) {
+	(void)p; (void)n; (void)v; abort();
+}
+static int64_t unused_read(void *p, uint64_t v) { (void)p; (void)v; abort(); }
+static void unused_release(void *p, uint64_t v) { (void)p; (void)v; abort(); }
 static int64_t apply(void *ctx, int64_t x) {
 	struct invocation *i = ctx;
 	++i->calls;
+	struct rnx_provider provider={NULL,unused_create,unused_read,unused_release};
+	struct rnx_response out={0};
+	struct rnx_handles_request nested={.version=2,.size=sizeof(nested),.operation=RNX_OPEN,
+		.provider=&provider,.output=&out};
+	assert(rnx_engine_handles_v2(&nested)==RNX_INVALID);
+
 	if (i->overlap) pthread_barrier_wait(i->overlap);
 	assert(rnx_engine_run_file_v1(&i->r) == RNX_INVALID);
 	return x + i->offset;
@@ -49,6 +60,8 @@ int main(int argc, char **argv) {
 	uint32_t *header=(uint32_t *)(mem+page)-2;
 	header[0]=1; header[1]=8;
 	assert(rnx_engine_run_file_v1((void *)header)==RNX_INVALID);
+	header[0]=2; header[1]=8;
+	assert(rnx_engine_handles_v2((void *)header)==RNX_INVALID);
 	header[0]=2; header[1]=88;
 	assert(rnx_engine_run_file_v1((void *)header)==RNX_INVALID);
 	assert(!munmap(mem,2*page));

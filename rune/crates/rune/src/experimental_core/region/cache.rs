@@ -873,6 +873,17 @@ std::thread_local! {
 	};
 }
 
+/// Initialize native eligibility on the image context's issuing thread.
+/// Ordinary callers initialize the same cache on their first native checkout.
+#[inline]
+pub fn initialize_image_thread() {
+	if !cfg!(miri) {
+		CACHE.with_borrow_mut(|cache| {
+			cache.enabled();
+		});
+	}
+}
+
 impl Cache {
 	#[inline]
 	fn enabled(&mut self) -> Enabled {

@@ -1,5 +1,7 @@
 //! Synchronous ABI for a startup-linked execution engine on x86-64 GNU/Linux.
 #![cfg(all(target_arch = "x86_64", target_os = "linux", target_env = "gnu"))]
+mod handles;
+mod provider;
 use rnx::image_file::{self, Outcome};
 use std::{
 	cell::Cell,
@@ -58,6 +60,7 @@ fn context() -> Result<rnx::rune::Context, rnx::rune::ContextError> {
 		host.host_function("apply", dispatch)?;
 		context.install(host)?;
 	}
+	rnx::rune::experimental_core::domain::file::initialize_image_thread();
 	Ok(context)
 }
 
@@ -149,4 +152,18 @@ pub unsafe extern "C" fn rnx_engine_run_file_v1(p: *const Request) -> i32 {
 			FAILED
 		}
 	}
+}
+
+/// Handle-based checked file entry.
+///
+/// # Safety
+/// All storage and callbacks satisfy the v2 contract in engine_image.h.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rnx_engine_handles_v2(p: *const handles::Request) -> i32 {
+	if CALL.get().is_some() {
+		return INVALID;
+	}
+	CALL.set(Some((None, ptr::null_mut())));
+	let _scope = Scope;
+	catch_unwind(AssertUnwindSafe(|| unsafe { handles::dispatch(p) })).unwrap_or(FAILED)
 }
