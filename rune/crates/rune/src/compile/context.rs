@@ -1008,6 +1008,11 @@ impl Context {
 		Ok(())
 	}
 
+	#[cfg(feature = "file-inventory-controls")]
+	pub(crate) fn file_inventory_metas(&self) -> &[ContextMeta] {
+		&self.meta
+	}
+
 	/// Iterate over all available functions in the [Context].
 	#[cfg(any(feature = "cli", feature = "languageserver"))]
 	pub(crate) fn iter_functions(&self) -> impl Iterator<Item = (&ContextMeta, &meta::Signature)> {

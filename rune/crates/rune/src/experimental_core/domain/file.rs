@@ -67,6 +67,103 @@ pub enum FileProgram {
 	Checked(CheckedMain),
 }
 impl FileModules {
+	/// Inspect the effective host bindings of this sealed file context for the adapter controls.
+	#[cfg(feature = "file-inventory-controls")]
+	#[doc(hidden)]
+	pub fn inventory(&self, context: &Context) -> Result<std::vec::Vec<std::string::String>> {
+		use crate::compile::meta::Kind;
+		if context.execution_epoch.snapshot()? != self.epoch {
+			return Err(invalid());
+		}
+		let mut rows = std::vec::Vec::new();
+		for meta in context.file_inventory_metas() {
+			let Some(item) = &meta.item else { continue };
+			let path = std::format!("{item}");
+			if !["::polars::", "::candle::", "::interchange::"]
+				.iter()
+				.any(|p| path.starts_with(p))
+			{
+				continue;
+			}
+			let key = meta.hash;
+			let Kind::Function { .. } = &meta.kind else {
+				continue;
+			};
+			let host = context.host(key);
+			let reader = self.readers.iter().any(|r| r.hash == key);
+			let native = |t: Option<&crate::function::host::opaque::NativeType>| {
+				t.map(|v| std::format!("{}", v.info)).unwrap_or_default()
+			};
+			let owner = native(context.opaque.methods.get(&key));
+			let input = native(context.opaque.producer_inputs.get(&key));
+			let output = native(
+				context
+					.opaque
+					.producer_outputs
+					.get(&key)
+					.or_else(|| context.opaque.factories.get(&key)),
+			);
+			let error = native(context.opaque.method_errors.get(&key));
+			let shape = match host {
+				None => "resolution",
+				Some(h) => {
+					use crate::function::host::{
+						HostOutputKind as Out, HostType::*, OutputCertificate as Cert,
+					};
+					match (
+						&h.signature.arguments[..usize::from(h.signature.arity)],
+						h.signature.output,
+						h.certificate,
+					) {
+						([], Out::OpaqueOwned, None) => "session-factory",
+						([OpaqueShared], Out::ScalarResultNative(I64), None) => "session-result",
+						([String, OwnedTreeInput], Out::OpaqueResultString, None) if reader => {
+							"csv"
+						}
+						([String, OwnedTreeInput], Out::OpaqueResultString, None) => "panic-csv",
+						([String], Out::OpaqueResultString, None) if reader => "load",
+						([OpaqueShared, OwnedTreeInput, String], Out::OpaqueResultString, None) => {
+							"columns"
+						}
+						([OpaqueShared, OpaqueShared], Out::OpaqueResultString, None) if reader => {
+							"forward"
+						}
+						([OpaqueShared], Out::OpaqueResultString, None) if reader => "unary",
+						([OpaqueShared], Out::OpaqueResultString, None) if !input.is_empty() => {
+							"convert"
+						}
+						([OpaqueShared], Out::Scalar(I64), None) => "integer",
+						([OpaqueShared], Out::Scalar(String), None)
+							if owner == "::polars::Error" =>
+						{
+							"session-error-text"
+						}
+						([OpaqueShared], Out::Scalar(String), None)
+							if path.ends_with("::__opaque_display") =>
+						{
+							"display"
+						}
+						([OpaqueShared], Out::Scalar(String), None) => "text",
+						([OpaqueShared], Out::Dynamic, Some(c)) if c == Cert::I64_PAIR => "pair",
+						([OpaqueShared], Out::Dynamic, Some(c)) if c == Cert::I64_TRIPLE => {
+							"triple"
+						}
+						([OpaqueShared], Out::Dynamic, Some(c)) if c == Cert::STRING_LIST => {
+							"names"
+						}
+						_ => return Err(invalid()),
+					}
+				}
+			};
+			let argument = if shape == "forward" { &output } else { &input };
+			rows.push(std::format!(
+				"{path}\t{shape}\t{owner}\t{argument}\t{output}\t{error}"
+			));
+		}
+		rows.sort();
+		Ok(rows)
+	}
+
 	/// Compile a single execution attempt with the actual file loader.
 	pub fn compile(
 		&self,

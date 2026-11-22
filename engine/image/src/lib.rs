@@ -1,7 +1,11 @@
 //! Synchronous ABI for a startup-linked execution engine on x86-64 GNU/Linux.
 #![cfg(all(target_arch = "x86_64", target_os = "linux", target_env = "gnu"))]
+mod adapter_inputs;
+mod adapters;
 mod handles;
 mod provider;
+#[path = "../provider_abi.rs"]
+mod provider_abi;
 use rnx::image_file::{self, Outcome};
 use std::{
 	cell::Cell,
@@ -165,5 +169,19 @@ pub unsafe extern "C" fn rnx_engine_handles_v2(p: *const handles::Request) -> i3
 	}
 	CALL.set(Some((None, ptr::null_mut())));
 	let _scope = Scope;
-	catch_unwind(AssertUnwindSafe(|| unsafe { handles::dispatch(p) })).unwrap_or(FAILED)
+	catch_unwind(AssertUnwindSafe(|| unsafe { handles::dispatch(p, 2) })).unwrap_or(FAILED)
+}
+
+/// Adapter-backed synchronous checked file invocation.
+///
+/// # Safety
+/// All storage and callbacks satisfy the v3 contract in adapter_provider.h.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rnx_engine_adapters_v3(p: *const handles::Request) -> i32 {
+	if CALL.get().is_some() {
+		return INVALID;
+	}
+	CALL.set(Some((None, ptr::null_mut())));
+	let _scope = Scope;
+	catch_unwind(AssertUnwindSafe(|| unsafe { handles::dispatch(p, 3) })).unwrap_or(FAILED)
 }

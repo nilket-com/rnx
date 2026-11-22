@@ -39,7 +39,8 @@ stock-management = ["dep:rnx-project"]
 # Allocation accounting. Without it no ceiling is enforced and no figure is
 # reported; the build says so rather than reporting zero.
 count-allocations = []
-engine-image = []
+engine-image = ["rune/engine-image"]
+file-inventory-controls = ["rune/file-inventory-controls"]
 # Only for gates that must inject what cannot be provoked. Off by default, and
 # nothing in an ordinary build reads it: record 0022 explains why the
 # delivery's failure path needs one.

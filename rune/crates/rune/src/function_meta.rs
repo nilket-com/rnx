@@ -26,6 +26,8 @@ mod sealed {
 	pub trait Sealed {}
 
 	impl Sealed for &str {}
+	#[cfg(feature = "engine-image")]
+	impl Sealed for crate::alloc::String {}
 	impl Sealed for &Protocol {}
 	impl<T, const N: usize> Sealed for Params<T, N> {}
 }
@@ -217,6 +219,19 @@ impl ToInstance for &'static str {
 	fn to_instance(self) -> alloc::Result<AssociatedName> {
 		Ok(AssociatedName {
 			kind: meta::AssociatedKind::Instance(Cow::Borrowed(self)),
+			function_parameters: Hash::EMPTY,
+			#[cfg(feature = "doc")]
+			parameter_types: Vec::new(),
+		})
+	}
+}
+
+#[cfg(feature = "engine-image")]
+impl ToInstance for alloc::String {
+	#[inline]
+	fn to_instance(self) -> alloc::Result<AssociatedName> {
+		Ok(AssociatedName {
+			kind: meta::AssociatedKind::Instance(Cow::Owned(self)),
 			function_parameters: Hash::EMPTY,
 			#[cfg(feature = "doc")]
 			parameter_types: Vec::new(),

@@ -11,7 +11,7 @@ use rune::experimental_core::{
 };
 
 mod awaiting;
-mod checked;
+pub(crate) mod checked;
 use rune::experimental_core::domain::file::{FileModules, FileProgram};
 
 #[allow(clippy::too_many_arguments)]

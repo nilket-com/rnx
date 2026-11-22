@@ -23,6 +23,9 @@ mod files;
 #[cfg(feature = "generated")]
 #[doc(hidden)]
 pub mod generated;
+#[cfg(feature = "image-provider")]
+#[doc(hidden)]
+pub mod image_provider;
 #[cfg(all(test, feature = "generated"))]
 mod opaque_charge_tests;
 #[cfg(all(feature = "generated", feature = "test-support"))]
@@ -33,7 +36,8 @@ mod values;
 
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars)]
-struct DataFrame(pub(crate) p::DataFrame);
+#[doc(hidden)]
+pub struct DataFrame(pub(crate) p::DataFrame);
 #[derive(rune::Any, Clone)]
 #[rune(item = ::polars)]
 struct LazyFrame(pub(crate) p::LazyFrame);
@@ -241,6 +245,13 @@ fn read_csv_file(
 		Err(error) => return Ok(Err(error)),
 	};
 	drop(schema);
+	load_file_schema(path, schema_value)
+}
+#[cfg(feature = "generated")]
+fn load_file_schema(
+	path: &str,
+	schema_value: std::sync::Arc<p::Schema>,
+) -> Result<Result<DataFrame, String>, rune::host::OpaqueProducerLimit> {
 	Ok(
 		engine::run("read_csv", move || files::csv(path, schema_value))
 			.map_err(err)

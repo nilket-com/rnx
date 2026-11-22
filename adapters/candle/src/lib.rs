@@ -383,6 +383,11 @@ pub fn display_forms(t: &candle_core::Tensor) -> (String, String) {
 	(display::render(t), display::render_html(t))
 }
 
+/// File provider access to the original Candle operations.
+#[cfg(feature = "image-provider")]
+#[doc(hidden)]
+pub mod image_provider;
+
 #[cfg(test)]
 mod tests {
 	use super::*;

@@ -240,7 +240,8 @@ pub(crate) fn present(presenters: &mut crate::present::Presenters) -> Result<(),
 /// The `interchange` module: the `Dense` type and its read-only surface.
 /// rnx installs it in every context; an adapter's own tests (or an
 /// embedder building a context by hand) install it with this.
-fn logical_bytes(this: &Dense) -> usize {
+#[doc(hidden)]
+pub fn logical_bytes(this: &Dense) -> usize {
 	let values = this.data.len().saturating_mul(match &this.data {
 		Data::F32(_) => 4,
 		Data::F64(_) => 8,

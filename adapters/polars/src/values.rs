@@ -50,21 +50,64 @@ fn schema_dtype(kind: &str) -> Result<p::DataType, String> {
 }
 
 #[cfg(feature = "generated")]
+pub enum SchemaKind<'a> {
+	Other,
+	Vector,
+	Tuple,
+	Text(&'a str),
+}
+#[cfg(feature = "generated")]
+pub struct SchemaNode<'a> {
+	pub kind: SchemaKind<'a>,
+	pub frontier: bool,
+	pub children: usize,
+}
+#[cfg(feature = "generated")]
+pub trait SchemaTree {
+	fn schema_node(&self, index: usize) -> Option<SchemaNode<'_>>;
+	fn child_index(&self, index: usize, at: usize) -> Option<usize>;
+	fn credit(&self) -> Option<usize>;
+}
+#[cfg(feature = "generated")]
+impl SchemaTree for rune::host::OwnedTreeInput {
+	fn schema_node(&self, index: usize) -> Option<SchemaNode<'_>> {
+		use rune::host::TreeKind;
+		let node = self.node(index)?;
+		let kind = match node.kind() {
+			TreeKind::Vec => SchemaKind::Vector,
+			TreeKind::Tuple => SchemaKind::Tuple,
+			TreeKind::String(s) => SchemaKind::Text(s.as_str()),
+			_ => SchemaKind::Other,
+		};
+		Some(SchemaNode {
+			kind,
+			frontier: node.frontier(),
+			children: node.len(),
+		})
+	}
+	fn child_index(&self, index: usize, at: usize) -> Option<usize> {
+		self.node(index)?.child(at).map(|(_, child)| child)
+	}
+	fn credit(&self) -> Option<usize> {
+		self.remaining_bytes()
+	}
+}
+#[cfg(feature = "generated")]
 pub(crate) fn csv_schema_session(
-	tree: &rune::host::OwnedTreeInput,
+	tree: &impl SchemaTree,
 	path_bytes: usize,
 ) -> Result<Result<(Arc<p::Schema>, usize), String>, rune::host::OpaqueProducerLimit> {
-	use rune::host::{OpaqueProducerLimit, TreeKind};
+	use rune::host::OpaqueProducerLimit;
 	let Some(root) = tree
-		.node(0)
-		.filter(|root| matches!(root.kind(), TreeKind::Vec))
+		.schema_node(0)
+		.filter(|root| matches!(root.kind, SchemaKind::Vector))
 	else {
 		return Ok(Err("polars read_csv: schema must be a vector".into()));
 	};
-	if root.frontier() {
+	if root.frontier {
 		return Err(OpaqueProducerLimit);
 	}
-	if root.is_empty() {
+	if root.children == 0 {
 		return Ok(Err("polars read_csv: schema must not be empty".into()));
 	}
 	// The path bridge string and possible renderings stay live at this
@@ -73,44 +116,44 @@ pub(crate) fn csv_schema_session(
 	let planning = path_bytes
 		.checked_mul(16)
 		.and_then(|path| path.checked_add(4096))
-		.and_then(|path| path.checked_add(root.len().checked_mul(512)?))
+		.and_then(|path| path.checked_add(root.children.checked_mul(512)?))
 		.ok_or(OpaqueProducerLimit)?;
 	let mut remaining = tree
-		.remaining_bytes()
+		.credit()
 		.and_then(|limit| limit.checked_sub(planning))
 		.ok_or(OpaqueProducerLimit)?;
 	let mut fields = Vec::new();
 	fields
-		.try_reserve_exact(root.len())
+		.try_reserve_exact(root.children)
 		.map_err(|_| OpaqueProducerLimit)?;
 	let mut names = HashSet::new();
 	names
-		.try_reserve(root.len())
+		.try_reserve(root.children)
 		.map_err(|_| OpaqueProducerLimit)?;
-	for i in 0..root.len() {
+	for i in 0..root.children {
 		let field = (|| -> Result<_, String> {
-			let tuple = root
-				.child(i)
-				.and_then(|(_, child)| tree.node(child))
-				.filter(|node| matches!(node.kind(), TreeKind::Tuple))
+			let (index, tuple) = tree
+				.child_index(0, i)
+				.and_then(|child| tree.schema_node(child).map(|node| (child, node)))
+				.filter(|(_, node)| matches!(node.kind, SchemaKind::Tuple))
 				.ok_or_else(|| {
 					format!(
 						"polars read_csv: schema item {} must be a (name, dtype) tuple",
 						i + 1
 					)
 				})?;
-			if tuple.len() != 2 || tuple.frontier() {
+			if tuple.children != 2 || tuple.frontier {
 				return Err(format!(
 					"polars read_csv: schema item {} needs two fields",
 					i + 1
 				));
 			}
-			let field = |i| match tuple
-				.child(i)
-				.and_then(|(_, child)| tree.node(child))
-				.map(|node| node.kind())
+			let field = |i| match tree
+				.child_index(index, i)
+				.and_then(|child| tree.schema_node(child))
+				.map(|node| node.kind)
 			{
-				Some(TreeKind::String(text)) => Some(text.as_str()),
+				Some(SchemaKind::Text(text)) => Some(text),
 				_ => None,
 			};
 			let name = field(0).ok_or("polars read_csv: schema name must be a string")?;

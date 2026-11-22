@@ -43,3 +43,19 @@ incremental = false
 
 [profile.dev.package.rune-tracing-macros]
 incremental = false
+
+[features]
+image-provider = ["rnx-candle/image-provider", "rnx-polars/image-provider"]
+image-witness = ["image-provider", "rnx-candle/image-witness"]
+image-controls = ["image-provider", "rnx/file-inventory-controls"]
+
+[[example]]
+name = "file_provider"
+path = "file-provider/lib.rs"
+crate-type = ["staticlib"]
+required-features = ["image-provider"]
+
+[[example]]
+name = "stock_file_inventory"
+path = "file-provider/stock_inventory.rs"
+required-features = ["image-controls"]

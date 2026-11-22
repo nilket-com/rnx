@@ -411,6 +411,25 @@ impl sealed::Output for std::vec::Vec<std::string::String> {}
 impl HostOutput for std::vec::Vec<std::string::String> {
 	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;
 }
+// An image provider can reject a malformed callback response before returning
+// a certified tuple. A VM error is terminal; it adds no script Result layer.
+#[cfg(feature = "engine-image")]
+mod image_outputs {
+	use super::*;
+
+	impl sealed::Output for Result<(i64, i64, i64), crate::runtime::VmError> {}
+	impl HostOutput for Result<(i64, i64, i64), crate::runtime::VmError> {
+		const SHAPE: HostOutputKind = <(i64, i64, i64) as HostOutput>::SHAPE;
+	}
+	impl sealed::Output for Result<(i64, i64), crate::runtime::VmError> {}
+	impl HostOutput for Result<(i64, i64), crate::runtime::VmError> {
+		const SHAPE: HostOutputKind = <(i64, i64) as HostOutput>::SHAPE;
+	}
+	impl sealed::Output for Result<std::vec::Vec<std::string::String>, crate::runtime::VmError> {}
+	impl HostOutput for Result<std::vec::Vec<std::string::String>, crate::runtime::VmError> {
+		const SHAPE: HostOutputKind = <std::vec::Vec<std::string::String> as HostOutput>::SHAPE;
+	}
+}
 impl sealed::Output for (i64, i64, i64) {}
 impl HostOutput for (i64, i64, i64) {
 	const SHAPE: HostOutputKind = HostOutputKind::Dynamic;

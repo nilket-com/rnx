@@ -120,3 +120,20 @@ pub fn checked_sources(path: &Path) -> Result<(Sources, impl rune::compile::Sour
 		.map_err(|error| error.to_string())?;
 	Ok((sources, loader))
 }
+
+/// Render a checked terminal result once, through the CLI's own source and
+/// value formatters. REPORT can copy the retained diagnostic without effects.
+pub fn checked_result(
+	file: &rune::experimental_core::domain::file::FileRun,
+	outcome: rune::experimental_core::domain::file::FileOutcome,
+	budget: usize,
+) -> (i32, Diagnostic) {
+	REPORT.set(Some(Diagnostic {
+		bytes: Vec::new(),
+		capacity: 262_144,
+		needed: 0,
+	}));
+	let _restore = Restore;
+	let code = execution::checked::render_outcome(file, outcome, budget, false);
+	(code, REPORT.take().expect("scoped image report"))
+}

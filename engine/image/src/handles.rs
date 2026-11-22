@@ -75,10 +75,15 @@ pub struct Response {
 
 const _: () = assert!(size_of::<Request>() == 128 && size_of::<Response>() == 40);
 
+#[derive(Clone, Copy)]
+enum Owner {
+	Probe(Provider),
+	Adapters(crate::adapters::Callbacks),
+}
 struct Sealed {
 	context: Context,
 	files: FileModules,
-	provider: Provider,
+	provider: Owner,
 }
 enum Object {
 	Context(Box<Sealed>),
@@ -207,15 +212,29 @@ impl Request {
 			if self.context != root || self.child != root || self.provider.is_null() {
 				return Err(invalid());
 			}
-			let provider = unsafe { *self.provider };
-			if provider.create.is_none() || provider.read.is_none() || provider.release.is_none() {
-				return Err(invalid());
-			}
+			let (provider, module) = if self.version == 3 {
+				let (owner, module) = unsafe { crate::adapters::install(self.provider.cast()) }
+					.map_err(|e| (REFUSED, e))?;
+				(Owner::Adapters(owner), module)
+			} else {
+				let provider = unsafe { *self.provider };
+				if provider.create.is_none()
+					|| provider.read.is_none()
+					|| provider.release.is_none()
+				{
+					return Err(invalid());
+				}
+				(
+					Owner::Probe(provider),
+					vec![provider::module().map_err(failed)?],
+				)
+			};
 			let mut context = Context::with_default_modules().map_err(failed)?;
 			let mut installer = Installer::new(&mut context);
-			installer
-				.install(provider::module().map_err(failed)?)
-				.map_err(failed)?;
+			for module in module {
+				installer.install(module).map_err(failed)?;
+			}
+
 			let files = installer.finish().map_err(failed)?;
 			rune::experimental_core::domain::file::initialize_image_thread();
 			let token = registry.reserve(root)?;
@@ -228,6 +247,9 @@ impl Request {
 			return Ok(());
 		}
 		let sealed = registry.context(self.context)?;
+		if matches!(sealed.provider, Owner::Adapters(_)) != (self.version == 3) {
+			return Err(invalid());
+		}
 		match self.operation {
 			COMPILE => {
 				if self.child != root
@@ -254,6 +276,20 @@ impl Request {
 						&mut loader,
 					)
 					.map_err(|e| match e.refusal {
+						Some(why) if self.version == 3 && self.flags == 1 => {
+							let detail = match e.location {
+								Some(loc) => format!(
+									"{} source={} revision={} bytes={}..{}",
+									why.name(),
+									loc.source,
+									loc.revision,
+									loc.start,
+									loc.end
+								),
+								None => format!("{} unlocated", why.name()),
+							};
+							(REFUSED, detail)
+						}
 						Some(why) => (REFUSED, why.name().into()),
 						None => failed(e),
 					})?;
@@ -307,7 +343,29 @@ impl Request {
 						scalar: 0,
 						diagnostic: "engine panicked".into(),
 					});
-					let result = provider::during(provider, || drive(file, self.fuel));
+					let result = match provider {
+						Owner::Probe(p) => provider::during(p, || drive(file, self.fuel)),
+						Owner::Adapters(p) => p.during(|| {
+							let outcome = file.drive(self.fuel, |_| true, || false);
+							if let Some(e) = crate::adapters::take_fault() {
+								return Err(failed(e));
+							}
+							let outcome = outcome.map_err(|e| match e {
+								StartError::Prepare(PrepareError::Refused(why)) => {
+									(REFUSED, why.name().into())
+								}
+								other => failed(other),
+							})?;
+							let (code, report) =
+								rnx::image_file::checked_result(file, outcome, self.fuel);
+							if code == 0 {
+								Ok(0)
+							} else {
+								Err((FAILED, String::from_utf8_lossy(report.bytes()).into_owned()))
+							}
+						}),
+					};
+
 					*terminal = Some(match result {
 						Ok(scalar) => Verdict {
 							status: 0,
@@ -359,12 +417,12 @@ impl Request {
 ///
 /// # Safety
 /// The caller satisfies the memory, thread, and lifetime contract in engine_image.h.
-pub unsafe fn dispatch(p: *const Request) -> i32 {
+pub unsafe fn dispatch(p: *const Request, version: u32) -> i32 {
 	if p.is_null() || !p.is_aligned() {
 		return INVALID;
 	}
 	let header = p.cast::<u32>();
-	if unsafe { header.read() } != 2
+	if unsafe { header.read() } != version
 		|| (unsafe { header.add(1).read() } as usize) < size_of::<Request>()
 	{
 		return INVALID;
@@ -374,7 +432,7 @@ pub unsafe fn dispatch(p: *const Request) -> i32 {
 		|| !r.output.is_aligned()
 		|| r.capacity > isize::MAX as usize
 		|| (r.capacity != 0 && r.buffer.is_null())
-		|| r.flags > u32::from(r.operation == PREPARE)
+		|| r.flags > u32::from(r.operation == PREPARE || (version == 3 && r.operation == COMPILE))
 		|| r.bytes > isize::MAX as usize
 		|| (!r.provider.is_null() && (!r.provider.is_aligned() || r.operation != OPEN))
 		|| (r.operation != COMPILE && (!r.path.is_null() || r.path_len != 0))

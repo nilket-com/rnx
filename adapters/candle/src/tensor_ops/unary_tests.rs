@@ -3,17 +3,6 @@ use crate::dense_credit::tensor_bytes;
 use rune::experimental_core::domain::file::{FileOutcome, FileProgram, Installer};
 use std::sync::{Arc, Mutex};
 
-// A new backend operation goes through exactly the macro used by production.
-trait FixtureMethod {
-	fn fixture_copy(&self) -> candle_core::Result<CTensor>;
-}
-impl FixtureMethod for CTensor {
-	fn fixture_copy(&self) -> candle_core::Result<CTensor> {
-		self.copy()
-	}
-}
-unary!(fixture_copy);
-
 fn input(dtype: DType) -> CTensor {
 	CTensor::from_vec(vec![-1.25f64, -0.0, 0.25, 0.75, 1.5, 2.25], (2, 3), CPU)
 		.unwrap()
@@ -53,7 +42,7 @@ fn checked_family_matches_each_backend_operation_at_both_dtypes() {
 	let mut context = rune::Context::with_default_modules().unwrap();
 	let mut m = Module::with_crate("candle").unwrap();
 	crate::build(&mut m).unwrap();
-	register_unary(&mut m).unwrap(); // the extra copy method
+	fixture_member::enroll(&mut m).unwrap(); // the extra copy method
 	m.file_path_constructor(
 		"load",
 		|s: &str| Ok(Fixture(s.to_owned())),
@@ -79,27 +68,10 @@ fn checked_family_matches_each_backend_operation_at_both_dtypes() {
 		($($op:ident),*) => { [$( (stringify!($op), CTensor::$op as fn(&CTensor)->candle_core::Result<CTensor>) ),*] };
 	}
 	for (name, reference) in oracles!(
-		exp,
-		log,
-		sqrt,
-		sqr,
-		abs,
-		neg,
-		recip,
-		tanh,
-		relu,
-		gelu,
-		gelu_erf,
-		silu,
-		sin,
-		cos,
-		floor,
-		ceil,
-		round,
-		sign,
-		erf,
-		fixture_copy
+		exp, log, sqrt, sqr, abs, neg, recip, tanh, relu, gelu, gelu_erf, silu, sin, cos, floor,
+		ceil, round, sign, erf, copy
 	) {
+		let name = if name == "copy" { "fixture_copy" } else { name };
 		let source = format!(
 			"pub fn main(args){{let f=candle::Fixture::load(args[0])?;let x=candle::Tensor::input(f)?;let y=x.{name}()?;drop(x);y.observe();Ok(())}}"
 		);

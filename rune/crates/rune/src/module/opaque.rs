@@ -97,6 +97,64 @@ impl Module {
 		)
 	}
 
+	/// Register a resolution-only qualified function. There is no file callback.
+	#[doc(hidden)]
+	#[cfg(feature = "engine-image")]
+	pub fn inactive_file_symbol(&mut self, path: &str) -> Result<(), ContextError> {
+		let item = ItemBuf::with_item(path.split("::"))?;
+		let handler = crate::runtime::FunctionHandler::new(|_, _, _, _| {
+			Err(VmError::panic("unavailable file operation"))
+		})?;
+		self.function_from_meta_kind(crate::function_meta::FunctionMetaKind::Function(
+			FunctionData::from_raw(item, handler),
+		))?;
+		Ok(())
+	}
+
+	/// Declare a session operation for file admission. The handler always
+	/// stops, even if a caller invokes it outside the file admission proof.
+	#[doc(hidden)]
+	#[cfg(feature = "engine-image")]
+	pub fn inactive_file_factory<T: crate::Any + TypeOf>(
+		&mut self,
+		name: &str,
+	) -> Result<(), ContextError> {
+		self.inactive_associated::<T>(name, OpaqueAssociatedKind::Factory)
+	}
+	#[doc(hidden)]
+	#[cfg(feature = "engine-image")]
+	pub fn inactive_file_i64_result<T: crate::Any + TypeOf, E: crate::Any>(
+		&mut self,
+		name: &str,
+	) -> Result<(), ContextError> {
+		self.inactive_associated::<T>(
+			name,
+			OpaqueAssociatedKind::ResultMethod(HostType::I64, NativeType::of::<E>()),
+		)
+	}
+	#[cfg(feature = "engine-image")]
+	fn inactive_associated<T: crate::Any + TypeOf>(
+		&mut self,
+		name: &str,
+		kind: OpaqueAssociatedKind,
+	) -> Result<(), ContextError> {
+		let name = crate::alloc::String::try_from(name)?.to_instance()?;
+		let associated = Associated::from_type::<T>(name)?;
+		let handler = crate::runtime::FunctionHandler::new(|_, _, _, _| {
+			Err(VmError::panic("unavailable file operation"))
+		})?;
+		self.insert_opaque_associated(
+			OpaqueAssociatedData {
+				data: AssociatedFunctionData::from_raw(associated, handler),
+				native: NativeType::of::<T>(),
+				kind,
+			},
+			Docs::EMPTY,
+			None,
+		)?;
+		Ok(())
+	}
+
 	/// Register a host value type, its logical payload charge and bounded display.
 	/// The host promises no hidden execution Roots or callbacks into the engine.
 	pub fn opaque_type<T>(
@@ -161,6 +219,36 @@ impl Module {
 	where
 		T: crate::Any + TypeOf + Named + InstallWith + MaybeTypeOf,
 		F: Function<(Ref<str>,), Plain, Return = Result<T, std::string::String>>,
+	{
+		self.register_file_path_constructor::<T, _>(name, load, bytes)
+	}
+
+	/// File provider constructor with distinct terminal and script errors.
+	#[doc(hidden)]
+	#[cfg(feature = "engine-image")]
+	pub fn checked_file_path_constructor<T, F>(
+		&mut self,
+		name: &'static str,
+		load: F,
+		bytes: fn(&T) -> usize,
+	) -> Result<(), ContextError>
+	where
+		T: crate::Any + TypeOf + Named + InstallWith + MaybeTypeOf,
+		F: Function<(Ref<str>,), Plain, Return = Result<Result<T, std::string::String>, VmError>>,
+	{
+		self.register_file_path_constructor::<T, _>(name, load, bytes)
+	}
+
+	fn register_file_path_constructor<T, F>(
+		&mut self,
+		name: &'static str,
+		load: F,
+		bytes: fn(&T) -> usize,
+	) -> Result<(), ContextError>
+	where
+		T: crate::Any + TypeOf + Named + InstallWith + MaybeTypeOf,
+		F: Function<(Ref<str>,), Plain>,
+		F::Return: MaybeTypeOf,
 	{
 		use crate::host::AlternateHost;
 		if crate::function::host::opaque::reserved(T::HASH) {
@@ -520,12 +608,32 @@ impl Module {
 	#[doc(hidden)]
 	pub fn file_unary_producer<T: crate::Any + TypeOf + MaybeTypeOf>(
 		&mut self,
-		name: &'static str,
-		method: fn(&T) -> Result<T, std::string::String>,
+		name: impl AsRef<str> + ToInstance,
+		method: impl Fn(&T) -> Result<T, std::string::String>
+			+ Function<(Ref<T>,), Plain, Return = Result<T, std::string::String>>
+			+ Copy,
+	) -> Result<(), ContextError> {
+		self.file_unary_with_credit(name, method, move |value, _| Ok(method(value)))
+	}
+
+	/// Bind a dynamically named file operator to its synchronous producer.
+	#[doc(hidden)]
+	pub fn file_unary_with_credit<T, F, G>(
+		&mut self,
+		name: impl AsRef<str> + ToInstance,
+		legacy: F,
+		producer: G,
 	) -> Result<(), ContextError>
 	where
-		fn(&T) -> Result<T, std::string::String>:
-			Function<(Ref<T>,), Plain, Return = Result<T, std::string::String>>,
+		T: crate::Any + TypeOf + MaybeTypeOf,
+		F: Function<(Ref<T>,), Plain, Return = Result<T, std::string::String>>,
+		G: Fn(
+				&T,
+				usize,
+			) -> Result<Result<T, std::string::String>, crate::host::OpaqueProducerLimit>
+			+ Send
+			+ Sync
+			+ 'static,
 	{
 		use crate::host::shared_producer::ProducerReceiver;
 		let receiver = NativeType::of::<T>();
@@ -536,12 +644,11 @@ impl Module {
 				registered: registered.map(|r| r.descriptor.info.into()),
 			});
 		}
-		let checked =
-			move |packet: ProducerReceiver| packet.produce::<T, T>(|value, _| Ok(method(value)));
+		let checked = move |packet: ProducerReceiver| packet.produce::<T, T>(&producer);
 		let file = crate::runtime::FunctionHandler::new(move |stack, addr, args, out| {
 			Function::<(ProducerReceiver,), Plain>::call(&checked, stack, addr, args, out)
 		})?;
-		self.install_file_method::<T, _, (Ref<T>,)>(name, method, receiver, file)
+		self.install_file_method::<T, _, (Ref<T>,)>(name, legacy, receiver, file)
 	}
 
 	/// File-only checked method borrowing a receiver and a second native of the result type.
@@ -588,7 +695,7 @@ impl Module {
 
 	fn install_file_method<R, F, Args>(
 		&mut self,
-		name: &'static str,
+		name: impl AsRef<str> + ToInstance,
 		legacy: F,
 		output: NativeType,
 		file: crate::runtime::FunctionHandler,
@@ -601,7 +708,7 @@ impl Module {
 		use crate::runtime::FunctionHandler;
 		let receiver = NativeType::of::<R>();
 		let unary = receiver.hash == output.hash;
-		let key = Hash::associated_function(receiver.hash, Hash::ident(name));
+		let key = Hash::associated_function(receiver.hash, Hash::ident(name.as_ref()));
 		if unary {
 			self.opaque.file_unary.try_reserve(1)?;
 		}

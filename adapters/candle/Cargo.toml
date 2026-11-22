@@ -32,6 +32,8 @@ safetensors = "=0.8.0"
 rayon = { version = "1", optional = true }
 
 [features]
+image-provider = []
+image-witness = ["image-provider"]
 # Record 0131: lowered activation caps for the batch-halving controls, and
 # the inference worker's observed thread counts.
 test-support = ["dep:rayon"]

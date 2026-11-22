@@ -11,6 +11,7 @@ default = ["generated"]
 # Record 0073: the generated bindings. Off gives the hand-written adapter
 # alone, at its former launch cost; see plans/0073_polars_generator_evidence.md.
 generated = ["dep:serde", "dep:serde_json"]
+image-provider = ["generated"]
 test-support = ["dep:tokio"]
 
 # Record 0068: the presentation matrix drives a wrapper-shaped binary as a

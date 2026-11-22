@@ -1,6 +1,6 @@
 # ADR 0320: The linked engine runs the file adapters
 
-Status: Proposed
+Status: Accepted
 
 Base: published d7c042620a4fea3d9912cb23183fa02973ff9ca7 (ADR 0319).
 

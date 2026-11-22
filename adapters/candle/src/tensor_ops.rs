@@ -751,8 +751,12 @@ macro_rules! unary {
 				wrap(op, || this.0.$name())
 			}
 		)*
+		#[cfg(feature = "image-provider")]
+		pub(crate) const IMAGE_UNARY: &[(&str, crate::image_provider::Unary)] =
+			&[$((stringify!($name), $name)),*];
+		#[allow(dead_code)] // Fixture members can be exported by the provider alone.
 		fn register_unary(m: &mut Module) -> Result<(), ContextError> {
-			$(m.file_unary_producer(stringify!($name), $name)?;)*
+			$(m.file_unary_producer(stringify!($name), $name as fn(&Tensor) -> Result<Tensor, String>)?;)*
 			Ok(())
 		}
 	};
@@ -761,6 +765,24 @@ unary!(
 	exp, log, sqrt, sqr, abs, neg, recip, tanh, relu, gelu, gelu_erf, silu, sin, cos, floor, ceil,
 	round, sign, erf
 );
+
+#[cfg(any(test, feature = "image-witness"))]
+pub(crate) mod fixture_member {
+	use super::*;
+	trait FixtureMethod {
+		fn fixture_copy(&self) -> candle_core::Result<CTensor>;
+	}
+	impl FixtureMethod for CTensor {
+		fn fixture_copy(&self) -> candle_core::Result<CTensor> {
+			self.copy()
+		}
+	}
+	unary!(fixture_copy);
+	#[cfg(test)]
+	pub(super) fn enroll(m: &mut Module) -> Result<(), ContextError> {
+		register_unary(m)
+	}
+}
 
 /// `t + x`, `t - x`, `t * x`, `t / x`: a tensor with a tensor of the same
 /// shape and dtype, or with a number (Candle's operator impls, `affine`).

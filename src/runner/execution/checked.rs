@@ -86,15 +86,31 @@ pub(super) fn run(
 			unplaced("error", &format!("{:?}", failure.error.kind));
 			Some(1)
 		}
-		Ok(FileOutcome::Interrupted) => {
+		Ok(outcome) => Some(render_outcome(&file, outcome, budget, options.debug)),
+	};
+	if let Err(error) = file.close() {
+		unplaced("error", &format!("{}: {:?}", error.operation, error.kind));
+		return Some(1);
+	}
+	code
+}
+
+pub(crate) fn render_outcome(
+	file: &rune::experimental_core::domain::file::FileRun,
+	outcome: FileOutcome,
+	budget: usize,
+	debug: bool,
+) -> i32 {
+	match outcome {
+		FileOutcome::Interrupted => {
 			eprintln!("interrupted");
-			Some(130)
+			130
 		}
-		Ok(FileOutcome::Failed {
+		FileOutcome::Failed {
 			error,
 			message,
 			remaining,
-		}) => {
+		} => {
 			if error.kind == ErrorKind::FuelExhausted {
 				unplaced(
 					"halted",
@@ -126,9 +142,9 @@ pub(super) fn run(
 					);
 				}
 			}
-			Some(1)
+			1
 		}
-		Ok(FileOutcome::Complete) => {
+		FileOutcome::Complete => {
 			let mut fields = Fields::default();
 			for source in file.sources() {
 				crate::declared::into_fields(&source.text, &mut fields);
@@ -139,18 +155,13 @@ pub(super) fn run(
 					depth: usize::MAX,
 				})
 				.map_err(|e| format!("{}: {:?}", e.operation, e.kind))
-				.and_then(|view| show_view(view, &fields, options.debug));
-			Some(shown.unwrap_or_else(|error| {
+				.and_then(|view| show_view(view, &fields, debug));
+			shown.unwrap_or_else(|error| {
 				unplaced("error", &cannot_show(&error));
 				1
-			}))
+			})
 		}
-	};
-	if let Err(error) = file.close() {
-		unplaced("error", &format!("{}: {:?}", error.operation, error.kind));
-		return Some(1);
 	}
-	code
 }
 
 #[cfg(test)]

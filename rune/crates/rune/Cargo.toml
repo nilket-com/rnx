@@ -21,6 +21,8 @@ default = ["emit", "std", "anyhow"]
 tracing = ["tracing/enabled"]
 emit = ["std", "anyhow", "codespan-reporting"]
 bench = []
+engine-image = ["execution"]
+file-inventory-controls = ["execution"]
 # Opt-in execution core (unstable API); never enabled by default.
 # Needs `anyhow`: the compiler frontend it drives uses `anyhow` under `std`.
 execution = ["std", "anyhow"]
