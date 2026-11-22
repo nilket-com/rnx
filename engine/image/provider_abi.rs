@@ -122,3 +122,29 @@ pub const SCHEMA_VECTOR: u32 = 1;
 pub const SCHEMA_TUPLE: u32 = 2;
 pub const SCHEMA_STRING: u32 = 3;
 pub const CSV_PRE_EFFECT_REFUSAL: u32 = 13;
+
+/// Caller-owned, thread-affine observation storage for the controls-only ABI.
+#[cfg(feature = "image-controls")]
+#[repr(C)]
+pub struct Effects {
+	pub version: u32,
+	pub size: u32,
+	pub allocations: core::cell::Cell<u64>,
+	pub host_bytes: core::cell::Cell<u64>,
+}
+
+#[cfg(feature = "image-controls")]
+impl Effects {
+	/// # Safety
+	/// A non-null aligned pointer must have a readable two-word header and,
+	/// for a supported version and size, a live writable known prefix.
+	pub unsafe fn checked(p: *mut Self) -> Option<core::ptr::NonNull<Self>> {
+		let ptr = core::ptr::NonNull::new(p)?;
+		if !p.is_aligned() {
+			return None;
+		}
+		let header = p.cast::<u32>();
+		(unsafe { header.read() == 1 && header.add(1).read() as usize >= size_of::<Self>() })
+			.then_some(ptr)
+	}
+}

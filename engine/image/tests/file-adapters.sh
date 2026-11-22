@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run on the frozen image pair. Both providers use the image-controls feature.
 # Arguments: stock runner, ordinary and extended launchers, demo data, stock installer oracle,
-# optionally a prebuilt plain launcher linked to the debug image.
+# optionally a prebuilt optimized observer launcher.
 set -eu
 stock=$(realpath -- "$1")
 plain=$(realpath -- "$2")
@@ -17,21 +17,24 @@ if [ "$#" -ge 6 ]; then
 else
 	root=$(realpath "$here/../../..")
 	build=$(realpath -m "${CARGO_TARGET_DIR:-$root/target}")
-	cargo --config 'profile.dev.strip="none"' --config 'profile.dev.package.rune.debug=2' --config 'profile.dev.package.rune.opt-level=0' \
-		build --manifest-path "$root/Cargo.toml" --target-dir "$build" --locked --offline \
-		-p rnx-engine-image --example engine_image --features linked
-	"$here/../build-adapter-launcher.sh" "$build/debug/examples/libengine_image.so" \
-		"$(dirname "$plain")/provider.a" "$tmp/observer" "$oracle"
+	cargo build --manifest-path "$root/Cargo.toml" --target-dir "$build" --locked --offline \
+		--release -p rnx-engine-image --example engine_image --features image-controls
+	cargo build --manifest-path "$root/demos/candle/Cargo.toml" --target-dir "$build" --locked --offline \
+		--release --example file_provider --features image-controls
+	"$here/../build-adapter-launcher.sh" "$build/release/examples/libengine_image.so" \
+		"$build/release/examples/libfile_provider.a" "$tmp/observer" "$oracle" --observe
 	observer=$tmp/observer/rnx
 fi
-# The third entry of the link receipt binds the provider archive on each launcher.
-archive_digest() {
-	awk 'NR == 3 && length($1) == 64 {print $1; ok=1} END {if(!ok) exit 1}' \
-		"$(dirname "$1")/artifacts.sha256"
-}
-plain_provider=$(archive_digest "$plain")
-observer_provider=$(archive_digest "$observer")
-test "$plain_provider" = "$observer_provider"
+# Record the archive, launcher and DSO identities on both measured paths.
+for launcher in "$plain" "$observer"; do
+	receipt="$(dirname "$launcher")/artifacts.sha256"
+	test "$(wc -l < "$receipt")" -eq 5
+	for entry in "4:$launcher" "5:$(dirname "$launcher")/libengine_image.so"; do
+		expected=$(awk -v n="${entry%%:*}" 'NR==n { print $1 }' "$receipt")
+		test "$(sha256sum <"${entry#*:}" | cut -d' ' -f1)" = "$expected"
+	done
+	cat "$receipt"
+done
 unset POLARS_PANIC_ON_ERR POLARS_BACKTRACE_IN_ERR RNX_TEST_ADAPTER_CELLS
 # Compare the installed stock surface to the table submitted by the launcher.
 # The mutants alter actual registration or table cardinality before enumeration.

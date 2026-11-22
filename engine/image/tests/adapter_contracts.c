@@ -50,7 +50,19 @@ static void exercise(const char *path, int mode) {
 	--provider.count;
 	assert(rnx_engine_adapters_v3(&r)==RNX_REFUSED);
 	++provider.count;
+#ifdef RNX_IMAGE_CONTROLS
+	struct rnx_effects_v1 first={.version=1,.size=sizeof(first),.host_bytes=11};
+	struct rnx_effects_v1 second={.version=1,.size=sizeof(second),.host_bytes=19};
+	_Alignas(struct rnx_effects_v1) uint32_t short_header[2]={1,sizeof(short_header)};
+	assert(rnx_engine_adapters_open_observed_v1(&r,NULL)==RNX_INVALID);
+	assert(rnx_engine_adapters_open_observed_v1(&r,(void *)short_header)==RNX_INVALID);
+	first.version=2;
+	assert(rnx_engine_adapters_open_observed_v1(&r,&first)==RNX_INVALID);
+	first.version=1;
+	assert(rnx_engine_adapters_open_observed_v1(&r,&first)==RNX_OK);
+#else
 	assert(rnx_engine_adapters_v3(&r)==RNX_OK);
+#endif
 	r.context=out.handle;
 	r.provider=NULL;
 	r.operation=RNX_COMPILE;
@@ -59,7 +71,11 @@ static void exercise(const char *path, int mode) {
 	assert(rnx_engine_adapters_v3(&r)==RNX_OK);
 	struct rnx_handle program=out.handle;
 	struct rnx_adapter_request other={.version=3,.size=sizeof(r),.operation=RNX_OPEN,.provider=&provider,.output=&out};
+#ifdef RNX_IMAGE_CONTROLS
+	assert(rnx_engine_adapters_open_observed_v1(&other,&second)==RNX_OK);
+#else
 	assert(rnx_engine_adapters_v3(&other)==RNX_OK);
+#endif
 	other.context=out.handle;
 	other.operation=RNX_PREPARE;
 	other.child=program;
@@ -67,7 +83,6 @@ static void exercise(const char *path, int mode) {
 	assert(rnx_engine_adapters_v3(&other)==RNX_INVALID);
 	other.operation=RNX_CLOSE;
 	other.child=(struct rnx_handle){0};
-	assert(rnx_engine_adapters_v3(&other)==RNX_OK);
 	r.path=NULL;r.path_len=0;r.child=program;r.operation=RNX_PREPARE;r.bytes=1048576;
 	assert(rnx_engine_adapters_v3(&r)==RNX_OK);
 	r.child=out.handle;r.operation=RNX_DRIVE;r.bytes=0;r.fuel=100000;r.capacity=1;
@@ -83,6 +98,12 @@ static void exercise(const char *path, int mode) {
 	assert(rnx_engine_adapters_v3(&r)==RNX_OK && counts.drops==1);
 	r.operation=RNX_CLOSE;r.child=(struct rnx_handle){0};
 	assert(rnx_engine_adapters_v3(&r)==RNX_OK);
+	assert(rnx_engine_adapters_v3(&other)==RNX_OK);
+#ifdef RNX_IMAGE_CONTROLS
+	assert(second.host_bytes==19);
+	if (mode==0) assert(first.host_bytes>11);
+	assert(rnx_engine_adapters_open_observed_v1(&r,&first)==RNX_INVALID);
+#endif
 }
 int main(int argc,char **argv) {
 	assert(argc==2);

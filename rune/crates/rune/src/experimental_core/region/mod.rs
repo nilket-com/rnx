@@ -693,9 +693,7 @@ fn binary_parts(op: Op) -> Option<(u32, Binary, u32, u32)> {
 }
 
 fn successors(f: &Function, pc: usize) -> Result<[Option<usize>; 2], Error> {
-	let mut out = [None, None];
-	code::successors(f, pc, &mut out)?;
-	Ok(out)
+	f.cached_successors(pc)
 }
 
 /// Why an analysis step stopped early: an error of the analysis itself (allocation or
@@ -2304,7 +2302,7 @@ fn inline_summary<'b>(
 	}
 
 	// Intrinsic calls cannot reach the ordinary-function lookup or summary.
-	if super::code::reserved_intrinsic_id(g) {
+	if code::reserved_intrinsic_id(g) {
 		return Ok(Err(InlineReason::IntrinsicCall));
 	}
 

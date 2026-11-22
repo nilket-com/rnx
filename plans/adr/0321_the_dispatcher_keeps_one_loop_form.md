@@ -1,6 +1,6 @@
 # ADR 0321: The dispatcher keeps one loop form
 
-Status: Proposed
+Status: Accepted
 
 Base: published 6e29884eccc051d28c82e873b004cccd99ebfef4 (ADR 0320).
 

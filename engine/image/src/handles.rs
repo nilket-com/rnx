@@ -81,6 +81,8 @@ enum Owner {
 	Adapters(crate::adapters::Callbacks),
 }
 struct Sealed {
+	#[cfg(feature = "image-controls")]
+	effects: Option<ptr::NonNull<crate::provider_abi::Effects>>,
 	context: Context,
 	files: FileModules,
 	provider: Owner,
@@ -239,6 +241,8 @@ impl Request {
 			rune::experimental_core::domain::file::initialize_image_thread();
 			let token = registry.reserve(root)?;
 			registry.0[token.slot].object = Some(Object::Context(Box::new(Sealed {
+				#[cfg(feature = "image-controls")]
+				effects: crate::OPEN_EFFECTS.get(),
 				context,
 				files,
 				provider,
@@ -448,8 +452,26 @@ pub unsafe fn dispatch(p: *const Request, version: u32) -> i32 {
 		}
 	}
 	let mut registry = Restore(TABLE.take());
+	#[cfg(feature = "image-controls")]
+	let effects = match (crate::OPEN_EFFECTS.get(), r.operation) {
+		(opening, OPEN) => opening,
+		(Some(_), _) => return INVALID,
+		(None, _) => registry
+			.0
+			.context(r.context)
+			.ok()
+			.and_then(|sealed| sealed.effects),
+	};
 	let mut out = Response::default();
 	let status = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+		#[cfg(feature = "image-controls")]
+		if let Some(p) = effects {
+			// The caller retains this storage until CLOSE has returned.
+			let counter = &unsafe { p.as_ref() }.host_bytes;
+			return rune::experimental_core::heap::count_image_host_debits(counter, || {
+				r.execute(&mut registry.0, &mut out)
+			});
+		}
 		r.execute(&mut registry.0, &mut out)
 	}))
 	.unwrap_or_else(|_| Err((FAILED, "engine panicked".into())))

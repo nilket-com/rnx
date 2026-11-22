@@ -70,6 +70,8 @@ enum Operation {
 	Display(u32),
 }
 struct Owner {
+	#[cfg(feature = "image-controls")]
+	effects: Option<std::ptr::NonNull<abi::Effects>>,
 	values: RefCell<HashMap<u64, Box<Value>>>,
 	operations: Vec<Operation>,
 	declarations: Vec<Declaration>,
@@ -79,6 +81,8 @@ impl Owner {
 	fn new() -> Self {
 		use abi::{DENSE, FRAME, MLP, TENSOR};
 		let mut owner = Self {
+			#[cfg(feature = "image-controls")]
+			effects: None,
 			values: RefCell::new(HashMap::new()),
 			operations: Vec::new(),
 			declarations: Vec::new(),
@@ -167,7 +171,12 @@ pub unsafe extern "C" fn rnx_file_provider_open(out: *mut abi::Provider) -> i32 
 	if out.is_null() || !out.is_aligned() {
 		return 1;
 	}
-	let owner = Box::new(Owner::new());
+	unsafe { write_provider(out, Owner::new()) };
+	0
+}
+
+unsafe fn write_provider(out: *mut abi::Provider, owner: Owner) {
+	let owner = Box::new(owner);
 	let declarations = owner.declarations.as_ptr();
 	let count = owner.declarations.len();
 	unsafe {
@@ -179,8 +188,28 @@ pub unsafe extern "C" fn rnx_file_provider_open(out: *mut abi::Provider) -> i32 
 			release: Some(release),
 		})
 	};
+}
+
+/// # Safety
+/// As for open. The observation storage stays live on this thread through close.
+#[cfg(feature = "image-controls")]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rnx_file_provider_open_observed_v1(
+	out: *mut abi::Provider,
+	effects: *mut abi::Effects,
+) -> i32 {
+	if out.is_null() || !out.is_aligned() {
+		return 1;
+	}
+	let Some(effects) = (unsafe { abi::Effects::checked(effects) }) else {
+		return 1;
+	};
+	let mut owner = Owner::new();
+	owner.effects = Some(effects);
+	unsafe { write_provider(out, owner) };
 	0
 }
+
 /// # Safety
 /// cookie is a live cookie from open and the engine has released the context.
 #[unsafe(no_mangle)]
@@ -299,6 +328,12 @@ impl Owner {
 			temporary: 0,
 		};
 		store.insert(token, Box::new(value));
+		#[cfg(feature = "image-controls")]
+		if let Some(effects) = self.effects {
+			// The observed open binds this storage for the owner's whole lifetime.
+			let n = &unsafe { effects.as_ref() }.allocations;
+			n.set(n.get().saturating_add(1));
+		}
 		Ok(result)
 	}
 }

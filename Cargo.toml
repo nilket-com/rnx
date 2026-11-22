@@ -40,6 +40,7 @@ stock-management = ["dep:rnx-project"]
 # reported; the build says so rather than reporting zero.
 count-allocations = []
 engine-image = ["rune/engine-image"]
+image-effect-controls = ["rune/image-effect-controls"]
 file-inventory-controls = ["rune/file-inventory-controls"]
 # Only for gates that must inject what cannot be provoked. Off by default, and
 # nothing in an ordinary build reads it: record 0022 explains why the
@@ -82,6 +83,10 @@ opt-level = 2
 # Thin LTO: faster execution and startup for a slightly longer clean build.
 [profile.release]
 lto = "thin"
+
+# Keep the dispatcher's module out of size-driven codegen-unit merges.
+[profile.release.package.rune]
+codegen-units = 8192
 
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }

@@ -4,6 +4,9 @@
 #include "launcher.c"
 #undef main
 #include "adapter_provider.h"
+#ifdef RNX_IMAGE_CONTROLS
+#include <inttypes.h>
+#endif
 extern int rnx_file_provider_open(struct rnx_adapter_provider *);
 extern int rnx_file_provider_close(void *);
 extern struct rnx_declaration *rnx_join_file_inventory(struct rnx_adapter_provider *);
@@ -23,7 +26,13 @@ int main(int argc, char **argv) {
 	if (argc < 2 || (!inventory && !refusal && strcmp(argv[1], "checked"))) return ordinary_file_main(argc, argv);
 	if ((!inventory && argc < 3) || !verified_entry((uintptr_t)&rnx_engine_adapters_v3)) return RNX_INVALID;
 	struct rnx_adapter_provider provider = {0};
+#ifdef RNX_IMAGE_CONTROLS
+	struct rnx_effects_v1 effects={.version=1, .size=sizeof(effects)};
+	const uint64_t initial_allocations=effects.allocations, initial_bytes=effects.host_bytes;
+	if (rnx_file_provider_open_observed_v1(&provider,&effects)) return RNX_INVALID;
+#else
 	if (rnx_file_provider_open(&provider)) return RNX_INVALID;
+#endif
 	struct rnx_declaration *joined=rnx_join_file_inventory(&provider);
 	if (!joined) { rnx_file_provider_close(provider.cookie); return RNX_FAILED; }
 	if (inventory) {
@@ -46,7 +55,11 @@ int main(int argc, char **argv) {
 	struct rnx_adapter_request r = {.version=3, .size=sizeof(r), .operation=RNX_OPEN,
 		.provider=&provider, .output=&out, .buffer=buffer, .capacity=262144};
 	struct rnx_handle context={0},program={0},invocation={0};
+#ifdef RNX_IMAGE_CONTROLS
+	int status = rnx_engine_adapters_open_observed_v1(&r,&effects);
+#else
 	int status = rnx_engine_adapters_v3(&r);
+#endif
 	if (status) goto done;
 	context=out.handle;
 	r.context=context;
@@ -100,6 +113,10 @@ done:
 		if (rnx_engine_adapters_v3(&r)) status=RNX_INVALID;
 	}
 	if (rnx_file_provider_close(provider.cookie)) status=RNX_INVALID;
+#ifdef RNX_IMAGE_CONTROLS
+	fprintf(stderr,"provider_allocations=%" PRIu64 " store_host_bytes_debited=%" PRIu64 "\n",
+		effects.allocations-initial_allocations,effects.host_bytes-initial_bytes);
+#endif
 	free(joined);
 	free(buffer);
 	free(args);

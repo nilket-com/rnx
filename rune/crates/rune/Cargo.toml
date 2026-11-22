@@ -22,6 +22,7 @@ tracing = ["tracing/enabled"]
 emit = ["std", "anyhow", "codespan-reporting"]
 bench = []
 engine-image = ["execution"]
+image-effect-controls = ["execution"]
 file-inventory-controls = ["execution"]
 # Opt-in execution core (unstable API); never enabled by default.
 # Needs `anyhow`: the compiler frontend it drives uses `anyhow` under `std`.
@@ -92,7 +93,7 @@ rand = { version = "0.10.2", default-features = false, optional = true, features
 unicode-ident = "1.0.12"
 
 [target.'cfg(all(target_arch = "x86_64", target_os = "linux"))'.dependencies]
-cranelift-codegen = { version = "=0.135.5", optional = true }
+cranelift-codegen = { version = "=0.135.5", optional = true, default-features = false, features = ["std", "unwind", "host-arch"] }
 cranelift-frontend = { version = "=0.135.5", optional = true }
 cranelift-module = { version = "=0.135.5", optional = true }
 cranelift-jit = { version = "=0.135.5", optional = true }

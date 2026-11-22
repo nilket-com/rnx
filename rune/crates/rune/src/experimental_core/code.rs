@@ -1567,9 +1567,21 @@ impl Code {
 	}
 }
 
-pub(crate) fn successors(f: &Function, pc: usize, out: &mut [Option<usize>; 2]) -> Result<()> {
-	let instruction = f.operation(pc)?;
-	*out = match instruction {
+fn successors(f: &Function, pc: usize, out: &mut [Option<usize>; 2]) -> Result<()> {
+	*out = successor_targets(&f.operation(pc)?, pc, f.len())?;
+	Ok(())
+}
+
+impl Function {
+	#[cfg(any(feature = "native-code", test))]
+	pub(crate) fn cached_successors(&self, pc: usize) -> Result<[Option<usize>; 2]> {
+		let instruction = self.cached_ref(pc).ok_or_else(invalid)?;
+		successor_targets(&instruction.op, pc, self.len())
+	}
+}
+
+fn successor_targets(op: &Op, pc: usize, len: usize) -> Result<[Option<usize>; 2]> {
+	let targets = match *op {
 		Op::Return { .. } | Op::Panic { .. } => [None, None],
 		Op::IterNext { none, .. } => [
 			Some(pc.checked_add(1).ok_or_else(invalid)?),
@@ -1580,11 +1592,11 @@ pub(crate) fn successors(f: &Function, pc: usize, out: &mut [Option<usize>; 2]) 
 		_ => [Some(pc.checked_add(1).ok_or_else(invalid)?), None],
 	};
 
-	if out.iter().flatten().any(|n| *n >= f.code.len()) {
+	if targets.iter().flatten().any(|n| *n >= len) {
 		return Err(invalid());
 	}
 
-	Ok(())
+	Ok(targets)
 }
 
 // A compound tuple update is one uninterrupted lowering group. The literal
@@ -3199,6 +3211,58 @@ mod tuple_update_tests {
 		let mut f = function(true, 0);
 		f.patch(2, Op::Copy { out: 3, value: 0 }).unwrap();
 		assert_eq!(code(f).err().unwrap().kind, ErrorKind::InvalidCode);
+	}
+}
+
+#[cfg(test)]
+mod successor_tests {
+	use super::*;
+
+	#[test]
+	fn encoded_and_cached_successors_agree() {
+		let mut f = Function::new(2, 1).unwrap();
+		let ops = [
+			Op::Copy { out: 1, value: 0 },
+			Op::Branch {
+				condition: 0,
+				yes: 2,
+				no: 4,
+			},
+			Op::IterNext {
+				out: 1,
+				iterator: 0,
+				none: 5,
+			},
+			Op::Jump { target: 0 },
+			Op::Panic { value: 1 },
+			Op::Return { value: 1 },
+			Op::Jump { target: 7 },
+		];
+		for op in ops {
+			f.push(op, Location::default()).unwrap();
+		}
+		f.prepare_cache().unwrap();
+		let expected = [
+			Ok([Some(1), None]),
+			Ok([Some(2), Some(4)]),
+			Ok([Some(3), Some(5)]),
+			Ok([Some(0), None]),
+			Ok([None, None]),
+			Ok([None, None]),
+			Err(invalid()),
+			Err(invalid()), // missing instruction
+		];
+		for (pc, expected) in expected.into_iter().enumerate() {
+			let mut out = [None, None];
+			assert_eq!(successors(&f, pc, &mut out).map(|()| out), expected);
+			assert_eq!(f.cached_successors(pc), expected);
+		}
+		for op in [ops[0], ops[2]] {
+			assert_eq!(
+				successor_targets(&op, usize::MAX, usize::MAX),
+				Err(invalid())
+			);
+		}
 	}
 }
 

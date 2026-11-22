@@ -23,7 +23,14 @@ readelf -d "$out/relocated/rnx" > "$out/dynamic"
 grep -Fq '[libengine_image.so]' "$out/dynamic"
 grep -Fq '[$ORIGIN]' "$out/dynamic"
 nm -D --defined-only "$image" | awk '{print $3}' > "$out/exports"
-test "$(cat "$out/exports")" = "$(printf 'rnx_engine_adapters_v3\nrnx_engine_handles_v2\nrnx_engine_run_file_v1')"
+exports=$(printf 'rnx_engine_adapters_v3\nrnx_engine_handles_v2\nrnx_engine_run_file_v1')
+case "${2:-ordinary}" in
+	ordinary) control_flag= ;;
+	observed) control_flag=-DRNX_IMAGE_CONTROLS
+		exports=$(printf 'rnx_engine_adapters_open_observed_v1\n%s' "$exports") ;;
+	*) exit 2 ;;
+esac
+test "$(cat "$out/exports")" = "$exports"
 cc -Wall -Wextra -Werror -O2 -pthread "$src/tests/contracts.c" "-L$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -o "$out/contracts"
 "$out/contracts" "$out/main.rn" "$out/refused.rn" "$out/failed.rn" > "$out/calls"
 sort -n "$out/calls" > "$out/sorted"
@@ -72,5 +79,5 @@ env -u PERF_BUILDID_DIR "$out/eligibility" "$out/ordinary.rn" 0
 PERF_BUILDID_DIR=/nonexistent "$out/eligibility" "$out/ordinary.rn" 1
 
 printf '%s\n' 'pub fn main(args){let m=candle::Mlp::load("model")?; let alias=m; alias.dims(); m.dims(); Ok(())}' >"$out/model.rn"
-cc -std=c11 -Wall -Wextra -Werror "$src/tests/adapter_contracts.c" -L"$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -o "$out/adapter-contracts"
+cc -std=c11 -Wall -Wextra -Werror ${control_flag:+"$control_flag"} "$src/tests/adapter_contracts.c" -L"$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -o "$out/adapter-contracts"
 "$out/adapter-contracts" "$out/model.rn"

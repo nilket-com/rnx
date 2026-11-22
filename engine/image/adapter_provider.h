@@ -83,4 +83,17 @@ _Static_assert(sizeof(struct rnx_adapter_request) == sizeof(struct rnx_handles_r
 	&& offsetof(struct rnx_adapter_request, provider) == offsetof(struct rnx_handles_request, provider),
 	"unsupported adapter request layout");
 int32_t rnx_engine_adapters_v3(const struct rnx_adapter_request *);
+#ifdef RNX_IMAGE_CONTROLS
+/* Requests and callbacks are synchronous and thread-affine. Initialize version
+ * and size before open. The caller owns this separate storage and keeps it live
+ * through both closes. Ordinary v3 requests use their context's binding.
+ * Both counters saturate at UINT64_MAX and include effects during teardown. */
+struct rnx_effects_v1 {
+	uint32_t version, size;
+	uint64_t allocations, host_bytes;
+};
+_Static_assert(sizeof(struct rnx_effects_v1) == 24, "unsupported effects layout");
+int32_t rnx_engine_adapters_open_observed_v1(const struct rnx_adapter_request *, struct rnx_effects_v1 *);
+int rnx_file_provider_open_observed_v1(struct rnx_adapter_provider *, struct rnx_effects_v1 *);
+#endif
 #endif

@@ -2214,3 +2214,41 @@ mod variant_method_tests;
 mod method_cmp;
 
 mod owned_input;
+
+#[cfg(feature = "image-effect-controls")]
+mod image_debits {
+	use core::cell::Cell;
+
+	std::thread_local! {
+		static BYTES: Cell<Option<u64>> = const { Cell::new(None) };
+	}
+
+	pub(super) fn commit(bytes: usize) {
+		if let Some(total) = BYTES.get() {
+			BYTES.set(Some(total.saturating_add(bytes as u64)));
+		}
+	}
+
+	/// Add committed host-slot bytes from this synchronous image request to its context.
+	#[doc(hidden)]
+	pub fn count_image_host_debits<R>(counter: &Cell<u64>, run: impl FnOnce() -> R) -> R {
+		struct Scope<'a> {
+			counter: &'a Cell<u64>,
+			previous: Option<u64>,
+		}
+		impl Drop for Scope<'_> {
+			fn drop(&mut self) {
+				let bytes = BYTES.replace(self.previous).unwrap_or_default();
+				self.counter.set(self.counter.get().saturating_add(bytes));
+			}
+		}
+		let _scope = Scope {
+			counter,
+			previous: BYTES.replace(Some(0)),
+		};
+		run()
+	}
+}
+#[cfg(feature = "image-effect-controls")]
+#[doc(hidden)]
+pub use image_debits::count_image_host_debits;

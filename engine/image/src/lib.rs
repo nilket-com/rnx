@@ -185,3 +185,32 @@ pub unsafe extern "C" fn rnx_engine_adapters_v3(p: *const handles::Request) -> i
 	let _scope = Scope;
 	catch_unwind(AssertUnwindSafe(|| unsafe { handles::dispatch(p, 3) })).unwrap_or(FAILED)
 }
+
+#[cfg(feature = "image-controls")]
+thread_local! {
+	static OPEN_EFFECTS: Cell<Option<ptr::NonNull<provider_abi::Effects>>> = const { Cell::new(None) };
+}
+
+/// Open an observed v3 adapter context. Later v3 calls use the context binding.
+///
+/// # Safety
+/// The request satisfies the v3 contract. The aligned observation header is
+/// readable, and its supported prefix stays writable and disjoint from the
+/// request and its outputs through the successful close of this context.
+#[cfg(feature = "image-controls")]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rnx_engine_adapters_open_observed_v1(
+	p: *const handles::Request,
+	effects: *mut provider_abi::Effects,
+) -> i32 {
+	if CALL.get().is_some() {
+		return INVALID;
+	}
+	let Some(effects) = (unsafe { provider_abi::Effects::checked(effects) }) else {
+		return INVALID;
+	};
+	OPEN_EFFECTS.set(Some(effects));
+	let status = unsafe { rnx_engine_adapters_v3(p) };
+	OPEN_EFFECTS.set(None);
+	status
+}

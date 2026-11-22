@@ -126,6 +126,8 @@ impl Store {
 			return Err(err(ErrorKind::InvalidCode));
 		};
 		host.value = Some(value.clone());
+		#[cfg(feature = "image-effect-controls")]
+		super::image_debits::commit(entry.charged_bytes);
 		Ok(admitted)
 	}
 
