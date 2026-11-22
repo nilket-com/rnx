@@ -1,5 +1,124 @@
 {
   "schema": 2,
+  "installed_setup": {
+    "kernels": {
+      "awfy_permute": {
+        "T": [
+          201616392,
+          201616392
+        ],
+        "W": [
+          190886307,
+          190886307
+        ]
+      },
+      "awfy_sieve": {
+        "T": [
+          17977049,
+          17977049
+        ],
+        "W": [
+          15594715,
+          15594715
+        ]
+      },
+      "fib": {
+        "T": [
+          49286713,
+          49286713
+        ],
+        "W": [
+          45298034,
+          45298034
+        ]
+      },
+      "loops": {
+        "T": [
+          6033730,
+          6033730
+        ],
+        "W": [
+          4709532,
+          4709532
+        ]
+      },
+      "numeric_calls": {
+        "T": [
+          8442524,
+          8442524
+        ],
+        "W": [
+          6856743,
+          6856743
+        ]
+      },
+      "shared_rows": {
+        "T": [
+          989923,
+          989923
+        ],
+        "W": [
+          136548,
+          136548
+        ]
+      },
+      "vec_iter_bool": {
+        "T": [
+          10378083,
+          10378083
+        ],
+        "W": [
+          8581710,
+          8581710
+        ]
+      },
+      "vec_iter_i64": {
+        "T": [
+          11429287,
+          11429287
+        ],
+        "W": [
+          9451045,
+          9451045
+        ]
+      }
+    },
+    "launch_sha256": {
+      "off": "aef68d5ab88c5537c3a7d17a3f74ee64a73adbb988b7d17bf5bfbe2126b66b06",
+      "on": "397e3c117ca63d16812fadd27b1edfd8f1a44012705a4928e92e480f1efe004d"
+    },
+    "measured": {
+      "engine": {
+        "path": "/run/rnx-route/libengine_image.so",
+        "sha256": "d8fc974788f78adb55edbb2bd89d71c017b158a518d84b93a6f0a7db6b17e92d"
+      },
+      "installed": {
+        "path": "/run/rnx-route/installed",
+        "sha256": "6a9b8b9173011c3501a6d8feb9b13f4aa36188899b2e24d770a839d73a3582d3"
+      },
+      "runner": {
+        "path": "/run/rnx-route/rnx",
+        "sha256": "c61694ec8314481a293482a19fb90997eb73ed95ca7526750992b7fb7ded82ae"
+      },
+      "target": "x86_64-unknown-linux-gnu",
+      "version": 2
+    },
+    "outer": {
+      "off": {
+        "T": 862196,
+        "W": 16000
+      },
+      "on": {
+        "T": 862165,
+        "W": 15983
+      }
+    },
+    "outer_launch_sha256": {
+      "off": "074cee8b0a8a15618d7222d9a9f0d9edb12be75fdb1a50fa7fd7728e737c921c",
+      "on": "b68d93836dbc2b3cecc3fccffcdb137ed79912557ece0ba0c67cf3bad3de8412"
+    },
+    "previous": "05283812784034628fe29755c7640e352e4f1534"
+  },
   "native_setup": {
     "reference": "ff5bf81efba559573d0b8f0de84fd9fba919ef89",
     "launch_sha256": {"off":"407bd3e940fc6d53d3bcca8b08f3c3c13078caa5048fc07a16f1e72eb85f600f","on":"b9690f039f7cbd7da0cd5c9dd598cd7f205b9d873053198b8e0b8dacb8fb00af"},

@@ -1,6 +1,6 @@
 # ADR 0324: Files run on the installed engine image
 
-Status: Proposed
+Status: Accepted
 
 Base: published 05283812784034628fe29755c7640e352e4f1534 (ADR 0323).
 

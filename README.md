@@ -146,6 +146,17 @@ before writes begin; each file replacement is atomic, while multiple replacement
 are not a transaction. A publication failure reports the completed count.
 Already-formatted files are not rewritten. Run `rnx fmt --help` for the command.
 
+On x86_64 GNU/Linux, installing from this checkout with `cargo install --locked
+--path .` produces one stock executable. On the first `rnx run FILE`, it
+writes its embedded file helper and engine image to a private generation under
+`$XDG_CACHE_HOME/rnx-file-images` (default `$HOME/.cache/rnx-file-images`).
+A full byte check records the identities of both files. Later runs reuse it while
+their inodes, sizes and change times match. Publishing a new generation removes
+older generations and abandoned writes. Running scripts keep their mapped image.
+If the cache cannot be created or written, the CLI copies the embedded pair to
+sealed memory files for that launch. The host must permit execution from the
+selected storage. An invalid existing entry stops the run before the script starts.
+
 One-shot file, project and adapter runs use the execution engine by default.
 Programs outside its supported subset select the legacy engine before execution.
 A runtime failure is terminal and is never retried. One-shot eval uses the

@@ -73,7 +73,7 @@ pub(super) fn run(
 	}
 	let code = match outcome {
 		Err(StartError::Prepare(PrepareError::Refused(why))) => {
-			options.selected("legacy", Some(why.name()));
+			options.refused(why, why.name(), None);
 			None
 		}
 		Err(StartError::Prepare(PrepareError::Invalid(error))) => {

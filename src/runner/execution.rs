@@ -113,7 +113,7 @@ fn attempt(
 
 		Err(error) => {
 			if let Some(refusal) = error.refusal {
-				options.selected("legacy", Some(refusal.name()));
+				options.refused(refusal, error.operation, error.location);
 				return None;
 			}
 			options.selected("execution", None);
@@ -211,7 +211,7 @@ fn invoke(
 	let prepared = match executor.prepare(program, store, entry, &args) {
 		Ok(prepared) => prepared,
 		Err(PrepareError::Refused(refusal)) => {
-			options.selected("legacy", Some(refusal.name()));
+			options.refused(refusal, refusal.name(), None);
 			return None;
 		}
 		Err(PrepareError::Invalid(error)) => {

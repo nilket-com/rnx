@@ -7,6 +7,8 @@ mod adapter;
 mod clock;
 #[path = "support/final_output.rs"]
 mod final_output;
+#[path = "harness/scratch.rs"]
+mod scratch;
 
 use serde_json::{Value, json};
 use std::{
@@ -273,7 +275,7 @@ fn snapshot(root: &Path) -> Result<Value> {
 }
 fn run(
 	case: &Case,
-	dir: &Path,
+	(dir, cache): (&Path, &Path),
 	legacy: bool,
 	native: bool,
 	debug: bool,
@@ -291,6 +293,8 @@ fn run(
 		fs::create_dir_all(path.parent().unwrap())?;
 		fs::write(path, &orders)?;
 	}
+	// The installed runtime cache belongs to the harness. Only work is the
+	// script filesystem whose effects are compared between engines.
 	let input = dir.join("script.rn");
 	fs::write(&input, &case.source)?;
 	let mut command = Command::new("/usr/bin/timeout");
@@ -312,6 +316,11 @@ fn run(
 		.arg(&work)
 		.args(["--dev", "/dev", "--proc", "/proc", "--setenv", "HOME"])
 		.arg(&work)
+		.args(["--bind"])
+		.arg(cache)
+		.arg(cache)
+		.args(["--setenv", "XDG_CACHE_HOME"])
+		.arg(cache)
 		.args(["--setenv", "TMPDIR"])
 		.arg(&work)
 		.arg(env!("CARGO_BIN_EXE_rnx"))
@@ -373,11 +382,11 @@ fn halt<'a>(run: &'a Ran, budget: usize) -> Option<(&'a [u8], bool)> {
 fn exact(a: &Ran, b: &Ran) -> bool {
 	a.stdout == b.stdout && a.stderr == b.stderr && a.code == b.code && a.files == b.files
 }
-fn compare(case: &Case, dir: &Path, native: bool) -> Result<Value> {
+fn compare(case: &Case, dir: &Path, cache: &Path, native: bool) -> Result<Value> {
 	let mode = if native { "on" } else { "off" };
 	let old = run(
 		case,
-		dir,
+		(dir, cache),
 		true,
 		native,
 		false,
@@ -386,7 +395,7 @@ fn compare(case: &Case, dir: &Path, native: bool) -> Result<Value> {
 	)?;
 	let new = run(
 		case,
-		dir,
+		(dir, cache),
 		false,
 		native,
 		false,
@@ -395,7 +404,7 @@ fn compare(case: &Case, dir: &Path, native: bool) -> Result<Value> {
 	)?;
 	let evidence = run(
 		case,
-		dir,
+		(dir, cache),
 		false,
 		native,
 		true,
@@ -493,7 +502,7 @@ fn compare(case: &Case, dir: &Path, native: bool) -> Result<Value> {
 			.ok_or("larger budget overflow")?;
 		let larger = run(
 			case,
-			dir,
+			(dir, cache),
 			true,
 			native,
 			false,
@@ -591,6 +600,7 @@ fn real_cli_live_census_demos_and_l1_match_legacy_with_native_off_and_on() -> Re
 		.unwrap_or_else(|| root.join(format!("target/routing-cli/{}-{nonce}", std::process::id())));
 	fs::create_dir_all(out.parent().ok_or("output parent missing")?)?;
 	fs::create_dir(&out)?;
+	let cache = scratch::Scratch::dir(out.join("file-cache"));
 	let cases = cases()?;
 	let next = AtomicUsize::new(0);
 	let results = Mutex::new(Vec::new());
@@ -606,7 +616,7 @@ fn real_cli_live_census_demos_and_l1_match_legacy_with_native_off_and_on() -> Re
 						fs::create_dir(&dir)?;
 						let mut rows = Vec::new();
 						for native in [false, true] {
-							rows.push(compare(case, &dir, native)?);
+							rows.push(compare(case, &dir, &cache, native)?);
 						}
 						Ok(rows)
 					})();
@@ -688,6 +698,7 @@ fn entry_reexports_fall_back_before_effects_and_missing_entry_is_terminal() -> R
 		))
 	});
 	fs::create_dir_all(&out)?;
+	let cache = scratch::Scratch::dir(out.join("file-cache"));
 	for (id, source) in [
 		(
 			"alias",
@@ -726,7 +737,7 @@ fn entry_reexports_fall_back_before_effects_and_missing_entry_is_terminal() -> R
 			let mode = if native { "on" } else { "off" };
 			let old = run(
 				&case,
-				&dir,
+				(&dir, &cache),
 				true,
 				native,
 				false,
@@ -735,7 +746,7 @@ fn entry_reexports_fall_back_before_effects_and_missing_entry_is_terminal() -> R
 			)?;
 			let new = run(
 				&case,
-				&dir,
+				(&dir, &cache),
 				false,
 				native,
 				false,
@@ -745,7 +756,7 @@ fn entry_reexports_fall_back_before_effects_and_missing_entry_is_terminal() -> R
 			assert!(exact(&old, &new), "{id} native={mode}");
 			let evidence = run(
 				&case,
-				&dir,
+				(&dir, &cache),
 				false,
 				native,
 				true,

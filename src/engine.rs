@@ -24,12 +24,28 @@ impl Default for Options {
 }
 
 impl Options {
+	pub fn refused(
+		self,
+		why: rune::experimental_core::error::Refusal,
+		reason: &'static str,
+		location: Option<rune::experimental_core::error::Location>,
+	) {
+		#[cfg(feature = "engine-image")]
+		crate::image_file::route_event("legacy_refusal", Some(why.name()), Some(reason), location);
+		#[cfg(not(feature = "engine-image"))]
+		let _ = (reason, location);
+		self.selected("legacy", Some(why.name()));
+	}
 	pub fn selected(self, engine: &str, refusal: Option<&str>) {
 		#[cfg(feature = "engine-image")]
 		if let Some(reason) = refusal
 			&& crate::image_file::diagnostic(format_args!("execution refused: {reason}"))
 		{
 			return;
+		}
+		#[cfg(feature = "engine-image")]
+		if refusal.is_none() {
+			crate::image_file::route_event(engine, None, None, None);
 		}
 		if self.debug {
 			eprint!("rnx: engine={engine}");

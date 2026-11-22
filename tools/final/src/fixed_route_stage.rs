@@ -626,6 +626,17 @@ fn checked_pair(pair: Value) -> Result<Value> {
 				))?) == desc["runner"]["sha256"],
 				"runner build digest differs"
 			);
+			if let Some(outer) = desc.get("installed") {
+				let path = Path::new(
+					b["installed_binary"]
+						.as_str()
+						.context("installed binary path")?,
+				);
+				anyhow::ensure!(
+					path.is_absolute() && json!(digest(path)?) == outer["sha256"],
+					"installed binary digest differs"
+				);
+			}
 			if let Some(engine) = desc.get("engine") {
 				anyhow::ensure!(
 					json!(digest(Path::new(owner))?) == engine["sha256"],
@@ -809,6 +820,12 @@ pub fn capture_receipts(
 				"capture manifest image binding differs"
 			);
 		}
+		if let Some(path) = binary.get("installed_binary").and_then(Value::as_str) {
+			artifacts.insert(
+				path.into(),
+				binary["measured"]["installed"]["sha256"].clone(),
+			);
+		}
 		if let Some(path) = binary.get("engine_binary").and_then(Value::as_str) {
 			artifacts.insert(path.into(), binary["measured"]["engine"]["sha256"].clone());
 		}
@@ -832,6 +849,7 @@ pub fn capture_receipts(
 				anyhow::ensure!(
 					config.get("measured") == binary.get("measured")
 						&& config.get("engine_binary") == binary.get("engine_binary")
+						&& config.get("installed_binary") == binary.get("installed_binary")
 						&& config["canonical_layout"] == true
 						&& config["binary"] == binary["binary"]
 						&& config["fixture"] == json!(dir.join("program.rn"))
@@ -855,6 +873,16 @@ pub fn capture_receipts(
 				);
 				if let Some(desc) = binary.get("measured") {
 					images::validate_row(row, desc)?;
+					if let Some(d) = row.get("dispatch") {
+						let proof_path = vectors_dir
+							.join(format!("dispatch-{role}-{mode}"))
+							.join("DISPATCH.json");
+						anyhow::ensure!(
+							d["proof"] == json!(proof_path),
+							"incorrect installed dispatch proof path"
+						);
+						images::dispatch_proof(row, desc, &read(&proof_path)?)?;
+					}
 				}
 				if mode == "on" || binary.get("engine_binary").is_some() {
 					let boundary = dir.join("GDB.json");
@@ -884,6 +912,9 @@ pub fn capture_receipts(
 			"binary_sha256": sha, "capture_key": contextual_key(sha,current,&paths)?, "records": selected, "artifacts": artifacts});
 		if split {
 			receipt["capture_paths"] = paths;
+			if let Some(path) = binary.get("installed_binary") {
+				receipt["installed_binary"] = path.clone();
+			}
 			if let Some(path) = binary.get("engine_binary") {
 				receipt["engine_binary"] = path.clone();
 			}

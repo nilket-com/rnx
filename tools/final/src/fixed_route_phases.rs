@@ -29,7 +29,21 @@ pub(crate) fn validate_setup_context(row: &Value, policy: &Value) -> Result<()> 
 	let kind = row["kind"].as_str().context("phase kernel")?;
 	let size = row["n"].as_u64().context("phase size")?.to_string();
 	let mode = row["policy"].as_str().context("capture mode")?;
-	let required = policy["native_setup"]["launch_sha256"][mode]
+	let installed = row.get("dispatch").is_some();
+	if installed {
+		ensure!(
+			row["dispatch"]["launch_sha256"].is_string()
+				&& row["dispatch"]["launch_sha256"]
+					== policy["installed_setup"]["outer_launch_sha256"][mode],
+			"incomparable installed outer launch"
+		);
+	}
+	let table = if installed {
+		"installed_setup"
+	} else {
+		"native_setup"
+	};
+	let required = policy[table]["launch_sha256"][mode]
 		.as_str()
 		.context("missing frozen setup launch")?;
 	let actual = row["launch_sha256"].as_str().unwrap_or("missing");
@@ -96,11 +110,48 @@ pub(super) fn validate_row(row: &Value, policy: &Value) -> Result<()> {
 
 fn measure(row: &Value, phase: &str, metric: &str) -> Result<i128> {
 	let a = &row["phases"][phase]["accounting"];
-	if metric == "T" {
-		integer(&a["total_Ir"])
+	let inner = if metric == "T" {
+		integer(&a["total_Ir"])?
 	} else {
-		Ok(integer(&a["rnx_Ir"])? + integer(&a["other_Ir"])?)
+		integer(&a["rnx_Ir"])? + integer(&a["other_Ir"])?
+	};
+	let outer = if phase == "setup"
+		&& let Some(dispatch) = row.get("dispatch")
+	{
+		integer(&dispatch[metric])?
+	} else {
+		0
+	};
+	Ok(inner + outer)
+}
+
+/// Keep the native-off whole-window gate and score the separate outer process.
+pub(super) fn score_off_dispatch(
+	whole: &mut Value,
+	base: [&Value; 2],
+	candidate: [&Value; 2],
+	policy: &Value,
+	limit: i128,
+) -> Result<()> {
+	let metric = whole["metric"].as_str().context("metric")?;
+	let frozen = &policy["installed_setup"]["outer"]["off"][metric];
+	let mut checks = Vec::new();
+	let mut passed = whole["pass_all"] == true;
+	for (baseline, current) in base.into_iter().zip(candidate) {
+		let before = if limit == 10 || baseline.get("dispatch").is_none() {
+			integer(frozen)?
+		} else {
+			integer(&baseline["dispatch"][metric])?
+		};
+		let after = integer(&current["dispatch"][metric])?;
+		let allowance = before * limit / 1000;
+		let pass = after - before <= allowance;
+		checks.push(json!({"before":before,"after":after,"allowance":allowance,"pass":pass}));
+		passed &= pass;
 	}
+	whole["dispatch_levels"] = json!(checks);
+	whole["pass_all"] = json!(passed);
+	Ok(())
 }
 
 pub(super) fn score_row(
@@ -128,11 +179,15 @@ pub(super) fn score_row(
 				measure(inputs[i][1], phase, metric)?,
 			])
 		};
-		let [b1, b5] = if phase == "setup" && cumulative {
-			[
-				integer(&budget["reference"][0])?,
-				integer(&budget["reference"][1])?,
-			]
+		let installed = inputs[1][0].get("dispatch").is_some();
+		let migration = installed && inputs[0][0].get("dispatch").is_none();
+		let reference = if installed {
+			&policy["installed_setup"]["kernels"][kind][metric]
+		} else {
+			&budget["reference"]
+		};
+		let [b1, b5] = if phase == "setup" && (cumulative || migration) {
+			[integer(&reference[0])?, integer(&reference[1])?]
 		} else {
 			pair(0)?
 		};
@@ -172,6 +227,63 @@ mod tests {
 	fn row(setup: i64, execution: i64) -> Value {
 		let account = |n| json!({"total_Ir":n,"rnx_Ir":n,"other_Ir":0,"dynamic_Ir":0});
 		json!({"phases":{"setup":{"accounting":account(setup)},"execution":{"accounting":account(execution)}}})
+	}
+
+	#[test]
+	fn off_dispatch_preserves_whole_verdict_and_uses_frozen_cumulative_reference() {
+		let policy = json!({"installed_setup":{"outer":{"off":{"W":1000}}}});
+		let stock = json!({});
+		let prior = json!({"dispatch":{"W":1005}});
+		for (baseline, limit, whole, after, expected) in [
+			(&stock, 5, true, 1005, true),
+			(&stock, 5, true, 1006, false),
+			(&prior, 5, true, 1010, true),
+			(&prior, 10, true, 1011, false),
+			(&prior, 5, false, 1000, false),
+		] {
+			let changed = json!({"dispatch":{"W":after}});
+			let mut row = json!({"metric":"W","pass_all":whole});
+			score_off_dispatch(&mut row, [baseline; 2], [&prior, &changed], &policy, limit)
+				.unwrap();
+			assert_eq!(row["pass_all"], expected);
+		}
+	}
+
+	#[test]
+	fn installed_launch_is_charged_to_setup_on_migration_and_later_changes() {
+		let policy: Value =
+			serde_json::from_str(include_str!("../../column/fixed_route_policy.json")).unwrap();
+		let reference = policy["installed_setup"]["kernels"]["shared_rows"]["W"][0]
+			.as_i64()
+			.unwrap();
+		let limit = policy["native_setup"]["kernels"]["shared_rows"]["W"]["per_record"]["level"]
+			.as_i64()
+			.unwrap();
+		let pair = |outer: i64| {
+			[100_000, 500_000].map(|execution| {
+				let mut v = row(reference - 100, execution);
+				v["dispatch"] = json!({"W":outer,"T":outer});
+				v
+			})
+		};
+		let old = [row(1, 100_000), row(1, 500_000)];
+		let base = pair(100);
+		for (baseline, permille) in [(&old, 5), (&base, 5), (&old, 10)] {
+			for (extra, pass) in [(limit, true), (limit + 1, false)] {
+				let after = pair(100 + extra);
+				let mut verdict =
+					json!({"kind":"shared_rows","metric":"W","level_pass":true,"growth_pass":true});
+				score_row(
+					&mut verdict,
+					[[&baseline[0], &baseline[1]], [&after[0], &after[1]]],
+					&policy,
+					permille,
+				)
+				.unwrap();
+				assert_eq!(verdict["pass_all"], pass);
+				assert_eq!(verdict["phases"]["execution"][0]["delta"], 0);
+			}
+		}
 	}
 
 	#[test]

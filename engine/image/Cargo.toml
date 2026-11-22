@@ -27,3 +27,6 @@ rnx = { path = "../..", default-features = false, optional = true }
 
 [target.'cfg(all(target_arch = "x86_64", target_os = "linux", target_env = "gnu"))'.dependencies]
 rune-alloc = { path = "../../rune/crates/rune-alloc", features = ["std"], optional = true }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(rnx_installed_start)'] }

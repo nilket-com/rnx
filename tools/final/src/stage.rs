@@ -27,8 +27,8 @@ pub const POLARS_LINT_ARGS: [&str; 2] = ["--", "-Wclippy::erasing_op"];
 
 /// How a stage runs its children, so a control can trace them.
 pub trait Invoke {
-	/// Run `command` in `cwd` with stdout and stderr in the new file `log`,
-	/// failing on a nonzero exit; the log's text.
+	/// Return the log of a successful command. A JSON Cargo invocation writes
+	/// stderr to a sibling file so progress output cannot interrupt a record.
 	fn invoke(
 		&mut self,
 		command: &[String],
@@ -69,6 +69,15 @@ impl Invoke for Live {
 			.write(true)
 			.create_new(true)
 			.open(log)?;
+		let json_stdout = command
+			.iter()
+			.take_while(|a| *a != "--")
+			.any(|a| a == "--message-format=json");
+		let stderr = if json_stdout {
+			std::fs::File::create_new(log.with_extension("stderr.log"))?
+		} else {
+			file.try_clone()?
+		};
 		let wrapped;
 		let command = if let Some(route) = crate::cache::lookup(&self.env, cwd, command)? {
 			wrapped = route.wrap(Path::new("/proc/self/exe"), command)?;
@@ -83,13 +92,16 @@ impl Invoke for Live {
 			.env_clear()
 			.envs(&self.env)
 			.envs(env.iter().map(|(k, v)| (k, v)))
-			.stdout(file.try_clone()?)
-			.stderr(file);
+			.stdout(file)
+			.stderr(stderr);
 		let code = wait(child, Duration::from_secs(10800))?;
 		if code != 0 {
 			bail!(value_error(&format!(
 				"Command {command:?} returned non-zero exit status {code}."
 			)));
+		}
+		if json_stdout {
+			return std::fs::read_to_string(log).with_context(|| log.display().to_string());
 		}
 		Ok(String::from_utf8_lossy(&std::fs::read(log)?).into_owned())
 	}
@@ -291,8 +303,10 @@ pub fn suite(
 			let mut sets = Vec::new();
 			for (role, directory) in [("baseline", base.as_path()), ("candidate", root)] {
 				let log = out.join(format!("{i}-{role}-clippy.log"));
-				run.invoke(&lint, directory, &log, &probe)?;
-				sets.push(diagnostics(&std::fs::read_to_string(&log)?, directory));
+				let messages = run.invoke(&lint, directory, &log, &probe)?;
+				sets.push(
+					diagnostics(&messages, directory).with_context(|| log.display().to_string())?,
+				);
 			}
 			let added = added(&sets[0], &sets[1]);
 			if !added.is_empty() {
@@ -408,12 +422,11 @@ pub(crate) fn extract(archive: &Path, into: &Path) -> Result<()> {
 pub type Identity = (String, String, Option<String>, String, Vec<String>);
 
 /// Each warning or error in Cargo's JSON message lines, counted.
-pub fn diagnostics(text: &str, root: &Path) -> BTreeMap<Identity, u64> {
+pub fn diagnostics(text: &str, root: &Path) -> Result<BTreeMap<Identity, u64>> {
 	let mut found = BTreeMap::new();
-	for line in text.lines() {
-		let Ok(item) = serde_json::from_str::<Value>(line) else {
-			continue;
-		};
+	for (i, line) in text.lines().enumerate() {
+		let item: Value = serde_json::from_str(line)
+			.with_context(|| format!("invalid Cargo JSON on line {}", i + 1))?;
 		if item["reason"] != "compiler-message" {
 			continue;
 		}
@@ -450,7 +463,7 @@ pub fn diagnostics(text: &str, root: &Path) -> BTreeMap<Identity, u64> {
 		);
 		*found.entry(key).or_insert(0) += 1;
 	}
-	found
+	Ok(found)
 }
 
 /// What the candidate has beyond the baseline, by count.
@@ -539,16 +552,17 @@ pub fn clippy(
 			&target,
 			jobs,
 		)?;
-		sets.insert(
-			role,
-			diagnostics(&std::fs::read_to_string(&jsonl)?, directory),
-		);
 		if code != 0 {
 			bail!(value_error(&format!(
 				"{role} Clippy failed; see {}",
 				out.display()
 			)));
 		}
+		sets.insert(
+			role,
+			diagnostics(&std::fs::read_to_string(&jsonl)?, directory)
+				.with_context(|| jsonl.display().to_string())?,
+		);
 	}
 	let added = added(&sets["published"], &sets["candidate"]);
 	Ok(

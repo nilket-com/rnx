@@ -99,6 +99,14 @@ pub fn validate_policy(policy: &Value) -> Result<()> {
 				.map(identity)
 				.transpose()?
 				.as_deref() == Some(phases::TABLE_DIGEST));
+	if let Some(installed) = policy.get("installed_setup") {
+		anyhow::ensure!(
+			*version == 2
+				&& identity(installed)?
+					== "4e42594e994ad239a0494ca2c3b5b8297ec5b7346ed3f47386b88afa9fa4c34f",
+			"unreviewed installed setup reference"
+		);
+	}
 	if !reviewed || kernels != expected {
 		bail!(value_error(
 			"policy schema/kernel set changed: review required"
@@ -481,6 +489,15 @@ pub fn compare(left: &Value, right: &Value, policy: &Value, limit: i128) -> Resu
 						limit,
 					)?;
 				}
+				if mode == "off" && case(1, sizes[0]).get("dispatch").is_some() {
+					phases::score_off_dispatch(
+						&mut row,
+						[case(0, sizes[0]), case(0, sizes[1])],
+						[case(1, sizes[0]), case(1, sizes[1])],
+						policy,
+						limit,
+					)?;
+				}
 				rows.push(row);
 			}
 		}
@@ -526,6 +543,27 @@ pub fn score(
 			"anchor evidence required even on identity PASS"
 		));
 	};
+	anyhow::ensure!(
+		baseline["capture_paths"]["measured"]
+			.get("installed")
+			.is_none()
+			|| candidate["capture_paths"]["measured"]
+				.get("installed")
+				.is_some(),
+		"installed file route disappeared"
+	);
+	if candidate["capture_paths"]["measured"]
+		.get("installed")
+		.is_some()
+		&& baseline["capture_paths"]["measured"]
+			.get("installed")
+			.is_none()
+	{
+		anyhow::ensure!(
+			baseline["revision"] == policy["installed_setup"]["previous"],
+			"unapproved installed setup transition"
+		);
+	}
 	let policy_sha = identity(policy)?;
 	for (i, receipt) in [baseline, candidate, anchor].into_iter().enumerate() {
 		if *at(receipt, "status")? != json!("PASS") {
@@ -534,7 +572,14 @@ pub fn score(
 		if policy["schema"] == 2 {
 			anyhow::ensure!(
 				receipt["capture_paths"]["launch_sha256"]
-					== policy["native_setup"]["launch_sha256"]
+					== policy[if receipt["capture_paths"]["measured"]
+						.get("installed")
+						.is_some()
+					{
+						"installed_setup"
+					} else {
+						"native_setup"
+					}]["launch_sha256"]
 					&& receipt["recipe"]["policy"]["launch_sha256"]
 						== policy["native_setup"]["launch_sha256"],
 				"incomparable native setup capture: measured argv paths or ordered environment differ from the setup reference"
@@ -904,6 +949,15 @@ impl Cache {
 				)? == key,
 				"unbound artifact identity"
 			);
+			if let Some(outer) = desc.get("installed") {
+				let file = r["installed_binary"]
+					.as_str()
+					.context("missing cached installed binary")?;
+				anyhow::ensure!(
+					artifacts.get(file) == outer.get("sha256"),
+					"unbound cached installed binary"
+				);
+			}
 			if let Some(engine) = desc.get("engine") {
 				let file = r["engine_binary"]
 					.as_str()
@@ -1017,6 +1071,17 @@ impl Cache {
 			PathBuf::from("rnx-anchor"),
 			at(&r, "binary_sha256")?.clone(),
 		)];
+		if let Some(outer) = receipt["capture_paths"]["measured"].get("installed") {
+			let source = receipt["installed_binary"]
+				.as_str()
+				.context("missing installed binary source")?;
+			copies.push((
+				PathBuf::from(source),
+				PathBuf::from("installed-cli"),
+				outer["sha256"].clone(),
+			));
+			r["installed_binary"] = json!(dest.join("installed-cli"));
+		}
 		if let Some(engine) = receipt["capture_paths"]["measured"].get("engine") {
 			let source = receipt["engine_binary"]
 				.as_str()
@@ -1038,6 +1103,9 @@ impl Cache {
 					"setup.callgrind" => record["phases"]["setup"]["profile"] = final_path,
 					"execution.callgrind" => record["phases"]["execution"]["profile"] = final_path,
 					"profile" => record["profile"] = final_path,
+					"dispatch.callgrind" => record["dispatch"]["profile"] = final_path,
+					"post-exec.callgrind" => record["dispatch"]["inner"] = final_path,
+					"DISPATCH.json" => record["dispatch"]["proof"] = final_path,
 					_ => {}
 				}
 				copies.push((f.source, relative, f.sha));
@@ -1156,6 +1224,23 @@ pub(crate) fn case_files(row: &Value, split: bool) -> Result<Vec<CaseFile>> {
 	} else {
 		profile(row, "profile")?
 	};
+	if let Some(dispatch) = row.get("dispatch") {
+		for (name, path_key, sha_key) in [
+			("dispatch.callgrind", "profile", "profile_sha256"),
+			("post-exec.callgrind", "inner", "inner_sha256"),
+			("DISPATCH.json", "proof", "proof_sha256"),
+		] {
+			files.push(CaseFile {
+				source: PathBuf::from(
+					dispatch[path_key]
+						.as_str()
+						.context("installed dispatch file")?,
+				),
+				name,
+				sha: at(dispatch, sha_key)?.clone(),
+			});
+		}
+	}
 	for (name, key) in [
 		("program.rn", "fixture_sha256"),
 		("program.stdout", "stdout_sha256"),

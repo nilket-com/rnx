@@ -96,4 +96,11 @@ int32_t rnx_engine_stock_file_v4(const struct rnx_stock_request *);
 struct rnx_adapter_provider;
 /* Same launcher-only entry, installing a v3 table with callbacks live until return. */
 int32_t rnx_engine_provider_file_v4(const struct rnx_stock_request *, const struct rnx_adapter_provider *);
+/* Startup-linked installed stock file launcher only. Consumes the process CLI
+ * arguments. An optional observer borrows UTF-8 JSON bytes during the callback.
+ * The return value is a terminal process status; script exit may not return. */
+typedef void (*rnx_route_observer_v5)(const uint8_t *, size_t);
+/* Installed image only. Called once on the process main thread. Owns Rust
+ * process startup and cleanup. argv must remain valid through return. */
+int rnx_engine_stock_cli_v5(int argc, char **argv, rnx_route_observer_v5 observer);
 #endif

@@ -30,6 +30,7 @@ fn policy() -> Value {
 		serde_json::from_str(&std::fs::read_to_string(root().join(fr::POLICY)).unwrap()).unwrap();
 	p["schema"] = json!(1);
 	p.as_object_mut().unwrap().remove("native_setup");
+	p.as_object_mut().unwrap().remove("installed_setup");
 	p
 }
 

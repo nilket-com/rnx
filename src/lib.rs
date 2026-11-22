@@ -185,21 +185,36 @@ Flags for `repl`: --engine=auto|legacy|execution (default: legacy; execution is 
 /// across session resets. As with the stock executable, some dispatch paths
 /// exit the process; ordinary returns preserve Rust's `Termination` behavior.
 pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std::error::Error>> {
+	run_cli(extensions, None)
+}
+
+/// Stock binary only: replace this process for automatically selected files.
+#[doc(hidden)]
+pub fn main_with_installed_files(launch: fn(bool) -> std::io::Result<()>) -> Result<()> {
+	run_cli(Extensions::none(), Some(launch))
+}
+
+fn run_cli(extensions: Extensions, launch: Option<fn(bool) -> std::io::Result<()>>) -> Result<()> {
 	if let Some(status) = source_fmt::dispatch() {
 		std::process::exit(status);
 	}
 	let probe = dep_startup::Probe::take()?;
-	let result = main_inner(extensions, probe.is_some());
+	let result = main_inner(extensions, probe.is_some(), launch, false);
 	if let Some(probe) = probe {
 		probe.finish(result)
 	} else {
 		dep_transition::finish(result)
 	}
 }
-fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
+fn main_inner(
+	extensions: Extensions,
+	startup: bool,
+	launch: Option<fn(bool) -> std::io::Result<()>>,
+	file_only: bool,
+) -> Result<()> {
 	#[cfg(feature = "test-support")]
 	let _config_reads = config::ReadReport;
-	let mut args = match env::command_line(std::env::args_os()) {
+	let mut args = match env::command_line(std::env::args_os().skip(usize::from(file_only))) {
 		Ok(args) => args,
 		Err(message) => {
 			eprintln!("{}", format::terminal_safe(&message));
@@ -228,6 +243,11 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 			break;
 		}
 		args.remove(0);
+	}
+
+	let file = args.first().is_some_and(|arg| arg == "run");
+	if file_only && !file {
+		return Err("installed file entry requires run".into());
 	}
 
 	if startup
@@ -299,6 +319,10 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 		None
 	};
 
+	if file && let Some(launch) = launch {
+		let request = FileOptions::parse(&args[1..])?;
+		launch(request.engine.choice == engine::EngineChoice::Legacy)?;
+	}
 	let settings = if args.is_empty() || args.first().is_some_and(|s| s == "repl") {
 		config::load()
 	} else {
@@ -320,6 +344,109 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 	);
 	lifecycle.close()?;
 	result
+}
+struct FileOptions<'a> {
+	path: &'a str,
+	arguments: &'a [String],
+	debug_source: bool,
+	engine: engine::Options,
+	budget: usize,
+	#[cfg(feature = "project-sources")]
+	source_map: Option<&'a str>,
+}
+impl<'a> FileOptions<'a> {
+	fn parse(arguments: &'a [String]) -> Result<Self> {
+		let mut rest = arguments;
+		let mut debug_source = false;
+		let mut engine = engine::Options::default();
+		#[cfg(feature = "project-sources")]
+		let mut source_map = None;
+		let mut budget = runner::BUDGET;
+		loop {
+			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--engine=")) {
+				engine.choice = match option {
+					"execution" => {
+						return Err("--engine=execution is available only with rnx repl".into());
+					}
+					"legacy" => engine::EngineChoice::Legacy,
+					_ => return Err("--engine takes only `legacy`".into()),
+				};
+				rest = &rest[1..];
+				continue;
+			}
+			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--native=")) {
+				engine.native = match option {
+					"on" => true,
+					"off" => false,
+					_ => return Err("--native takes `on` or `off`".into()),
+				};
+				rest = &rest[1..];
+				continue;
+			}
+			if rest.first().is_some_and(|arg| arg == "--debug-engine") {
+				engine.debug = true;
+				rest = &rest[1..];
+				continue;
+			}
+			#[cfg(feature = "project-sources")]
+			if rest.first().is_some_and(|a| a == "--source-map") {
+				if source_map.is_some() {
+					return Err("run accepts only one --source-map".into());
+				}
+				source_map = Some(rest.get(1).ok_or("--source-map needs a file")?.as_str());
+				rest = &rest[2..];
+				continue;
+			}
+			if rest.first().is_some_and(|a| a == runner::DEBUG_SOURCE) {
+				debug_source = true;
+				rest = &rest[1..];
+				continue;
+			}
+			if rest.first().is_some_and(|a| a == runner::BUDGET_HINT) {
+				match rest.get(1).map(String::as_str) {
+					Some("project") => runner::launched_by_project(),
+					_ => return Err(format!("{} takes only `project`", runner::BUDGET_HINT).into()),
+				}
+				rest = &rest[2..];
+				continue;
+			}
+			if rest.first().is_some_and(|a| a == runner::BUDGET_FLAG) {
+				// Refused here, before the file is read or compiled, so a bad
+				// value cannot be mistaken for something the script did.
+				let value = rest.get(1).ok_or_else(|| {
+					format!("{} needs a count of work units", runner::BUDGET_FLAG)
+				})?;
+				// A number too large for `usize` fails to parse, and
+				// `usize::MAX` is outside the range on purpose: it is Rune's
+				// sentinel for no budget at all, so accepting it would remove
+				// the bound rather than raise it.
+				budget = value
+					.parse::<usize>()
+					.ok()
+					.filter(|n| (1..=runner::LARGEST_BUDGET).contains(n))
+					.ok_or_else(|| {
+						format!(
+							"{} takes a whole number of work units from 1 to {}, not `{value}`",
+							runner::BUDGET_FLAG,
+							runner::LARGEST_BUDGET
+						)
+					})?;
+				rest = &rest[2..];
+				continue;
+			}
+			break;
+		}
+		let path = rest.first().ok_or("run needs a file")?;
+		Ok(Self {
+			path,
+			arguments: &rest[1..],
+			debug_source,
+			engine,
+			budget,
+			#[cfg(feature = "project-sources")]
+			source_map,
+		})
+	}
 }
 fn file_arguments(context: &mut Context, args: Vec<String>) -> Result<Value> {
 	let snapshot: Arc<[String]> = args.into();
@@ -525,87 +652,15 @@ fn serve(
 		// Flags are read only before the script path. Everything after the
 		// path is the script's, verbatim, so an argument that happens to read
 		// like a flag reaches the script instead of changing rnx's behavior.
-		let mut rest = &args[1..];
-		let mut debug_source = false;
-		let mut engine = engine::Options::default();
-		#[cfg(feature = "project-sources")]
-		let mut source_map = None;
-		let mut budget = runner::BUDGET;
-		loop {
-			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--engine=")) {
-				engine.choice = match option {
-					"execution" => {
-						return Err("--engine=execution is available only with rnx repl".into());
-					}
-					"legacy" => engine::EngineChoice::Legacy,
-					_ => return Err("--engine takes only `legacy`".into()),
-				};
-				rest = &rest[1..];
-				continue;
-			}
-			if let Some(option) = rest.first().and_then(|arg| arg.strip_prefix("--native=")) {
-				engine.native = match option {
-					"on" => true,
-					"off" => false,
-					_ => return Err("--native takes `on` or `off`".into()),
-				};
-				rest = &rest[1..];
-				continue;
-			}
-			if rest.first().is_some_and(|arg| arg == "--debug-engine") {
-				engine.debug = true;
-				rest = &rest[1..];
-				continue;
-			}
+		let FileOptions {
+			path,
+			arguments,
+			debug_source,
+			engine,
+			budget,
 			#[cfg(feature = "project-sources")]
-			if rest.first().is_some_and(|a| a == "--source-map") {
-				if source_map.is_some() {
-					return Err("run accepts only one --source-map".into());
-				}
-				source_map = Some(rest.get(1).ok_or("--source-map needs a file")?);
-				rest = &rest[2..];
-				continue;
-			}
-			if rest.first().is_some_and(|a| a == runner::DEBUG_SOURCE) {
-				debug_source = true;
-				rest = &rest[1..];
-				continue;
-			}
-			if rest.first().is_some_and(|a| a == runner::BUDGET_HINT) {
-				match rest.get(1).map(String::as_str) {
-					Some("project") => runner::launched_by_project(),
-					_ => return Err(format!("{} takes only `project`", runner::BUDGET_HINT).into()),
-				}
-				rest = &rest[2..];
-				continue;
-			}
-			if rest.first().is_some_and(|a| a == runner::BUDGET_FLAG) {
-				// Refused here, before the file is read or compiled, so a bad
-				// value cannot be mistaken for something the script did.
-				let value = rest.get(1).ok_or_else(|| {
-					format!("{} needs a count of work units", runner::BUDGET_FLAG)
-				})?;
-				// A number too large for `usize` fails to parse, and
-				// `usize::MAX` is outside the range on purpose: it is Rune's
-				// sentinel for no budget at all, so accepting it would remove
-				// the bound rather than raise it.
-				budget = value
-					.parse::<usize>()
-					.ok()
-					.filter(|n| (1..=runner::LARGEST_BUDGET).contains(n))
-					.ok_or_else(|| {
-						format!(
-							"{} takes a whole number of work units from 1 to {}, not `{value}`",
-							runner::BUDGET_FLAG,
-							runner::LARGEST_BUDGET
-						)
-					})?;
-				rest = &rest[2..];
-				continue;
-			}
-			break;
-		}
-		let path = rest.first().ok_or("run needs a file")?;
+			source_map,
+		} = FileOptions::parse(&args[1..])?;
 		#[cfg(feature = "project-sources")]
 		let loader = if let Some(map) = source_map {
 			program::Loader::mapped(std::path::Path::new(map), std::path::Path::new(path))
@@ -614,7 +669,7 @@ fn serve(
 			program::Loader::new()
 		};
 		let _title = terminal::Title::new(&format!("rnx {path}"));
-		let arguments = file_arguments(&mut context, rest[1..].to_vec())?;
+		let arguments = file_arguments(&mut context, arguments.to_vec())?;
 		let file_modules = match extensions
 			.take()
 			.unwrap()

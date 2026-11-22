@@ -22,6 +22,7 @@ struct Images {
 	target: String,
 	runner: Artifact,
 	engine: Option<Artifact>,
+	installed: Option<Artifact>,
 }
 
 pub(crate) fn validate(desc: &Value, runner_sha: &Value) -> Result<()> {
@@ -30,12 +31,22 @@ pub(crate) fn validate(desc: &Value, runner_sha: &Value) -> Result<()> {
 		a.path == path && a.sha256.len() == 64 && a.sha256.bytes().all(|c| c.is_ascii_hexdigit())
 	};
 	ensure!(
-		images.version == 1
+		images.version == if images.installed.is_some() { 2 } else { 1 }
 			&& images.target == "x86_64-unknown-linux-gnu"
 			&& valid(&images.runner, RUNNER)
 			&& Some(images.runner.sha256.as_str()) == runner_sha.as_str(),
 		"invalid measured runner"
 	);
+	if let Some(outer) = images.installed {
+		ensure!(
+			images.engine.is_some()
+				&& valid(&outer, "/run/rnx-route/installed")
+				&& outer.sha256 != images.runner.sha256,
+			"invalid installed CLI"
+		);
+	} else {
+		ensure!(desc.get("installed").is_none(), "null installed artifact");
+	}
 	if let Some(engine) = images.engine {
 		ensure!(
 			valid(&engine, ENGINE) && engine.sha256 != images.runner.sha256,
@@ -51,6 +62,10 @@ pub(crate) fn validate(desc: &Value, runner_sha: &Value) -> Result<()> {
 pub(crate) fn owner(build: &Value) -> Result<&str> {
 	if let Some(desc) = build.get("measured") {
 		validate(desc, &build["sha256"])?;
+		ensure!(
+			build.get("installed_binary").is_some() == desc.get("installed").is_some(),
+			"undeclared or missing installed binary"
+		);
 		if desc.get("engine").is_some() {
 			let path = build["engine_binary"]
 				.as_str()
@@ -69,7 +84,41 @@ pub(crate) fn owner(build: &Value) -> Result<&str> {
 	build["binary"].as_str().context("missing runner")
 }
 
+/// Bind the outer exec observation to the same artifact set and mode as the
+/// inner observation. Paths may move together when evidence enters a cache.
+pub(crate) fn dispatch_proof(row: &Value, desc: &Value, proof: &Value) -> Result<()> {
+	let d = &row["dispatch"];
+	ensure!(
+		proof["status"] == "PASS"
+			&& proof["mode"] == row["policy"]
+			&& proof["artifacts"] == *desc
+			&& proof["route"]
+				== serde_json::json!({"route":"execution","category":null,"reason":null,"location":null})
+			&& proof["launch"].is_object()
+			&& proof["launch_sha256"] == crate::pyjson::identity(&proof["launch"])?,
+		"installed dispatch proof differs"
+	);
+	for key in ["profile_sha256", "inner_sha256", "W", "T", "launch_sha256"] {
+		ensure!(
+			d.get(key).is_some() && d[key] == proof[key],
+			"installed dispatch proof changed: {key}"
+		);
+	}
+	Ok(())
+}
+
 pub(crate) fn validate_row(row: &Value, desc: &Value) -> Result<()> {
+	ensure!(
+		row.get("dispatch").is_some() == desc.get("installed").is_some(),
+		"installed dispatch evidence mismatch"
+	);
+	if let Some(dispatch) = row.get("dispatch") {
+		let w = dispatch["W"].as_u64().context("missing dispatch work")?;
+		let t = dispatch["T"]
+			.as_u64()
+			.context("missing total dispatch instructions")?;
+		ensure!(w > 0 && t >= w, "invalid dispatch counts");
+	}
 	let Some(engine) = desc.get("engine") else {
 		return Ok(());
 	};

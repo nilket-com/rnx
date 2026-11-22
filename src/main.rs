@@ -1,3 +1,10 @@
+#[cfg(all(
+	feature = "stock-management",
+	target_arch = "x86_64",
+	target_os = "linux",
+	target_env = "gnu"
+))]
+mod installed_file;
 #[cfg(feature = "stock-management")]
 mod coordinates {
 	include!(concat!(env!("OUT_DIR"), "/coordinates.rs"));
@@ -38,5 +45,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 		}
 		rnx_project::mark_stock_runner();
 	}
-	rnx::main_with(rnx::Extensions::none())
+	#[cfg(all(
+		feature = "stock-management",
+		target_arch = "x86_64",
+		target_os = "linux",
+		target_env = "gnu"
+	))]
+	{
+		rnx::main_with_installed_files(installed_file::launch)
+	}
+	#[cfg(not(all(
+		feature = "stock-management",
+		target_arch = "x86_64",
+		target_os = "linux",
+		target_env = "gnu"
+	)))]
+	{
+		rnx::main_with(rnx::Extensions::none())
+	}
 }

@@ -6,15 +6,17 @@ config=json.loads(Path(os.environ['COLUMN_BOUNDARY_CONFIG']).read_text())
 state={'status':'FAIL','entries':0,'returns':0,'errors':[],'armed':False}
 phases=config.get('phase_symbols')
 image = config.get('engine_binary')
+installed = 'installed_binary' in config
+solib = '/proc/self/fd/9' if installed else image
 if image:
 	gdb.execute('tbreak main')
 	gdb.execute('continue')
-	gdb.execute('sharedlibrary libengine_image')
+	gdb.execute('sharedlibrary ' + ('/proc/self/fd/9' if installed else 'libengine_image'))
 	mapped = Path(image).stat()
 	segments = []
 	for line in Path('/proc', os.environ['COLUMN_CLIENT_PID'], 'maps').read_text().splitlines():
 		span, perms, _, device, inode, *name = line.split(maxsplit=5)
-		if name == [image] and 'x' in perms:
+		if name in ([image], [solib]) and 'x' in perms:
 			major, minor = (int(n, 16) for n in device.split(':'))
 			if mapped.st_dev != os.makedev(major, minor) or mapped.st_ino != int(inode):
 				raise RuntimeError('mapped engine identity mismatch')
@@ -23,7 +25,7 @@ if image:
 		raise RuntimeError('bound engine has no executable mapping')
 	state['engine'] = dict(artifact=config['measured']['engine'], text=segments)
 def image_pc(pc):
-	if not any(start <= pc < end for start, end in segments) or gdb.solib_name(pc) != image:
+	if not any(start <= pc < end for start, end in segments) or gdb.solib_name(pc) not in (image, solib):
 		raise RuntimeError('selector outside bound engine text')
 	return pc
 def location(symbol):

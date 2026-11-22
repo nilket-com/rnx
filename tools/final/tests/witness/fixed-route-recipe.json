@@ -152,7 +152,7 @@
    "ok": "f3823601de07705995aaf670c509b11aa333bba02fc5b2ecc26a30da09cc5d68"
   },
   "capture_key: the planted recipe": {
-   "ok": "4761b322b8dccf3df4c76c8d69fad1b72d14fc6165e5680676d024d256f1b0db"
+   "ok": "f432ae81e31f0066c27c69d0d9c34fda2ee711b67ca253ded5e2768f74c4fc35"
   },
   "capture_key: valgrind changed": {
    "ok": "04ea42d125a21a32dbc294e6c6999d48eddff7e902da012c720311e5a6160d1d"
@@ -317,11 +317,11 @@
      "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
     },
     "tooling": {
-     "tools/column/fixed_route_vectors.py": "42c4db6c5f2877aa272975554f4a2f6366a217594c113a2000760f2ac92e4c7c",
+     "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
      "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
-     "tools/column/old_path_child.py": "ca9db251c5c5772f6fba7386fc2a719dd3cd5fdc8c4ff2d7089cb7530abe0802",
+     "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
      "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-     "tools/column/paired_build.py": "641bb7cc66ac78e32e25119ee933ad98d1b6413a9651bb8572c485ee9d02018c"
+     "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
     }
    }
   },

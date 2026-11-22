@@ -20,6 +20,61 @@ args=parser.parse_args()
 out=args.out.resolve();out.mkdir(exist_ok=False)
 result={'status':'FAIL','purpose':'exact unchanged program and unknown-object function vectors; system deltas reported separately'}
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+def installed_dispatch(build, mode, directory, valgrind):
+ """Count the real outer CLI up to its successful exec of the pinned helper."""
+ directory.mkdir()
+ cache=directory/'cache'
+ cache.mkdir()
+ fixture=directory/'program.rn'
+ fixture.write_text('pub fn main(args) { 42 }\n')
+ layout='/run/rnx-route'
+ executable=layout+'/installed'
+ arguments=['run','--debug-engine','--native='+mode,'--budget','1000000000',layout+'/program.rn']
+ bindings=[(build['installed_binary'],'installed'),(valgrind,'valgrind'),(fixture,'program.rn')]
+ prefix=['/usr/bin/bwrap','--die-with-parent','--ro-bind','/','/','--dev-bind','/dev','/dev',
+  '--proc','/proc','--tmpfs','/tmp','--tmpfs','/run','--dir',layout]
+ for src,name in bindings:prefix+=['--ro-bind',str(src),layout+'/'+name]
+ env=dict(capture_environment(),XDG_CACHE_HOME=layout+'/cache',
+  VALGRIND_LIB=layout+'/valgrind/libexec/valgrind',RNX_FILE_ROUTE_FD='3')
+ prefix+=['--bind',str(cache),layout+'/cache','--bind',str(directory),layout+'/out','--chdir',layout,
+  '--','/usr/bin/env','-i',*(k+'='+v for k,v in env.items()),'/bin/sh','-c',
+  'exec 3>out/route; exec "$@"','sh']
+ tracer=[layout+'/valgrind/bin/valgrind','--tool=callgrind','--trace-children=yes','--dump-before=execve',
+  '--dump-instr=yes','--callgrind-out-file='+layout+'/out/cg.%p','--log-file='+layout+'/out/vg.%p']
+ for observer in ([],tracer):
+  result=subprocess.run([*prefix,*observer,executable,*arguments],check=True,capture_output=True,timeout=120)
+  expected={'route':'execution','category':None,'reason':None,'location':None}
+  if result.stdout!=b'42\n' or result.stderr!=('rnx: engine=execution native-requested='+mode+'\n').encode() or json.loads((directory/'route').read_text())!=expected:
+   raise ValueError('installed launch returned wrong output or route')
+ generation,=(cache/'rnx-file-images').iterdir()
+ desc=build['measured']
+ for name,key in [('engine','engine'),('helper','runner')]:
+  if sha(generation/name)!=desc[key]['sha256']:
+   raise ValueError('outer CLI launched a different '+name)
+ outer,=directory.glob('cg.*.1')
+ inner=outer.with_suffix('')
+ if set(directory.glob('cg.*'))!={outer,inner}:
+  raise ValueError('unexpected Callgrind exec dump or tail')
+ def header(path,prefix):
+  return [s[len(prefix):] for s in path.read_text().splitlines() if s.startswith(prefix)]
+ command=' '.join(arguments)
+ if (header(outer,'desc: Trigger: ')!=['--dump-before=execve']
+   or header(outer,'cmd:  ')!=[executable+' '+command]
+   or header(inner,'desc: Trigger: ')!=['Program termination']
+   or header(inner,'cmd:  ')!=['/proc/self/fd/10 11,10,-1 '+command]
+   or header(outer,'pid: ')!=header(inner,'pid: ')):
+  raise ValueError('invalid installed exec boundary')
+ counts=ir_accounting.account(outer,executable)
+ context={'argv':tracer+[executable,*arguments],'environ':list(env.items()),'cwd':layout}
+ launch_hash=hashlib.sha256(json.dumps(context,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+ mapping={'launch_sha256':launch_hash,'profile':str(outer),'profile_sha256':sha(outer),'inner':str(inner),'inner_sha256':sha(inner),
+  'W':counts['rnx_Ir']+counts['other_Ir'],'T':counts['total_Ir']}
+ receipt=dict(status='PASS',mode=mode,artifacts=desc,launch=context,route=expected,**mapping)
+ proof=directory/'DISPATCH.json'
+ atomic_json(proof,receipt)
+ return dict(mapping,proof=str(proof),proof_sha256=sha(proof))
+
 try:
  pair=json.loads(args.build_receipt.read_text());assert pair['status']=='PASS' and len(pair['builds'])==2
  binaries=dict(zip(('baseline','candidate'),pair['builds']))
@@ -30,9 +85,14 @@ try:
   owner=b.get('engine_binary',b['binary'])
   desc=b.get('measured')
   if desc is not None:
-   assert desc['version']==1 and type(desc['version']) is int and desc['target']=='x86_64-unknown-linux-gnu'
+   assert desc['version']==(2 if 'installed_binary' in b else 1) and type(desc['version']) is int and desc['target']=='x86_64-unknown-linux-gnu'
    assert desc['runner']=={'path':'/run/rnx-route/rnx','sha256':b['sha256']}
-   assert set(desc)==({'version','target','runner','engine'} if 'engine_binary' in b else {'version','target','runner'})
+   expected={'version','target','runner'}
+   if 'engine_binary' in b:expected.add('engine')
+   if 'installed_binary' in b:
+    expected.add('installed')
+    assert 'engine_binary' in b and desc['installed']=={'path':'/run/rnx-route/installed','sha256':sha(b['installed_binary'])}
+   assert set(desc)==expected
   if 'engine_binary' in b:
    assert desc['engine']['path']=='/run/rnx-route/libengine_image.so'
    assert args.native_phases and sha(owner)==b['measured']['engine']['sha256']
@@ -50,12 +110,19 @@ try:
     if runner_names.intersection([phase_entry,*phase_symbols[role].values()]):raise ValueError("engine selector also defined in runner")
  observation=resources();workers=fixed_budget(observation);available=observation['mem_available_bytes'];headroom=observation['ancestor_headroom_bytes']
  atomic_json(out/'MANIFEST.json',{'binaries':binaries,'entries':entries,'workers':workers,'mem_available':available,'cgroup_headroom':headroom,'per_worker_admission':2*1024**3,'environment':capture_environment(),'sizes':[1,5],'kernels':KERNELS,'policies':['off','on']})
+ dispatch={}
+ for role,b in binaries.items():
+  if 'installed_binary' in b:
+   for mode in ('off','on'):
+    dispatch[role,mode]=installed_dispatch(b,mode,out/f'dispatch-{role}-{mode}',args.valgrind_root.resolve())
  def job(spec):
   kind,policy,n,role=spec;d=out/f'{kind}-{policy}-{n}-{role}';d.mkdir();r={'status':'FAIL','kind':kind,'policy':policy,'n':n,'role':role}
   try:
    b=binaries[role];assert sha(b['binary'])==b['sha256']
    src=d/'program.rn';src.write_text(fixture(kind,n));opts=['--native='+policy]
-   direct=subprocess.run([b['binary'],'run','--debug-engine',*opts,'--budget','1000000000',str(src)],env=capture_environment(),capture_output=True,timeout=120)
+   direct_env=capture_environment()
+   if 'installed_binary' in b:direct_env['XDG_CACHE_HOME']=str(out/'installed-cache')
+   direct=subprocess.run([b.get('installed_binary',b['binary']),'run','--debug-engine',*opts,'--budget','1000000000',str(src)],env=direct_env,capture_output=True,timeout=120)
    (d/'direct.stdout').write_bytes(direct.stdout);(d/'direct.stderr').write_bytes(direct.stderr)
    assert direct.returncode==0 and b'rnx: engine=execution' in direct.stderr,(direct.returncode,direct.stderr.decode())
    cfg={'binary':b['binary'],'entry':entries[role],'arm':None,'options':opts,'budget':1000000000,'out':str(d),'valgrind_root':str(args.valgrind_root.resolve()),'fixture':str(src),'gdb_receipt':str(d/'GDB.json')}
@@ -68,6 +135,9 @@ try:
    if 'measured' in b:cfg['measured']=b['measured']
    if 'engine_binary' in b:
     cfg['engine_binary']=b['engine_binary'];engine=b['measured']['engine']['path']
+   if 'installed_binary' in b:
+    cfg['installed_binary']=b['installed_binary']
+    r['dispatch']=dispatch[role,policy]
    if phased:cfg['phase_symbols']=phase_symbols[role]
    atomic_json(d/'CONFIG.json',cfg)
    with (d/'child.log').open('w') as log:p=subprocess.run([sys.executable,'-B',str(root/'tools/column/old_path_child.py'),str(d/'CONFIG.json')],env=capture_environment(),stdout=log,stderr=subprocess.STDOUT,timeout=720)

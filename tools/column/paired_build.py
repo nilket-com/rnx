@@ -70,6 +70,37 @@ def verify_copy(target, binary, sha256, build_receipt):
 	return dict(binary=str(binary), sha256=sha256, build_receipt=str(build_receipt))
 
 
+def installed_artifacts(row, target, binary, role):
+	"""Extract from the public executable by a real cold file launch."""
+	out = binary.parent
+	probe = target / 'probe.rn'
+	probe.write_text('pub fn main(args) { 42 }\n')
+	cache = target / 'probe-cache'
+	process = subprocess.run([str(binary), 'run', '--debug-engine', str(probe)],
+		env=dict(os.environ, XDG_CACHE_HOME=str(cache), GLIBC_TUNABLES='glibc.rtld.nns=1'),
+		capture_output=True, timeout=120, check=True)
+	if process.stdout != b'42\n' or b'rnx: engine=execution' not in process.stderr:
+		raise ValueError('installed build failed file execution probe')
+	generation, = (cache / 'rnx-file-images').iterdir()
+	engine_sha, helper_sha = generation.name.split('-')
+	helper = out / ('file-helper-' + role)
+	engine = out / ('engine-' + role + '.so')
+	for name, destination, sha in [('engine', engine, engine_sha), ('helper', helper, helper_sha)]:
+		shutil.copy2(generation / name, destination)
+		if digest(destination) != sha:
+			raise ValueError('installed member differs from generation: ' + name)
+		with destination.open('rb') as stream:
+			os.fsync(stream.fileno())
+	row['installed_binary'] = str(binary)
+	row['engine_binary'] = str(engine)
+	row['measured'].update(version=2,
+		installed={'path':'/run/rnx-route/installed', 'sha256':row['sha256']},
+		engine={'path':'/run/rnx-route/libengine_image.so', 'sha256':engine_sha},
+		runner={'path':'/run/rnx-route/rnx', 'sha256':helper_sha})
+	row.update(binary=str(helper), sha256=helper_sha)
+	return [binary, helper, engine]
+
+
 def run(out, baseline, candidate, cargo):
 	out.mkdir(parents=True, exist_ok=False)
 	result = dict(status='FAIL', builds=[])
@@ -105,10 +136,13 @@ def run(out, baseline, candidate, cargo):
 					compiled_crates=compiled, log_sha256=digest(log))
 				row['measured'] = {'version': 1, 'target': 'x86_64-unknown-linux-gnu',
 					'runner': {'path': '/run/rnx-route/rnx', 'sha256': row['sha256']}}
+				retained = [binary]
+				if (source / 'engine/launcher/installed/build.sh').is_file():
+					retained = installed_artifacts(row, target, binary, role)
 				receipt = out / (role + '-BUILD.json')
 				atomic_json(receipt, dict(status='PASS', **row))
-				row['retained_copy'] = verify_copy(target, binary, row['sha256'], receipt)
-				owned.keep([binary, receipt])
+				row['retained_copy'] = verify_copy(target, row['binary'], row['sha256'], receipt)
+				owned.keep([*retained, receipt])
 			row['cleanup'] = dict(receipt=str(out/(target.name+'-RELEASE.json')), sha256=digest(out/(target.name+'-RELEASE.json')))
 			result['builds'].append(row)
 		result['status'] = 'PASS'

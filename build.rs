@@ -287,7 +287,8 @@ fn main() {
 	identity::emit(Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap()));
 	// The verifier declares this feature only in its private dev manifest.
 	println!("cargo:rustc-check-cfg=cfg(feature, values(\"cross-verification\"))");
-	if std::env::var_os("CARGO_FEATURE_CROSS_VERIFICATION").is_some() {
+	let verification_only = std::env::var_os("CARGO_FEATURE_CROSS_VERIFICATION").is_some();
+	if verification_only {
 		let root = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
 		let out = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
 		verification_pins(&root, &out).expect("verification compile-time source binding");
@@ -295,6 +296,27 @@ fn main() {
 	println!("cargo:rerun-if-env-changed=CARGO_FEATURE_STOCK_MANAGEMENT");
 	if std::env::var_os("CARGO_FEATURE_STOCK_MANAGEMENT").is_none() {
 		return;
+	}
+	// The private verifier manifest declares a test executable and disables
+	// both the stock binary and the library needed by the engine image.
+	if !verification_only && std::env::var("TARGET").as_deref() == Ok("x86_64-unknown-linux-gnu") {
+		let mut features = String::from("linked");
+		for (variable, feature) in [
+			("CARGO_FEATURE_TEST_SUPPORT", "rnx/test-support"),
+			("CARGO_FEATURE_PROJECT_SOURCES", "rnx/project-sources"),
+		] {
+			if std::env::var_os(variable).is_some() {
+				features.push(',');
+				features.push_str(feature);
+			}
+		}
+		let status = Command::new("sh")
+			.arg("engine/launcher/installed/build.sh")
+			.arg(std::env::var_os("OUT_DIR").unwrap())
+			.arg(features)
+			.status()
+			.expect("start the stock file bundle build");
+		assert!(status.success(), "stock file bundle build failed: {status}");
 	}
 	let out = PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
 	// The scan reruns when identity::emit's watched sources change.

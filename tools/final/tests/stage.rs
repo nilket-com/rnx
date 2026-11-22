@@ -237,7 +237,20 @@ fn diagnostics_are_identified_as_the_witness_identified_them() {
 			.map(Value::to_string)
 			.collect();
 		expected.sort();
-		assert_eq!(rendered(&diagnostics(&text, &droot)), expected, "{name}");
+		// This historical mixed-stream witness contains a literal non-JSON
+		// line. The clean stdout contract rejects it; its JSON notes and
+		// build events still contribute no warnings.
+		let text = if name == "ignored lines" {
+			assert!(diagnostics(&text, &droot).is_err());
+			text.strip_suffix("not json\n").unwrap()
+		} else {
+			&text
+		};
+		assert_eq!(
+			rendered(&diagnostics(text, &droot).unwrap()),
+			expected,
+			"{name}"
+		);
 	}
 }
 
@@ -253,19 +266,31 @@ fn line(text: &str, file: &str) -> String {
 #[test]
 fn a_new_or_repeated_diagnostic_is_added_and_a_moved_one_is_not() {
 	let root = Path::new("/r");
-	let base = diagnostics(&line("example", "src/a.rs"), root);
-	assert!(stage::added(&base, &diagnostics(&line("example", "/r/src/a.rs"), root)).is_empty());
+	let base = diagnostics(&line("example", "src/a.rs"), root).unwrap();
 	assert!(
-		!stage::added(
+		stage::added(
 			&base,
-			&diagnostics(&(line("example", "src/a.rs").repeat(2)), root)
+			&diagnostics(&line("example", "/r/src/a.rs"), root).unwrap()
 		)
 		.is_empty()
 	);
-	assert!(!stage::added(&base, &diagnostics(&line("changed", "src/a.rs"), root)).is_empty());
+	assert!(
+		!stage::added(
+			&base,
+			&diagnostics(&(line("example", "src/a.rs").repeat(2)), root).unwrap()
+		)
+		.is_empty()
+	);
+	assert!(
+		!stage::added(
+			&base,
+			&diagnostics(&line("changed", "src/a.rs"), root).unwrap()
+		)
+		.is_empty()
+	);
 	// An existing diagnostic still present is allowed; one gone is too.
 	assert!(stage::added(&base, &base).is_empty());
-	assert!(stage::added(&base, &diagnostics("", root)).is_empty());
+	assert!(stage::added(&base, &diagnostics("", root).unwrap()).is_empty());
 }
 
 /// The Polars comparison keeps the preview diagnostic at warning level
@@ -456,4 +481,96 @@ fn a_child_past_its_limit_is_killed() {
 	let error = stage::wait(command, std::time::Duration::from_millis(300)).unwrap_err();
 	assert!(error.to_string().contains("timed out"), "{error}");
 	assert!(started.elapsed() < std::time::Duration::from_secs(10));
+}
+
+#[test]
+fn cargo_progress_cannot_split_or_conceal_a_lint_record() {
+	let tmp = scratch();
+	let log = tmp.0.join("baseline.log");
+	let warning = line("planted", "src/lib.rs");
+	let command = [
+		"/bin/sh",
+		"-c",
+		r#"printf '    Finished' >&2; printf '%s' "$1"; printf ' profile\n' >&2"#,
+		"sh",
+		&warning,
+		"--message-format=json",
+	]
+	.map(str::to_owned);
+	let text = stage::Live {
+		env: Environment::new(),
+	}
+	.invoke(&command, &tmp.0, &log, &[])
+	.unwrap();
+	assert_eq!(text, warning);
+	assert_eq!(
+		std::fs::read_to_string(log.with_extension("stderr.log")).unwrap(),
+		"    Finished profile\n"
+	);
+	assert_eq!(diagnostics(&text, &tmp.0).unwrap().values().sum::<u64>(), 1);
+	assert!(diagnostics(&format!("    Finished{warning}"), &tmp.0).is_err());
+}
+
+#[test]
+fn identical_crates_have_the_same_lints_on_independent_cold_and_warm_runs() {
+	let tmp = scratch();
+	let mut env: Environment = std::env::vars().collect();
+	for key in [
+		"RNX_FINAL_CACHE_ROUTES",
+		"CARGO_TARGET_DIR",
+		"CARGO_BUILD_BUILD_DIR",
+	] {
+		env.remove(key);
+	}
+	let mut live = stage::Live { env };
+	let mut expected = None;
+	for role in ["baseline", "candidate"] {
+		let tree = tmp.0.join(role);
+		let target = tree.join("target");
+		std::fs::create_dir_all(tree.join("src")).unwrap();
+		std::fs::write(
+			tree.join("Cargo.toml"),
+			"[workspace]\n[package]\nname='lint-witness'\nversion='0.0.0'\nedition='2021'\n",
+		)
+		.unwrap();
+		std::fs::write(
+			tree.join("src/lib.rs"),
+			"#![warn(clippy::len_zero)]\npub fn empty(s: &str) -> bool { s.len() == 0 }",
+		)
+		.unwrap();
+		let command = [
+			"cargo",
+			"+1.98.1",
+			"clippy",
+			"--offline",
+			"--lib",
+			"--tests",
+			"--target-dir",
+			target.to_str().unwrap(),
+			"--message-format=json",
+		]
+		.map(str::to_owned);
+		for (pass, fresh) in [("cold", false), ("warm", true)] {
+			let log = tmp.0.join(format!("{role}-{pass}.log"));
+			let text = live.invoke(&command, &tree, &log, &[]).unwrap();
+			let counts = diagnostics(&text, &tree).unwrap();
+			assert_eq!(counts.len(), 1);
+			assert_eq!(counts.values().sum::<u64>(), 2);
+			assert_eq!(expected.get_or_insert_with(|| counts.clone()), &counts);
+			let artifacts: Vec<Value> = text
+				.lines()
+				.map(|l| serde_json::from_str::<Value>(l).unwrap())
+				.filter(|m| {
+					m["reason"] == "compiler-artifact" && m["target"]["name"] == "lint_witness"
+				})
+				.collect();
+			assert_eq!(artifacts.len(), 2);
+			for artifact in artifacts {
+				assert_eq!(artifact["fresh"], fresh);
+				for path in artifact["filenames"].as_array().unwrap() {
+					assert!(Path::new(path.as_str().unwrap()).starts_with(&target));
+				}
+			}
+		}
+	}
 }

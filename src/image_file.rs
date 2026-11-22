@@ -224,3 +224,39 @@ pub fn product_file(
 	lifecycle.close()?;
 	result
 }
+
+/// A launcher callback borrows one complete JSON route event for this call.
+pub type RouteObserver = extern "C" fn(*const u8, usize);
+thread_local! {
+	static ROUTE_OBSERVER: std::cell::Cell<Option<RouteObserver>> = const { std::cell::Cell::new(None) };
+}
+
+pub(crate) fn route_event(
+	route: &str,
+	category: Option<&str>,
+	reason: Option<&str>,
+	location: Option<rune::experimental_core::error::Location>,
+) {
+	if let Some(report) = ROUTE_OBSERVER.get() {
+		let event = serde_json::json!({"route":route, "category":category, "reason":reason,
+			"location":location.map(|at| serde_json::json!({"source":at.source,"revision":at.revision,
+				"start":at.start,"end":at.end}))})
+		.to_string();
+		report(event.as_ptr(), event.len());
+	}
+}
+
+/// Startup-linked, process-owning stock file entry. The shared file runner
+/// retains the original Sources and Loader through a pre-effect refusal.
+pub fn installed_file(observer: Option<RouteObserver>) -> crate::Result<()> {
+	struct Restore;
+	impl Drop for Restore {
+		fn drop(&mut self) {
+			ROUTE_OBSERVER.set(None);
+		}
+	}
+	ROUTE_OBSERVER.set(observer);
+	let _restore = Restore;
+	rune::experimental_core::domain::file::initialize_image_thread();
+	crate::main_inner(crate::Extensions::none(), false, None, true)
+}

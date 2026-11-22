@@ -137,3 +137,49 @@ unsafe fn file(
 	}))
 	.unwrap_or(FAILED)
 }
+
+#[cfg(rnx_installed_start)]
+mod installed {
+	use super::*;
+	use rnx::image_file::RouteObserver;
+	use std::{ffi::c_int, sync::OnceLock};
+
+	include!(env!("RNX_INSTALLED_RUNTIME_IMPORTS"));
+
+	#[link(name = "installed_start", kind = "static")]
+	unsafe extern "C" {
+		fn rnx_installed_start(argc: c_int, argv: *mut *mut c_char) -> c_int;
+	}
+
+	static OBSERVER: OnceLock<Option<RouteObserver>> = OnceLock::new();
+
+	/// # Safety
+	/// Called once from the process main thread with the original C argc/argv,
+	/// before engine execution. The observer lives until process exit.
+	#[unsafe(no_mangle)]
+	pub unsafe extern "C" fn rnx_engine_stock_cli_v5(
+		argc: c_int,
+		argv: *mut *mut c_char,
+		observer: Option<RouteObserver>,
+	) -> c_int {
+		if OBSERVER.set(observer).is_err() {
+			return INVALID;
+		}
+		// SAFETY: the launcher owns process initialization and supplies argv.
+		unsafe { rnx_installed_start(argc, argv) }
+	}
+
+	#[unsafe(no_mangle)]
+	extern "C" fn rnx_installed_body() -> u8 {
+		match catch_unwind(AssertUnwindSafe(|| {
+			rnx::image_file::installed_file(OBSERVER.get().copied().flatten())
+		})) {
+			Ok(Ok(())) => 0,
+			Ok(Err(error)) => {
+				eprintln!("Error: {error:?}");
+				1
+			}
+			Err(_) => 1,
+		}
+	}
+}
