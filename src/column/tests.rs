@@ -190,14 +190,15 @@ fn all_bit_offsets_are_independent() {
 }
 
 #[test]
-fn f64_special_values_preserve_bits() {
+fn f64_add_preserves_non_nan_bits_across_modes() {
 	let mut k = kernel(
 		"pub fn map(x) { x + 1.0 }",
 		&[ColumnType::F64],
 		ColumnType::F64,
 	);
 	let values = [
-		f64::NAN,
+		f64::from_bits(0xfff8_0000_0000_0456),
+		f64::from_bits(0x7ff0_0000_0000_0123),
 		f64::INFINITY,
 		f64::NEG_INFINITY,
 		-0.,
@@ -217,7 +218,12 @@ fn f64_special_values_preserve_bits() {
 			unreachable!()
 		};
 		for (x, y) in values.iter().zip(out) {
-			assert_eq!((x + 1.).to_bits(), y.to_bits());
+			let expected = x + 1.0;
+			if expected.is_nan() {
+				assert!(y.is_nan());
+			} else {
+				assert_eq!(expected.to_bits(), y.to_bits());
+			}
 		}
 	}
 }

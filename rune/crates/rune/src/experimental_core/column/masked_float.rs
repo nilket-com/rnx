@@ -102,6 +102,7 @@ pub(super) fn run(
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use crate::experimental_core::column::tests::arithmetic_bits;
 	use crate::experimental_core::{
 		arithmetic::Binary,
 		code::{Builder, Function, Op},
@@ -239,7 +240,7 @@ mod tests {
 								}
 							}
 							states.push((
-								v.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+								v.iter().map(arithmetic_bits).collect::<Vec<_>>(),
 								result.validity,
 								result.valid_rows,
 								result.remaining_work,
@@ -269,7 +270,7 @@ mod tests {
 							assert_eq!(
 								states[0],
 								(
-									values.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+									values.iter().map(arithmetic_bits).collect::<Vec<_>>(),
 									result.validity,
 									result.valid_rows,
 									result.remaining_work,

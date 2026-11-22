@@ -1198,8 +1198,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/contracts.rs"
       },
-      "max_bytes": 13344,
-      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the Rust stage mode is compared against it."
+      "max_bytes": 14589,
+      "reason": "ADR 0289 witness fixture: the Python rune-suite stage program's and native contract runner's children, rows and verdicts generated once at 837f2b5d (method recorded inside); the optimized library command and its discovery and execution row are a documented successor."
     },
     "tools/final/tests/witness/scheduling.json": {
       "class": "live-fixture",
@@ -1207,7 +1207,7 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 32649,
+      "max_bytes": 32871,
       "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image scheduling rows and their prerequisite entries."
     },
     "tools/final/tests/witness/selection.json": {

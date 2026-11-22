@@ -2154,6 +2154,15 @@ fn boolean_plan_invalid_payload_is_zero_at_unaligned_chunk_edges() {
 	}
 }
 
+// Comparison key for arithmetic results only. Copies retain every input bit.
+pub(super) fn arithmetic_bits(value: &f64) -> u64 {
+	if value.is_nan() {
+		f64::NAN.to_bits()
+	} else {
+		value.to_bits()
+	}
+}
+
 #[test]
 fn f64_plan_bitwise_chunks_masks_and_output_reuse() {
 	let bits = [
@@ -2237,8 +2246,18 @@ fn f64_plan_bitwise_chunks_masks_and_output_reuse() {
 					let ColumnValues::F64(values) = result.values else {
 						panic!("type");
 					};
+					let payload = if returned == 0 {
+						for (i, value) in values.iter().enumerate() {
+							let valid = !masked || masks[(2 + i) / 8] & (1 << ((2 + i) % 8)) != 0;
+							let expected = if valid { x[i].to_bits() } else { 0 };
+							assert_eq!(value.to_bits(), expected, "copied row {i}");
+						}
+						values.iter().map(|v| v.to_bits()).collect::<Vec<_>>()
+					} else {
+						values.iter().map(arithmetic_bits).collect()
+					};
 					results.push((
-						values.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+						payload,
 						result.validity,
 						result.remaining_work,
 						result.valid_rows,
@@ -2471,7 +2490,7 @@ fn f64_plan_write_only_null_words_and_cancellation() {
 				assert!(v.iter().all(|v| v.to_bits() == 0));
 			}
 			results.push((
-				v.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+				v.iter().map(arithmetic_bits).collect::<Vec<_>>(),
 				r.validity,
 				r.remaining_work,
 			));

@@ -1206,6 +1206,7 @@
 				},
 				"name": "rune-suite",
 				"resources": [
+					"<ROOT>/target/debug",
 					"<ROOT>/target/engine-dev"
 				],
 				"weight": 4
@@ -1507,6 +1508,10 @@
 		"<ROOT>": "the checkout"
 	},
 	"successors": [
+		{
+			"change": "The optimized Rune library tests add the workspace debug directory to the rune-suite stage.",
+			"fix": "compare column nan results by class and run optimized core tests"
+		},
 		{
 			"change": "adds the stages engine-source-controls (python3 -B tools/test_engine_source.py) and census-refresh-controls (python3 -B tools/test_refresh_census.py) right after pin-controls, each scheduled as pin-controls is: no Cargo resources, weight 1, no bulk root, no jobserver environment. Edited by hand and reviewed; nothing else changed and nothing was regenerated from the Rust output. The producers list, which names stages by position, gains an empty entry for each new stage, and every position after pin-controls moves up by two.",
 			"record": "0286"

@@ -8,6 +8,8 @@ use std::path::{Path, PathBuf};
 pub type Command = Vec<String>;
 pub type Stage = (String, Command);
 
+pub(crate) const OPTIMIZED_CORE_FEATURES: &str = "emit,workspace,fmt,execution,native-code";
+
 pub const MANIFESTS: [&str; 8] = [
 	"Cargo.toml",
 	"tools/project/Cargo.toml",
@@ -1105,6 +1107,20 @@ pub fn recipes(stage: &str, root: &Path) -> Result<Vec<Command>> {
 				command
 			})
 			.collect();
+		// The normal test profile optimizes Rune at level 2. The manifest
+		// library lanes use engine-dev, which compiles Rune at level 0.
+		commands.insert(
+			0,
+			cargo(&[
+				"test",
+				"--locked",
+				"-p",
+				"rune",
+				"--lib",
+				"--features",
+				OPTIMIZED_CORE_FEATURES,
+			]),
+		);
 		for (selector, _) in TWINS {
 			commands.push(cargo(&[
 				"test",

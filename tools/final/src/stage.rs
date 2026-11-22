@@ -164,6 +164,37 @@ pub fn wait(mut command: std::process::Command, limit: Duration) -> Result<i32> 
 	Ok(child.wait()?.code().unwrap_or(1))
 }
 
+fn optimized_core_passed(names: &[String], output: &str) -> Result<u64> {
+	const CASE: &str =
+		"experimental_core::column::tests::f64_plan_bitwise_chunks_masks_and_output_reuse";
+	// Subprocess tests also emit libtest summaries. Only the outer run
+	// accounts for the unfiltered library discovered by this command.
+	static TOTALS: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+		regex::Regex::new(
+			r"^test result: ok\. (\d+) passed; 0 failed; (\d+) ignored; 0 measured; 0 filtered out;",
+		)
+		.unwrap()
+	});
+	let summary = output
+		.lines()
+		.rev()
+		.find(|l| l.starts_with("test result:"))
+		.unwrap_or_default();
+	let totals = TOTALS
+		.captures(summary)
+		.context("missing unfiltered optimized core test summary")?;
+	let passed: usize = totals[1].parse()?;
+	let ignored: usize = totals[2].parse()?;
+	let witness = format!("test {CASE} ... ok");
+	anyhow::ensure!(
+		passed.checked_add(ignored) == Some(names.len())
+			&& names.iter().any(|s| s == CASE)
+			&& output.lines().any(|s| s == witness),
+		"optimized core discovery, execution or F64 witness mismatch"
+	);
+	Ok(passed as u64)
+}
+
 /// A suite stage's row for each recipe, as `suite_stage.run` wrote them.
 pub fn suite(
 	stage: &str,
@@ -198,12 +229,16 @@ pub fn suite(
 			)?)?;
 			let mut threads = command.clone();
 			threads.extend(["--".into(), "--test-threads=4".into()]);
-			let passed = executed(&run.invoke(
-				&threads,
-				root,
-				&out.join(format!("{i}-test.log")),
-				&probe,
-			)?)?;
+			let output = run.invoke(&threads, root, &out.join(format!("{i}-test.log")), &probe)?;
+			let passed = if stage == "rune-suite"
+				&& command
+					.last()
+					.is_some_and(|s| s == catalogue::OPTIMIZED_CORE_FEATURES)
+			{
+				optimized_core_passed(&names, &output)?
+			} else {
+				executed(&output)?
+			};
 			// An API boundary runs exactly its twins, every one passing.
 			if stage == "rune-suite" && command.iter().any(|a| a == "--doc") {
 				let twins = catalogue::TWINS

@@ -9,11 +9,9 @@
      "--locked",
      "-p",
      "rune",
-     "--profile",
-     "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+     "emit,workspace,fmt,execution,native-code",
      "--",
      "--list"
     ],
@@ -28,11 +26,9 @@
      "--locked",
      "-p",
      "rune",
-     "--profile",
-     "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
+     "emit,workspace,fmt,execution,native-code",
      "--",
      "--test-threads=4"
     ],
@@ -51,7 +47,7 @@
      "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
      "--",
      "--list"
     ],
@@ -70,7 +66,7 @@
      "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,serde",
      "--",
      "--test-threads=4"
     ],
@@ -89,7 +85,7 @@
      "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace,native-code,capture-io,disable-io,sha2",
+     "fmt,workspace",
      "--",
      "--list"
     ],
@@ -108,7 +104,7 @@
      "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace,native-code,capture-io,disable-io,sha2",
+     "fmt,workspace",
      "--",
      "--test-threads=4"
     ],
@@ -127,8 +123,7 @@
      "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
-     "compile::warnings::tests",
+     "fmt,workspace,native-code,capture-io,disable-io,sha2",
      "--",
      "--list"
     ],
@@ -147,8 +142,7 @@
      "engine-dev",
      "--lib",
      "--features",
-     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
-     "compile::warnings::tests",
+     "fmt,workspace,native-code,capture-io,disable-io,sha2",
      "--",
      "--test-threads=4"
     ],
@@ -168,7 +162,7 @@
      "--lib",
      "--features",
      "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
-     "compile::context::r1b_inventory",
+     "compile::warnings::tests",
      "--",
      "--list"
     ],
@@ -188,7 +182,7 @@
      "--lib",
      "--features",
      "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
-     "compile::context::r1b_inventory",
+     "compile::warnings::tests",
      "--",
      "--test-threads=4"
     ],
@@ -205,10 +199,10 @@
      "rune",
      "--profile",
      "engine-dev",
-     "--doc",
+     "--lib",
      "--features",
-     "fmt,workspace,execution",
-     "host_function_owned_output",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::context::r1b_inventory",
      "--",
      "--list"
     ],
@@ -225,10 +219,10 @@
      "rune",
      "--profile",
      "engine-dev",
-     "--doc",
+     "--lib",
      "--features",
-     "fmt,workspace,execution",
-     "host_function_owned_output",
+     "fmt,workspace,execution,capture-io,disable-io,sha2,doc,languageserver",
+     "compile::context::r1b_inventory",
      "--",
      "--test-threads=4"
     ],
@@ -248,7 +242,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "host_function_string_input",
+     "host_function_owned_output",
      "--",
      "--list"
     ],
@@ -268,7 +262,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "host_function_string_input",
+     "host_function_owned_output",
      "--",
      "--test-threads=4"
     ],
@@ -288,7 +282,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "ExecutionRuntime",
+     "host_function_string_input",
      "--",
      "--list"
     ],
@@ -308,7 +302,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "ExecutionRuntime",
+     "host_function_string_input",
      "--",
      "--test-threads=4"
     ],
@@ -328,7 +322,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "function::host::HostOutput",
+     "ExecutionRuntime",
      "--",
      "--list"
     ],
@@ -348,7 +342,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "function::host::HostOutput",
+     "ExecutionRuntime",
      "--",
      "--test-threads=4"
     ],
@@ -368,7 +362,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "opaque_factory",
+     "function::host::HostOutput",
      "--",
      "--list"
     ],
@@ -388,7 +382,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "opaque_factory",
+     "function::host::HostOutput",
      "--",
      "--test-threads=4"
     ],
@@ -408,7 +402,7 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "opaque_method",
+     "opaque_factory",
      "--",
      "--list"
     ],
@@ -428,12 +422,52 @@
      "--doc",
      "--features",
      "fmt,workspace,execution",
-     "opaque_method",
+     "opaque_factory",
      "--",
      "--test-threads=4"
     ],
     "cwd": "<ROOT>",
     "log": "10-test.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_method",
+     "--",
+     "--list"
+    ],
+    "cwd": "<ROOT>",
+    "log": "11-discovery.log"
+   },
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--profile",
+     "engine-dev",
+     "--doc",
+     "--features",
+     "fmt,workspace,execution",
+     "opaque_method",
+     "--",
+     "--test-threads=4"
+    ],
+    "cwd": "<ROOT>",
+    "log": "11-test.log"
    }
   ],
   "parsers": {
@@ -459,6 +493,24 @@
    "unknown": "only rune-suite runs here; other suite stages are the Rust stage mode"
   },
   "rows": [
+   {
+    "command": [
+     "cargo",
+     "+1.98.1",
+     "test",
+     "--locked",
+     "-p",
+     "rune",
+     "--lib",
+     "--features",
+     "emit,workspace,fmt,execution,native-code"
+    ],
+    "discovered": [
+     "experimental_core::column::tests::f64_plan_bitwise_chunks_masks_and_output_reuse",
+     "module::ignored"
+    ],
+    "passed": 1
+   },
    {
     "command": [
      "cargo",
@@ -699,6 +751,12 @@
   "twin_short": "API boundary requires both compiling and compile-fail twins"
  },
  "method": "suite_stage.run('rune-suite', <OUT>) with invoke intercepted: discovery of a --doc twin SEL lists TWINS[SEL] names 'SEL::twinI: test' and its execution says 'test result: ok. N passed; 0 failed;'; any other discovery lists 'module::case: test' and passes 1. calls holds each invoke (command, cwd, log name) in order; rows the returned rows. refusals: suite_stage.recipes(stage) for non-rune-suite stages; twin_short: the error when every 4-count twin's execution reports 3; parsers: suite_stage.discovered and executed over the shown texts.",
+ "successors": [
+  {
+   "change": "The optimized core library runs first under the normal Cargo test profile. Its fixture lists the F64 arithmetic test and an ignored case, emits a nested summary, and passes only the F64 case in the outer run.",
+   "fix": "compare column nan results by class and run optimized core tests"
+  }
+ ],
  "substitutions": {
   "<OUT>": "the stage out directory",
   "<ROOT>": "the checkout"

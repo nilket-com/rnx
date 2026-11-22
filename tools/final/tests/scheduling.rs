@@ -862,7 +862,10 @@ fn every_selected_stage_is_declared_and_resolved() {
 			root.join(a).join(b).to_string_lossy().into_owned()
 		}
 	};
-	assert_eq!(plan["rune-suite"], [target("target", "engine-dev")].into());
+	assert_eq!(
+		plan["rune-suite"],
+		[target("target", "debug"), target("target", "engine-dev")].into()
+	);
 	assert_eq!(
 		plan["polars-suite"],
 		[

@@ -78,6 +78,7 @@ fn scratch() -> Scratch {
 /// passes its declared count, any other test one.
 #[derive(Default)]
 struct Suite {
+	optimized_output: Option<String>,
 	calls: Vec<Value>,
 }
 
@@ -94,7 +95,22 @@ impl Invoke for Suite {
 		);
 		let run = &command[..command.iter().position(|a| a == "--").unwrap()];
 		let listing = command.iter().any(|a| a == "--list");
-		let text = if run.iter().any(|a| a == "--doc") {
+		let text = if run
+			.last()
+			.is_some_and(|a| a == "emit,workspace,fmt,execution,native-code")
+		{
+			const CASE: &str =
+				"experimental_core::column::tests::f64_plan_bitwise_chunks_masks_and_output_reuse";
+			if listing {
+				format!("{CASE}: test\nmodule::ignored: test\n")
+			} else if let Some(output) = &self.optimized_output {
+				output.clone()
+			} else {
+				format!(
+					"test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out;\ntest {CASE} ... ok\ntest result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out;\n"
+				)
+			}
+		} else if run.iter().any(|a| a == "--doc") {
 			let selector = run.last().unwrap();
 			let n = rnx_final::catalogue::TWINS
 				.iter()
@@ -144,6 +160,22 @@ fn rune_suite_runs_its_recipes_and_twins_as_the_witness_ran_them() {
 			("<OUT>", &out.to_string_lossy()),
 		],
 	);
+	// Cargo's test profile inherits dev. If its Rune package override changes,
+	// the optimized lane must continue to exercise the same compiler setting.
+	let manifest: toml::Table = std::fs::read_to_string(root().join("Cargo.toml"))
+		.unwrap()
+		.parse()
+		.unwrap();
+	let profiles = &manifest["profile"];
+	let rune_opt = |profile: &str| {
+		profiles
+			.get(profile)?
+			.get("package")?
+			.get("rune")?
+			.get("opt-level")?
+			.as_integer()
+	};
+	assert_eq!(rune_opt("test").or_else(|| rune_opt("dev")), Some(2));
 	let mut trace = Suite::default();
 	let rows = stage::suite(
 		"rune-suite",
@@ -156,6 +188,33 @@ fn rune_suite_runs_its_recipes_and_twins_as_the_witness_ran_them() {
 	.unwrap();
 	assert_eq!(Value::Array(trace.calls), want["calls"]);
 	assert_eq!(Value::Array(rows), want["rows"]);
+	// Aggregate counts can look healthy even when the witness was skipped,
+	// or a different binary ran after discovery.
+	let case = "experimental_core::column::tests::f64_plan_bitwise_chunks_masks_and_output_reuse";
+	for (line, count) in [("ignored", 1), ("ok", 2)] {
+		let bad = s.0.join(format!("optimized-{line}"));
+		std::fs::create_dir(&bad).unwrap();
+		let mut wrong = Suite {
+			optimized_output: Some(format!(
+				"test {case} ... {line}\ntest result: ok. {count} passed; 0 failed; 1 ignored; 0 measured; 0 filtered out;"
+			)),
+			..Suite::default()
+		};
+		let error = stage::suite(
+			"rune-suite",
+			&bad,
+			&root(),
+			&|| unreachable!(),
+			&Environment::new(),
+			&mut wrong,
+		)
+		.unwrap_err();
+		assert!(
+			error
+				.to_string()
+				.contains("optimized core discovery, execution or F64 witness mismatch")
+		);
+	}
 	// A twin short of its count is refused.
 	struct Short(Suite);
 	impl Invoke for Short {
