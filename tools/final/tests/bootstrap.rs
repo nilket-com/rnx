@@ -132,6 +132,33 @@ fn the_entry_builds_and_hands_over_a_bound_record() {
 }
 
 #[test]
+fn bootstrap_preserves_foreign_and_leased_targets() {
+	let checkout = Checkout::new(ECHO);
+	let target = checkout.0.join("target/final-controller");
+	std::fs::create_dir_all(&target).unwrap();
+	std::fs::write(target.join("foreign"), b"keep").unwrap();
+	let output = checkout.entry(&[]);
+	assert!(!output.status.success());
+	assert!(String::from_utf8_lossy(&output.stderr).contains("unowned bootstrap target"));
+	assert_eq!(std::fs::read(target.join("foreign")).unwrap(), b"keep");
+	assert!(!target.join("release").exists());
+
+	let checkout = Checkout::new(ECHO);
+	assert!(checkout.entry(&[]).status.success());
+	std::fs::remove_file(checkout.0.join("handed")).unwrap();
+	assert!(checkout.git(&["status", "--porcelain"]).is_empty());
+	let target = checkout.0.join("target/final-controller");
+	let lease = std::fs::File::open(&target).unwrap();
+	lease.try_lock().unwrap();
+	let output = checkout.entry(&[]);
+	assert!(!output.status.success());
+	assert!(String::from_utf8_lossy(&output.stderr).contains("bootstrap target in use"));
+	assert!(!checkout.0.join("handed").exists());
+	drop(lease);
+	assert!(checkout.entry(&[]).status.success());
+}
+
+#[test]
 fn a_controller_that_does_not_build_starts_nothing() {
 	let checkout = Checkout::new("fn main() { this does not compile }\n");
 	let output = checkout.entry(&[]);

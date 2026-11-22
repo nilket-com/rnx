@@ -89,7 +89,30 @@ done
 # One job, and no jobserver inherited from whatever started this entry.
 unset MAKEFLAGS CARGO_MAKEFLAGS MFLAGS
 target=$root/target/final-controller
-CARGO_BUILD_JOBS=1 cargo +1.98.1 build --locked --release -p rnx-final --target-dir "$target" || fail "the controller did not build"
+# Claim a new target atomically. A previous version may have used this
+# pathname without claiming it. Only the agreed migration may remove it.
+parent=$root/target
+mkdir -p -- "$parent"
+[ "$(realpath -e -- "$parent")" = "$parent" ] || fail "noncanonical bootstrap parent"
+exec 8<"$parent"
+flock -x 8 || fail "cannot lock bootstrap parent"
+owner_id() {
+	stat -c '%d:%i' -- "$root" "$1"
+}
+if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+	pending=$(mktemp -d -- "$parent/.bootstrap-owner-XXXXXXXX")
+	trap 'rm -f -- "$pending/OWNER"; rmdir -- "$pending"' EXIT
+	owner_id "$pending" > "$pending/OWNER"
+	mv -nT -- "$pending" "$target"
+	[ ! -d "$pending" ] || fail "bootstrap target appeared during claim"
+	trap - EXIT
+fi
+[ -d "$target" ] && [ ! -L "$target" ] && [ -f "$target/OWNER" ] && [ ! -L "$target/OWNER" ] || fail "unowned bootstrap target"
+owner_id "$target" | cmp -s - "$target/OWNER" || fail "bootstrap owner changed"
+exec 9<"$target"
+flock -nx 9 || fail "bootstrap target in use"
+exec 8<&-
+CARGO_INCREMENTAL=0 CARGO_BUILD_BUILD_DIR="$target" CARGO_BUILD_JOBS=1 cargo +1.98.1 build --locked --release -p rnx-final --message-format=json-render-diagnostics --target-dir "$target" > "$target/bootstrap-build.jsonl" || fail "the controller did not build"
 artifact="$target/release/rnx-final"
 artifact_sha=$(sha256sum "$artifact") || fail "cannot hash the controller"
 artifact_sha=${artifact_sha%% *}

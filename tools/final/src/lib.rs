@@ -1,6 +1,7 @@
 //! rnx's final: selection, concurrent stages under one budget, receipts,
 //! release and revalidation.
 pub mod bootstrap;
+pub mod cache;
 pub mod catalogue;
 pub mod child;
 pub mod cli;

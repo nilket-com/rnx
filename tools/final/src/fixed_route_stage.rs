@@ -1042,7 +1042,7 @@ fn run_gate(
 	fr::validate_policy(&policy)?;
 	host.approval(root, &baseline, &candidate, &policy)?;
 	let manifest = "ci/execute_guard/Cargo.toml";
-	let guard_build = [
+	let mut guard_build = [
 		&cargo,
 		"+1.98.1",
 		"build",
@@ -1050,7 +1050,18 @@ fn run_gate(
 		"--manifest-path",
 		manifest,
 	]
-	.map(String::from);
+	.map(String::from)
+	.to_vec();
+	let route = env
+		.get("RNX_FINAL_GUARD_ROUTE")
+		.map(|value| serde_json::from_str::<crate::cache::Route>(value))
+		.transpose()?;
+	if let Some(route) = &route {
+		let exe = env
+			.get("RNX_FINAL_GUARD_CONTROLLER")
+			.context("missing bound guard controller")?;
+		guard_build = route.wrap(Path::new(exe), &guard_build)?;
+	}
 	let code = host.run(
 		&guard_build,
 		Some(root),
@@ -1059,8 +1070,11 @@ fn run_gate(
 	if code != 0 {
 		bail!(crate::stage::called_process_error(&guard_build, code));
 	}
-	let mut guard = root.join("ci/execute_guard/target/debug/execute-guard");
-	if !guard.exists() {
+	let mut guard = match &route {
+		Some(route) => route.sole_binary()?,
+		None => root.join("ci/execute_guard/target/debug/execute-guard"),
+	};
+	if !guard.exists() && route.is_none() {
 		let meta: Value = serde_json::from_str(
 			&host.output(
 				&[
@@ -1406,10 +1420,13 @@ pub fn main(args: &[String], root: &Path, env: &Environment) -> Result<i32> {
 		}
 	};
 	let standalone = env.get(crate::child::CONTEXT).is_none_or(|c| c.is_empty());
+	let mut children_env = env.clone();
+	children_env.remove("RNX_FINAL_GUARD_ROUTE");
+	children_env.remove("RNX_FINAL_GUARD_CONTROLLER");
 	let mut live = Live {
 		guardian: std::fs::canonicalize("/proc/self/exe")?,
 		groups: groups.clone(),
-		env: env.clone(),
+		env: children_env,
 		stop: if standalone {
 			Some(crate::cross::interruptible()?)
 		} else {

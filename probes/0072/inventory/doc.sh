@@ -14,8 +14,9 @@ mode="${3:-document}"
 case "$mode" in document|--fetch-only) ;; *) echo "unknown mode $mode" >&2; exit 2 ;; esac
 here="$(cd "$(dirname "$0")" && pwd)"; root="$(cd "$here/../../.." && pwd)"
 NIGHTLY="nightly-2026-09-20"          # pinned by date; the evidence quotes it
-host="$root/target/0072/host-$release-$cfg"
-out="$root/probes/0072/out/$release-$cfg"
+scratch="${RNX_FINAL_POLARS_SCRATCH:-$root/target/0072}"
+host="$scratch/host-$release-$cfg"
+out="${RNX_FINAL_POLARS_DOCS:-$root/probes/0072/out}/$release-$cfg"
 lock="$here/locks/$release-$cfg.lock"
 rm -rf "$out" "$host"; mkdir -p "$host/src" "$out" "$here/locks"
 # Full means every feature the crate declares, minus the ones named here
@@ -59,7 +60,8 @@ publish = false
 polars = { version = "=$release", $features }
 TOML
 echo '' > "$host/src/lib.rs"
-export CARGO_TARGET_DIR="$root/target/0072/target-$release-$cfg"
+export CARGO_TARGET_DIR="$scratch/target-$release-$cfg"
+export CARGO_BUILD_BUILD_DIR="$CARGO_TARGET_DIR"
 export RUSTDOCFLAGS="-Z unstable-options --output-format json --document-hidden-items"
 cd "$host"
 # A saved lock is used as is and must survive the run byte for byte; a

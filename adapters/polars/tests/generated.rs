@@ -14,11 +14,23 @@ fn root() -> PathBuf {
 		.unwrap()
 }
 
+fn scratch() -> PathBuf {
+	std::env::var_os("RNX_FINAL_POLARS_SCRATCH")
+		.map(PathBuf::from)
+		.unwrap_or_else(|| root().join("target/0073"))
+}
+
+fn inventories() -> PathBuf {
+	std::env::var_os("RNX_FINAL_POLARS_ASSETS")
+		.map(PathBuf::from)
+		.unwrap_or_else(|| root().join("probes/0072/out"))
+}
+
 fn inventory() -> PathBuf {
 	// Record 0081: the adapter is documented with the four narrow integer
 	// dtype features. Record 0125: and with `json` (`adapter-json`); the
 	// `0.55.2-adapter` and `0.55.2-adapter-narrow` inventories stay as baselines.
-	let p = root().join("probes/0072/out/0.55.2-adapter-json/result/inventory.json");
+	let p = inventories().join("0.55.2-adapter-json/result/inventory.json");
 	assert!(
 		p.exists(),
 		"missing {}: run probes/0072/inventory/doc.sh 0.55.2 adapter-json and extract it first",
@@ -39,7 +51,8 @@ fn generated_files_do_not_drift() {
 		.args(["--buckets", BUCKETS, "--release"])
 		.arg(root().join("tools/polars-gen/releases").join(RELEASE_FILE))
 		.arg("--check")
-		.env("CARGO_TARGET_DIR", root().join("target/0073"))
+		.env("CARGO_TARGET_DIR", scratch())
+		.env("CARGO_BUILD_BUILD_DIR", scratch())
 		.status()
 		.expect("run polars-gen");
 	assert!(
@@ -62,7 +75,8 @@ fn a_release_file_for_another_inventory_is_refused() {
 			.args(["--buckets", BUCKETS, "--release"])
 			.arg(root().join("tools/polars-gen/releases").join(wrong))
 			.arg("--check")
-			.env("CARGO_TARGET_DIR", root().join("target/0073"))
+			.env("CARGO_TARGET_DIR", scratch())
+			.env("CARGO_BUILD_BUILD_DIR", scratch())
 			.output()
 			.expect("run polars-gen");
 		let stderr = String::from_utf8_lossy(&out.stderr);
@@ -90,9 +104,7 @@ fn the_previous_feature_configuration_is_refused() {
 }
 
 fn previous_configuration_is_refused(cfg: &str) {
-	let old = root().join(format!(
-		"probes/0072/out/0.55.2-{cfg}/result/inventory.json"
-	));
+	let old = inventories().join(format!("0.55.2-{cfg}/result/inventory.json"));
 	assert!(old.exists(), "missing baseline {}", old.display());
 	let out = Command::new("cargo")
 		.args(["run", "-q", "--locked", "--manifest-path"])
@@ -103,7 +115,8 @@ fn previous_configuration_is_refused(cfg: &str) {
 		.args(["--buckets", BUCKETS, "--release"])
 		.arg(root().join("tools/polars-gen/releases").join(RELEASE_FILE))
 		.arg("--check")
-		.env("CARGO_TARGET_DIR", root().join("target/0073"))
+		.env("CARGO_TARGET_DIR", scratch())
+		.env("CARGO_BUILD_BUILD_DIR", scratch())
 		.output()
 		.expect("run polars-gen");
 	let stderr = String::from_utf8_lossy(&out.stderr);
@@ -137,7 +150,7 @@ fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 			&& pinned.contains(&"json".to_string()),
 		"{pinned:?}"
 	);
-	let dir = root().join("target/0073/wrong-features");
+	let dir = scratch().join("wrong-features");
 	std::fs::create_dir_all(&dir).unwrap();
 	let variants: [(&str, Vec<String>); 2] = [
 		(
@@ -166,7 +179,8 @@ fn a_wrong_feature_set_under_the_right_configuration_is_refused() {
 			.args(["--buckets", BUCKETS, "--release"])
 			.arg(root().join("tools/polars-gen/releases").join(RELEASE_FILE))
 			.arg("--check")
-			.env("CARGO_TARGET_DIR", root().join("target/0073"))
+			.env("CARGO_TARGET_DIR", scratch())
+			.env("CARGO_BUILD_BUILD_DIR", scratch())
 			.output()
 			.expect("run polars-gen");
 		let stderr = String::from_utf8_lossy(&out.stderr);
@@ -1237,7 +1251,7 @@ fn generate_with(
 	inventory_json: Option<&str>,
 	name: &str,
 ) -> (serde_json::Value, String) {
-	let dir = root().join("target/0073").join(name);
+	let dir = scratch().join(name);
 	let _ = std::fs::remove_dir_all(&dir);
 	std::fs::create_dir_all(&dir).unwrap();
 	// record 0119: a drift control mutates the release on purpose; the frozen
@@ -1265,7 +1279,8 @@ fn generate_with(
 		.arg(&dir)
 		.args(["--buckets", BUCKETS, "--release"])
 		.arg(dir.join("release.toml"))
-		.env("CARGO_TARGET_DIR", root().join("target/0073"))
+		.env("CARGO_TARGET_DIR", scratch())
+		.env("CARGO_BUILD_BUILD_DIR", scratch())
 		.status()
 		.expect("run polars-gen");
 	assert!(status.success());

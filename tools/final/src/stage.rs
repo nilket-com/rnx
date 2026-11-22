@@ -69,6 +69,13 @@ impl Invoke for Live {
 			.write(true)
 			.create_new(true)
 			.open(log)?;
+		let wrapped;
+		let command = if let Some(route) = crate::cache::lookup(&self.env, cwd, command)? {
+			wrapped = route.wrap(Path::new("/proc/self/exe"), command)?;
+			wrapped.as_slice()
+		} else {
+			command
+		};
 		let mut child = std::process::Command::new(&command[0]);
 		child
 			.args(&command[1..])
@@ -122,6 +129,13 @@ impl Invoke for Live {
 			.write(true)
 			.create_new(true)
 			.open(stderr)?;
+		let wrapped;
+		let command = if let Some(route) = crate::cache::lookup(&self.env, cwd, command)? {
+			wrapped = route.wrap(Path::new("/proc/self/exe"), command)?;
+			wrapped.as_slice()
+		} else {
+			command
+		};
 		let mut child = std::process::Command::new(&command[0]);
 		child
 			.args(&command[1..])
@@ -296,7 +310,10 @@ pub fn suite(
 
 /// The column probe's builds and lints read Valgrind's client header; the
 /// format check does not.
-fn probe_environment(command: &[String], env: &Environment) -> Result<Vec<(String, String)>> {
+pub(crate) fn probe_environment(
+	command: &[String],
+	env: &Environment,
+) -> Result<Vec<(String, String)>> {
 	if !command
 		.iter()
 		.any(|a| a == "rune/tools/xtask/column/probe/Cargo.toml")
@@ -373,7 +390,7 @@ fn executable(path: &Path) -> bool {
 }
 
 /// Unpack a tar of the published tree; no member may leave `into`.
-fn extract(archive: &Path, into: &Path) -> Result<()> {
+pub(crate) fn extract(archive: &Path, into: &Path) -> Result<()> {
 	let mut tar = tar::Archive::new(std::fs::File::open(archive)?);
 	tar.set_preserve_permissions(false);
 	tar.set_overwrite(false);
@@ -463,20 +480,7 @@ pub fn render(counts: &BTreeMap<Identity, u64>) -> Value {
 
 /// `clippy`'s comparison against the fixed published commit: its receipt,
 /// written before an added diagnostic fails the stage.
-pub fn clippy(
-	adapter: bool,
-	out: &Path,
-	root: &Path,
-	env: &Environment,
-	run: &mut dyn Invoke,
-) -> Result<Value> {
-	let bulk = assigned_root("RNX_FINAL_BASELINE_ROOT", out, env)?;
-	let base = bulk.join("published");
-	std::fs::create_dir(&base)?;
-	let archive = bulk.join("published.tar");
-	run.archive(root, CLIPPY_BASE, &archive)?;
-	extract(&archive, &base)?;
-	let jobs = build_jobs(env)?;
+pub(crate) fn clippy_command(adapter: bool) -> Command {
 	let mut command: Command = [
 		"cargo",
 		"clippy",
@@ -502,6 +506,24 @@ pub fn clippy(
 	} else {
 		command.push("--no-default-features".into());
 	}
+	command
+}
+
+pub fn clippy(
+	adapter: bool,
+	out: &Path,
+	root: &Path,
+	env: &Environment,
+	run: &mut dyn Invoke,
+) -> Result<Value> {
+	let bulk = assigned_root("RNX_FINAL_BASELINE_ROOT", out, env)?;
+	let base = bulk.join("published");
+	std::fs::create_dir(&base)?;
+	let archive = bulk.join("published.tar");
+	run.archive(root, CLIPPY_BASE, &archive)?;
+	extract(&archive, &base)?;
+	let jobs = build_jobs(env)?;
+	let command = clippy_command(adapter);
 	let mut sets = BTreeMap::new();
 	for (role, directory) in [("published", base.as_path()), ("candidate", root)] {
 		let target = root.join("target").join(format!(
@@ -812,8 +834,17 @@ pub fn cli(binary: &Path, out: &Path, root: &Path, run: &mut dyn CliRun) -> Resu
 
 /// The Jupyter stage's children, in the order its runner runs them: the
 /// declaration the route checker reads, with inert paths there.
+fn jupyter_probe(python: &str, kernel: &Path, runner: &Path) -> Command {
+	vec![
+		python.into(),
+		"-B".into(),
+		"tests/test_jupyter_execution.py".into(),
+		kernel.display().to_string(),
+		runner.display().to_string(),
+	]
+}
+
 pub fn jupyter_children(python: &str, root: &Path) -> Vec<Command> {
-	let text = |p: &Path| p.to_string_lossy().into_owned();
 	vec![
 		["cargo", "+1.98.1", "build", "--locked", "--bin", "rnx"]
 			.iter()
@@ -832,13 +863,11 @@ pub fn jupyter_children(python: &str, root: &Path) -> Vec<Command> {
 		.iter()
 		.map(|s| s.to_string())
 		.collect(),
-		vec![
-			python.to_owned(),
-			"-B".into(),
-			"tests/test_jupyter_execution.py".into(),
-			text(&root.join("jupyter/target/debug/rnx-jupyter")),
-			text(&root.join("target/debug/rnx")),
-		],
+		jupyter_probe(
+			python,
+			&root.join("jupyter/target/debug/rnx-jupyter"),
+			&root.join("target/debug/rnx"),
+		),
 	]
 }
 
@@ -928,10 +957,22 @@ pub fn jupyter(
 		child_env.insert("PYTHONDONTWRITEBYTECODE".into(), "1".into());
 		// One budget decision, which every child reuses.
 		child_env.insert("CARGO_BUILD_JOBS".into(), jobs(env)?.to_string());
-		for (i, command) in jupyter_children(&python.to_string_lossy(), root)
-			.into_iter()
-			.enumerate()
-		{
+		let commands = jupyter_children(&python.to_string_lossy(), root);
+		for (i, template) in commands.iter().enumerate() {
+			let command = if i == 2 && env.contains_key("RNX_FINAL_CACHE_ROUTES") {
+				let product = |producer: usize, name: &str| -> Result<PathBuf> {
+					crate::cache::lookup(env, root, &commands[producer])?
+						.context("missing Jupyter build route")?
+						.binary(name)
+				};
+				jupyter_probe(
+					&python.to_string_lossy(),
+					&product(1, "rnx-jupyter")?,
+					&product(0, "rnx")?,
+				)
+			} else {
+				template.clone()
+			};
 			let done = run.run(
 				&command,
 				root,
@@ -1139,6 +1180,16 @@ pub fn inventories(
 	base.insert("PYTHONDONTWRITEBYTECODE".into(), "1".into());
 	base.insert("RUSTUP_AUTO_INSTALL".into(), "0".into());
 	base.remove("CARGO_TARGET_DIR");
+	let scratch = env.get("RNX_FINAL_POLARS_SCRATCH").map(PathBuf::from);
+	let docs_root = scratch
+		.as_ref()
+		.map_or_else(|| root.join("probes/0072/out"), |p| p.join("docs"));
+	if scratch.is_some() {
+		base.insert(
+			"RNX_FINAL_POLARS_DOCS".into(),
+			docs_root.display().to_string(),
+		);
+	}
 	let mut offline = base.clone();
 	offline.insert("CARGO_NET_OFFLINE".into(), "true".into());
 	let mut result =
@@ -1241,8 +1292,14 @@ pub fn inventories(
 				&base,
 			)?;
 		}
-		let target = root.join("target/column-inventory-extract");
+		let target = scratch.as_ref().map_or_else(
+			|| root.join("target/column-inventory-extract"),
+			|p| p.join("extractor-target"),
+		);
 		let mut build = offline.clone();
+		if scratch.is_some() {
+			build.insert("CARGO_BUILD_BUILD_DIR".into(), target.display().to_string());
+		}
 		build.insert(
 			"CARGO_TARGET_DIR".into(),
 			target.to_string_lossy().into_owned(),
@@ -1269,7 +1326,7 @@ pub fn inventories(
 				strings(&["bash", "probes/0072/inventory/doc.sh", "0.55.2", cfg]),
 				&offline,
 			)?;
-			let docs = root.join(format!("probes/0072/out/0.55.2-{cfg}"));
+			let docs = docs_root.join(format!("0.55.2-{cfg}"));
 			let pins: Value = serde_json::from_slice(&std::fs::read(docs.join("pins.json"))?)?;
 			let crates = field(&pins, "crates")?;
 			if !(crate::failure::truthy(crates) && !crate::failure::truthy(field(&pins, "failed")?))
@@ -1317,6 +1374,11 @@ pub fn inventories(
 				&pins,
 				&serde_json::from_slice(&std::fs::read(&inventory)?)?,
 			)?;
+			if let Some(assets) = env.get("RNX_FINAL_POLARS_ASSETS") {
+				let result_dir = Path::new(assets).join(format!("0.55.2-{cfg}/result"));
+				std::fs::create_dir_all(&result_dir)?;
+				std::fs::copy(&inventory, result_dir.join("inventory.json"))?;
+			}
 			result["inventories"].as_array_mut().unwrap().push(json!({"cfg": cfg, "sha256": digest(&inventory)?, "pins_sha256": digest(&docs.join("pins.json"))?}));
 		}
 		// The same policy and bucket selection as the full-suite drift test.
@@ -1336,6 +1398,16 @@ pub fn inventories(
 			}
 			constants.insert(name, found[0].clone());
 		}
+		if let Some(path) = &scratch {
+			offline.insert(
+				"CARGO_BUILD_BUILD_DIR".into(),
+				path.join("generator-target").display().to_string(),
+			);
+			offline.insert(
+				"CARGO_TARGET_DIR".into(),
+				path.join("generator-target").display().to_string(),
+			);
+		}
 		let text = |p: PathBuf| p.to_string_lossy().into_owned();
 		step(
 			&mut *run,
@@ -1349,7 +1421,7 @@ pub fn inventories(
 				"--manifest-path".into(),
 				INVENTORY_MANIFESTS[1].into(),
 				"--".into(),
-				text(root.join("probes/0072/out/0.55.2-adapter-json/result/inventory.json")),
+				text(docs_root.join("0.55.2-adapter-json/result/inventory.json")),
 				text(root.join("adapters/polars")),
 				"--buckets".into(),
 				constants["BUCKETS"].clone(),
@@ -1550,7 +1622,8 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 			Ok(0)
 		}
 		Some("cli") => {
-			let binary = PathBuf::from(value("--binary").context("the CLI stage needs --binary")?);
+			let declared = value("--binary").context("the CLI stage needs --binary")?;
+			let binary = PathBuf::from(env.get("RNX_FINAL_PRODUCTION_BINARY").unwrap_or(&declared));
 			std::fs::create_dir_all(out.parent().context("--out has no parent")?)?;
 			std::fs::create_dir(&out)?;
 			let started = std::time::Instant::now();

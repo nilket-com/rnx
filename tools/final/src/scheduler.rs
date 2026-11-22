@@ -412,6 +412,12 @@ fn tree_bytes(path: &Path) -> std::io::Result<u64> {
 	let mut total = 0;
 	for entry in std::fs::read_dir(path)? {
 		let entry = entry?;
+		if matches!(
+			entry.file_name().to_str(),
+			Some(".rnx-cache-owner.json" | ".rnx-marks.json")
+		) {
+			continue;
+		}
 		let kind = entry.file_type()?;
 		if kind.is_dir() {
 			total += tree_bytes(&entry.path()).unwrap_or(0);
@@ -425,12 +431,16 @@ fn tree_bytes(path: &Path) -> std::io::Result<u64> {
 /// Bytes a stage's target directory may add: a share of a warm one, all of
 /// a missing one.
 pub fn growth(resource: &str, root: &Path) -> u64 {
+	growth_with_cold(resource, root, COLD_BYTES)
+}
+
+pub(crate) fn growth_with_cold(resource: &str, root: &Path, cold: u64) -> u64 {
 	if resource == FIRST || resource == ALONE || !resource.starts_with(&*root.to_string_lossy()) {
 		return 0;
 	}
 	match tree_bytes(Path::new(resource)) {
 		Ok(size) if size > 0 => WARM_GROWTH_BYTES.max((size as f64 * WARM_GROWTH_SHARE) as u64),
-		_ => COLD_BYTES,
+		_ => cold,
 	}
 }
 

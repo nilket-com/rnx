@@ -84,6 +84,7 @@ fn final_main(arguments: &[OsString]) -> Result<i32> {
 fn main() {
 	let arguments: Vec<OsString> = std::env::args_os().skip(1).collect();
 	let result = match arguments.first().and_then(|a| a.to_str()) {
+		Some("cached-cargo") => rnx_final::cache::cargo_main(&arguments[1..]),
 		Some("guardian") => rnx_final::guardian::main(&arguments[1..]),
 		Some("stage") => rnx_final::stage::main(&arguments[1..], &root()),
 		// Never resolved: a copied controller's build checkout may be gone.

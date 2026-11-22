@@ -1,6 +1,6 @@
 # ADR 0323: The final owns its build caches
 
-Status: Proposed
+Status: Accepted
 
 Base: published 555cdb1a387cbfc937d192ba2afb503720fe73a9 (ADR 0322).
 

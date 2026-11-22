@@ -38,6 +38,9 @@ pub fn wall_budget_error(scope: &str, seconds: f64) -> Option<String> {
 
 /// What a test may replace, as the Python controls patch the same calls.
 pub trait Hooks: Send + Sync {
+	fn cargo_caches(&self) -> bool {
+		false
+	}
 	fn head(&self, root: &Path) -> Option<String> {
 		child::head(root)
 	}
@@ -137,7 +140,11 @@ pub trait Hooks: Send + Sync {
 
 /// The real calls.
 pub struct Live;
-impl Hooks for Live {}
+impl Hooks for Live {
+	fn cargo_caches(&self) -> bool {
+		true
+	}
+}
 
 /// Everything about one final that is fixed before its first stage.
 #[derive(Clone)]
@@ -540,6 +547,28 @@ fn stage_environment(
 		};
 		env.insert(key.into(), path.to_string_lossy().into_owned());
 	}
+	if matches!(name, "polars-inventories" | "polars-suite") {
+		let scratch = Path::new(&env["RNX_FINAL_ROUTING_ROOT"]).join("generator");
+		env.insert(
+			"RNX_FINAL_POLARS_SCRATCH".into(),
+			scratch.display().to_string(),
+		);
+		let assets = if name == "polars-inventories" {
+			owner.assign(out, "polars-assets", None)?
+		} else {
+			let entry = owner
+				.row
+				.roots
+				.iter()
+				.find(|entry| entry.stage == "polars-assets")
+				.context("Polars suite started without the inventory producer")?;
+			PathBuf::from(&entry.path)
+		};
+		env.insert(
+			"RNX_FINAL_POLARS_ASSETS".into(),
+			assets.join("inventories").display().to_string(),
+		);
+	}
 	if name == "polars-suite" {
 		env.insert(
 			"RNX_ORACLE_RESULTS".into(),
@@ -749,6 +778,7 @@ fn notifier() -> (Notifier, mpsc::Receiver<Event>) {
 /// in selection order, and the disk admission record.
 #[derive(Default)]
 struct Collected {
+	cache: Option<crate::cache::CachePlan>,
 	evidence: Map<String, Value>,
 	rows: Vec<Value>,
 	disk: Map<String, Value>,
@@ -764,6 +794,7 @@ fn run_stages(
 	events: (&Notifier, &mpsc::Receiver<Event>),
 ) -> Result<Option<StageFailed>> {
 	let Collected {
+		cache,
 		evidence: evidence_map,
 		rows,
 		disk,
@@ -783,12 +814,40 @@ fn run_stages(
 	let targets = Targets::new(root);
 	let plan: Vec<Resources> = stages
 		.iter()
-		.map(|(n, c)| settings.hooks.resources(n, c, root, &targets))
+		.map(|(n, c)| {
+			let mut resources = settings.hooks.resources(n, c, root, &targets)?;
+			if let Some(cache) = cache.as_ref() {
+				let lanes = cache.targets(n);
+				if !lanes.is_empty()
+					|| matches!(
+						n.as_str(),
+						"polars-inventory-preflight"
+							| "polars-inventories"
+							| "production-cli-controls"
+					) {
+					resources.retain(|r| r == scheduler::FIRST || r == scheduler::ALONE);
+					resources.extend(lanes);
+				}
+			}
+			Ok(resources)
+		})
 		.collect::<Result<_>>()?;
 	let needs = scheduler::producers(&stages);
 	let bulk: Vec<u64> = stages
 		.iter()
-		.map(|(n, _)| scheduler::declared_bulk(n))
+		.map(|(n, _)| {
+			let scratch = if cache.is_some() {
+				match n.as_str() {
+					// Rounded up from the published inventory and generator trees.
+					"polars-inventories" => 4 * scheduler::GIB,
+					"polars-suite" => 2 * scheduler::GIB,
+					_ => 0,
+				}
+			} else {
+				0
+			};
+			scheduler::declared_bulk(n) + scratch
+		})
 		.collect();
 	let tokens: usize = base
 		.get("CARGO_BUILD_JOBS")
@@ -811,11 +870,19 @@ fn run_stages(
 			wide.join(", ")
 		)));
 	}
-	let growth: BTreeMap<String, u64> = plan
+	let growth: BTreeMap<_, _> = plan
 		.iter()
 		.flatten()
-		.map(|r| (r.clone(), scheduler::growth(r, root)))
-		.collect();
+		.collect::<BTreeSet<_>>()
+		.into_iter()
+		.map(|r| {
+			let bytes = match &*cache {
+				Some(plan) => plan.growth(r, &stages)?,
+				None => scheduler::growth(r, root),
+			};
+			Ok((r.clone(), bytes))
+		})
+		.collect::<Result<_>>()?;
 	let declared = |indices: &mut dyn Iterator<Item = usize>| -> u64 {
 		let mut lanes = BTreeSet::new();
 		let mut total = 0;
@@ -871,6 +938,15 @@ fn run_stages(
 		let _ = pool.give(tokens);
 		finished.insert(index);
 		let name = &stages[index].0;
+		let result = result.and_then(|done| {
+			if matches!(name.as_str(), "polars-inventories" | "polars-suite") {
+				owner.release_child(name, "generator")?;
+				if name == "polars-suite" {
+					owner.release_child("polars-assets", "inventories")?;
+				}
+			}
+			Ok(done)
+		});
 		let done = match result {
 			Ok(d) => {
 				json!({"returncode": d.returncode, "validation": d.validation, "declared_output": d.declared_output})
@@ -1038,7 +1114,7 @@ fn run_stages(
 						.hooks
 						.check_selection(selection_value, root, &settings.environment)?;
 					let shared = (!plan[index].contains(ALONE)).then_some((&*pool, weights[index]));
-					let env =
+					let mut env =
 						match stage_environment(settings, &name, &command, owner, base, shared) {
 							Ok(env) => env,
 							Err(error) => {
@@ -1046,6 +1122,9 @@ fn run_stages(
 								return Err(error);
 							}
 						};
+					if let Some(cache) = cache.as_ref() {
+						cache.environment(&name, &mut env)?;
+					}
 					let cross = command
 						.windows(2)
 						.find(|w| w[0] == "--out" && w[1].contains("rnx-verify"))
@@ -1419,6 +1498,7 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	let (mut selection_value, mut owner, mut failed_row) = (None, None, None);
 	// Set once the stages begin: from then on the final owes a schedule.
 	let mut scheduled = false;
+	let mut cache = None;
 	let (mut evidence_map, mut tools, mut rows, mut disk) =
 		(Map::new(), json!({}), Vec::new(), Map::new());
 	let lock = std::fs::OpenOptions::new()
@@ -1450,6 +1530,14 @@ pub fn run(settings: &Settings) -> Result<Value> {
 			if let Some(violation) = &violation {
 				return Err(value_error(violation));
 			}
+			if settings.hooks.cargo_caches() {
+				let mut prepared =
+					crate::cache::CachePlan::prepare(&root, out, scope == "complete")?;
+				if settings.bootstrap.is_some() {
+					prepared.bootstrap()?;
+				}
+				cache = Some(prepared);
+			}
 			settings.hooks.disk_check(&root, out, &environment)?;
 			let selected = settings.hooks.select(
 				&root,
@@ -1464,7 +1552,10 @@ pub fn run(settings: &Settings) -> Result<Value> {
 			types::write_as::<types::Selection>(&out.join("SELECTION.json"), &selected)?;
 			selection_value = Some(selected.clone());
 			tools = settings.hooks.tools_identity(&settings)?;
-			let mut collected = Collected::default();
+			let mut collected = Collected {
+				cache: cache.take(),
+				..Default::default()
+			};
 			scheduled = true;
 			let failure = run_stages(
 				&settings,
@@ -1475,6 +1566,7 @@ pub fn run(settings: &Settings) -> Result<Value> {
 				&interrupted,
 				(&sender, &receiver),
 			);
+			cache = collected.cache.take();
 			// Rows and evidence count even when the stages ended in an error.
 			(evidence_map, rows, disk) = (collected.evidence, collected.rows, collected.disk);
 			let failure = failure?;
@@ -1587,6 +1679,19 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		r["publication_eligible"] = json!(false);
 		r["retirement_error"] = json!(format!("{error:#}"));
 	}
+	if r["status"] == "PASS"
+		&& let Some(plan) = &cache
+	{
+		match plan.transaction(scope == "complete") {
+			Ok(hash) => r["records"]["CACHE"] = json!(hash),
+			Err(error) => {
+				r["status"] = json!("FAIL");
+				r["complete_final"] = json!(false);
+				r["publication_eligible"] = json!(false);
+				r["error"] = json!(format!("Cargo cache transaction: {error:#}"));
+			}
+		}
+	}
 	// The budget covers the whole run: stages, finalization and release.
 	let seconds = settings.hooks.elapsed(settings.started);
 	r["seconds"] = json!(seconds);
@@ -1601,6 +1706,11 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		}
 	}
 	child_publish(&out.join("RESULT.json"), &r)?;
+	if r["status"] == "PASS"
+		&& let Some(cache) = cache
+	{
+		cache.finish()?;
+	}
 	Ok(r)
 }
 

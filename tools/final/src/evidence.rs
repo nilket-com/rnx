@@ -210,6 +210,40 @@ impl Owners {
 		Ok(result)
 	}
 
+	/// Drop one stage's scratch when its users drain. The outer ownership
+	/// journal remains available to the manifest and to crash recovery.
+	pub fn release_child(&self, stage: &str, name: &str) -> Result<()> {
+		ensure!(
+			Path::new(name).file_name() == Some(name.as_ref()),
+			"invalid child"
+		);
+		let root = self
+			.row
+			.roots
+			.iter()
+			.find(|root| root.stage == stage)
+			.context("missing scratch owner")?;
+		let path = canonical(Path::new(&root.path))?;
+		let meta = path.metadata()?;
+		ensure!(
+			root.state == "owned"
+				&& root.device == Field::Value(meta.dev())
+				&& root.inode == Field::Value(meta.ino()),
+			"scratch owner changed"
+		);
+		let child = path.join(name);
+		match child.symlink_metadata() {
+			Ok(meta) => {
+				ensure!(meta.is_dir(), "scratch directory replaced");
+				std::fs::remove_dir_all(child)?;
+				sync_directory(&path)?;
+			}
+			Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+			Err(e) => return Err(e.into()),
+		}
+		Ok(())
+	}
+
 	pub fn retire(&self) -> Result<()> {
 		retire(&self.path)
 	}
@@ -585,6 +619,17 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 		ensure!(
 			digest(&out.join(format!("{name}.json")))? == *recorded,
 			"terminal record changed: {name}"
+		);
+	}
+	if result.status == Status::Pass
+		&& let Some(hash) = result.records.get("CACHE")
+	{
+		let released = read(&out.join("CACHE-RELEASE.json"))?;
+		ensure!(
+			released["transaction"] == *hash
+				&& released["result"] == digest(&out.join("RESULT.json"))?
+				&& released["footprint"] == digest(&out.join("CACHE-FOOTPRINT.json"))?,
+			"cache sweep receipt mismatch"
 		);
 	}
 	let a: Acceptance = types::read(&out.join("ACCEPTANCE.json"))?;
