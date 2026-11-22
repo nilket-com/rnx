@@ -1072,8 +1072,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 27891,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0298 moves fixed-route to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image quality stages to the complete run."
+      "max_bytes": 28853,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0298 moves fixed-route to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image quality stages to the complete run. ADR 0322 adds the three product file provider quality stages."
     },
     "tools/final/tests/witness/cli-controls.json": {
       "class": "live-fixture",
@@ -1090,8 +1090,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/cross.rs"
       },
-      "max_bytes": 70915,
-      "reason": "ADR 0294 witness fixture: the Python cross launcher's refusals, calls, environments, requests, receipts and files generated once at 152b0c07 from controlled values with every child intercepted (method recorded inside); the Rust stage mode is compared against it. ADR 0318 adds the engine image to the checkout manifest inventory."
+      "max_bytes": 71335,
+      "reason": "ADR 0294 witness fixture: the Python cross launcher's refusals, calls, environments, requests, receipts and files generated once at 152b0c07 from controlled values with every child intercepted (method recorded inside); the Rust stage mode is compared against it. ADR 0318 adds the engine image to the checkout manifest inventory. ADR 0322 includes the product file provider in the checkout inventory."
     },
     "tools/final/tests/witness/fixed-route-anchor-cache.json": {
       "class": "live-fixture",
@@ -1207,8 +1207,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 32871,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image scheduling rows and their prerequisite entries."
+      "max_bytes": 34021,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image scheduling rows and their prerequisite entries. ADR 0322 adds the three product file provider quality stages."
     },
     "tools/final/tests/witness/selection.json": {
       "class": "live-fixture",
@@ -1216,8 +1216,8 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/common/witness.rs"
       },
-      "max_bytes": 82127,
-      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0298 moves fixed-route to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image quality stages to the complete run."
+      "max_bytes": 83070,
+      "reason": "ADR 0284 witness fixture: expected values generated once from the published Python controller at 2b7323ae (method recorded inside); the Rust tests compare against it. ADR 0286 adds two stages as a reviewed successor, recorded in the fixture. ADR 0287 moves 55 stage commands to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0289 moves rune-suite to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0291 moves jupyter-kernel and production-cli-controls to the Rust stage modes as a reviewed successor, recorded in the fixture. ADR 0293 moves polars-inventory-preflight and polars-inventories to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0294 moves cross to the Rust stage mode and removes pin-controls and engine-source-controls as a reviewed successor, recorded in the fixture. ADR 0298 moves fixed-route to the Rust stage mode as a reviewed successor, recorded in the fixture. ADR 0318 adds the three engine image quality stages to the complete run. ADR 0322 adds the three product file provider quality stages."
     },
     "tools/final/tests/witness/suite-recipes.json": {
       "class": "live-fixture",

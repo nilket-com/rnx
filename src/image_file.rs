@@ -35,7 +35,12 @@ impl Write for Diagnostic {
 	}
 }
 thread_local! { static REPORT: RefCell<Option<Diagnostic>> = const { RefCell::new(None) }; }
+thread_local! { static STOCK_STREAM: std::cell::Cell<bool> = const { std::cell::Cell::new(false) }; }
 pub(crate) fn diagnostic(line: fmt::Arguments<'_>) -> bool {
+	if STOCK_STREAM.get() {
+		eprintln!("{line}");
+		return true;
+	}
 	REPORT.with_borrow_mut(|slot| {
 		if let Some(report) = slot {
 			let _ = writeln!(report, "{line}");
@@ -136,4 +141,86 @@ pub fn checked_result(
 	let _restore = Restore;
 	let code = execution::checked::render_outcome(file, outcome, budget, false);
 	(code, REPORT.take().expect("scoped image report"))
+}
+
+/// Product file entry for a dedicated CLI process. A refusal precedes script
+/// effects. Once execution begins the returned code is terminal.
+pub fn product_file(
+	path: &str,
+	args: Vec<String>,
+	native: bool,
+	debug: bool,
+	debug_source: bool,
+	fuel: usize,
+	provider: Option<Vec<rune::Module>>,
+) -> crate::Result<Option<i32>> {
+	use crate::{host, presentation, runner, terminal};
+	struct Stream;
+	impl Drop for Stream {
+		fn drop(&mut self) {
+			STOCK_STREAM.set(false);
+		}
+	}
+	STOCK_STREAM.set(true);
+	let _stream = Stream;
+	presentation::initialize(presentation::Mode::Auto);
+	let lifecycle = Lifecycle::new(true)?;
+	let result = (|| {
+		let (mut context, _, _http) = crate::serving_context(&lifecycle, provider.is_none())?;
+		let _title = terminal::Title::new(&format!("rnx {path}"));
+		let arguments = crate::file_arguments(&mut context, args)?;
+		#[cfg(feature = "image-effect-controls")]
+		let paired = provider.is_some();
+		let mut installer = rune::experimental_core::domain::file::Installer::new(&mut context);
+		for module in provider.into_iter().flatten() {
+			installer.install(module)?;
+		}
+		let modules = installer
+			.finish()
+			.map_err(|error| format!("file extensions: {:?}", error.kind))?;
+		#[cfg(feature = "image-effect-controls")]
+		if paired {
+			let (mut stock, _, _http) = crate::serving_context(&lifecycle, true)?;
+			crate::file_arguments(&mut stock, vec![])?;
+			let expected = stock.image_stock_surface();
+			let actual = context.image_stock_surface();
+			if expected != actual {
+				let first = expected
+					.iter()
+					.zip(&actual)
+					.position(|(a, b)| a != b)
+					.unwrap_or(expected.len().min(actual.len()));
+				return Err(format!(
+					"stock surface differs at {first}: {:?} vs {:?}",
+					expected.get(first),
+					actual.get(first)
+				)
+				.into());
+			}
+		}
+		rune::experimental_core::domain::file::initialize_image_thread();
+		host::running_a_script();
+		let mut loader = Loader::new();
+		let Some(sources) = runner::file_sources(&mut loader, path) else {
+			return Ok(Some(1));
+		};
+		loader.record_module_reads();
+		Ok(execution::run(
+			&context,
+			&sources,
+			&arguments,
+			debug_source,
+			fuel,
+			Options {
+				native,
+				debug,
+				..Options::default()
+			},
+			&lifecycle,
+			Some(&modules),
+			&mut loader,
+		))
+	})();
+	lifecycle.close()?;
+	result
 }

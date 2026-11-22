@@ -67,8 +67,8 @@ pub enum FileProgram {
 	Checked(CheckedMain),
 }
 impl FileModules {
-	/// Inspect the effective host bindings of this sealed file context for the adapter controls.
-	#[cfg(feature = "file-inventory-controls")]
+	/// Inspect the effective host bindings of the sealed file context, including resolvable names without a file handler.
+	#[cfg(feature = "file-provider-metadata")]
 	#[doc(hidden)]
 	pub fn inventory(&self, context: &Context) -> Result<std::vec::Vec<std::string::String>> {
 		use crate::compile::meta::Kind;

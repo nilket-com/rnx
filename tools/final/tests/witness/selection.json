@@ -1031,6 +1031,44 @@
 						]
 					],
 					[
+						"file-provider-controls",
+						[
+							"cargo",
+							"+1.98.1",
+							"test",
+							"--locked",
+							"--manifest-path",
+							"adapters/file-provider/Cargo.toml"
+						]
+					],
+					[
+						"format-file-provider",
+						[
+							"cargo",
+							"+1.98.1",
+							"fmt",
+							"--manifest-path",
+							"adapters/file-provider/Cargo.toml",
+							"--check"
+						]
+					],
+					[
+						"clippy-file-provider",
+						[
+							"cargo",
+							"+1.98.1",
+							"clippy",
+							"--locked",
+							"--manifest-path",
+							"adapters/file-provider/Cargo.toml",
+							"--all-targets",
+							"--no-deps",
+							"--",
+							"-D",
+							"warnings"
+						]
+					],
+					[
 						"adapter-candle",
 						[
 							"cargo",
@@ -3900,6 +3938,10 @@
 		{
 			"change": "Add direct Cargo test, format and deny-warning lint stages for the new engine image package to the complete catalogue. The historical selection still uses its original Cargo graphs.",
 			"record": "0318"
+		},
+		{
+			"record": "0322",
+			"change": "The separately packaged file provider adds its Cargo test, format and no-deps lint after the engine image stages. Its debug artifacts belong to its independent workspace; the existing producers keep their stages."
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

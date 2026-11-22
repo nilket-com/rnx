@@ -675,3 +675,18 @@ adapters, versus about 6 ms direct. The matched checkout projects were roughly
 1 ms faster. These are single-host observations, and launch overhead grows with
 the declared native inventory; there is no adapter-independent latency guarantee.
 Default source checks and explicit `--verify` retain their existing coverage.
+
+### Packaging the execution engine for file runs
+
+On x86_64 Linux, build a release engine bundle once and choose an output directory for each launcher. The parent directories must exist.
+
+```sh
+rnx-project image engine /path/to/rnx ./engine-bundle --offline
+rnx-project image stock /path/to/rnx ./engine-bundle ./stock-package --offline
+rnx-project build --manifest ./rnx.toml --engine-bundle ./engine-bundle --image-package ./project-package --offline
+./project-package/rnx run script.rn 'first argument'
+```
+
+The project command uses the project's lock. It supports an empty native adapter set or the reviewed Candle and Polars pair from the same runtime checkout. Projects declaring source aliases need the ordinary build route. Each package can move as a directory. Keep the launcher and its adjacent engine together. A refused file exits before its script effects run.
+
+An unchanged build verifies the destination and reuses it. A changed build assembles a private generation beside the destination and replaces the previous one after verification. Each destination retains one generation. The explicit engine bundle can be reused for provider-only builds.

@@ -72,4 +72,28 @@ _Static_assert(sizeof(struct rnx_handles_request)==128 && sizeof(struct rnx_resp
  * INVALID leaves output untouched. All other returns initialize the response.
  * Failed parent close leaves the context and all children usable. */
 int32_t rnx_engine_handles_v2(const struct rnx_handles_request *);
+
+/* Launcher-only v4 file entries. All strings are NUL-terminated UTF-8.
+ * Supply a readable aligned two-word header, the supported request prefix,
+ * argc readable string pointers and a separate writable exit_code.
+ * Zero argc permits NULL argv. RNX_OK writes the terminal CLI code (including
+ * errors/interrupt); RNX_REFUSED precedes script effects. Other outcomes
+ * leave exit_code alone. Diagnostics stream to stderr during this call.
+ * A script's explicit process::exit terminates the entire calling process,
+ * including an embedding host. It never returns to the launcher. Callers
+ * cannot rely on ABI teardown or reading exit_code after that point. */
+enum { RNX_DEBUG_SOURCE = 4 };
+struct rnx_stock_request {
+	uint32_t version, size, flags, reserved;
+	const char *path;
+	const char *const *argv;
+	size_t argc, fuel;
+	int32_t *exit_code;
+};
+_Static_assert(sizeof(struct rnx_stock_request) == 56 &&
+	offsetof(struct rnx_stock_request, exit_code) == 48, "unsupported stock layout");
+int32_t rnx_engine_stock_file_v4(const struct rnx_stock_request *);
+struct rnx_adapter_provider;
+/* Same launcher-only entry, installing a v3 table with callbacks live until return. */
+int32_t rnx_engine_provider_file_v4(const struct rnx_stock_request *, const struct rnx_adapter_provider *);
 #endif

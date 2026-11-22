@@ -106,11 +106,20 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 /// Register the core host APIs and preserve interrupt setup for every caller.
 /// The pure config evaluator deliberately does not call this function.
 fn install_core(context: &mut Context) -> Result<Vec<host::HostFunction>> {
+	install_core_with_dense(context, true)
+}
+
+fn install_core_with_dense(
+	context: &mut Context,
+	stock_dense: bool,
+) -> Result<Vec<host::HostFunction>> {
 	platform::watch_for_interrupt();
 	let mut functions = json::install(context)?;
 	functions.extend(io::install(context)?);
 	// record 0129: the neutral block adapters exchange numbers through
-	functions.extend(interchange::install(context)?);
+	if stock_dense {
+		functions.extend(interchange::install(context)?);
+	}
 	functions.extend(process::install(context)?);
 	functions.extend(web::install(context)?);
 	#[cfg(feature = "test-support")]
@@ -312,6 +321,28 @@ fn main_inner(extensions: Extensions, startup: bool) -> Result<()> {
 	lifecycle.close()?;
 	result
 }
+fn file_arguments(context: &mut Context, args: Vec<String>) -> Result<Value> {
+	let snapshot: Arc<[String]> = args.into();
+	let arguments = rune::to_value(snapshot.to_vec())?;
+	env::install(context, snapshot)?;
+	Ok(arguments)
+}
+
+fn serving_context(
+	lifecycle: &lifecycle::Lifecycle,
+	stock_dense: bool,
+) -> Result<(Context, Vec<host::HostFunction>, http::State)> {
+	let mut context = Context::with_default_modules()?;
+	let mut host_functions = install_core_with_dense(&mut context, stock_dense)?;
+	host_functions.extend(fs::install(&mut context)?);
+	host_functions.extend(path::install(&mut context)?);
+	host_functions.extend(time::install(&mut context)?);
+	host_functions.extend(text::install(&mut context)?);
+	let http = http::State::default();
+	host_functions.extend(http::install(&mut context, &http, lifecycle.scope("http"))?);
+	Ok((context, host_functions, http))
+}
+
 fn serve(
 	args: Vec<String>,
 	extensions: Extensions,
@@ -326,14 +357,7 @@ fn serve(
 	let mut extensions = Some(extensions);
 	#[cfg(feature = "test-support")]
 	source_fmt::CONTEXTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-	let mut context = Context::with_default_modules()?;
-	let mut host_functions = install_core(&mut context)?;
-	host_functions.extend(fs::install(&mut context)?);
-	host_functions.extend(path::install(&mut context)?);
-	host_functions.extend(time::install(&mut context)?);
-	host_functions.extend(text::install(&mut context)?);
-	let http = http::State::default();
-	host_functions.extend(http::install(&mut context, &http, lifecycle.scope("http"))?);
+	let (mut context, mut host_functions, http) = serving_context(lifecycle, true)?;
 	// File arguments are selected below, after the existing run flags. All
 	// other entry points have an empty script-argument snapshot.
 	if !args.first().is_some_and(|arg| arg == "run") {
@@ -590,9 +614,7 @@ fn serve(
 			program::Loader::new()
 		};
 		let _title = terminal::Title::new(&format!("rnx {path}"));
-		let snapshot: Arc<[String]> = Arc::from(rest[1..].to_vec());
-		let arguments = rune::to_value(snapshot.to_vec())?;
-		env::install(&mut context, snapshot)?;
+		let arguments = file_arguments(&mut context, rest[1..].to_vec())?;
 		let file_modules = match extensions
 			.take()
 			.unwrap()

@@ -6,6 +6,7 @@ mod handles;
 mod provider;
 #[path = "../provider_abi.rs"]
 mod provider_abi;
+mod stock;
 use rnx::image_file::{self, Outcome};
 use std::{
 	cell::Cell,

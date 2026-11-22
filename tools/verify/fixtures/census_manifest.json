@@ -1497,8 +1497,8 @@
       "path": "src/lib.rs",
       "start": "fn install_core(",
       "end": "\nfn compile(",
-      "sha256": "392969adcfd02ffc9588f60c6d49a0131e5c450f806ad38572015677827ebce0"
+      "sha256": "2e41c5e11adb6a468a1b24e094706e261a56b5679323f7efc03f1130708b1abd"
     },
-    "test_only_root_change": "The current root lib.rs adds an explicit cfg(test) verification module/main hook. Full source is bound by the shared runner; the production install_core function remains byte-identical."
+    "test_only_root_change": "ADR 0322 pins install_core and install_core_with_dense together. Stock keeps its installer order and includes interchange; the provider entry supplies its own Dense."
   }
 }

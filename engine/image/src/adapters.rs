@@ -96,7 +96,21 @@ mod native_types {
 	use super::*;
 	native!(Mlp, candle, MLP);
 	native!(Tensor, candle, TENSOR);
-	native!(Dense, interchange, DENSE);
+	// Match the named, private fields exposed by the stock Dense metadata.
+	#[derive(rune::Any)]
+	#[rune(module = rnx::rune, item = ::interchange)]
+	pub(super) struct Dense {
+		payload: Payload,
+	}
+	impl Native for Dense {
+		const KIND: u32 = abi::DENSE;
+		fn new(payload: Payload) -> Self {
+			Self { payload }
+		}
+		fn payload(&self) -> &Payload {
+			&self.payload
+		}
+	}
 	native!(DataFrame, polars, FRAME);
 }
 struct Answer {
@@ -446,21 +460,21 @@ pub(crate) unsafe fn install(
 	let pair = dec.id(DENSE, PAIR)?;
 	x.opaque_method::<Dense, _, _>(
 		"shape",
-		move |d: &Dense| read(pair, d.0.value.token).map(|a| (a.ints[0], a.ints[1])),
+		move |d: &Dense| read(pair, d.payload().value.token).map(|a| (a.ints[0], a.ints[1])),
 		Some(OutputCertificate::I64_PAIR),
 	)
 	.map_err(error)?;
 	let names = dec.id(DENSE, NAMES)?;
 	x.opaque_method::<Dense, _, _>(
 		"names",
-		move |d: &Dense| read(names, d.0.value.token).map(|a| a.strings),
+		move |d: &Dense| read(names, d.payload().value.token).map(|a| a.strings),
 		Some(OutputCertificate::STRING_LIST),
 	)
 	.map_err(error)?;
 	let dtype = dec.id(DENSE, TEXT)?;
 	x.opaque_method::<Dense, _, _>(
 		"dtype",
-		move |d: &Dense| read(dtype, d.0.value.token)?.text(),
+		move |d: &Dense| read(dtype, d.payload().value.token)?.text(),
 		None,
 	)
 	.map_err(error)?;
@@ -472,7 +486,7 @@ pub(crate) unsafe fn install(
 			produce::<Tensor>(
 				convert,
 				&Input {
-					argument: d.0.value.token,
+					argument: d.payload().value.token,
 					credit,
 					..Default::default()
 				},

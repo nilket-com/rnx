@@ -3547,6 +3547,16 @@ version = "0.0.0"
 dependencies = [
  "rnx",
  "rnx-candle",
+ "rnx-file-provider",
+ "rnx-polars",
+]
+
+[[package]]
+name = "rnx-file-provider"
+version = "0.0.0"
+dependencies = [
+ "rnx",
+ "rnx-candle",
  "rnx-polars",
 ]
 

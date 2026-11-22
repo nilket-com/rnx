@@ -20,6 +20,7 @@ path = "main.rs"
 rnx = { path = "../..", default-features = false, features = ["count-allocations"] }
 rnx-polars = { path = "../../adapters/polars" }
 rnx-candle = { path = "../../adapters/candle" }
+rnx-file-provider = { path = "../../adapters/file-provider", optional = true }
 
 # Preserve Git-dependency codegen after migration to canonical Rune paths.
 
@@ -45,9 +46,9 @@ incremental = false
 incremental = false
 
 [features]
-image-provider = ["rnx-candle/image-provider", "rnx-polars/image-provider"]
-image-witness = ["image-provider", "rnx-candle/image-witness"]
-image-controls = ["image-provider", "rnx/file-inventory-controls"]
+image-provider = ["rnx-candle/image-provider", "rnx-polars/image-provider", "dep:rnx-file-provider"]
+image-witness = ["image-provider", "rnx-file-provider/image-witness"]
+image-controls = ["image-provider", "rnx/file-inventory-controls", "rnx-file-provider/image-controls"]
 
 [[example]]
 name = "file_provider"

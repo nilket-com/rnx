@@ -15,6 +15,8 @@ success() {
 	grep -Fxq 'rnx: engine=execution native-requested=on' "$out/stderr"
 	grep -Fxq 'rnx: callback-count=1' "$out/stderr"
 }
+mkdir "$out/stock"
+sh "$src/tests/stock-file.sh" "$image" "$out/stock"
 success plain 42
 success tagged 43
 mv "$out/plain" "$out/relocated"
@@ -23,7 +25,7 @@ readelf -d "$out/relocated/rnx" > "$out/dynamic"
 grep -Fq '[libengine_image.so]' "$out/dynamic"
 grep -Fq '[$ORIGIN]' "$out/dynamic"
 nm -D --defined-only "$image" | awk '{print $3}' > "$out/exports"
-exports=$(printf 'rnx_engine_adapters_v3\nrnx_engine_handles_v2\nrnx_engine_run_file_v1')
+exports=$(printf 'rnx_engine_adapters_v3\nrnx_engine_handles_v2\nrnx_engine_provider_file_v4\nrnx_engine_run_file_v1\nrnx_engine_stock_file_v4')
 case "${2:-ordinary}" in
 	ordinary) control_flag= ;;
 	observed) control_flag=-DRNX_IMAGE_CONTROLS
@@ -80,4 +82,4 @@ PERF_BUILDID_DIR=/nonexistent "$out/eligibility" "$out/ordinary.rn" 1
 
 printf '%s\n' 'pub fn main(args){let m=candle::Mlp::load("model")?; let alias=m; alias.dims(); m.dims(); Ok(())}' >"$out/model.rn"
 cc -std=c11 -Wall -Wextra -Werror ${control_flag:+"$control_flag"} "$src/tests/adapter_contracts.c" -L"$out/tagged" "-Wl,-rpath,$out/tagged" -lengine_image -o "$out/adapter-contracts"
-"$out/adapter-contracts" "$out/model.rn"
+"$out/adapter-contracts" "$out/model.rn" "$out/ordinary.rn"

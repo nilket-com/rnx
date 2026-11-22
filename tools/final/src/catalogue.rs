@@ -355,6 +355,14 @@ pub fn packages() -> BTreeMap<String, Quality> {
 			"clippy-engine-image",
 		),
 	);
+	rows.insert(
+		"adapters/file-provider/Cargo.toml".into(),
+		owned(
+			&["file-provider-controls"],
+			"format-file-provider",
+			"clippy-file-provider",
+		),
+	);
 	rows
 }
 
@@ -661,6 +669,7 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		("budget", "rune/tools/budget/Cargo.toml"),
 		("final", "tools/final/Cargo.toml"),
 		("engine-image", "engine/image/Cargo.toml"),
+		("file-provider", "adapters/file-provider/Cargo.toml"),
 	] {
 		let mut tests = cargo(&["test", "--locked", "--manifest-path", manifest]);
 		if stage == "engine-image" {
@@ -681,6 +690,8 @@ pub fn commands(out: &Path, root: &Path) -> Result<Vec<Stage>> {
 		if stage == "engine-image" {
 			// The product's existing lints have their own baseline comparison.
 			lint.extend(strings(&["--features", "linked", "--no-deps"]));
+		} else if stage == "file-provider" {
+			lint.push("--no-deps".into());
 		}
 		lint.extend(strings(&["--", "-D", "warnings"]));
 		steps.push((format!("clippy-{stage}"), lint));
@@ -846,7 +857,7 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 		if ASYNC_TEST_SOURCES.contains(&p.as_str()) {
 			add(&["async-test-support"]);
 		}
-		if p.starts_with("engine/image/") {
+		if p.starts_with("engine/image/") || p.starts_with("engine/launcher/") {
 			add(&[
 				"engine-image-controls",
 				"format-engine-image",
@@ -859,7 +870,13 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 				add(&["fixed-route"]);
 			}
 		}
-		if let Some(rest) = p.strip_prefix("adapters/") {
+		if p.starts_with("adapters/file-provider/") {
+			add(&[
+				"file-provider-controls",
+				"clippy-file-provider",
+				"format-file-provider",
+			]);
+		} else if let Some(rest) = p.strip_prefix("adapters/") {
 			let name = rest.split('/').next().unwrap_or("");
 			if !["candle", "polars", "postgres"].contains(&name) {
 				quality(&format!("adapters/{name}/Cargo.toml"))?;

@@ -1,0 +1,19 @@
+[package]
+name = "rnx-file-provider"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["rlib", "staticlib"]
+
+[features]
+image-controls = []
+image-witness = ["rnx-candle/image-witness"]
+
+[dependencies]
+rnx = { path = "../..", default-features = false, features = ["count-allocations", "file-provider-metadata"] }
+rnx-polars = { path = "../polars", features = ["image-provider"] }
+rnx-candle = { path = "../candle", features = ["image-provider"] }

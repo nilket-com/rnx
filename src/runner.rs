@@ -253,6 +253,22 @@ pub(crate) struct FileContext<'a> {
 	pub(crate) modules: Option<&'a rune::experimental_core::domain::file::FileModules>,
 }
 
+pub(crate) fn file_sources(loader: &mut Loader, path: &str) -> Option<Sources> {
+	let source = match loader.entry(std::path::Path::new(path)) {
+		Ok(source) => source,
+		Err(error) => {
+			unplaced("error", &error);
+			return None;
+		}
+	};
+	let mut sources = Sources::new();
+	if sources.insert(source).is_err() {
+		unplaced("error", "the source could not be held for compilation");
+		return None;
+	}
+	Some(sources)
+}
+
 /// Run one file. Returns the process exit code, and prints everything it
 /// has to say itself: diagnostics to standard error, script output to
 /// standard output.
@@ -271,18 +287,9 @@ pub(crate) fn run_loaded(
 		modules: file_modules,
 	} = file;
 	crate::host::running_a_script();
-	let source = match loader.entry(std::path::Path::new(path)) {
-		Ok(source) => source,
-		Err(error) => {
-			unplaced("error", &error);
-			return 1;
-		}
-	};
-	let mut sources = Sources::new();
-	if sources.insert(source).is_err() {
-		unplaced("error", "the source could not be held for compilation");
+	let Some(mut sources) = file_sources(&mut loader, path) else {
 		return 1;
-	}
+	};
 	if engine.choice == crate::engine::EngineChoice::Auto {
 		loader.record_module_reads();
 		if let Some(code) = execution::run(

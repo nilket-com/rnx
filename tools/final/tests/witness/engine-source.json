@@ -204,6 +204,7 @@
     "locks": [
      "Cargo.lock",
      "adapters/candle/Cargo.lock",
+     "adapters/file-provider/Cargo.lock",
      "adapters/polars/Cargo.lock",
      "adapters/postgres/Cargo.lock",
      "demos/candle/Cargo.lock",
@@ -240,7 +241,7 @@
    }
   }
  },
- "successors": [{"record": "0318", "change": "The image package adds engine/image/Cargo.toml to the checkout's canonical-path manifest inventory."}],
+ "successors": [{"record":"0322","change":"Include the packaged file provider lock in the independently inventoried checkout locks."}, {"record": "0318", "change": "The image package adds engine/image/Cargo.toml to the checkout's canonical-path manifest inventory."}],
  "method": "engine_source.check_manifest, check_lock, check_metadata and check_tree, and verify.validate_request, over planted trees under a scratch base: each is ok with the returned value, or error with the exception class and message. Every planted engine tree has rune/crates/rune and rune/crates/rune-core manifests; manifest cases add other/Cargo.toml (package rune) for the escape; 'canonical path escapes through a link' replaces rune/crates/rune with a link to <OUTSIDE>/crates/rune; tree cases write the two required locks (one canonical rune entry each) plus the shown extra files; 'linked directory not followed' links a directory holding an external lock. 'the published checkout' is check_tree over the checkout itself.",
  "substitutions": {
   "<ESCAPE>": "a manifest outside the engine",

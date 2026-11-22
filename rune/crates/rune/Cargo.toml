@@ -23,7 +23,8 @@ emit = ["std", "anyhow", "codespan-reporting"]
 bench = []
 engine-image = ["execution"]
 image-effect-controls = ["execution"]
-file-inventory-controls = ["execution"]
+file-inventory-controls = ["file-provider-metadata"]
+file-provider-metadata = ["execution"]
 # Opt-in execution core (unstable API); never enabled by default.
 # Needs `anyhow`: the compiler frontend it drives uses `anyhow` under `std`.
 execution = ["std", "anyhow"]

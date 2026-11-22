@@ -16,7 +16,7 @@ env -u POLARS_PANIC_ON_ERR "$oracle" --refusal-header >"$out/refusal_table.h"
 cp -- "$image" "$out/libengine_image.so"
 hash=$(sha256sum <"$image" | cut -d' ' -f1)
 set -- cc ${observe:+"$observe"} -std=c11 -O2 -Wall -Wextra -Werror -fPIE -pie -Wl,--gc-sections,--exclude-libs,ALL \
-	"-DENGINE_DIGEST=\"$hash\"" "$here/adapter_launcher.c" "$here/../../demos/candle/file-provider/registry.c" "-I$out" "$archive" "-L$out" '-Wl,-rpath,$ORIGIN' \
+	"-DENGINE_DIGEST=\"$hash\"" "$here/adapter_launcher.c" "$here/../../demos/candle/file-provider/registry.c" "$here/../../adapters/file-provider/registry.c" "-I$out" "$archive" "-L$out" '-Wl,-rpath,$ORIGIN' \
 	-lengine_image -lcrypto -lstdc++ -ldl -lm -lpthread -o "$out/rnx"
 printf '%s\n' "$@" > "$out/cc.argv"
 "$@"

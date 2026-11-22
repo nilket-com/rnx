@@ -1,5 +1,7 @@
 mod add;
 mod git_sources;
+#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+mod image_package;
 #[cfg(unix)]
 mod quiet;
 mod shared;
@@ -633,6 +635,9 @@ fn config_policy(inputs: &inventory::Inventory) -> Result<(), String> {
 	Ok(())
 }
 fn preflight(base: &Path, stage: &Path) -> Result<(), String> {
+	build_configuration(base, stage).map(|_| ())
+}
+fn build_configuration(base: &Path, stage: &Path) -> Result<inventory::Inventory, String> {
 	let metadata = wire::encode(&serde_json::json!({"workspace_root":stage,"packages":[]}))?;
 	let config = inventory::native(
 		&metadata,
@@ -641,7 +646,8 @@ fn preflight(base: &Path, stage: &Path) -> Result<(), String> {
 		&cargo_home()?,
 		&mut Allowance::default(),
 	)?;
-	config_policy(&config)
+	config_policy(&config)?;
+	Ok(config)
 }
 fn versions(base: &Path) -> Result<(String, String, String), String> {
 	let mut rustc = Command::new("rustc");
@@ -722,6 +728,10 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	if std::env::var_os("RNX_INTERNAL_DEP_FD").is_some() {
 		return transition::serve(args);
 	}
+	#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+	if args.first().and_then(|s| s.to_str()) == Some("image") {
+		return image_package::standalone(&args[1..]);
+	}
 	if args.first().and_then(|s| s.to_str()) == Some("management-version") {
 		if args.len() != 1 {
 			return Err("management-version takes no arguments".into());
@@ -769,7 +779,7 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	}
 	if args.len() == 1 && matches!(args[0].to_str(), Some("--help" | "help")) {
 		let help = String::from(
-			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [--budget N] [--engine=legacy] [--native=on|off] [--debug-engine] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash] [--engine=auto|legacy|execution]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nlock/build accept --offline; run/session/eval never build.",
+			"rnx-project cache|runtime list [--root PATH] [--manifest FILE]...\nrnx-project cache|runtime remove ID [--root PATH] [--dry-run [--manifest FILE]...] [--resume] [--quiescent]\nRemoval requires stopping all consumers; named manifests are not a complete reference inventory.\nrnx-project runtime install --from PATH\nrnx-project runtime show\nrnx-project runtime select ID\nrnx-project adapters\nrnx-project add --manifest FILE NAME [NAME...]\nrnx-project lock|build|run|session|eval --manifest FILE\nrun [--verify] [--budget N] [--engine=legacy] [--native=on|off] [--debug-engine] [-- script arguments]\nsession [--verify] [--color=auto|always|never] [--no-splash] [--engine=auto|legacy|execution]\neval [--verify] [--color=auto|always|never] -- SOURCE\nLaunch checks your sources, trusts your build output unless you ask it to verify.\nUse --verify for a full artifact hash. Changed metadata triggers a full check.\nimage engine RUNTIME OUTPUT [--offline] builds the frozen engine bundle.\nimage stock RUNTIME ENGINE-BUNDLE OUTPUT [--offline] packages a stock launcher.\nbuild --manifest FILE --engine-bundle DIR --image-package OUTPUT packages a project launcher.\nlock/build accept --offline; run/session/eval never build.",
 		);
 		println!(
 			"{}",
@@ -794,6 +804,8 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	let interactive = matches!(command, "session" | "eval");
 	let mut manifest = None;
 	let mut offline = false;
+	let mut package = None;
+	let mut bundle = None;
 	let mut verify = false;
 	let mut color = false;
 	let mut splash = false;
@@ -826,6 +838,19 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 			Some("--manifest") if manifest.is_none() => {
 				n += 1;
 				manifest = Some(PathBuf::from(args.get(n).ok_or("--manifest needs a path")?));
+			}
+			Some("--image-package") if command == "build" && package.is_none() => {
+				n += 1;
+				package = Some(PathBuf::from(
+					args.get(n)
+						.ok_or("--image-package needs an output directory")?,
+				));
+			}
+			Some("--engine-bundle") if command == "build" && bundle.is_none() => {
+				n += 1;
+				bundle = Some(PathBuf::from(
+					args.get(n).ok_or("--engine-bundle needs a directory")?,
+				));
 			}
 			Some("--offline") if !launch && !offline => offline = true,
 			Some("--verify") if launch && !verify => verify = true,
@@ -866,6 +891,16 @@ pub(crate) fn cli(args: Vec<OsString>) -> Result<(), String> {
 	commands::install_signals()?;
 	environment()?;
 	let project = Project::open(&manifest)?;
+	if package.is_some() || bundle.is_some() {
+		#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+		return project.package_image(
+			&bundle.ok_or("--engine-bundle is required")?,
+			&package.ok_or("--image-package is required")?,
+			offline,
+		);
+		#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+		return Err("image package requires x86_64 GNU/Linux".into());
+	}
 	match command {
 		"lock" => project.lock(offline),
 		"build" => project.build(offline),

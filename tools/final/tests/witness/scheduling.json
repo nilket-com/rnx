@@ -76,8 +76,11 @@
 			[],
 			[],
 			[],
+			[],
+			[],
+			[],
 			[
-				74
+				77
 			],
 			[],
 			[],
@@ -85,7 +88,7 @@
 			[],
 			[],
 			[
-				80
+				83
 			],
 			[],
 			[],
@@ -1049,6 +1052,46 @@
 					"RNX_FINAL_STAGE_TOKENS": "7",
 					"RUST_TEST_THREADS": "4"
 				},
+				"name": "file-provider-controls",
+				"resources": [
+					"<ROOT>/adapters/file-provider/target/debug"
+				],
+				"weight": 4
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "format-file-provider",
+				"resources": [],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
+				"name": "clippy-file-provider",
+				"resources": [
+					"<ROOT>/adapters/file-provider/target/debug"
+				],
+				"weight": 1
+			},
+			{
+				"bulk": 0,
+				"environment": {
+					"CARGO_MAKEFLAGS": "FLAGS",
+					"MAKEFLAGS": "FLAGS",
+					"RNX_FINAL_STAGE_TOKENS": "7",
+					"RUST_TEST_THREADS": "4"
+				},
 				"name": "adapter-candle",
 				"resources": [
 					"<ROOT>/adapters/candle/target/debug"
@@ -1527,6 +1570,10 @@
 		{
 			"change": "The three direct engine image Cargo stages follow the existing workspace controls. Build and test share the workspace debug directory, format takes no lane, and none has a producer.",
 			"record": "0318"
+		},
+		{
+			"record": "0322",
+			"change": "The separately packaged file provider adds its Cargo test, format and no-deps lint after the engine image stages. Its debug artifacts belong to its independent workspace; the existing producers keep their stages."
 		}
 	],
 	"witness": "2b7323ae20325370e9d57d3862f5ebc1d9e51ad8"

@@ -42,6 +42,7 @@ count-allocations = []
 engine-image = ["rune/engine-image"]
 image-effect-controls = ["rune/image-effect-controls"]
 file-inventory-controls = ["rune/file-inventory-controls"]
+file-provider-metadata = ["rune/file-provider-metadata"]
 # Only for gates that must inject what cannot be provoked. Off by default, and
 # nothing in an ordinary build reads it: record 0022 explains why the
 # delivery's failure path needs one.

@@ -1,6 +1,6 @@
 # ADR 0322: The engine image ships as a package
 
-Status: Proposed
+Status: Accepted
 
 Base: published 3e4844eaa0155ceeabd4af5f42e743cc9fda91c2 (the column NaN fix after ADR 0321).
 

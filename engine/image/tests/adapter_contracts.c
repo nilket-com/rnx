@@ -106,7 +106,17 @@ static void exercise(const char *path, int mode) {
 #endif
 }
 int main(int argc,char **argv) {
-	assert(argc==2);
+	assert(argc==3);
+	struct counts counts={0};
+	struct rnx_adapter_provider provider={&counts,declarations,sizeof(declarations)/sizeof(*declarations),op,put};
+	int32_t exit_code=-1;
+	struct rnx_stock_request file={.version=4,.size=sizeof(file),.path=argv[2],.fuel=100000,.exit_code=&exit_code};
+	assert(rnx_engine_provider_file_v4(&file,NULL)==RNX_INVALID && exit_code==-1);
+	assert(rnx_engine_provider_file_v4(&file,&provider)==RNX_OK && exit_code==0);
+	assert(!counts.creates && !counts.reads && !counts.drops);
+	file.path=argv[1];
+	assert(rnx_engine_provider_file_v4(&file,&provider)==RNX_OK && exit_code==0);
+	assert(counts.creates==1 && counts.reads==2 && counts.drops==1);
 	for (int mode=0;mode<4;++mode) exercise(argv[1],mode);
 	return 0;
 }

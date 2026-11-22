@@ -1008,7 +1008,54 @@ impl Context {
 		Ok(())
 	}
 
-	#[cfg(feature = "file-inventory-controls")]
+	/// Installed non-adapter symbols for the linked-file equality control.
+	/// Include Dense: changing its backing must preserve its Rune identity.
+	#[doc(hidden)]
+	#[cfg(feature = "image-effect-controls")]
+	pub fn image_stock_surface(&self) -> std::vec::Vec<std::string::String> {
+		let adapter_namespace = |path: &str| {
+			["::polars", "::candle"]
+				.iter()
+				.any(|ns| path == *ns || path.strip_prefix(ns).is_some_and(|s| s.starts_with("::")))
+		};
+		let adapter_types: std::vec::Vec<_> = self
+			.types
+			.values()
+			.filter(|ty| adapter_namespace(&std::format!("{}", ty.item)))
+			.map(|ty| ty.hash)
+			.collect();
+		let mut rows = std::vec::Vec::new();
+		for meta in &self.meta {
+			let path = meta
+				.item
+				.as_ref()
+				.map(|item| std::format!("{item}"))
+				.unwrap_or_default();
+			if adapter_namespace(&path) {
+				continue;
+			}
+			// Protocol functions have no item path. Recover their owner using
+			// the same associated hash that registered the method.
+			if path.is_empty()
+				&& matches!(&meta.kind, meta::Kind::Function { associated: Some(kind), .. }
+				if adapter_types.iter().any(|owner| kind.hash(*owner) == meta.hash))
+			{
+				continue;
+			}
+			let host = self
+				.host(meta.hash)
+				.map(|binding| (&binding.signature, binding.certificate));
+			rows.push(std::format!(
+				"{} {path} {:?} {host:?}",
+				meta.hash,
+				meta.kind
+			));
+		}
+		rows.sort();
+		rows
+	}
+
+	#[cfg(feature = "file-provider-metadata")]
 	pub(crate) fn file_inventory_metas(&self) -> &[ContextMeta] {
 		&self.meta
 	}
