@@ -1,6 +1,6 @@
 # ADR 0325: Proven self calls lower directly
 
-Status: Proposed
+Status: Accepted
 
 Base: published 5530079d447d1c7362d9a9d4434c2cd67f5ccd08 (ADR 0324).
 
@@ -22,8 +22,9 @@ of the same length removed the old route's advantage, and the image's
 cost did not change. Lowering depends on a registered name that has
 nothing to do with the call.
 
-The projects record (now 0326) is parked until this is fixed. The
-published gate stays as it is.
+The projects record (now 0326) is parked until this is fixed. The installed
+outer-window measurement changed during implementation, as
+recorded in the paired Results.
 
 ## Decision
 

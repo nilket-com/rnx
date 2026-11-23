@@ -65,7 +65,7 @@ impl State {
 /// while indexing. A failed insert makes every lookup miss, so no target is guessed.
 #[derive(Default)]
 pub(crate) struct Instances {
-	items: hash::Map<Hash>,
+	items: hash::Map<(Hash, usize)>,
 	incomplete: bool,
 }
 impl Instances {
@@ -74,8 +74,13 @@ impl Instances {
 		!self.incomplete && !self.items.is_empty()
 	}
 
-	pub(crate) fn insert(&mut self, associated: Hash, item: Hash) {
-		if !self.incomplete && self.items.try_insert(associated, item).is_err() {
+	pub(crate) fn insert(&mut self, associated: Hash, item: Hash, parameters: usize) {
+		if !self.incomplete
+			&& self
+				.items
+				.try_insert(associated, (item, parameters))
+				.is_err()
+		{
 			self.incomplete = true;
 		}
 	}
@@ -93,7 +98,16 @@ impl Instances {
 		if self.incomplete {
 			return None;
 		}
-		self.items.get(&associated).copied()
+		self.items.get(&associated).map(|&(item, _)| item)
+	}
+
+	pub(crate) fn parameters(&self, associated: Hash) -> Option<usize> {
+		if self.incomplete {
+			return None;
+		}
+		self.items
+			.get(&associated)
+			.map(|&(_, parameters)| parameters)
 	}
 }
 

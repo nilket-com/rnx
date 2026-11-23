@@ -588,6 +588,7 @@ impl<'a> Processor<'a> {
 								crate::Hash::ident(resolved),
 							),
 							item,
+							args.len(),
 						);
 					}
 				}

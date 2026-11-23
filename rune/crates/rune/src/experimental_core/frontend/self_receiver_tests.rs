@@ -520,9 +520,19 @@ fn self_receiver_native_families_preserve_m3_lowering_or_match_stock() {
 					)
 				})
 				.collect::<std::vec::Vec<_>>();
+			let contract: serde_json::Value =
+				serde_json::from_str(include_str!("self_receiver_contract.json")).unwrap();
+			let mut expected = row["normalized_ops"].clone();
+			let insertions =
+				&contract["0325"]["family_body_insertions"][row["name"].as_str().unwrap()];
+			let body = expected[run as usize][3].as_array_mut().unwrap();
+			for insertion in insertions.as_array().unwrap().iter().rev() {
+				let pc = insertion["at"].as_u64().unwrap() as usize;
+				body.splice(pc..pc, insertion["ops"].as_array().unwrap().iter().cloned());
+			}
 			assert_eq!(
 				serde_json::to_value(ops).unwrap(),
-				row["normalized_ops"],
+				expected,
 				"{}",
 				row["name"]
 			);
@@ -569,4 +579,132 @@ fn stale_fixture_policy_is_caught_until_the_cached_tag_is_refreshed() {
 		.unwrap_err();
 	assert_eq!(failure.error.refusal, Some(Refusal::Entry));
 	assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+}
+
+#[test]
+fn self_receiver_unrelated_host_name_preserves_script_target() {
+	use crate::TypeHash;
+	let mut context = Context::with_default_modules().unwrap();
+	let mut module = crate::Module::with_item(["host"]).unwrap();
+	module.function("sentinel", |_: i64| 99i64).build().unwrap();
+	context.install(module).unwrap();
+	let handler = context
+		.lookup_function(Hash::type_hash(["host", "sentinel"]))
+		.unwrap()
+		.clone();
+	context
+		.c13_insert_raw_fixture(
+			Hash::associated_function(i64::HASH, Hash::ident("permute")),
+			handler,
+		)
+		.unwrap();
+
+	let fixture = include_str!("self_receiver_collision.rn");
+	let renamed = fixture.replace("permute", "prmtest");
+	for (source, expected) in [
+		(fixture, 17),
+		(renamed.as_str(), 17),
+		("pub fn main(){(1).permute()}", 99),
+	] {
+		let mut sources = Sources::new();
+		sources
+			.insert(crate::Source::memory(source).unwrap())
+			.unwrap();
+		let mut vm = crate::prepare(&mut sources)
+			.with_context(&context)
+			.build_vm()
+			.unwrap();
+		assert_eq!(
+			crate::from_value::<i64>(vm.call(["main"], ()).unwrap()).unwrap(),
+			expected
+		);
+		if expected == 17 {
+			let program = compile_source(source, &context).unwrap();
+			let mut store = Store::new(Limits::default()).unwrap();
+			let mut executor = Executor::new().unwrap();
+			executor
+				.set_host_runtime(Some(context.execution_runtime().unwrap()))
+				.unwrap();
+			let main = program.function(Hash::type_hash(["main"])).unwrap();
+			let result = executor
+				.invoke(&program, &mut store, main, &[], 1000)
+				.unwrap();
+			assert!(matches!(store.import(&result).unwrap(), Value::I64(17)));
+			store.root_release(result).unwrap();
+		}
+	}
+}
+
+#[test]
+fn self_receiver_dynamic_ingress_uses_the_actual_receiver_once() {
+	use std::sync::{
+		atomic::{AtomicUsize, Ordering},
+		Arc,
+	};
+	let calls = Arc::new(AtomicUsize::new(0));
+	let effects = calls.clone();
+	let mut context = Context::with_default_modules().unwrap();
+	let mut module = crate::Module::with_item(["host"]).unwrap();
+	module
+		.host_function("arg", move || {
+			effects.fetch_add(1, Ordering::SeqCst);
+			3i64
+		})
+		.unwrap();
+	context.install(module).unwrap();
+	let source = "struct S; struct T;
+		impl S { fn pick(self,x){10+x} fn run(self){self.pick(host::arg())} }
+		impl T { fn pick(self,x){20+x} }
+		pub fn right(){S} pub fn wrong(){T}
+		pub fn path(){S::run(T)} pub fn indirect(){let f=S::run; f(S)}
+		pub fn bad(selfish){S::run(selfish)}";
+	let program = compile_source(source, &context).unwrap();
+	let id = |name| program.function(Hash::type_hash([name])).unwrap();
+	let run = program.function(Hash::type_hash(["S", "run"])).unwrap();
+	assert!(program.entry_eligible(run));
+	let mut store = Store::new(Limits::default()).unwrap();
+	let mut executor = Executor::new().unwrap();
+	executor
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
+		.unwrap();
+	for (name, expected) in [("right", 13), ("wrong", 23)] {
+		let root = executor
+			.invoke(&program, &mut store, id(name), &[], 1000)
+			.unwrap();
+		let result = executor
+			.invoke(&program, &mut store, run, &[&root], 1000)
+			.unwrap();
+		assert!(matches!(store.import(&result).unwrap(), Value::I64(n) if n==expected));
+		store.root_release(result).unwrap();
+		store.root_release(root).unwrap();
+	}
+	for (name, expected) in [("path", 23), ("indirect", 13)] {
+		let result = executor
+			.invoke(&program, &mut store, id(name), &[], 1000)
+			.unwrap();
+		assert!(matches!(store.import(&result).unwrap(), Value::I64(n) if n==expected));
+		store.root_release(result).unwrap();
+	}
+	assert_eq!(calls.load(Ordering::SeqCst), 4);
+	assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+}
+
+#[test]
+fn self_receiver_wrong_arity_keeps_runtime_error() {
+	let context = Context::with_default_modules().unwrap();
+	let program = compile_source(
+		"struct S; impl S { fn pick(self,x){x} fn run(self){self.pick()} } pub fn main(){S.run()}",
+		&context,
+	)
+	.unwrap();
+	let main = program.function(Hash::type_hash(["main"])).unwrap();
+	let mut store = Store::new(Limits::default()).unwrap();
+	let mut executor = Executor::new().unwrap();
+	executor
+		.set_host_runtime(Some(context.execution_runtime().unwrap()))
+		.unwrap();
+	let failure = executor
+		.invoke(&program, &mut store, main, &[], 1000)
+		.unwrap_err();
+	assert_eq!(failure.error.kind, ErrorKind::ArgumentCount);
 }

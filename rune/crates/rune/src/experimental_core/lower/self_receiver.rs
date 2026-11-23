@@ -40,27 +40,19 @@ impl Lower<'_, '_> {
 		target: hir::ExprId,
 		hash: Hash,
 		name: Hash,
-	) -> Option<static_methods::StaticMethod> {
+	) -> Option<(Hash, static_methods::StaticMethod)> {
 		let (binding, receiver) = self.self_binding?;
 		if hash != name
 			|| !matches!(self.exprs.get(ungroup(self.exprs, target)).kind, hir::ExprKind::Variable(v) if v == binding)
 		{
 			return None;
 		}
-		// A parameter has no initializer: existing native-origin proofs cannot
-		// admit it. Preserve already-admitted dynamic dispatch before this path.
-		if !self.constants.method_script.closed(hash)
-			|| self.transaction.supports_dynamic_method(
-				self.context,
-				self.constants,
-				self.pool,
-				hash,
-			) {
+		if !self.constants.method_script.closed(hash) {
 			return None;
 		}
 		let associated = Hash::associated_function(receiver, hash);
 		let item = self.constants.instances.get(associated)?;
 		(self.constants.self_method(item, receiver) == Some(associated))
-			.then_some(static_methods::StaticMethod { associated, item })
+			.then_some((receiver, static_methods::StaticMethod { associated, item }))
 	}
 }

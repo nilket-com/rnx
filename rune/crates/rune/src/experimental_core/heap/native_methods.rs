@@ -86,7 +86,8 @@ impl Snapshot {
 		if entry.readers != 0 {
 			return None;
 		}
-		Self::headroom(entry.strong, shape.engine.slots, depth)?;
+		let canonical_slots = shape.functions.iter().map(|f| f.slots).max()?;
+		Self::headroom(entry.strong, canonical_slots, depth)?;
 		let Payload::Record {
 			tag: Type::Struct(nominal),
 			fields,
@@ -148,7 +149,7 @@ impl Snapshot {
 			if entry.readers != 0 {
 				return None;
 			}
-			Self::headroom(entry.strong, shape.engine.slots, depth)?;
+			Self::headroom(entry.strong, canonical_slots, depth)?;
 			let Payload::List {
 				tag: Type::Vec,
 				values,

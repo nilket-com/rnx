@@ -102,8 +102,11 @@ pub fn validate_policy(policy: &Value) -> Result<()> {
 	if let Some(installed) = policy.get("installed_setup") {
 		anyhow::ensure!(
 			*version == 2
-				&& identity(installed)?
-					== "4e42594e994ad239a0494ca2c3b5b8297ec5b7346ed3f47386b88afa9fa4c34f",
+				&& matches!(
+					identity(installed)?.as_str(),
+					"4e42594e994ad239a0494ca2c3b5b8297ec5b7346ed3f47386b88afa9fa4c34f"
+						| "61f474e929dcd1abef31c13ef79dcf9d8c03d2e8873e6ab036892c8e7e98e168"
+				),
 			"unreviewed installed setup reference"
 		);
 	}
@@ -291,6 +294,11 @@ pub fn source_condition(
 	validate_policy(policy)?;
 	match baseline_policy(root, baseline)? {
 		Some(old) => {
+			if old["installed_setup"].get("stack_query").is_some()
+				&& policy["installed_setup"].get("stack_query").is_none()
+			{
+				bail!(value_error("installed stack-query policy downgrade"));
+			}
 			if old["schema"] == 2 && policy["schema"] != 2 {
 				bail!(value_error("phase policy downgrade"));
 			}
@@ -1103,6 +1111,8 @@ impl Cache {
 					"setup.callgrind" => record["phases"]["setup"]["profile"] = final_path,
 					"execution.callgrind" => record["phases"]["execution"]["profile"] = final_path,
 					"profile" => record["profile"] = final_path,
+					"query.callgrind" => record["dispatch"]["query"] = final_path,
+					"native.maps" => record["dispatch"]["maps"] = final_path,
 					"dispatch.callgrind" => record["dispatch"]["profile"] = final_path,
 					"post-exec.callgrind" => record["dispatch"]["inner"] = final_path,
 					"DISPATCH.json" => record["dispatch"]["proof"] = final_path,
@@ -1228,8 +1238,13 @@ pub(crate) fn case_files(row: &Value, split: bool) -> Result<Vec<CaseFile>> {
 		for (name, path_key, sha_key) in [
 			("dispatch.callgrind", "profile", "profile_sha256"),
 			("post-exec.callgrind", "inner", "inner_sha256"),
+			("query.callgrind", "query", "query_sha256"),
+			("native.maps", "maps", "maps_sha256"),
 			("DISPATCH.json", "proof", "proof_sha256"),
 		] {
+			if matches!(path_key, "query" | "maps") && dispatch.get("stack_query").is_none() {
+				continue;
+			}
 			files.push(CaseFile {
 				source: PathBuf::from(
 					dispatch[path_key]

@@ -21,6 +21,37 @@ out=args.out.resolve();out.mkdir(exist_ok=False)
 result={'status':'FAIL','purpose':'exact unchanged program and unknown-object function vectors; system deltas reported separately'}
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
+def native_stack_rows(prefix, executable, arguments, directory):
+ """Count the native mappings at the same std -> libc call as the observer."""
+ output='/run/rnx-route/out'
+ script=directory/'stack.gdb'
+ script.write_text("""set pagination off
+set confirm off
+set startup-with-shell off
+set disable-randomization off
+set debuginfod enabled off
+set breakpoint pending on
+break pthread_getattr_np
+run
+python
+import os, pathlib, gdb
+proc = pathlib.Path('/proc') / str(gdb.selected_inferior().pid)
+assert os.path.samefile(proc/'exe', '/run/rnx-route/installed')
+frame = gdb.newest_frame()
+assert frame.name().lstrip('_').split('@')[0] == 'pthread_getattr_np'
+assert frame.older().name() == 'std::rt::lang_start_internal'
+pathlib.Path('/run/rnx-route/out/native.maps').write_bytes((proc/'maps').read_bytes())
+end
+kill
+""")
+ subprocess.run([*prefix,'/usr/bin/gdb','-nx','-batch','-x',output+'/stack.gdb','--args',
+                 executable,*arguments],check=True,capture_output=True,timeout=120)
+ maps=(directory/'native.maps').read_text().splitlines()
+ before,=(i for i,line in enumerate(maps) if line.endswith(' [stack]'))
+ if before < 1:
+  raise ValueError('invalid native stack map')
+ return before
+
 def installed_dispatch(build, mode, directory, valgrind):
  """Count the real outer CLI up to its successful exec of the pinned helper."""
  directory.mkdir()
@@ -42,7 +73,12 @@ def installed_dispatch(build, mode, directory, valgrind):
   'exec 3>out/route; exec "$@"','sh']
  tracer=[layout+'/valgrind/bin/valgrind','--tool=callgrind','--trace-children=yes','--dump-before=execve',
   '--dump-instr=yes','--callgrind-out-file='+layout+'/out/cg.%p','--log-file='+layout+'/out/vg.%p']
- for observer in ([],tracer):
+ # The second observed run counts only the query. Its total must reproduce
+ # the inclusive edge in the unmodified whole-window profile.
+ query_arg=['--collect-atstart=no','--toggle-collect=pthread_getattr_np*']
+ query_tracer=[s.replace('/out/cg.', '/out/query.').replace('/out/vg.', '/out/vq.') for s in tracer]
+ query_tracer[2:2]=query_arg
+ for observer in ([],tracer,query_tracer):
   result=subprocess.run([*prefix,*observer,executable,*arguments],check=True,capture_output=True,timeout=120)
   expected={'route':'execution','category':None,'reason':None,'location':None}
   if result.stdout!=b'42\n' or result.stderr!=('rnx: engine=execution native-requested='+mode+'\n').encode() or json.loads((directory/'route').read_text())!=expected:
@@ -65,11 +101,22 @@ def installed_dispatch(build, mode, directory, valgrind):
    or header(inner,'cmd:  ')!=['/proc/self/fd/10 11,10,-1 '+command]
    or header(outer,'pid: ')!=header(inner,'pid: ')):
   raise ValueError('invalid installed exec boundary')
+ query,=directory.glob('query.*.1')
+ if (header(query,'cmd:  ')!=[executable+' '+command]
+     or header(query,'desc: Trigger: ')!=['--dump-before=execve']):
+  raise ValueError('invalid query capture')
+ observed=ir_accounting.account(query,executable,system_window=True)
+ if not (ir_accounting.outer_stack_query(outer,executable)
+         == ir_accounting.outer_stack_query(query,executable) == observed['total_Ir']):
+  raise ValueError('isolated query does not reproduce the raw outer edge')
+ before=native_stack_rows(prefix,executable,arguments,directory)
  counts=ir_accounting.account(outer,executable)
  context={'argv':tracer+[executable,*arguments],'environ':list(env.items()),'cwd':layout}
  launch_hash=hashlib.sha256(json.dumps(context,sort_keys=True,separators=(',',':')).encode()).hexdigest()
  mapping={'launch_sha256':launch_hash,'profile':str(outer),'profile_sha256':sha(outer),'inner':str(inner),'inner_sha256':sha(inner),
-  'W':counts['rnx_Ir']+counts['other_Ir'],'T':counts['total_Ir']}
+  'W':counts['rnx_Ir']+counts['other_Ir'],'T':counts['total_Ir'],
+  'stack_query':{'T':observed['total_Ir'],'W':observed['rnx_Ir']+observed['other_Ir'],'native_before_stack':before},
+  'query':str(query),'query_sha256':sha(query),'maps':str(directory/'native.maps'),'maps_sha256':sha(directory/'native.maps')}
  receipt=dict(status='PASS',mode=mode,artifacts=desc,launch=context,route=expected,**mapping)
  proof=directory/'DISPATCH.json'
  atomic_json(proof,receipt)

@@ -1,0 +1,8 @@
+struct S;
+
+impl S {
+	fn permute(self) { 17 }
+	fn run(self) { (self).permute() }
+}
+
+pub fn main() { S.run() }

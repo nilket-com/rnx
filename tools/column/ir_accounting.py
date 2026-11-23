@@ -7,7 +7,7 @@ import re
 DYNAMIC_OBJECTS = {"libc.so.6", "ld-linux-x86-64.so.2"}
 
 
-def account(path, binary, engine=None):
+def account(path, binary, engine=None, *, system_window=False):
 	text = Path(path).read_text()
 	if not re.search(r"^positions: instr line$", text, re.M) or not re.search(r"^events: Ir$", text, re.M):
 		raise ValueError("unsupported profile format")
@@ -55,7 +55,7 @@ def account(path, binary, engine=None):
 		else:
 			# Never apply the proposed libc allowance to unidentified objects.
 			other[obj + "::" + fn] = cost
-	if not rnx:
+	if not rnx and not system_window:
 		raise ValueError("measured binary has no self instructions")
 	return {**({"product_objects": products} if engine is not None else {}), "total_Ir": total, "rnx_Ir": sum(rnx.values()),
 		"dynamic_Ir": sum(dynamic.values()), "other_Ir": sum(other.values()),
@@ -156,3 +156,44 @@ def phase_accounts(directory, binary, engine=None):
 	if collected != [str(whole["total_Ir"])]:
 		raise ValueError("phase dumps do not reconcile with process-wide Collected Ir")
 	return whole, parts
+
+
+def outer_stack_query(path, executable):
+	"""Require a single query from Rust startup; return its inclusive Ir."""
+	lines = Path(path).read_text().splitlines()
+	if [s for s in lines if s.startswith("desc: Trigger:")] != ["desc: Trigger: --dump-before=execve"]:
+		raise ValueError("missing outer exec boundary")
+	names, objects = {}, {}
+	for line in lines:
+		m = re.fullmatch(r"c?(fn|ob)=\((\d+)\) (.+)", line)
+		if m:
+			(names if m[1] == "fn" else objects)[m[2]] = m[3]
+	query, = (key for key, name in names.items() if name.split("@")[0] == "pthread_getattr_np")
+	edges = []
+	obj = fn = callee = callee_object = None
+	for i, line in enumerate(lines):
+		m = re.match(r"(ob|fn|cob|cfn)=\((\d+)\)", line)
+		if m:
+			kind, key = m.groups()
+			if kind == "ob":
+				obj = key
+			elif kind == "fn":
+				fn = key
+			elif kind == "cob":
+				callee_object = key
+			else:
+				callee = key
+		elif line.startswith("calls="):
+			if callee == query:
+				if (line.split()[0] != "calls=1" or names[fn] != "std::rt::lang_start_internal"
+					or objects[obj] != executable or Path(objects[callee_object or obj]).name != "libc.so.6"):
+					raise ValueError("unexpected outer stack query caller")
+				fields = lines[i + 1].split()
+				if len(fields) != 3 or not fields[2].isdigit():
+					raise ValueError("invalid inclusive cost")
+				edges.append(int(fields[2]))
+			callee_object = callee = None
+	cost, = edges
+	if cost <= 0:
+		raise ValueError("empty outer stack query")
+	return cost

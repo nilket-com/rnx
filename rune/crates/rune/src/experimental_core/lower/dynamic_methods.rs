@@ -18,6 +18,20 @@ impl Lower<'_, '_> {
 		out: u32,
 		span: Span,
 	) -> Result<()> {
+		self.call_dynamic_with_guard(call, target, name, out, span, None)
+	}
+
+	#[cold]
+	#[inline(never)]
+	pub(super) fn call_dynamic_with_guard(
+		&mut self,
+		call: &hir::ExprCall<'_>,
+		target: hir::ExprId,
+		name: Hash,
+		out: u32,
+		span: Span,
+		guard: Option<(Hash, static_methods::StaticMethod)>,
+	) -> Result<()> {
 		if !self.context.formatting()
 			&& ["unwrap", "expect", "to_string"]
 				.into_iter()
@@ -64,6 +78,38 @@ impl Lower<'_, '_> {
 		// it first; the lookup and the call both read that saved value.
 		let values = self.operands(&ids)?;
 		let method = self.slot()?;
+		// The body can also be invoked with an arbitrary first argument. Only
+		// the successful nominal check can take the direct script edge.
+		let typed = match guard {
+			Some((receiver, script)) => self.type_tag(receiver, span)?.map(|tag| (tag, script)),
+			None => None,
+		};
+		let fast = if let Some(((tag, script), &receiver)) = typed.zip(values.first()) {
+			self.transaction
+				.static_method(self.context, script.associated)
+				.map_err(|error| error.at(at))?;
+			let id = (self.resolve)(Resolve::Script(script.item), at)?;
+			self.emit(
+				Op::Is {
+					out: method,
+					value: receiver,
+					tag,
+					negate: false,
+				},
+				span,
+			)?;
+			let branch = self.emit(
+				Op::Branch {
+					condition: method,
+					yes: 0,
+					no: 0,
+				},
+				span,
+			)?;
+			Some((id, branch))
+		} else {
+			None
+		};
 		self.emit(
 			Op::Literal {
 				out: method,
@@ -76,7 +122,11 @@ impl Lower<'_, '_> {
 		// target or a host callback. Only the adjacent CallValue consumes it.
 		debug_assert_ne!(out, callee);
 		debug_assert!(!values.contains(&callee));
-		let (lookup_start, lookup_len) = self.function.arguments(&[method, values[0]])?;
+		let receiver = values
+			.first()
+			.copied()
+			.ok_or_else(|| self.refused(span, Refusal::Method))?;
+		let (lookup_start, lookup_len) = self.function.arguments(&[method, receiver])?;
 		self.emit(
 			Op::Call {
 				out: callee,
@@ -96,6 +146,20 @@ impl Lower<'_, '_> {
 			},
 			span,
 		)?;
+		if let Some((id, branch)) = fast {
+			let done = self.emit(Op::Jump { target: 0 }, span)?;
+			self.function.patch(
+				branch,
+				Op::Branch {
+					condition: method,
+					yes: self.pc(),
+					no: branch + 1,
+				},
+			)?;
+			let direct = self.transaction.script_call(id, args_len, at)?;
+			self.emit(direct.op(out, args_start), span)?;
+			self.function.patch(done, Op::Jump { target: self.pc() })?;
+		}
 		Ok(())
 	}
 }

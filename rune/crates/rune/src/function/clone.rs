@@ -131,9 +131,9 @@ mod absence_tests {
 		assert!(p.unit_absent(&items));
 		let named = Hash::associated_function(p.receiver(), Hash::ident("clone"));
 		assert_ne!(named, p.protocol());
-		items.insert(named, Hash::EMPTY);
+		items.insert(named, Hash::EMPTY, 1);
 		assert!(p.unit_absent(&items));
-		items.insert(p.protocol(), Hash::EMPTY);
+		items.insert(p.protocol(), Hash::EMPTY, 1);
 		assert!(!p.unit_absent(&items));
 		let mut incomplete = crate::function::methods::Instances::default();
 		incomplete.mark_incomplete();

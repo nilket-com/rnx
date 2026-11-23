@@ -1,6 +1,45 @@
 {
   "schema": 2,
   "installed_setup": {
+    "outer_reference": {
+      "revision": "5530079d447d1c7362d9a9d4434c2cd67f5ccd08",
+      "measured": {
+        "engine": {
+          "path": "/run/rnx-route/libengine_image.so",
+          "sha256": "4178486f80bfbdf035bb30cc2afce1f88fcad659fed4c5d7c3f244b687c7bb43"
+        },
+        "installed": {
+          "path": "/run/rnx-route/installed",
+          "sha256": "24a308531171d310d168a49271cb5098df2054017c11317360afc6d8431a99a3"
+        },
+        "runner": {
+          "path": "/run/rnx-route/rnx",
+          "sha256": "8372fd5c74a41d06155073a4966f7b953e87f23aee7557e9ad9ac59b6903bc97"
+        },
+        "target": "x86_64-unknown-linux-gnu",
+        "version": 2
+      },
+      "off": {
+        "W": 15834,
+        "T": 860945
+      },
+      "on": {
+        "W": 15817,
+        "T": 860914
+      }
+    },
+    "stack_query": {
+      "off": {
+        "T": 112368,
+        "W": 360,
+        "native_before_stack": 32
+      },
+      "on": {
+        "T": 112368,
+        "W": 360,
+        "native_before_stack": 32
+      }
+    },
     "kernels": {
       "awfy_permute": {
         "T": [

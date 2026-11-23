@@ -28,6 +28,7 @@ pub(crate) const VECTOR_TAG: usize = 2;
 pub(crate) const HELPER_CALLS: usize = 3;
 pub(crate) const SELF_CALLS: usize = 4;
 
+mod compact;
 pub(crate) mod entry;
 
 #[derive(Clone, Copy, Debug)]
@@ -60,6 +61,8 @@ pub(crate) struct Methods {
 	pub(crate) code: u32,
 	pub(crate) nominal: Nominal,
 	pub(crate) engine: Shape,
+	/// Private root PC to source PC at publication. Empty for an identity projection.
+	root_source_pcs: Vec<u32>,
 	pub(crate) functions: Vec<Function>,
 	pub(crate) fields: Vec<Field>,
 	pub(crate) sites: Vec<Site>,
@@ -72,6 +75,7 @@ impl Methods {
 	}
 	pub(crate) fn metadata(&self) -> usize {
 		self.engine.metadata()
+			+ self.root_source_pcs.capacity() * core::mem::size_of::<u32>()
 			+ self.functions.capacity() * core::mem::size_of::<Function>()
 			+ self.fields.capacity() * core::mem::size_of::<Field>()
 			+ self.sites.capacity() * core::mem::size_of::<Site>()
@@ -91,10 +95,14 @@ impl Methods {
 			&& s.ops.len() == s.reached.len()
 			&& self.functions[0].start == 0
 			&& self.functions[0].id == s.function
+			&& (self.root_source_pcs.is_empty()
+				|| self.root_source_pcs.len() == self.functions[0].end)
 			&& self.functions.iter().all(|f| {
 				f.start < f.end
 					&& f.end <= s.ops.len()
-					&& f.slots > 0 && f.slots <= s.slots
+					&& f.slots > 0 && f.slots <= MAX_SLOTS
+					&& (f.slots <= s.slots || !self.root_source_pcs.is_empty())
+					&& f.parameters <= s.slots
 					&& f.parameters > 0
 					&& f.parameters <= 4
 					&& f.parameters <= f.slots
@@ -134,6 +142,98 @@ fn kind(fields: &mut [Field], mask: u128, wanted: u8) -> Option<()> {
 		}
 	}
 	Some(())
+}
+
+/// Recognize the two arms emitted by call_dynamic_with_guard. Entry validates
+/// the nominal of slot zero, and the dataflow pass rejects writes to it and
+/// verifies that every internal call forwards SELF.
+fn guarded_self_edge(
+	code: &Code,
+	f: &crate::experimental_core::code::Function,
+	pc: usize,
+	test: u32,
+	self_slot: u32,
+	receiver: Hash,
+	work: &mut Work<'_>,
+) -> Option<u32> {
+	let op = |offset| f.cached_ref(pc + offset).map(|instruction| instruction.op);
+	let Some(Op::Branch { condition, yes, no }) = op(1) else {
+		return None;
+	};
+	let Some(Op::Literal {
+		out: hash,
+		value: Value::U64(name),
+	}) = op(2)
+	else {
+		return None;
+	};
+	let Some(Op::Call {
+		out: callee,
+		function: INSTANCE_METHOD,
+		args_start: lookup,
+		args_len: 2,
+	}) = op(3)
+	else {
+		return None;
+	};
+	let Some(Op::CallValue {
+		out,
+		value,
+		args_start,
+		args_len,
+	}) = op(4)
+	else {
+		return None;
+	};
+	let Some(Op::Jump { target }) = op(5) else {
+		return None;
+	};
+	let Some(Op::Call {
+		out: direct_out,
+		function,
+		args_start: direct_args,
+		args_len: direct_len,
+	}) = op(6)
+	else {
+		return None;
+	};
+	if condition != test
+		|| hash != test
+		|| yes as usize != pc + 6
+		|| no as usize != pc + 2
+		|| target as usize != pc + 7
+		|| f.args.get(lookup as usize..)?.get(..2)? != [hash, self_slot]
+		|| value != callee
+		|| direct_out != out
+		|| direct_args != args_start
+		|| direct_len != args_len
+		|| args_len == 0
+		|| f.args.get(args_start as usize) != Some(&self_slot)
+		|| code.region_script_method(Hash::associated_function(receiver, Hash::new(name)))
+			!= Some(function)
+	{
+		return None;
+	}
+	// Only the first instruction is an entry to the dispatch diamond. Branches
+	// into its interior would invalidate compaction and the nominal proof.
+	work.pay(f.len())?;
+	let end = pc + 7 + usize::from(matches!(op(7), Some(Op::Release { value }) if value == callee));
+	let interior = pc + 1..end;
+	for other in 0..f.len() {
+		if (pc..pc + 7).contains(&other) {
+			continue;
+		}
+		match f.cached_ref(other)?.op {
+			Op::Jump { target } if interior.contains(&(target as usize)) => return None,
+			Op::Branch { yes, no, .. }
+				if interior.contains(&(yes as usize)) || interior.contains(&(no as usize)) =>
+			{
+				return None
+			}
+			_ => (),
+		}
+	}
+	Some(yes)
 }
 
 /// All loops/calls are bounded by the ordinary code and analysis budgets. The
@@ -234,6 +334,7 @@ pub(crate) fn analyze(
 	let mut args = BVec::new(budget);
 	let mut index = 0;
 	let mut max_slots = 0;
+	let mut has_guard = false;
 	while index < functions.len() {
 		let id = functions[index].id;
 		let f = code.function(id)?;
@@ -252,6 +353,7 @@ pub(crate) fn analyze(
 		for &a in &f.args {
 			args.push(a).ok()?;
 		}
+		let mut folded = None;
 		for pc in 0..f.len() {
 			let mut op = f.cached_ref(pc)?.op;
 			match op {
@@ -414,6 +516,22 @@ pub(crate) fn analyze(
 						target: (start as u32).checked_add(target)?,
 					}
 				}
+				Op::Is {
+					out,
+					value,
+					tag: Type::Struct(tag),
+					negate: false,
+				} if tag == nominal => {
+					has_guard = true;
+					folded = Some(guarded_self_edge(
+						code, f, pc, out, value, receiver, &mut work,
+					)?);
+				}
+				Op::Branch { .. } if folded.is_some() => {
+					op = Op::Jump {
+						target: (start as u32).checked_add(folded.take()?)?,
+					};
+				}
 				Op::Branch { condition, yes, no } => {
 					op = Op::Branch {
 						condition,
@@ -534,6 +652,12 @@ pub(crate) fn analyze(
 				state[..max_slots].copy_from_slice(&states[pc * max_slots..(pc + 1) * max_slots]);
 				let mut successors = [Some(pc + 1), None];
 				let write = match ops[pc] {
+					Op::Is { out, value, .. } => {
+						if *state.get(value as usize)? != SELF {
+							return None;
+						}
+						Some((out, BOOL))
+					}
 					Op::Literal { out, value } => Some((
 						out,
 						match value {
@@ -665,6 +789,23 @@ pub(crate) fn analyze(
 			break;
 		}
 	}
+	let root_source_pcs = if has_guard {
+		let projection = compact::project(
+			budget,
+			&mut work,
+			&mut functions,
+			&mut ops,
+			&mut charged,
+			&mut reached,
+			&args,
+			&states,
+			max_slots,
+		)?;
+		max_slots = projection.width;
+		projection.source_pcs
+	} else {
+		BVec::new(budget)
+	};
 	for field in fields.iter_mut() {
 		if field.kind == 0 {
 			field.kind = 1;
@@ -676,6 +817,7 @@ pub(crate) fn analyze(
 	}
 	let mut types = BVec::new(budget);
 	types.resize(ops.len().checked_mul(max_slots)?, 0u32).ok()?;
+	let (root_source_pcs, projection_bytes) = root_source_pcs.into_parts();
 	let (ops, ob) = ops.into_parts();
 	let (charged, cb) = charged.into_parts();
 	let (args, ab) = args.into_parts();
@@ -689,6 +831,7 @@ pub(crate) fn analyze(
 		code: code.id(),
 		nominal,
 		vector_tag,
+		root_source_pcs: root_source_pcs.into_std(),
 		engine: Shape {
 			function: root,
 			slots: max_slots,
@@ -704,9 +847,10 @@ pub(crate) fn analyze(
 		fields: fields.into_std(),
 		sites: sites.into_std(),
 	};
-	shape
-		.valid()
-		.then_some((shape, ob + cb + ab + rb + pb + tb + fb + db + sb))
+	shape.valid().then_some((
+		shape,
+		ob + cb + ab + rb + pb + tb + fb + db + sb + projection_bytes,
+	))
 }
 
 #[cfg(test)]
@@ -806,6 +950,76 @@ mod tests {
 	}
 
 	#[test]
+	fn method_closure_fold_rejects_a_different_nominal_with_identical_fields() {
+		use crate::experimental_core::{
+			heap::{Limits, Store},
+			region::{commit::Room, recursion::Outcome},
+		};
+		let p = compile("struct A{x} impl A{fn leaf(self){self.x} fn run(self){self.leaf()}} pub fn main(n){let a=A{x:1};a.run()}");
+		let root = p.function(Hash::type_hash(["A", "run"])).unwrap();
+		let budget = Budget::new(8 << 20);
+		let (s, bytes) = analyze(&p.code, root, &budget, &mut 1_000_000).unwrap();
+		assert!(!s.root_source_pcs.is_empty());
+		let mut direct = 0;
+		for (pc, &original) in s.root_source_pcs.iter().enumerate() {
+			let op = p
+				.code
+				.function(root)
+				.unwrap()
+				.cached_ref(original as usize)
+				.unwrap();
+			if matches!(s.engine.ops[pc], Op::Call { .. }) {
+				assert!(matches!(op.op, Op::Call { .. }));
+				direct += 1;
+			}
+			if matches!(s.engine.ops[pc], Op::Return { .. }) {
+				assert!(matches!(op.op, Op::Return { .. }));
+			}
+		}
+		assert_eq!(direct, 1);
+		let foreign = compile("struct B{x} pub fn main(n){ B{x:n} }");
+		let other = (0..foreign.code.functions() as u32)
+			.find_map(|id| {
+				let source = foreign.code.function(id)?;
+				(0..source.len()).find_map(|pc| match source.cached_ref(pc)?.op {
+					Op::Record {
+						tag: Type::Struct(n),
+						..
+					} if n != s.nominal => Some(n),
+					_ => None,
+				})
+			})
+			.unwrap();
+		let mut store = Store::new(Limits::default()).unwrap();
+		let mut slots = std::vec![Value::Unit; s.functions[0].slots];
+		slots[0] = store
+			.record(Type::Struct(other), &[("x", Value::I64(1))])
+			.unwrap();
+		let original = slots.clone();
+		let before = store.state_for_test();
+		let (outcome, _) = entry::enter(
+			&s,
+			&p.code,
+			&mut slots,
+			&mut store,
+			false,
+			100,
+			Room {
+				frames: 4,
+				slots: 64,
+			},
+			1 << 20,
+			|_, _, _| panic!("wrong receiver entered the folded body"),
+		);
+		assert_eq!(outcome, Outcome::Refused);
+		assert_eq!(slots, original);
+		assert_eq!(store.state_for_test(), before);
+		store.release(slots[0]).unwrap();
+		drop(s);
+		budget.release(bytes);
+	}
+
+	#[test]
 	#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
 	#[cfg_attr(
 		miri,
@@ -846,6 +1060,38 @@ mod tests {
 			))
 			.unwrap();
 		let (s, bytes) = analyze(&p.code, target, &budget, &mut work).unwrap();
+		let lookup = |name| {
+			p.code
+				.region_script_method(Hash::associated_function(
+					Hash::new(nominal::hash_copy(nominal).unwrap()),
+					Hash::ident(name),
+				))
+				.unwrap()
+		};
+		let swap = lookup("swap");
+		let calls: std::vec::Vec<_> = s.engine.ops[..s.functions[0].end]
+			.iter()
+			.filter_map(|op| {
+				if let Op::Call { function, .. } = op {
+					Some(s.function(*function as usize).unwrap().id)
+				} else {
+					None
+				}
+			})
+			.collect();
+		assert_eq!(calls, [target, swap, target, swap]);
+		assert_eq!((s.engine.slots, s.engine.ops.len()), (9, 47));
+		assert_eq!(
+			s.functions[0].slots,
+			p.code.function(target).unwrap().slots as usize
+		);
+		// benchmark itself constructs a vector outside this native region. Its
+		// guarded call reaches the same direct target on a matching receiver.
+		let entry = p.code.function(lookup("benchmark")).unwrap();
+		assert!(
+			(0..entry.len()).any(|pc| matches!(entry.cached_ref(pc).unwrap().op,
+			Op::Call { function, .. } if function == target))
+		);
 		let compiled =
 			crate::experimental_native::lower::recursion::compile_methods(&s, 0).unwrap();
 		let native =

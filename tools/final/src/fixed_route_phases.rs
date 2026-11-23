@@ -31,6 +31,28 @@ pub(crate) fn validate_setup_context(row: &Value, policy: &Value) -> Result<()> 
 	let mode = row["policy"].as_str().context("capture mode")?;
 	let installed = row.get("dispatch").is_some();
 	if installed {
+		let reference = policy["installed_setup"].get("stack_query");
+		let observed = row["dispatch"].get("stack_query");
+		ensure!(
+			reference.is_some() == observed.is_some(),
+			"incompatible outer stack-query window"
+		);
+		if let (Some(reference), Some(observed)) = (reference, observed) {
+			let before = observed["native_before_stack"]
+				.as_u64()
+				.context("missing native stack map")?;
+			ensure!(
+				before > 0 && reference[mode]["native_before_stack"].as_u64() == Some(before),
+				"native mappings before stack differ"
+			);
+			net(&row["dispatch"], Some(observed), "T")?;
+			net(&row["dispatch"], Some(observed), "W")?;
+			ensure!(
+				integer(&observed["W"])? <= integer(&observed["T"])?
+					&& integer(&observed["T"])? > 0,
+				"invalid excluded stack work"
+			);
+		}
 		ensure!(
 			row["dispatch"]["launch_sha256"].is_string()
 				&& row["dispatch"]["launch_sha256"]
@@ -108,6 +130,26 @@ pub(super) fn validate_row(row: &Value, policy: &Value) -> Result<()> {
 	Ok(())
 }
 
+// Frozen and current outer totals both retain the raw cost. Deduct only
+// the independently observed stack query when scoring the installed window.
+fn net(raw: &Value, query: Option<&Value>, metric: &str) -> Result<i128> {
+	let before = integer(&raw[metric])?;
+	let excluded = query.map(|q| integer(&q[metric])).transpose()?.unwrap_or(0);
+	ensure!(before >= excluded, "stack query exceeds outer window");
+	Ok(before - excluded)
+}
+
+fn outer_reference(installed: &Value, mode: &str, metric: &str) -> Result<i128> {
+	let reference = installed
+		.get("outer_reference")
+		.unwrap_or(&installed["outer"]);
+	net(
+		&reference[mode],
+		installed.get("stack_query").map(|q| &q[mode]),
+		metric,
+	)
+}
+
 fn measure(row: &Value, phase: &str, metric: &str) -> Result<i128> {
 	let a = &row["phases"][phase]["accounting"];
 	let inner = if metric == "T" {
@@ -118,7 +160,7 @@ fn measure(row: &Value, phase: &str, metric: &str) -> Result<i128> {
 	let outer = if phase == "setup"
 		&& let Some(dispatch) = row.get("dispatch")
 	{
-		integer(&dispatch[metric])?
+		net(dispatch, dispatch.get("stack_query"), metric)?
 	} else {
 		0
 	};
@@ -134,16 +176,25 @@ pub(super) fn score_off_dispatch(
 	limit: i128,
 ) -> Result<()> {
 	let metric = whole["metric"].as_str().context("metric")?;
-	let frozen = &policy["installed_setup"]["outer"]["off"][metric];
+	let installed = &policy["installed_setup"];
+
 	let mut checks = Vec::new();
 	let mut passed = whole["pass_all"] == true;
 	for (baseline, current) in base.into_iter().zip(candidate) {
 		let before = if limit == 10 || baseline.get("dispatch").is_none() {
-			integer(frozen)?
+			outer_reference(installed, "off", metric)?
 		} else {
-			integer(&baseline["dispatch"][metric])?
+			net(
+				&baseline["dispatch"],
+				baseline["dispatch"].get("stack_query"),
+				metric,
+			)?
 		};
-		let after = integer(&current["dispatch"][metric])?;
+		let after = net(
+			&current["dispatch"],
+			current["dispatch"].get("stack_query"),
+			metric,
+		)?;
 		let allowance = before * limit / 1000;
 		let pass = after - before <= allowance;
 		checks.push(json!({"before":before,"after":after,"allowance":allowance,"pass":pass}));
@@ -187,7 +238,18 @@ pub(super) fn score_row(
 			&budget["reference"]
 		};
 		let [b1, b5] = if phase == "setup" && (cumulative || migration) {
-			[integer(&reference[0])?, integer(&reference[1])?]
+			// The 0324 per-kernel total includes its raw outer window.
+			// Preserve that kernel's inner cost when replacing only the outer component.
+			let outer_change = if installed {
+				let setup = &policy["installed_setup"];
+				outer_reference(setup, "on", metric)? - integer(&setup["outer"]["on"][metric])?
+			} else {
+				0
+			};
+			[
+				integer(&reference[0])? + outer_change,
+				integer(&reference[1])? + outer_change,
+			]
 		} else {
 			pair(0)?
 		};
@@ -251,8 +313,16 @@ mod tests {
 
 	#[test]
 	fn installed_launch_is_charged_to_setup_on_migration_and_later_changes() {
-		let policy: Value =
+		let mut policy: Value =
 			serde_json::from_str(include_str!("../../column/fixed_route_policy.json")).unwrap();
+		policy["installed_setup"]
+			.as_object_mut()
+			.unwrap()
+			.remove("stack_query");
+		policy["installed_setup"]
+			.as_object_mut()
+			.unwrap()
+			.remove("outer_reference");
 		let reference = policy["installed_setup"]["kernels"]["shared_rows"]["W"][0]
 			.as_i64()
 			.unwrap();
@@ -282,6 +352,58 @@ mod tests {
 				.unwrap();
 				assert_eq!(verdict["pass_all"], pass);
 				assert_eq!(verdict["phases"]["execution"][0]["delta"], 0);
+			}
+		}
+	}
+
+	#[test]
+	fn query_window_preserves_frozen_and_per_record_charges() {
+		let policy: Value =
+			serde_json::from_str(include_str!("../../column/fixed_route_policy.json")).unwrap();
+		let installed = &policy["installed_setup"];
+		let reference = installed["kernels"]["shared_rows"]["T"][0]
+			.as_i64()
+			.unwrap();
+		let mk = |extra: i64, observer: i64| {
+			let mut r = row(
+				reference - installed["outer"]["on"]["T"].as_i64().unwrap() + extra,
+				100_000,
+			);
+			let mut d = installed["outer_reference"]["on"].clone();
+			d["T"] = json!(d["T"].as_i64().unwrap() + observer);
+			d["stack_query"] = installed["stack_query"]["on"].clone();
+			d["stack_query"]["T"] = json!(d["stack_query"]["T"].as_i64().unwrap() + observer);
+			d["launch_sha256"] = installed["outer_launch_sha256"]["on"].clone();
+			r["dispatch"] = d;
+			r["policy"] = json!("on");
+			r["n"] = json!(1);
+			r["kind"] = json!("shared_rows");
+			r["launch_sha256"] = installed["launch_sha256"]["on"].clone();
+			r
+		};
+		let baseline = mk(0, 0);
+		let mut invalid = mk(0, 2010);
+		validate_setup_context(&invalid, &policy).unwrap();
+		invalid["dispatch"]["stack_query"]["native_before_stack"] = json!(33);
+		assert!(validate_setup_context(&invalid, &policy).is_err());
+		for limit in [5, 10] {
+			for (extra, pass) in [(11, true), (12, false)] {
+				let after = mk(extra, 2010);
+				let mut b5 = baseline.clone();
+				let mut a5 = after.clone();
+				b5["phases"]["execution"] = row(0, 500_000)["phases"]["execution"].clone();
+				a5["phases"]["execution"] = b5["phases"]["execution"].clone();
+				let mut verdict =
+					json!({"kind":"shared_rows","metric":"T","level_pass":true,"growth_pass":true});
+				score_row(
+					&mut verdict,
+					[[&baseline, &b5], [&after, &a5]],
+					&policy,
+					limit,
+				)
+				.unwrap();
+				assert_eq!(verdict["pass_all"], pass);
+				assert_eq!(verdict["phases"]["setup"][0]["delta"], extra);
 			}
 		}
 	}

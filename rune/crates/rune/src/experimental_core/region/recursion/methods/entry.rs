@@ -85,7 +85,7 @@ pub(crate) fn enter(
 		scratch[shape.engine.slots + i] = 3;
 	}
 	scratch[shape.engine.slots] = 4;
-	for (i, &value) in window.iter().enumerate().skip(1) {
+	for (i, &value) in window.iter().take(root.parameters).enumerate().skip(1) {
 		let Some((tag, value)) = recursion::tag(value) else {
 			return (Outcome::Refused, none);
 		};
@@ -134,7 +134,11 @@ pub(crate) fn enter(
 		return (Outcome::Invalid, none);
 	}
 	let mut output = [Value::Unit; MAX_SLOTS];
-	for (i, out) in output.iter_mut().enumerate().take(window.len()) {
+	for (i, out) in output
+		.iter_mut()
+		.enumerate()
+		.take(window.len().min(shape.engine.slots))
+	{
 		let Ok(tag) = u32::try_from(scratch[shape.engine.slots + i]) else {
 			return (Outcome::Invalid, none);
 		};
@@ -150,6 +154,19 @@ pub(crate) fn enter(
 		return (Outcome::Invalid, none);
 	}
 	let n = window.len();
+	let source_pc = if shape.root_source_pcs.is_empty() {
+		pc
+	} else {
+		let Some(&source_pc) = shape.root_source_pcs.get(pc) else {
+			return (Outcome::Invalid, none);
+		};
+		let source_pc = source_pc as usize;
+		let source = code.function(root.id).and_then(|f| f.cached_ref(source_pc));
+		if !matches!(source.map(|i| i.op), Some(Op::Return { value: slot }) if slot == value) {
+			return (Outcome::Invalid, none);
+		}
+		source_pc
+	};
 	if !snapshot.publish(
 		store,
 		code,
@@ -163,7 +180,7 @@ pub(crate) fn enter(
 	) {
 		return (Outcome::Invalid, none);
 	}
-	(record.completed(pc), Counts { helpers, recursive })
+	(record.completed(source_pc), Counts { helpers, recursive })
 }
 
 #[cfg(test)]

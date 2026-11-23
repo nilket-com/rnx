@@ -20,5 +20,90 @@
     "future_requirement": "Any proof-dependent closure ID must be host-ineligible too"
   },
   "dynamic_method_value": "Generated INSTANCE_METHOD value is private scratch consumed only by adjacent CallValue; never output or native argument",
-  "admitted_before": "unchanged lowering and eligibility"
+  "admitted_before": "unchanged lowering and eligibility",
+  "0325": {
+    "entry": "Previously dynamic bodies retain host and source entry eligibility. The checked nominal receiver can call its impl directly. Other receiver types retain dynamic dispatch.",
+    "family_body_insertions": {
+      "trim": [
+        {
+          "at": 0,
+          "ops": [
+            "Is { out: 2, value: 0, tag: Struct(Nominal(S)), negate: false }",
+            "Branch { condition: 2, yes: 6, no: 2 }"
+          ]
+        },
+        {
+          "at": 3,
+          "ops": [
+            "Jump { target: 7 }",
+            "Call { out: 1, function: 2, args_start: 2, args_len: 1 }"
+          ]
+        }
+      ],
+      "is_some": [
+        {
+          "at": 0,
+          "ops": [
+            "Is { out: 2, value: 0, tag: Struct(Nominal(S)), negate: false }",
+            "Branch { condition: 2, yes: 6, no: 2 }"
+          ]
+        },
+        {
+          "at": 3,
+          "ops": [
+            "Jump { target: 7 }",
+            "Call { out: 1, function: 2, args_start: 2, args_len: 1 }"
+          ]
+        }
+      ],
+      "contains_key": [
+        {
+          "at": 1,
+          "ops": [
+            "Is { out: 3, value: 0, tag: Struct(Nominal(S)), negate: false }",
+            "Branch { condition: 3, yes: 7, no: 3 }"
+          ]
+        },
+        {
+          "at": 4,
+          "ops": [
+            "Jump { target: 8 }",
+            "Call { out: 1, function: 2, args_start: 2, args_len: 2 }"
+          ]
+        }
+      ],
+      "sqrt": [
+        {
+          "at": 0,
+          "ops": [
+            "Is { out: 2, value: 0, tag: Struct(Nominal(S)), negate: false }",
+            "Branch { condition: 2, yes: 6, no: 2 }"
+          ]
+        },
+        {
+          "at": 3,
+          "ops": [
+            "Jump { target: 7 }",
+            "Call { out: 1, function: 2, args_start: 2, args_len: 1 }"
+          ]
+        }
+      ],
+      "collect": [
+        {
+          "at": 0,
+          "ops": [
+            "Is { out: 2, value: 0, tag: Struct(Nominal(S)), negate: false }",
+            "Branch { condition: 2, yes: 6, no: 2 }"
+          ]
+        },
+        {
+          "at": 3,
+          "ops": [
+            "Jump { target: 7 }",
+            "Call { out: 1, function: 2, args_start: 2, args_len: 1 }"
+          ]
+        }
+      ]
+    }
+  }
 }

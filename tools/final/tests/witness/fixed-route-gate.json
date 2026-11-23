@@ -3,7 +3,7 @@
   "a cache hit": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -405,7 +405,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -513,7 +513,7 @@
       "<OUT>/record/vectors/baseline/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "0c38c5cc871cbee0401f2a30a430d84c62cbb7039cd5efb38812ae0ef28681af",
-     "capture_key": "b47af70c24ed766cddf6771d9dc6136b95c481351b7551971a628925a288fde1",
+     "capture_key": "33df5b95df9e1bf5c1b155dbbde5658397d96e35afc492b4da789b0d75a7ac4a",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -630,8 +630,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -1288,7 +1288,7 @@
       "<OUT>/record/vectors/candidate/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "533b58e2b4131e282662b8c2627fbc333a2083eb0abc267b5133f1cc1ebee2ec",
-     "capture_key": "d6ea09820e4cffa43429adb858a5df360e9cb50ca802c7e8c5d95e30aaadec01",
+     "capture_key": "9316bcb81ac330b89fded55359240738522d621d0066d3822ed9694f79a9f911",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -1405,8 +1405,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -3443,7 +3443,7 @@
   "a failing child stage": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -3827,7 +3827,7 @@
    ],
    "receipt": {
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -3854,7 +3854,7 @@
   "a legacy anchor migrated": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -4256,7 +4256,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "migrated"
      },
@@ -4364,7 +4364,7 @@
       "<OUT>/record/vectors/baseline/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "0c38c5cc871cbee0401f2a30a430d84c62cbb7039cd5efb38812ae0ef28681af",
-     "capture_key": "b47af70c24ed766cddf6771d9dc6136b95c481351b7551971a628925a288fde1",
+     "capture_key": "33df5b95df9e1bf5c1b155dbbde5658397d96e35afc492b4da789b0d75a7ac4a",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -4481,8 +4481,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -5139,7 +5139,7 @@
       "<OUT>/record/vectors/candidate/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "533b58e2b4131e282662b8c2627fbc333a2083eb0abc267b5133f1cc1ebee2ec",
-     "capture_key": "d6ea09820e4cffa43429adb858a5df360e9cb50ca802c7e8c5d95e30aaadec01",
+     "capture_key": "9316bcb81ac330b89fded55359240738522d621d0066d3822ed9694f79a9f911",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -5256,8 +5256,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -7272,7 +7272,7 @@
   "a legacy anchor that fails": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -7950,7 +7950,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "error_class": "ValueError",
       "status": "failed"
@@ -8059,7 +8059,7 @@
       "<OUT>/record/vectors/baseline/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "0c38c5cc871cbee0401f2a30a430d84c62cbb7039cd5efb38812ae0ef28681af",
-     "capture_key": "b47af70c24ed766cddf6771d9dc6136b95c481351b7551971a628925a288fde1",
+     "capture_key": "33df5b95df9e1bf5c1b155dbbde5658397d96e35afc492b4da789b0d75a7ac4a",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -8176,8 +8176,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -8834,7 +8834,7 @@
       "<OUT>/record/vectors/candidate/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "533b58e2b4131e282662b8c2627fbc333a2083eb0abc267b5133f1cc1ebee2ec",
-     "capture_key": "d6ea09820e4cffa43429adb858a5df360e9cb50ca802c7e8c5d95e30aaadec01",
+     "capture_key": "9316bcb81ac330b89fded55359240738522d621d0066d3822ed9694f79a9f911",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -8951,8 +8951,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -10967,7 +10967,7 @@
   "a miss captured and published": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -11645,7 +11645,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -11753,7 +11753,7 @@
       "<OUT>/record/vectors/baseline/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "0c38c5cc871cbee0401f2a30a430d84c62cbb7039cd5efb38812ae0ef28681af",
-     "capture_key": "b47af70c24ed766cddf6771d9dc6136b95c481351b7551971a628925a288fde1",
+     "capture_key": "33df5b95df9e1bf5c1b155dbbde5658397d96e35afc492b4da789b0d75a7ac4a",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -11870,8 +11870,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -12528,7 +12528,7 @@
       "<OUT>/record/vectors/candidate/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "533b58e2b4131e282662b8c2627fbc333a2083eb0abc267b5133f1cc1ebee2ec",
-     "capture_key": "d6ea09820e4cffa43429adb858a5df360e9cb50ca802c7e8c5d95e30aaadec01",
+     "capture_key": "9316bcb81ac330b89fded55359240738522d621d0066d3822ed9694f79a9f911",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -12645,8 +12645,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -14690,7 +14690,7 @@
   "an identity observation continues": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -15368,7 +15368,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -15476,7 +15476,7 @@
       "<OUT>/record/vectors/baseline/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "0c38c5cc871cbee0401f2a30a430d84c62cbb7039cd5efb38812ae0ef28681af",
-     "capture_key": "b47af70c24ed766cddf6771d9dc6136b95c481351b7551971a628925a288fde1",
+     "capture_key": "33df5b95df9e1bf5c1b155dbbde5658397d96e35afc492b4da789b0d75a7ac4a",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -15593,8 +15593,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -16251,7 +16251,7 @@
       "<OUT>/record/vectors/candidate/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "533b58e2b4131e282662b8c2627fbc333a2083eb0abc267b5133f1cc1ebee2ec",
-     "capture_key": "d6ea09820e4cffa43429adb858a5df360e9cb50ca802c7e8c5d95e30aaadec01",
+     "capture_key": "9316bcb81ac330b89fded55359240738522d621d0066d3822ed9694f79a9f911",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -16368,8 +16368,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -18384,7 +18384,7 @@
   "an identity tool error": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -18785,7 +18785,7 @@
    ],
    "receipt": {
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -18806,7 +18806,7 @@
   "anchor only": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -19167,7 +19167,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -19289,8 +19289,8 @@
       "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
      },
      "tooling": {
-      "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-      "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+      "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+      "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
       "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
       "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -19310,7 +19310,7 @@
   "the source changes during the gate": {
    "cache": [
     {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "state": "complete"
     }
    ],
@@ -19988,7 +19988,7 @@
    "receipt": {
     "anchor": "<OUT>/ANCHOR-EVIDENCE.json",
     "anchor_cache": {
-     "key": "d1151f7f643c80de4e9893670bc3f80de8a83879d7d41ca0dc1bb18676bf9784",
+     "key": "4b30a652b64e72d6cfa0f18c9ba82a2e229b20e49ddfd6c547e3bdf798dfc428",
      "legacy_import": {
       "status": "none"
      },
@@ -20096,7 +20096,7 @@
       "<OUT>/record/vectors/baseline/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "0c38c5cc871cbee0401f2a30a430d84c62cbb7039cd5efb38812ae0ef28681af",
-     "capture_key": "b47af70c24ed766cddf6771d9dc6136b95c481351b7551971a628925a288fde1",
+     "capture_key": "33df5b95df9e1bf5c1b155dbbde5658397d96e35afc492b4da789b0d75a7ac4a",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -20213,8 +20213,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
@@ -20871,7 +20871,7 @@
       "<OUT>/record/vectors/candidate/vec_iter_i64-on-5/program.stdout": "619bfcc55e06bc18e727be0d9d68d0d629afa2d912b137dc6a44dd30d1e70c2b"
      },
      "binary_sha256": "533b58e2b4131e282662b8c2627fbc333a2083eb0abc267b5133f1cc1ebee2ec",
-     "capture_key": "d6ea09820e4cffa43429adb858a5df360e9cb50ca802c7e8c5d95e30aaadec01",
+     "capture_key": "9316bcb81ac330b89fded55359240738522d621d0066d3822ed9694f79a9f911",
      "policy_sha256": "c94b533c97dd0505617b644cdc79b39ec80190a3517deebdf1e8c7e61df25672",
      "recipe": {
       "build": [
@@ -20988,8 +20988,8 @@
        "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
       },
       "tooling": {
-       "tools/column/fixed_route_vectors.py": "b884eb02c50fe53019600ad5071bcca8c18efa2c40f91f8aff163c7ff6ed6845",
-       "tools/column/ir_accounting.py": "c58d724d79c91ed5d5d5d5315179f157a9fffae7fbb5961f970aa919bafd63ae",
+       "tools/column/fixed_route_vectors.py": "d2941dfc940b9129e99b236bf5abfdf2414b085c4446e9180ec81f5ff22dd57d",
+       "tools/column/ir_accounting.py": "a3e567f775aad9d796cd118179d2146fe7364e952dc00f37f8d485ffebaf644f",
        "tools/column/old_path_child.py": "9061a3f0f66e60f862a493f6786717bbe78790a82ed0f4c8d184684a21abc0df",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
        "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"

@@ -98,6 +98,14 @@ pub(crate) fn dispatch_proof(row: &Value, desc: &Value, proof: &Value) -> Result
 			&& proof["launch_sha256"] == crate::pyjson::identity(&proof["launch"])?,
 		"installed dispatch proof differs"
 	);
+	if d.get("stack_query").is_some() || proof.get("stack_query").is_some() {
+		for key in ["stack_query", "query_sha256", "maps_sha256"] {
+			ensure!(
+				d.get(key).is_some() && d[key] == proof[key],
+				"installed stack-query proof changed: {key}"
+			);
+		}
+	}
 	for key in ["profile_sha256", "inner_sha256", "W", "T", "launch_sha256"] {
 		ensure!(
 			d.get(key).is_some() && d[key] == proof[key],

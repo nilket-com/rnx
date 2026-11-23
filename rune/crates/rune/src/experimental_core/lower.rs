@@ -2852,9 +2852,21 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				self.pool,
 				hash,
 			) {
-			return self.call_dynamic_method(call, target, hash, out, span);
+			let guard = self
+				.self_method(target, hash, name_hash)
+				.filter(|(receiver, method)| {
+					self.constants.instances.parameters(method.associated)
+						== Some(call.args.len() + 1)
+						&& self.context.lookup_function(method.associated).is_none()
+						&& self.context.permits_nominal_format(*receiver)
+				});
+			return self.call_dynamic_with_guard(call, target, hash, out, span, guard);
 		}
-		if let Some(method) = self.self_method(target, hash, name_hash) {
+		if let Some((_, method)) = self.self_method(target, hash, name_hash).filter(|_| {
+			!self
+				.transaction
+				.supports_dynamic_method(self.context, self.constants, self.pool, hash)
+		}) {
 			self.self_proof.set(Some(self.location(span)));
 			return self.call_static_method(call, target, method, out, span);
 		}
