@@ -6,6 +6,15 @@ use std::path::PathBuf;
 pub(super) struct Mounts(Vec<(Vec<String>, PathBuf)>);
 
 impl Mounts {
+	#[cfg(all(
+		target_os = "linux",
+		feature = "project-handoff",
+		any(test, feature = "engine-image")
+	))]
+	pub(super) fn into_entries(self) -> Vec<(Vec<String>, PathBuf)> {
+		self.0
+	}
+
 	// Every handoff passes these structural limits.
 	pub(super) fn new(entries: Vec<(Vec<String>, PathBuf)>) -> Result<Self, String> {
 		if entries.len() > 256 {

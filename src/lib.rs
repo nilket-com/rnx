@@ -78,9 +78,19 @@ mod process;
 #[cfg(feature = "engine-image")]
 #[doc(hidden)]
 pub mod image_file;
+#[cfg(all(
+	target_arch = "x86_64",
+	target_os = "linux",
+	target_env = "gnu",
+	feature = "project-file-bundle"
+))]
+#[doc(hidden)]
+pub mod installed_file;
 #[cfg(all(windows, feature = "test-support"))]
 mod pipe_control;
 mod program;
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+mod project_handoff;
 mod repl;
 #[cfg(feature = "test-support")]
 mod rnx_test;
@@ -192,6 +202,19 @@ pub fn main_with(extensions: Extensions) -> std::result::Result<(), Box<dyn std:
 #[doc(hidden)]
 pub fn main_with_installed_files(launch: fn(bool) -> std::io::Result<()>) -> Result<()> {
 	run_cli(Extensions::none(), Some(launch))
+}
+
+/// Entry used by generated Linux applications that embed a project file bundle.
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+#[doc(hidden)]
+pub fn main_with_project_files(
+	extensions: Extensions,
+	launch: fn(bool) -> std::io::Result<()>,
+) -> Result<()> {
+	if project_handoff::resume_requested()? {
+		return main_inner(extensions, false, None, true);
+	}
+	run_cli(extensions, Some(launch))
 }
 
 fn run_cli(extensions: Extensions, launch: Option<fn(bool) -> std::io::Result<()>>) -> Result<()> {
@@ -484,7 +507,19 @@ fn serve(
 	let mut extensions = Some(extensions);
 	#[cfg(feature = "test-support")]
 	source_fmt::CONTEXTS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-	let (mut context, mut host_functions, http) = serving_context(lifecycle, true)?;
+	#[cfg(not(all(
+		target_os = "linux",
+		feature = "project-handoff",
+		feature = "engine-image"
+	)))]
+	let stock_dense = true;
+	#[cfg(all(
+		target_os = "linux",
+		feature = "project-handoff",
+		feature = "engine-image"
+	))]
+	let stock_dense = !image_file::has_pair();
+	let (mut context, mut host_functions, http) = serving_context(lifecycle, stock_dense)?;
 	// File arguments are selected below, after the existing run flags. All
 	// other entry points have an empty script-argument snapshot.
 	if !args.first().is_some_and(|arg| arg == "run") {
@@ -661,6 +696,29 @@ fn serve(
 			#[cfg(feature = "project-sources")]
 			source_map,
 		} = FileOptions::parse(&args[1..])?;
+		#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+		if let Some(resume) = project_handoff::take_resume() {
+			if resume.budget != budget || resume.loader.texts[0].path != std::path::Path::new(path)
+			{
+				return Err("project handoff entry or budget mismatch".into());
+			}
+			let arguments = file_arguments(&mut context, arguments.to_vec())?;
+			extensions
+				.take()
+				.unwrap()
+				.install_file(&mut context, lifecycle)?;
+			host::running_a_script();
+			let code = runner::legacy_file(
+				&context,
+				lifecycle,
+				arguments,
+				debug_source,
+				budget,
+				resume.sources,
+				resume.loader,
+			);
+			terminal::exit(code);
+		}
 		#[cfg(feature = "project-sources")]
 		let loader = if let Some(map) = source_map {
 			program::Loader::mapped(std::path::Path::new(map), std::path::Path::new(path))
@@ -670,15 +728,31 @@ fn serve(
 		};
 		let _title = terminal::Title::new(&format!("rnx {path}"));
 		let arguments = file_arguments(&mut context, arguments.to_vec())?;
-		let file_modules = match extensions
-			.take()
-			.unwrap()
-			.install_file(&mut context, lifecycle)
-		{
-			Ok(modules) => modules,
-			Err(message) => {
-				eprintln!("error: {}", format::terminal_safe(&message));
-				terminal::exit(1)
+		#[cfg(not(all(
+			target_os = "linux",
+			feature = "project-handoff",
+			feature = "engine-image"
+		)))]
+		let pair_modules: Option<rune::experimental_core::domain::file::FileModules> = None;
+		#[cfg(all(
+			target_os = "linux",
+			feature = "project-handoff",
+			feature = "engine-image"
+		))]
+		let pair_modules = image_file::install_pair(&mut context)?;
+		let file_modules = if let Some(modules) = pair_modules {
+			modules
+		} else {
+			match extensions
+				.take()
+				.unwrap()
+				.install_file(&mut context, lifecycle)
+			{
+				Ok(modules) => modules,
+				Err(message) => {
+					eprintln!("error: {}", format::terminal_safe(&message));
+					terminal::exit(1)
+				}
 			}
 		};
 		#[cfg(not(feature = "project-sources"))]
@@ -696,6 +770,12 @@ fn serve(
 			engine,
 			loader,
 		);
+		#[cfg(all(
+			target_os = "linux",
+			feature = "project-handoff",
+			feature = "engine-image"
+		))]
+		image_file::check_provider()?;
 		terminal::exit(code);
 	}
 	// Anything that is not a command says so. Falling through to the

@@ -13,6 +13,7 @@ use std::{
 };
 pub(crate) trait Identity {
 	fn context(&self) -> &crate::cache_identity::Context;
+	fn files(&self) -> Option<&crate::project_files::Recipe>;
 	/// Package names of the assembly's natives, for refusals.
 	fn natives(&self) -> Vec<String>;
 	fn wrapper(&self) -> (&str, &str);
@@ -25,6 +26,9 @@ pub(crate) trait Identity {
 macro_rules! identity {
 	($ty:ty,$format:expr) => {
 		impl Identity for $ty {
+			fn files(&self) -> Option<&crate::project_files::Recipe> {
+				self.files()
+			}
 			fn context(&self) -> &crate::cache_identity::Context {
 				self.context()
 			}
@@ -70,6 +74,8 @@ struct Ready {
 	identity: String,
 	executable_blake3: String,
 	artifact: String,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	file_bundle_blake3: Option<String>,
 }
 pub(crate) struct Entry {
 	_lock: File,
@@ -213,7 +219,7 @@ fn read_managed(path: &Path) -> Result<Vec<u8>, String> {
 fn sync_dir(p: &Path) -> Result<(), String> {
 	File::open(p).and_then(|f| f.sync_all()).map_err(err)
 }
-fn write_new(p: &Path, bytes: &[u8]) -> Result<(), String> {
+pub(crate) fn write_new(p: &Path, bytes: &[u8]) -> Result<(), String> {
 	let mut f = options()
 		.write(true)
 		.create_new(true)
@@ -262,7 +268,7 @@ pub(crate) fn environment(identity: &impl Identity) -> Result<(), String> {
 			return Err("cache root changed; run lock".into());
 		}
 	}
-	if c.profile != "release" || c.features != ["project-sources"] {
+	if c.profile != "release" || c.features != crate::project_files::features(identity.files()) {
 		return Err("unsupported assembly build profile/features".into());
 	}
 	Ok(())
@@ -281,6 +287,16 @@ fn validate(identity: &impl Identity, stage: &Path, project: &Path) -> Result<()
 		return Err("assembly compiler identity changed; run lock".into());
 	}
 	Ok(())
+}
+fn bundle_digest(identity: &impl Identity, entry: &Path) -> Result<Option<String>, String> {
+	if matches!(
+		identity.files(),
+		Some(crate::project_files::Recipe::Image { .. })
+	) {
+		let bytes = read_managed(&entry.join("assembly/file-bundle.json"))?;
+		return Ok(Some(blake3::hash(&bytes).to_hex().to_string()));
+	}
+	Ok(None)
 }
 /// Bounded readiness and fixed-path validation, also used by future launch code.
 /// This never compiles, populates a directory, or repairs a published entry.
@@ -306,7 +322,9 @@ fn decode_ready(
 ) -> Result<(String, String), String> {
 	let r: Ready = serde_json::from_slice(bytes)
 		.map_err(|e| format!("cache ready {}: {e}", path.display()))?;
-	if r.format != identity.ready_format()
+	let bundle = bundle_digest(identity, path.parent().ok_or("ready path lacks its entry")?)?;
+	if r.file_bundle_blake3 != bundle
+		|| r.format != identity.ready_format()
 		|| r.key != identity.key()
 		|| r.identity.as_bytes() != identity.bytes()
 		|| !artifact::digest_valid(&r.executable_blake3)
@@ -319,11 +337,12 @@ fn decode_ready(
 /// `project_check` rechecks the locked project identity without compiling or
 /// publishing. It runs after waiting and after independent assembly publication.
 /// Gate four supplies the product's lock/source verification and receipt writer.
-pub(crate) fn acquire(
+pub(crate) fn acquire<T>(
 	identity: &impl Identity,
 	cargo_lock: &[u8],
 	project: &Path,
 	offline: bool,
+	prepare: impl FnOnce(&mut Command, &Path) -> Result<T, String>,
 	mut project_check: impl FnMut() -> Result<(), String>,
 ) -> Result<Entry, String> {
 	commands::check()?;
@@ -421,6 +440,8 @@ pub(crate) fn acquire(
 					});
 				}
 			}
+			let _bundle = prepare(&mut command, &stage)?;
+			let file_bundle_blake3 = bundle_digest(identity, &entry)?;
 			commands::run(command, false)?;
 			fault("after-build")?;
 			validate(identity, &stage, project)?;
@@ -482,8 +503,12 @@ pub(crate) fn acquire(
 			artifact::check(&installed, &expected, None, true)?;
 			fault("before-ready")?;
 			validate(identity, &stage, project)?;
+			if bundle_digest(identity, &entry)? != file_bundle_blake3 {
+				return Err("project image binding changed during build".into());
+			}
 			let ready = Ready {
 				format: identity.ready_format(),
+				file_bundle_blake3,
 				key: identity.key().into(),
 				identity: String::from_utf8(identity.bytes().to_vec()).map_err(err)?,
 				executable_blake3: expected.clone(),

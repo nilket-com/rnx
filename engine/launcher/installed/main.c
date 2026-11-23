@@ -7,6 +7,18 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef RNX_FILE_ADAPTERS
+#include "../../image/adapter_provider.h"
+extern int rnx_file_provider_open(struct rnx_adapter_provider *);
+extern int rnx_file_provider_close(void *);
+extern struct rnx_declaration *rnx_join_file_inventory(struct rnx_adapter_provider *);
+extern int rnx_engine_project_cli_v1(int, char **, rnx_route_observer_v5,
+                                      const struct rnx_adapter_provider *, int);
+#define CLI_ENTRY rnx_engine_project_cli_v1
+#else
+#define CLI_ENTRY rnx_engine_stock_cli_v5
+#endif
+
 #define IMAGE_FD 9
 static int report_fd;
 static int memfd;
@@ -63,6 +75,14 @@ int main(int argc, char **argv) {
 	if (!tail) return 1;
 	*tail = 0;
 	int executable_fd = descriptor(separator + 1);
+#ifdef RNX_FILE_ADAPTERS
+	char *project = strchr(tail + 1, ',');
+	if (!project) return 1;
+	*project = 0;
+	int target_fd = descriptor(project + 1);
+	if (target_fd <= IMAGE_FD || target_fd == directory || target_fd == executable_fd ||
+		fcntl(target_fd, F_SETFD, FD_CLOEXEC) < 0) return 1;
+#endif
 	int original = descriptor(tail + 1);
 	if (fcntl(IMAGE_FD, F_SETFD, FD_CLOEXEC) != 0 ||
 		fstat(IMAGE_FD, &st) || fstat(executable_fd, &executable) ||
@@ -70,7 +90,7 @@ int main(int argc, char **argv) {
 		 (directory <= IMAGE_FD || !names_member(directory, "engine", &st) ||
 		  !names_member(directory, "helper", &executable))) ||
 		!owns_symbol(&executable, (uintptr_t)&main) ||
-		!owns_symbol(&st, (uintptr_t)&rnx_engine_stock_cli_v5)) {
+		!owns_symbol(&st, (uintptr_t)&CLI_ENTRY)) {
 		fputs("rnx: installed engine mapping mismatch\n", stderr);
 		return 1;
 	}
@@ -88,11 +108,23 @@ int main(int argc, char **argv) {
 		close(IMAGE_FD);
 	}
 	const char *report = getenv("RNX_FILE_ROUTE_FD");
-	if (!report) return rnx_engine_stock_cli_v5(argc, argv, NULL);
 	report_fd = descriptor(report);
-	if (report_fd < 3 || fcntl(report_fd, F_GETFD) < 0) {
+	if (report && (report_fd < 3 || fcntl(report_fd, F_GETFD) < 0)) {
 		fputs("rnx: invalid file route descriptor\n", stderr);
 		return 1;
 	}
-	return rnx_engine_stock_cli_v5(argc, argv, route);
+#ifdef RNX_FILE_ADAPTERS
+	struct rnx_adapter_provider provider = {0};
+	if (rnx_file_provider_open(&provider)) {
+		fputs("rnx: file provider failed to open\n", stderr);
+		return 1;
+	}
+	struct rnx_declaration *joined = rnx_join_file_inventory(&provider);
+	int code = joined ? CLI_ENTRY(argc, argv, report ? route : NULL, &provider, target_fd) : RNX_FAILED;
+	free(joined);
+	if (rnx_file_provider_close(provider.cookie)) return 1;
+	return code;
+#else
+	return CLI_ENTRY(argc, argv, report ? route : NULL);
+#endif
 }

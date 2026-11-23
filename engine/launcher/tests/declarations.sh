@@ -19,7 +19,7 @@ for set in candle polars postgres 'polars postgres' 'polars candle postgres' 'po
 		if [ "$set" = 'polars candle' ] && [ "$alias" = candle ]; then builder=other_builder; fi
 		printf '[native.%s]\npath="."\npackage="rnx-%s"\nhook="plain"\nbuilder="%s"\npresentation=true\n' "$alias" "$alias" "$builder" >> project.toml
 	done
-	if "$tool" build --manifest project.toml --image-package output --engine-bundle engine >out 2>err; then exit 1; fi
+	if "$tool" image project project.toml engine output >out 2>err; then exit 1; fi
 	case "$set" in
 		'polars candle') reason="unsupported native declaration for 'candle'; expected the reviewed rnx-candle provider" ;;
 		*) names=$(printf '%s\n' $set | sort | paste -sd, | sed 's/,/, /g'); reason="unsupported native adapters [$names]; supported sets are [] and [candle, polars]" ;;

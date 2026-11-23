@@ -132,6 +132,9 @@ pub(crate) fn git_wrapper(
 	base: &Path,
 ) -> Result<(String, String), String> {
 	let (manifest, main) = git_wrapper_retained(declaration, base)?;
+	named_wrapper(manifest, main)
+}
+fn named_wrapper(manifest: String, main: String) -> Result<(String, String), String> {
 	// Generator four: the package carries a digest of the wrapper computed
 	// while it still bears the placeholder name, so two wrappers that differ
 	// in any way are two Cargo units, whatever directory builds them.
@@ -280,6 +283,57 @@ pub(crate) fn retained_wrapper(
 		}
 	}
 	Ok(false)
+}
+
+/// Both manifest formats share this file-entry recipe. Cargo builds the app
+/// with the manager-verified bundle, embedded as ordinary static bytes.
+pub(crate) fn file_wrapper(
+	wrapper: (String, String),
+	recipe: &crate::project_files::Recipe,
+	named: bool,
+) -> Result<(String, String), String> {
+	use crate::project_files::Recipe;
+	let (mut cargo, mut main) = wrapper;
+	if !matches!(recipe, Recipe::RetainedRuntime) {
+		let mut doc: toml::Value = toml::from_str(&cargo).map_err(|e| e.to_string())?;
+		doc["dependencies"]["rnx"]["features"]
+			.as_array_mut()
+			.ok_or("missing runtime features")?
+			.push("project-file-bundle".into());
+		cargo = toml::to_string(&doc).map_err(|e| e.to_string())?;
+		let launch = match recipe {
+			Recipe::Image { pair, .. } => {
+				main = format!(
+					r#"struct Bundle;
+impl rnx::installed_file::EmbeddedFileBundle for Bundle {{
+    const IMAGE: &[u8] = include_bytes!(env!("RNX_PROJECT_IMAGE"));
+    const HELPER: &[u8] = include_bytes!(env!("RNX_PROJECT_HELPER"));
+    const GENERATION: &str = env!("RNX_PROJECT_GENERATION");
+}}
+{main}"#
+				);
+				format!("rnx::installed_file::launch_bundle::<Bundle, true, {pair}>")
+			}
+			Recipe::Current { reason } => {
+				let event = format!(
+					"{}\n",
+					serde_json::json!({"route":"manifest_ineligible","reason":reason,"category":null,"location":null})
+				);
+				format!("|explicit| rnx::installed_file::report_current_file(explicit, b{event:?})")
+			}
+			Recipe::RetainedRuntime => unreachable!(),
+		};
+		main = main.replace("rnx::main_with(", "rnx::main_with_project_files(");
+		let call = main
+			.strip_suffix(")\n}\n")
+			.ok_or("invalid generated entry")?;
+		main = format!("{call}, {launch})\n}}\n");
+	}
+	if named {
+		named_wrapper(cargo, main)
+	} else {
+		Ok((cargo, main))
+	}
 }
 
 #[cfg(test)]

@@ -603,7 +603,9 @@ pub fn cargo_main(args: &[OsString]) -> Result<i32> {
 	);
 	let mut cmd = Command::new(binary);
 	let split = tail.iter().position(|a| a == "--").unwrap_or(tail.len());
-	let raw_json = tail[..split].iter().any(|a| a == "--message-format=json");
+	let raw_json = tail[..split]
+		.iter()
+		.any(|a| a.as_encoded_bytes().starts_with(b"--message-format=json"));
 	cmd.args(&tail[..split]);
 	if !raw_json {
 		cmd.arg("--message-format=json");

@@ -6,6 +6,7 @@ pub(super) fn document() -> Document {
 	let base = std::env::temp_dir().join("rnx-identity-shape");
 	let native = base.join("native");
 	Document {
+		files: None,
 		format: 2,
 		generator: 2,
 		context: Context {

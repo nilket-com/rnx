@@ -56,6 +56,8 @@ server-runtime = []
 http-server = ["server-runtime", "dep:axum", "dep:hyper", "dep:hyper-util", "tokio/sync", "tokio/macros", "tokio/signal", "tokio/io-util"]
 # Record 0057: explicit versioned source maps for the file runner.
 project-sources = []
+project-handoff = ["project-sources"]
+project-file-bundle = ["project-handoff"]
 
 [dependencies]
 axum = { version = "=0.8.9", default-features = false, features = ["http1", "tokio"], optional = true }

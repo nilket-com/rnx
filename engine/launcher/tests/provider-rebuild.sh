@@ -38,7 +38,7 @@ timed() {
 	/usr/bin/time -a -f "$label %e" -o "$trial/wall-seconds" "$@" 2>"$trial/$label.log"
 }
 project_build() {
-	timed "$1" "$tool" build --manifest "$manifest" --engine-bundle "$trial/engine" --image-package "$trial/pair" --offline
+	timed "$1" "$tool" image project "$manifest" "$trial/engine" "$trial/pair" --offline
 }
 state() { stat -c '%i %s' "$trial/pair" "$trial/pair/"*; }
 timed engine "$tool" image engine "$root" "$trial/engine" --offline

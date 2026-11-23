@@ -676,14 +676,24 @@ adapters, versus about 6 ms direct. The matched checkout projects were roughly
 the declared native inventory; there is no adapter-independent latency guarantee.
 Default source checks and explicit `--verify` retain their existing coverage.
 
-### Packaging the execution engine for file runs
+### Running project files
+
+On x86-64 GNU/Linux, `rnx project build` embeds the file engine and its
+launcher in the generated executable for an empty native set or a reviewed
+Candle and Polars pair. Move that executable on its own. Both
+`rnx project run --manifest ./rnx.toml` and the app's own `run FILE` use
+the embedded engine. Existing locks retain their generated wrapper. Update
+an older runtime pin, then run `rnx project lock` and `rnx project build`
+with the manifest to opt into the new recipe. Until then, the manager counts launches of historical locks as `historical_lock`. A fresh lock against a runtime that predates the handoff keeps using that runtime and reports `runtime_without_handoff`. These events belong to the manager. Old executables launched directly keep their original reporting behavior.
+
+### Building explicit engine ABI clients
 
 On x86_64 Linux, build a release engine bundle once and choose an output directory for each launcher. The parent directories must exist.
 
 ```sh
 rnx-project image engine /path/to/rnx ./engine-bundle --offline
 rnx-project image stock /path/to/rnx ./engine-bundle ./stock-package --offline
-rnx-project build --manifest ./rnx.toml --engine-bundle ./engine-bundle --image-package ./project-package --offline
+rnx-project image project ./rnx.toml ./engine-bundle ./project-package --offline
 ./project-package/rnx run script.rn 'first argument'
 ```
 

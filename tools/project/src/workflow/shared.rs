@@ -120,7 +120,26 @@ impl Project {
 		if self.shared_inputs(&metadata, &stage, &c.cache_root, &c.cargo_home)? != lock.inputs {
 			return Err("project source or Cargo input changed; run lock".into());
 		}
-		if !generate::retained_wrapper(&lock.declarations, &self.base, identity.wrapper())? {
+		if let Some(files) = identity.files() {
+			let declaration =
+				serde_json::from_value(serde_json::to_value(&lock.declarations).map_err(err)?)
+					.map_err(err)?;
+			let expected = crate::project_files::Recipe::resolve(
+				&self.base,
+				&declaration,
+				&[],
+				identity.native(),
+			)?;
+			let wrapper = generate::file_wrapper(
+				generate::canonical_wrapper(&lock.declarations, &self.base)?,
+				&expected,
+				false,
+			)?;
+			if files != &expected || identity.wrapper() != (wrapper.0.as_str(), wrapper.1.as_str())
+			{
+				return Err("generated shared assembly changed; run lock".into());
+			}
+		} else if !generate::retained_wrapper(&lock.declarations, &self.base, identity.wrapper())? {
 			return Err("generated shared assembly changed; run lock".into());
 		}
 		commands::check()
@@ -182,7 +201,20 @@ impl Project {
 			}
 			commands::run(cmd, true)
 		};
-		let graph = metadata(false)?;
+		let mut graph = metadata(false)?;
+		let before = self.shared_inputs(&graph, &stage, &root, &home)?;
+		let declaration = serde_json::from_value(serde_json::to_value(declarations).map_err(err)?)
+			.map_err(err)?;
+		let recipe = crate::project_files::Recipe::resolve(
+			&self.base,
+			&declaration,
+			&[],
+			before.native.as_ref().ok_or("missing native inventory")?,
+		)?;
+		let (manifest, main) = generate::file_wrapper((manifest, main), &recipe, false)?;
+		fs::write(stage.join("Cargo.toml"), &manifest).map_err(err)?;
+		fs::write(stage.join("src/main.rs"), &main).map_err(err)?;
+		graph = metadata(false)?;
 		let inputs = self.shared_inputs(&graph, &stage, &root, &home)?;
 		if metadata(true)? != graph {
 			return Err("Cargo graph changed during lock; retry lock".into());
@@ -198,7 +230,7 @@ impl Project {
 			cargo,
 			target,
 			profile: "release".into(),
-			features: vec!["project-sources".into()],
+			features: crate::project_files::features(Some(&recipe)),
 			// Path assemblies keep the retained identity format: no build kind.
 			build: None,
 		};
@@ -207,6 +239,7 @@ impl Project {
 			&self.base,
 			context,
 			inputs.native.clone().unwrap(),
+			recipe,
 			&lock,
 		)?;
 		identity.revalidate(&stage)?;
@@ -233,7 +266,22 @@ impl Project {
 			}
 			Ok(())
 		};
-		let entry = cache_entry::acquire(identity, &cargo, &self.base, offline, recheck)?;
+		let entry = cache_entry::acquire(
+			identity,
+			&cargo,
+			&self.base,
+			offline,
+			|command, stage| {
+				super::prepare_file_inputs(
+					identity.files(),
+					command,
+					stage,
+					&identity.context().cache_root,
+					offline,
+				)
+			},
+			recheck,
+		)?;
 		fault("after-build")?;
 		recheck()?;
 		fault("before-shared-receipt")?;

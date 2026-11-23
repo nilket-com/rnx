@@ -36,6 +36,14 @@ impl Drop for Title {
 		restore();
 	}
 }
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+pub(crate) fn handoff_title(saved: Option<bool>) -> bool {
+	if let Some(active) = saved {
+		TITLE.store(active, Ordering::Relaxed);
+	}
+	TITLE.load(Ordering::Relaxed)
+}
+
 pub fn restore() {
 	if TITLE.swap(false, Ordering::Relaxed) {
 		emit("\x1b[23;2t");

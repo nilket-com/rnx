@@ -900,7 +900,7 @@ fn policy_rows(root: &Path) -> Result<Json> {
 		("src/column/scalar.rs", "new"),
 		("src/config.rs", "evaluate_selected"),
 		("src/lib.rs", "call"),
-		("src/runner.rs", "run_loaded"),
+		("src/runner.rs", "legacy_file"),
 		("src/server.rs", "http_function"),
 		("src/server.rs", "execute"),
 		("src/session.rs", "execute"),

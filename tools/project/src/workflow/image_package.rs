@@ -54,7 +54,7 @@ fn read_package(dir: &Path) -> Result<Published, String> {
 	let p: Published =
 		serde_json::from_slice(&input::read(&path, input::MANIFEST_LIMIT)?).map_err(err)?;
 	let launcher = match p.recipe.kind.as_str() {
-		"engine" => false,
+		"engine" | "project-engine" => false,
 		"stock" | "candle,polars" => true,
 		_ => return Err("unknown image package kind".into()),
 	};
@@ -64,8 +64,12 @@ fn read_package(dir: &Path) -> Result<Published, String> {
 		.collect::<Result<Vec<_>, _>>()
 		.map_err(err)?;
 	if names.len() != if launcher { 3 } else { 2 }
-		|| p.recipe.abi != 4
-		|| p.recipe.target != TARGET
+		|| p.recipe.abi
+			!= if p.recipe.kind == "project-engine" {
+				5
+			} else {
+				4
+			} || p.recipe.target != TARGET
 		|| p.engine_sha256 != sha(&dir.join(LIB))?
 		|| p.launcher_sha256
 			!= if launcher {
@@ -183,6 +187,7 @@ fn publish(a: &Path, b: &Path, replace: bool) -> Result<(), String> {
 }
 
 struct Source<'a> {
+	project_engine: bool,
 	root: &'a Path,
 	bundle: Option<&'a Path>,
 	pair: bool,
@@ -198,7 +203,19 @@ impl Source<'_> {
 		if target != TARGET {
 			return Err(format!("image package requires {TARGET}"));
 		}
-		let inputs = engine_inputs(root)?;
+		let mut inputs = engine_inputs(root)?;
+		if self.project_engine {
+			// Provider sources are exclusively helper inputs.
+			let startup = sources(
+				root,
+				&[],
+				&[
+					"engine/launcher/installed/process.rs",
+					"engine/launcher/installed/image.sh",
+				],
+			)?;
+			inputs = hash(&wire::encode(&(inputs, startup))?);
+		}
 		let origin = if let Some(bundle) = self.bundle {
 			let frozen = read_package(bundle)?;
 			if frozen.recipe.kind != "engine"
@@ -208,6 +225,8 @@ impl Source<'_> {
 				return Err("image package: stale engine bundle for this runtime".into());
 			}
 			sha(&bundle.join(RECEIPT))?
+		} else if self.project_engine {
+			"installed project ABI v1".into()
 		} else {
 			let revision = helper(root, "git", &["rev-parse", "HEAD"])?;
 			let dirty = !helper(
@@ -232,12 +251,14 @@ impl Source<'_> {
 			]);
 		}
 		Ok(Recipe {
-			abi: 4,
+			abi: if self.project_engine { 5 } else { 4 },
 			target,
 			runtime: root.to_owned(),
 			engine_inputs: inputs,
 			origin,
-			kind: if self.bundle.is_none() {
+			kind: if self.project_engine {
+				"project-engine"
+			} else if self.bundle.is_none() {
 				"engine"
 			} else if self.pair {
 				"candle,polars"
@@ -305,11 +326,15 @@ impl Source<'_> {
 			Err(e) => return Err(err(e)),
 		};
 		if let Some(p) = &old {
-			if (p.recipe.kind == "engine") != self.bundle.is_none() {
+			if matches!(p.recipe.kind.as_str(), "engine" | "project-engine")
+				!= self.bundle.is_none()
+			{
 				return Err("image package: output has a different artifact kind".into());
 			}
 			if p.recipe == recipe {
-				println!("{}", dest.display());
+				if !self.project_engine {
+					println!("{}", dest.display());
+				}
 				return Ok(());
 			}
 		}
@@ -350,6 +375,29 @@ impl Source<'_> {
 					.arg(&tmp.0);
 			}
 			commands::run(cc, false)?;
+		} else if self.project_engine {
+			let mut build = Command::new("sh");
+			build
+				.current_dir(self.root)
+				.arg("engine/launcher/installed/image.sh")
+				.arg(&tmp.0)
+				.arg("project-files")
+				.env("CARGO", "cargo")
+				.env("RUSTC", "rustc")
+				.env("TARGET", TARGET);
+			if self.offline {
+				build.arg("--offline");
+			}
+			commands::run(build, false)?;
+			fs::rename(
+				tmp.0
+					.join("target")
+					.join(TARGET)
+					.join("release/examples")
+					.join(LIB),
+				&image,
+			)
+			.map_err(err)?;
 		} else {
 			cargo_build(
 				self.root,
@@ -386,7 +434,9 @@ impl Source<'_> {
 		);
 		commands::check()?;
 		publish(&new, &dest, old.is_some())?;
-		println!("{}", dest.display());
+		if !self.project_engine {
+			println!("{}", dest.display());
+		}
 		Ok(())
 	}
 }
@@ -397,16 +447,20 @@ pub(super) fn standalone(args: &[OsString]) -> Result<(), String> {
 		Some("--offline") => (&args[..args.len() - 1], true),
 		_ => (args, false),
 	};
+	commands::install_signals()?;
+	environment()?;
 	let (root, bundle, out) = match args {
+		[mode, manifest, bundle, out] if mode == "project" => {
+			return Project::open(Path::new(manifest))?.package_image(Path::new(bundle), Path::new(out), offline);
+		}
 		[mode, root, out] if mode == "engine" => (root, None, out),
 		[mode, root, bundle, out] if mode == "stock" => {
 			(root, Some(Path::new(bundle).canonicalize().map_err(err)?), out)
 		}
-		_ => return Err("usage: image engine RUNTIME OUTPUT | image stock RUNTIME ENGINE-BUNDLE OUTPUT [--offline]".into()),
+		_ => return Err("usage: image engine RUNTIME OUTPUT | image stock RUNTIME ENGINE-BUNDLE OUTPUT | image project MANIFEST ENGINE-BUNDLE OUTPUT [--offline]".into()),
 	};
-	commands::install_signals()?;
-	environment()?;
 	Source {
+		project_engine: false,
 		root: &Path::new(root).canonicalize().map_err(err)?,
 		bundle: bundle.as_deref(),
 		pair: false,
@@ -416,32 +470,7 @@ pub(super) fn standalone(args: &[OsString]) -> Result<(), String> {
 	.build(Path::new(out))
 }
 
-fn location(
-	base: &Path,
-	path: Option<&str>,
-	git: Option<&str>,
-	rev: Option<&str>,
-	name: &str,
-	packages: &[crate::schemas::GitPackage],
-) -> Result<PathBuf, String> {
-	let path = match path {
-		Some(p) => base.join(p),
-		None => {
-			let mut rows = packages.iter().filter(|p| {
-				p.name == name && Some(p.url.as_str()) == git && Some(p.revision.as_str()) == rev
-			});
-			let row = rows.next().ok_or("locked package source missing")?;
-			if rows.next().is_some() {
-				return Err("ambiguous locked package source".into());
-			}
-			Path::new(&row.manifest)
-				.parent()
-				.ok_or("missing manifest parent")?
-				.to_owned()
-		}
-	};
-	path.canonicalize().map_err(err)
-}
+use crate::project_files::{FileRoute, declared_pair, file_route, reviewed_registration};
 
 impl Project {
 	pub(super) fn package_image(
@@ -457,33 +486,19 @@ impl Project {
 			let old = Manifest::read(&self.manifest)?;
 			serde_json::from_value(serde_json::to_value(old).map_err(err)?).map_err(err)?
 		};
-		let names: Vec<_> = decl.native.keys().map(String::as_str).collect();
-		let pair = match names.as_slice() {
-			[] => false,
-			["candle", "polars"] => true,
-			_ => {
-				return Err(format!(
-					"image package: unsupported native adapters [{}]; supported sets are [] and [candle, polars]",
-					names.join(", ")
-				));
-			}
-		};
-		if !decl.sources.is_empty() {
-			return Err("image package: source-alias module mappings are unsupported".into());
-		}
-		let runtime = decl.runtime.as_ref().ok_or(
-			"image package requires an application runtime; executable overrides are unsupported",
-		)?;
-		for (alias, n) in &decl.native {
-			if n.package != format!("rnx-{alias}")
-				|| n.builder != "build"
-				|| n.hook != crate::manifest::Hook::Plain
-				|| !n.presentation
-			{
-				return Err(format!(
-					"image package: unsupported native declaration for '{alias}'; expected the reviewed rnx-{alias} provider"
-				));
-			}
+		// The explicit ABI-v4 client reports declaration errors even before lock.
+		if let Err(reason) = declared_pair(&decl) {
+			let names = decl.native.keys().map(String::as_str).collect::<Vec<_>>();
+			let message = match reason {
+				"native_set" => format!("unsupported native adapters [{}]; supported sets are [] and [candle, polars]", names.join(", ")),
+				"native_registration" => {
+					let (alias, _) = decl.native.iter().find(|(a,n)| !reviewed_registration(a,n)).ok_or("missing unsupported registration")?;
+					format!("unsupported native declaration for '{alias}'; expected the reviewed rnx-{alias} provider")
+				}
+				"source_alias" => "source-alias module mappings are unsupported".into(),
+				_ => return Err("image package requires an application runtime; executable overrides are unsupported".into()),
+			};
+			return Err(format!("image package: {message}"));
 		}
 		let (bytes, git, native) = if format_two {
 			let (lock, bytes) = self.read_git_lock()?;
@@ -494,40 +509,14 @@ impl Project {
 			self.verify_inputs(&lock)?;
 			(bytes, Vec::new(), lock.inputs.native)
 		};
-		let root = location(
-			&self.base,
-			runtime.path.as_deref(),
-			runtime.git.as_deref(),
-			runtime.rev.as_deref(),
-			"rnx",
-			&git,
-		)?;
-		for (alias, n) in &decl.native {
-			let expected = root.join("adapters").join(alias);
-			let resolved = location(
-				&self.base,
-				n.path.as_deref(),
-				n.git.as_deref(),
-				n.rev.as_deref(),
-				&n.package,
-				&git,
-			);
-			let reviewed = expected.canonicalize().map_err(err)?;
-			let in_lock = native.as_ref().is_some_and(|natives| {
-				natives
-					.packages
-					.iter()
-					.any(|pkg| pkg.name == n.package && pkg.root == reviewed)
-			}) || git.iter().any(|pkg| {
-				pkg.name == n.package && Path::new(&pkg.manifest) == reviewed.join("Cargo.toml")
-			});
-			if !in_lock || resolved.as_ref().ok() != Some(&reviewed) {
-				return Err(format!(
-					"image package: unsupported native declaration for '{alias}'; expected the reviewed rnx-{alias} provider"
-				));
+		let (root, pair) = match file_route(&self.base, &decl, &git, native.as_ref())? {
+			FileRoute::Image { root, pair } => (root, pair),
+			FileRoute::Current(reason) => {
+				return Err(format!("image package: project is ineligible ({reason})"));
 			}
-		}
+		};
 		Source {
+			project_engine: false,
 			root: &root,
 			bundle: Some(&bundle.canonicalize().map_err(err)?),
 			pair,
@@ -536,4 +525,117 @@ impl Project {
 		}
 		.build(out)
 	}
+}
+
+/// The manager owns route evidence for artifacts without the reporting entry.
+pub(super) fn report_manager_route(command: &mut Command, reason: &str) -> Result<(), String> {
+	use std::os::fd::FromRawFd;
+
+	let Some(raw) = std::env::var_os("RNX_FILE_ROUTE_FD") else {
+		return Ok(());
+	};
+	let fd = raw
+		.to_str()
+		.and_then(|s| s.parse::<i32>().ok())
+		.filter(|&fd| fd >= 3)
+		.ok_or("invalid file route descriptor")?;
+	// Borrow the caller's stream through a private close-on-exec descriptor.
+	let copy = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
+	if copy < 0 {
+		return Err(err(std::io::Error::last_os_error()));
+	}
+	let mut file = unsafe { File::from_raw_fd(copy) };
+	let route = if reason == "historical_lock" {
+		"historical_lock"
+	} else {
+		"manifest_ineligible"
+	};
+	let mut event = wire::encode(
+		&serde_json::json!({"route":route,"reason":reason,"category":null,"location":null}),
+	)?;
+	event.push(b'\n');
+	file.write_all(&event).map_err(err)?;
+	command.env_remove("RNX_FILE_ROUTE_FD");
+	Ok(())
+}
+
+/// Pin one copy of the common image for this build under the assembly entry's
+/// lock. Another builder can replace the single cached generation afterwards.
+pub(super) fn prepare_project_bundle(
+	cmd: &mut Command,
+	stage: &Path,
+	cache: &Path,
+	runtime: &Path,
+	pair: bool,
+	offline: bool,
+) -> Result<super::shared::Resolver, String> {
+	use std::os::unix::fs::OpenOptionsExt;
+	let private = super::shared::resolver(cache)?;
+	let frozen = cache.join("project-file-engine");
+	let source = Source {
+		project_engine: true,
+		root: runtime,
+		bundle: None,
+		pair: false,
+		lock: String::new(),
+		offline,
+	};
+	let image = private.0.join(LIB);
+	let engine_receipt = {
+		let guard = OpenOptions::new()
+			.read(true)
+			.write(true)
+			.create(true)
+			.truncate(false)
+			.mode(0o600)
+			.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+			.open(cache.join("locks/project-file-engine.lock"))
+			.map_err(err)?;
+		if !guard.metadata().map_err(err)?.is_file() {
+			return Err("invalid project engine lock".into());
+		}
+		guard.lock().map_err(err)?;
+		source.build(&frozen)?;
+		let stamp = read_package(&frozen)?;
+		if stamp.recipe != source.recipe()? {
+			return Err("project engine recipe changed during build".into());
+		}
+		fs::hard_link(frozen.join(LIB), &image).map_err(err)?;
+		if sha(&image)? != stamp.engine_sha256 {
+			return Err("project engine changed before link".into());
+		}
+		stamp
+	};
+	let helper = private.0.join("helper");
+	let mut link = Command::new("sh");
+	link.current_dir(runtime)
+		.arg("engine/launcher/installed/link.sh")
+		.arg(&image)
+		.arg(&helper);
+	if pair {
+		cargo_build(
+			runtime,
+			&private.0,
+			offline,
+			&[
+				"--manifest-path",
+				"adapters/file-provider/Cargo.toml",
+				"--lib",
+			],
+		)?;
+		link.arg(private.0.join("target/release/librnx_file_provider.a"));
+	}
+	commands::run(link, false)?;
+	let engine_sha256 = engine_receipt.engine_sha256;
+	let helper_sha256 = sha(&helper)?;
+	cmd.env("RNX_PROJECT_IMAGE", &image)
+		.env("RNX_PROJECT_HELPER", &helper)
+		.env(
+			"RNX_PROJECT_GENERATION",
+			format!("{engine_sha256}-{helper_sha256}"),
+		);
+	let build = serde_json::json!({"abi":5, "project_handoff":1,"target":TARGET,"engine_sha256":engine_sha256,
+		"helper_sha256":helper_sha256,"engine_recipe":engine_receipt.recipe,"provider":if pair {"candle,polars"} else {"stock"}});
+	crate::cache_entry::write_new(&stage.join("file-bundle.json"), &wire::encode(&build)?)?;
+	Ok(private)
 }

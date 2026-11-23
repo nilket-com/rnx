@@ -19,16 +19,17 @@ use std::{
 };
 
 const IMAGE_FD: RawFd = 9;
-const IMAGE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/libengine_image.so"));
-const HELPER: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stock-file"));
-const GENERATION: &str = concat!(
-	include_str!(concat!(env!("OUT_DIR"), "/libengine_image.so.sha256")),
-	"-",
-	include_str!(concat!(env!("OUT_DIR"), "/stock-file.sha256"))
-);
+/// A bundle prepared at build time. The generation is the two SHA-256 hex
+/// digests, joined by a hyphen, in engine/helper order.
+#[doc(hidden)]
+pub trait EmbeddedFileBundle {
+	const IMAGE: &'static [u8];
+	const HELPER: &'static [u8];
+	const GENERATION: &'static str;
+}
 
 const STAMP_PREFIX: &[u8] = b"rnx-file-v1/x86_64-linux-gnu/";
-const STAMP_LEN: usize = STAMP_PREFIX.len() + GENERATION.len() + 10 * 8;
+const STAMP_LEN: usize = STAMP_PREFIX.len() + 64 + 1 + 64 + 10 * 8;
 
 fn invalid(message: &'static str) -> io::Error {
 	io::Error::new(io::ErrorKind::InvalidData, message)
@@ -73,7 +74,7 @@ fn storage(error: io::Error) -> CacheError {
 	}
 }
 
-fn cache() -> Result<File, CacheError> {
+fn cache<const PROJECT: bool>() -> Result<File, CacheError> {
 	let base = env::var_os("XDG_CACHE_HOME")
 		.map(PathBuf::from)
 		.filter(|p| p.is_absolute())
@@ -84,13 +85,23 @@ fn cache() -> Result<File, CacheError> {
 		})
 		.ok_or(CacheError::Unavailable)?;
 	fs::create_dir_all(&base).map_err(storage)?;
-	let root = base.join("rnx-file-images");
-	match DirBuilder::new().mode(0o700).create(&root) {
+	let root = cache_dir(&base.join("rnx-file-images"))?;
+	if PROJECT {
+		// Earlier stock launchers sweep digest-named children of the root.
+		// Their sweep never enters this directory.
+		cache_dir(&fd_path(root.as_raw_fd()).join("projects"))
+	} else {
+		Ok(root)
+	}
+}
+
+fn cache_dir(root: &Path) -> Result<File, CacheError> {
+	match DirBuilder::new().mode(0o700).create(root) {
 		Ok(()) => (),
 		Err(e) if e.kind() == io::ErrorKind::AlreadyExists => (),
 		Err(e) => return Err(storage(e)),
 	}
-	Ok(private_dir(&root)?)
+	Ok(private_dir(root)?)
 }
 
 static NEXT: AtomicU64 = AtomicU64::new(0);
@@ -112,14 +123,19 @@ fn temporary_name(name: &str, prefix: &str) -> bool {
 		})
 }
 
-fn generation_name(name: &str) -> bool {
-	name.split_once('-').is_some_and(|(image, helper)| {
-		[image, helper].into_iter().all(|s| {
-			s.len() == 64
-				&& s.bytes()
-					.all(|b| b.is_ascii_digit() || matches!(b, b'a'..=b'f'))
-		})
-	})
+const fn generation_name(name: &str) -> bool {
+	let bytes = name.as_bytes();
+	if bytes.len() != 129 || bytes[64] != b'-' {
+		return false;
+	}
+	let mut i = 0;
+	while i < bytes.len() {
+		if i != 64 && !matches!(bytes[i], b'0'..=b'9' | b'a'..=b'f') {
+			return false;
+		}
+		i += 1;
+	}
+	true
 }
 
 fn ignore_missing(result: io::Result<()>) -> io::Result<()> {
@@ -131,38 +147,55 @@ fn ignore_missing(result: io::Result<()>) -> io::Result<()> {
 
 // Publishers serialize on the cache root. Readers hold a shared flock on
 // their generation through the startup helper's final named-member check.
-fn prune(cache: &File) -> io::Result<()> {
-	for entry in fs::read_dir(fd_path(cache.as_raw_fd()))? {
-		let entry = entry?;
-		let name = entry.file_name();
-		let Some(name) = name.to_str() else { continue };
-		if name == GENERATION {
-			continue;
-		}
-		if temporary_name(name, ".verifying-") {
-			ignore_missing(fs::remove_file(entry.path()))?;
-			continue;
-		}
-		if !generation_name(name) && !temporary_name(name, ".creating-") {
-			continue;
-		}
-		let dir = match private_dir(&entry.path()) {
-			Ok(dir) => dir,
-			Err(e) if e.kind() == io::ErrorKind::NotFound => continue,
-			Err(e) => return Err(e),
-		};
-		dir.lock()?;
-		for file in fs::read_dir(fd_path(dir.as_raw_fd()))? {
-			let file = file?;
-			if file.file_name().to_str().is_some_and(|n| {
-				matches!(n, "engine" | "helper" | "verified") || temporary_name(n, ".verifying-")
-			}) {
-				ignore_missing(fs::remove_file(file.path()))?;
-			}
-		}
-		ignore_missing(fs::remove_dir(entry.path()))?;
+const DAY: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
+const PROJECT_RETENTION: std::time::Duration = std::time::Duration::from_secs(7 * DAY.as_secs());
+
+fn age(file: &File) -> io::Result<std::time::Duration> {
+	Ok(file.metadata()?.modified()?.elapsed().unwrap_or_default())
+}
+
+fn retire<B: EmbeddedFileBundle, const PROJECT: bool>(entry: &fs::DirEntry) -> io::Result<()> {
+	let name = entry.file_name();
+	let Some(name) = name.to_str() else {
+		return Ok(());
+	};
+	if name == B::GENERATION {
+		return Ok(());
 	}
-	Ok(())
+	if temporary_name(name, ".verifying-") {
+		return ignore_missing(fs::remove_file(entry.path()));
+	}
+	let generation = generation_name(name);
+	if !generation && !temporary_name(name, ".creating-") {
+		return Ok(());
+	}
+	let dir = private_dir(&entry.path())?;
+	if PROJECT {
+		if dir.try_lock().is_err() || (generation && age(&dir)? < PROJECT_RETENTION) {
+			return Ok(());
+		}
+	} else {
+		dir.lock()?;
+	}
+	for file in fs::read_dir(fd_path(dir.as_raw_fd()))? {
+		let file = file?;
+		if file.file_name().to_str().is_some_and(|n| {
+			matches!(n, "engine" | "helper" | "verified") || temporary_name(n, ".verifying-")
+		}) {
+			ignore_missing(fs::remove_file(file.path()))?;
+		}
+	}
+	ignore_missing(fs::remove_dir(entry.path()))
+}
+
+// The root lock excludes concurrent publishers. Only remove owned cache
+// members. A stray file or a busy reader cannot invalidate a verified launch.
+fn prune<B: EmbeddedFileBundle, const PROJECT: bool>(cache: &File) {
+	if let Ok(entries) = fs::read_dir(fd_path(cache.as_raw_fd())) {
+		for entry in entries.flatten() {
+			let _ = retire::<B, PROJECT>(&entry);
+		}
+	}
 }
 
 fn open_generation(path: &Path) -> io::Result<File> {
@@ -175,17 +208,17 @@ fn open_generation(path: &Path) -> io::Result<File> {
 	Ok(dir)
 }
 
-fn generation(cache: &File) -> Result<File, CacheError> {
+fn generation<B: EmbeddedFileBundle>(cache: &File) -> Result<(File, bool), CacheError> {
 	let base = fd_path(cache.as_raw_fd());
-	let path = base.join(GENERATION);
+	let path = base.join(B::GENERATION);
 	match open_generation(&path) {
-		Ok(dir) => return Ok(dir),
+		Ok(dir) => return Ok((dir, false)),
 		Err(e) if e.kind() == io::ErrorKind::NotFound => (),
 		Err(e) => return Err(e.into()),
 	}
 	cache.lock()?;
 	match open_generation(&path) {
-		Ok(dir) => return Ok(dir),
+		Ok(dir) => return Ok((dir, false)),
 		Err(e) if e.kind() == io::ErrorKind::NotFound => (),
 		Err(e) => return Err(e.into()),
 	}
@@ -202,7 +235,7 @@ fn generation(cache: &File) -> Result<File, CacheError> {
 			Err(e) => return Err(storage(e)),
 		}
 	};
-	for (name, bytes, mode) in [("engine", IMAGE, 0o400), ("helper", HELPER, 0o500)] {
+	for (name, bytes, mode) in [("engine", B::IMAGE, 0o400), ("helper", B::HELPER, 0o500)] {
 		let mut file = OpenOptions::new()
 			.write(true)
 			.create_new(true)
@@ -215,7 +248,7 @@ fn generation(cache: &File) -> Result<File, CacheError> {
 	File::open(&tmp.0)?.sync_all().map_err(storage)?;
 	let name = |p: &OsStr| CString::new(p.as_bytes()).map_err(io::Error::other);
 	let from = name(tmp.0.file_name().unwrap())?;
-	let to = name(OsStr::new(GENERATION))?;
+	let to = name(OsStr::new(B::GENERATION))?;
 	// SAFETY: both C names and the pinned parent descriptor live across the syscall.
 	if unsafe {
 		libc::renameat2(
@@ -233,9 +266,8 @@ fn generation(cache: &File) -> Result<File, CacheError> {
 		}
 	} else {
 		cache.sync_all().map_err(storage)?;
-		prune(cache)?;
 	}
-	Ok(open_generation(&path)?)
+	Ok((open_generation(&path)?, true))
 }
 
 #[derive(PartialEq, Eq)]
@@ -340,12 +372,12 @@ fn publish_stamp(directory: &File, path: &Path, expected: &[u8]) -> io::Result<(
 	result
 }
 
-fn verified_pair(directory: &File) -> Result<(File, File), CacheError> {
+fn verified_pair<B: EmbeddedFileBundle>(directory: &File) -> Result<(File, File), CacheError> {
 	let path = fd_path(directory.as_raw_fd());
 	let engine = path.join("engine");
 	let helper = path.join("helper");
-	let (mut image, image_id) = member(&engine, IMAGE.len())?;
-	let (mut executable, exe_id) = member(&helper, HELPER.len())?;
+	let (mut image, image_id) = member(&engine, B::IMAGE.len())?;
+	let (mut executable, exe_id) = member(&helper, B::HELPER.len())?;
 	// The stamp lives in the owned, non-writable-by-others generation.
 	// The two embedded content hashes and both ctimes bind a full comparison
 	// to these open files. Missing or stale stamps force that comparison.
@@ -354,8 +386,8 @@ fn verified_pair(directory: &File) -> Result<(File, File), CacheError> {
 	let mut expected = [0; STAMP_LEN];
 	let (prefix, tail) = expected.split_at_mut(STAMP_PREFIX.len());
 	prefix.copy_from_slice(STAMP_PREFIX);
-	let (generation, ids) = tail.split_at_mut(GENERATION.len());
-	generation.copy_from_slice(GENERATION.as_bytes());
+	let (generation, ids) = tail.split_at_mut(B::GENERATION.len());
+	generation.copy_from_slice(B::GENERATION.as_bytes());
 	for (bytes, id) in ids
 		.as_chunks_mut::<40>()
 		.0
@@ -375,8 +407,8 @@ fn verified_pair(directory: &File) -> Result<(File, File), CacheError> {
 	let stamp = path.join("verified");
 	let hit = stamp_matches(&stamp, &expected)?;
 	if !hit {
-		verify_bytes(&mut image, IMAGE)?;
-		verify_bytes(&mut executable, HELPER)?;
+		verify_bytes(&mut image, B::IMAGE)?;
+		verify_bytes(&mut executable, B::HELPER)?;
 	}
 	if image_id != Identity::from(&fs::symlink_metadata(engine)?)
 		|| exe_id != Identity::from(&fs::symlink_metadata(helper)?)
@@ -410,10 +442,25 @@ fn sealed_member(name: &std::ffi::CStr, bytes: &[u8]) -> io::Result<File> {
 	File::open(fd_path(fd))
 }
 
-fn cached_bundle() -> Result<(Option<File>, File, File), CacheError> {
-	let cache = cache()?;
-	let dir = generation(&cache)?;
-	let (image, helper) = verified_pair(&dir)?;
+fn cached_bundle<B: EmbeddedFileBundle, const PROJECT: bool>()
+-> Result<(Option<File>, File, File), CacheError> {
+	let cache = cache::<PROJECT>()?;
+	let (dir, published) = generation::<B>(&cache)?;
+	let (image, helper) = verified_pair::<B>(&dir)?;
+	if PROJECT {
+		// Refresh at most daily. The directory's mtime is housekeeping only;
+		// the verification stamp binds both opened members independently.
+		let now = std::time::SystemTime::now();
+		if age(&dir).is_ok_and(|elapsed| elapsed >= DAY) {
+			let _ = dir.set_modified(now);
+		}
+		if published || (age(&cache).is_ok_and(|age| age >= DAY) && cache.try_lock().is_ok()) {
+			prune::<B, true>(&cache);
+			let _ = cache.set_modified(now);
+		}
+	} else if published {
+		prune::<B, false>(&cache);
+	}
 	Ok((Some(dir), image, helper))
 }
 
@@ -426,22 +473,46 @@ fn duplicate_above_image(fd: RawFd) -> io::Result<OwnedFd> {
 	Ok(unsafe { OwnedFd::from_raw_fd(copy) })
 }
 
-pub(super) fn launch(explicit_legacy: bool) -> io::Result<()> {
-	if explicit_legacy {
-		if let Some(value) = env::var_os("RNX_FILE_ROUTE_FD") {
-			let fd = value
-				.to_str()
-				.and_then(|s| s.parse::<RawFd>().ok())
-				.filter(|&n| n >= 3)
-				.ok_or_else(|| invalid("invalid file route descriptor"))?;
-			// SAFETY: duplicate the caller's descriptor; only the duplicate is owned.
-			let copy = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
-			if copy < 0 {
-				return Err(io::Error::last_os_error());
-			}
-			unsafe { File::from_raw_fd(copy) }.write_all(b"{\"route\":\"legacy_explicit\",\"category\":null,\"reason\":null,\"location\":null}\n")?;
+fn report(event: &[u8]) -> io::Result<()> {
+	if let Some(value) = env::var_os("RNX_FILE_ROUTE_FD") {
+		let fd = value
+			.to_str()
+			.and_then(|s| s.parse::<RawFd>().ok())
+			.filter(|&n| n >= 3)
+			.ok_or_else(|| invalid("invalid file route descriptor"))?;
+		// SAFETY: duplicate the caller's descriptor; only the duplicate is owned.
+		let copy = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 3) };
+		if copy < 0 {
+			return Err(io::Error::last_os_error());
 		}
-		return Ok(());
+		unsafe { File::from_raw_fd(copy) }.write_all(event)?;
+	}
+	Ok(())
+}
+
+const EXPLICIT: &[u8] =
+	b"{\"route\":\"legacy_explicit\",\"category\":null,\"reason\":null,\"location\":null}\n";
+
+/// A current-runtime generated app may keep its existing file route because
+/// of its manifest. The generator supplies the reviewed, static event.
+#[cfg(feature = "project-file-bundle")]
+#[doc(hidden)]
+pub fn report_current_file(explicit: bool, manifest_event: &'static [u8]) -> io::Result<()> {
+	report(if explicit { EXPLICIT } else { manifest_event })
+}
+
+#[doc(hidden)]
+pub fn launch_bundle<B: EmbeddedFileBundle, const PROJECT: bool, const PAIR: bool>(
+	explicit_legacy: bool,
+) -> io::Result<()> {
+	const {
+		assert!(
+			generation_name(B::GENERATION),
+			"invalid embedded file bundle generation"
+		);
+	}
+	if explicit_legacy {
+		return report(EXPLICIT);
 	}
 	// Read the caller's slot before opening any files which might occupy it.
 	// SAFETY: F_GETFD only inspects an fd and returns EBADF when absent.
@@ -454,12 +525,12 @@ pub(super) fn launch(explicit_legacy: bool) -> io::Result<()> {
 	} else {
 		None
 	};
-	let (dir, image, helper) = match cached_bundle() {
+	let (dir, image, helper) = match cached_bundle::<B, PROJECT>() {
 		Ok(bundle) => bundle,
 		Err(CacheError::Unavailable) => (
 			None,
-			sealed_member(c"rnx-engine", IMAGE)?,
-			sealed_member(c"rnx-helper", HELPER)?,
+			sealed_member(c"rnx-engine", B::IMAGE)?,
+			sealed_member(c"rnx-helper", B::HELPER)?,
 		),
 		Err(CacheError::Failed(error)) => return Err(error),
 	};
@@ -475,11 +546,23 @@ pub(super) fn launch(explicit_legacy: bool) -> io::Result<()> {
 		.as_ref()
 		.filter(|_| flags & libc::FD_CLOEXEC == 0)
 		.map_or(-1, AsRawFd::as_raw_fd);
+	// The pair needs its original executable only after a typed refusal.
+	// /proc/self/exe names the inode the kernel started, even after a rename.
+	let project = if PAIR {
+		Some(duplicate_above_image(
+			File::open("/proc/self/exe")?.as_raw_fd(),
+		)?)
+	} else {
+		None
+	};
+	let project_fd = project.as_ref().map(AsRawFd::as_raw_fd);
 	let executable_fd = helper_fd.as_raw_fd();
 	let mut command = Command::new(fd_path(executable_fd));
-	command
-		.arg(format!("{directory_fd},{executable_fd},{restore}"))
-		.args(env::args_os().skip(1));
+	let mut handoff = format!("{directory_fd},{executable_fd},{restore}");
+	if let Some(fd) = project_fd {
+		handoff.push_str(&format!(",{fd}"));
+	}
+	command.arg(handoff).args(env::args_os().skip(1));
 	// SAFETY: this stock CLI is about to exec before starting any service
 	// threads. Only fcntl/dup2 run between descriptor setup and exec.
 	let image_fd = image.as_raw_fd();
@@ -489,6 +572,7 @@ pub(super) fn launch(explicit_legacy: bool) -> io::Result<()> {
 				|| libc::fcntl(IMAGE_FD, libc::F_SETFD, 0) < 0
 				|| (directory_fd >= 0 && libc::fcntl(directory_fd, libc::F_SETFD, 0) < 0)
 				|| libc::fcntl(executable_fd, libc::F_SETFD, 0) < 0
+				|| project_fd.is_some_and(|fd| libc::fcntl(fd, libc::F_SETFD, 0) < 0)
 				|| (restore >= 0 && libc::fcntl(restore, libc::F_SETFD, 0) < 0)
 			{
 				return Err(io::Error::last_os_error());

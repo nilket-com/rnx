@@ -237,12 +237,29 @@ pub(crate) fn route_event(
 	reason: Option<&str>,
 	location: Option<rune::experimental_core::error::Location>,
 ) {
-	if let Some(report) = ROUTE_OBSERVER.get() {
-		let event = serde_json::json!({"route":route, "category":category, "reason":reason,
-			"location":location.map(|at| serde_json::json!({"source":at.source,"revision":at.revision,
-				"start":at.start,"end":at.end}))})
-		.to_string();
-		report(event.as_ptr(), event.len());
+	let observer = ROUTE_OBSERVER.get();
+	#[cfg(not(all(target_os = "linux", feature = "project-handoff")))]
+	let capture = false;
+	#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+	let capture = route == "legacy_refusal" && has_pair();
+	if observer.is_none() && !capture {
+		return;
+	}
+	let event = serde_json::json!({"route":route,"category":category,"reason":reason,"location":location.map(|at| serde_json::json!({"source":at.source,"revision":at.revision,"start":at.start,"end":at.end}))});
+	#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+	if capture {
+		PAIR.with_borrow_mut(|slot| {
+			if let Some(pair) = slot {
+				pair.refusal = Some(
+					crate::project_handoff::block_interrupt()
+						.map(|unblock| (event.clone(), unblock)),
+				);
+			}
+		});
+	}
+	if let Some(report) = observer {
+		let bytes = event.to_string();
+		report(bytes.as_ptr(), bytes.len());
 	}
 }
 
@@ -260,3 +277,77 @@ pub fn installed_file(observer: Option<RouteObserver>) -> crate::Result<()> {
 	rune::experimental_core::domain::file::initialize_image_thread();
 	crate::main_inner(crate::Extensions::none(), false, None, true)
 }
+
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+mod project {
+	use super::*;
+	use std::{fs::File, io, os::fd::RawFd};
+
+	pub(super) struct Pair {
+		modules: Option<Vec<rune::Module>>,
+		target: File,
+		check: fn() -> Result<(), String>,
+		pub(super) refusal: Option<io::Result<(serde_json::Value, bool)>>,
+	}
+	thread_local! {pub(super) static PAIR: RefCell<Option<Pair>> = const {RefCell::new(None)};}
+
+	pub(crate) fn has_pair() -> bool {
+		PAIR.with_borrow(Option::is_some)
+	}
+
+	pub(crate) fn check_provider() -> crate::Result<()> {
+		PAIR.with_borrow(|slot| slot.as_ref().map(|pair| (pair.check)()).transpose())?;
+		Ok(())
+	}
+
+	pub(crate) fn install_pair(
+		context: &mut Context,
+	) -> crate::Result<Option<rune::experimental_core::domain::file::FileModules>> {
+		let Some(modules) =
+			PAIR.with_borrow_mut(|slot| slot.as_mut().and_then(|pair| pair.modules.take()))
+		else {
+			return Ok(None);
+		};
+		let mut installer = rune::experimental_core::domain::file::Installer::new(context);
+		for module in modules {
+			installer.install(module)?;
+		}
+		Ok(Some(installer.finish().map_err(|error| {
+			format!("file extensions: {:?}", error.kind)
+		})?))
+	}
+
+	pub(crate) fn continue_pair(
+		loader: Loader,
+		budget: usize,
+	) -> crate::Result<std::convert::Infallible> {
+		check_provider()?;
+		let pair = PAIR.take().ok_or("missing project executable")?;
+		let (route, unblock) = pair.refusal.ok_or("missing typed refusal")??;
+		crate::project_handoff::forward(&pair.target, route, unblock, loader, budget)
+	}
+
+	pub fn installed_pair(
+		modules: Vec<rune::Module>,
+		target: RawFd,
+		observer: Option<RouteObserver>,
+		check: fn() -> Result<(), String>,
+	) -> crate::Result<()> {
+		let target = crate::project_handoff::owned_target(target)?;
+		PAIR.set(Some(Pair {
+			modules: Some(modules),
+			target,
+			check,
+			refusal: None,
+		}));
+		let outcome = installed_file(observer);
+		PAIR.take();
+		outcome
+	}
+}
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+use project::PAIR;
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+pub use project::installed_pair;
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+pub(crate) use project::{check_provider, continue_pair, has_pair, install_pair};

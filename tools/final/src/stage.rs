@@ -72,7 +72,7 @@ impl Invoke for Live {
 		let json_stdout = command
 			.iter()
 			.take_while(|a| *a != "--")
-			.any(|a| a == "--message-format=json");
+			.any(|a| a.starts_with("--message-format=json"));
 		let stderr = if json_stdout {
 			std::fs::File::create_new(log.with_extension("stderr.log"))?
 		} else {

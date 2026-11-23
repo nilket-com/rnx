@@ -162,6 +162,8 @@ pub(crate) fn admitted_settings(
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Document {
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	files: Option<crate::project_files::Recipe>,
 	format: u32,
 	generator: u32,
 	context: Context,
@@ -237,6 +239,7 @@ impl Identity {
 		base: &Path,
 		mut context: Context,
 		mut native: Inventory,
+		files: crate::project_files::Recipe,
 		cargo_lock: &[u8],
 	) -> Result<Self, String> {
 		if cargo_lock.is_empty() || cargo_lock.len() > input::DOCUMENT_LIMIT {
@@ -264,10 +267,15 @@ impl Identity {
 		native.trees.sort_by(|a, b| a.root.cmp(&b.root));
 		native.packages.sort_by(|a, b| a.id.cmp(&b.id));
 		native.external.sort_by(|a, b| a.path.cmp(&b.path));
-		let (manifest, main) = generate::canonical_wrapper(manifest, base)?;
+		let (manifest, main) = crate::generate::file_wrapper(
+			generate::canonical_wrapper(manifest, base)?,
+			&files,
+			false,
+		)?;
 		Self::from_document(Document {
 			format: 2,
-			generator: 2,
+			generator: 5,
+			files: Some(files),
 			context,
 			manifest,
 			main,
@@ -302,6 +310,9 @@ impl Identity {
 	}
 	pub(crate) fn context(&self) -> &Context {
 		&self.document.context
+	}
+	pub(crate) fn files(&self) -> Option<&crate::project_files::Recipe> {
+		self.document.files.as_ref()
 	}
 	pub(crate) fn wrapper(&self) -> (&str, &str) {
 		(&self.document.manifest, &self.document.main)
@@ -362,7 +373,10 @@ fn strictly_sorted<T: Ord>(values: impl IntoIterator<Item = T>) -> Result<(), St
 }
 impl Document {
 	fn validate(&self) -> Result<(), String> {
-		if self.format != 2 || self.generator != 2 {
+		if (self.generator == 5) != self.files.is_some() {
+			return Err("invalid project file recipe in identity".into());
+		}
+		if self.format != 2 || !matches!(self.generator, 2 | 5) {
 			return Err("unsupported assembly identity/generator version".into());
 		}
 		let c = &self.context;

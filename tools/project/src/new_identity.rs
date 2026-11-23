@@ -12,6 +12,8 @@ use std::{
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Document {
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	files: Option<crate::project_files::Recipe>,
 	format: u32,
 	generator: u32,
 	context: Context,
@@ -89,6 +91,7 @@ impl Identity {
 		mut context: Context,
 		mut native: Inventory,
 		mut git: Vec<crate::schemas::GitPackage>,
+		files: crate::project_files::Recipe,
 		cargo_lock: &[u8],
 	) -> Result<Self, String> {
 		if cargo_lock.is_empty() || cargo_lock.len() > input::DOCUMENT_LIMIT {
@@ -119,10 +122,15 @@ impl Identity {
 		if context.build.is_none() {
 			return Err("Git-source assembly identity requires a build kind".into());
 		}
-		let (manifest, main) = crate::generate::git_wrapper(manifest, base)?;
+		let (manifest, main) = crate::generate::file_wrapper(
+			crate::generate::git_wrapper_retained(manifest, base)?,
+			&files,
+			true,
+		)?;
 		Self::from_document(Document {
 			format: 4,
-			generator: 4,
+			generator: 5,
+			files: Some(files),
 			context,
 			manifest,
 			main,
@@ -172,6 +180,9 @@ impl Identity {
 	pub(crate) fn generator(&self) -> u32 {
 		self.document.generator
 	}
+	pub(crate) fn files(&self) -> Option<&crate::project_files::Recipe> {
+		self.document.files.as_ref()
+	}
 	pub(crate) fn wrapper(&self) -> (&str, &str) {
 		(&self.document.manifest, &self.document.main)
 	}
@@ -220,11 +231,14 @@ fn strictly_sorted<T: Ord>(values: impl IntoIterator<Item = T>) -> Result<(), St
 }
 impl Document {
 	fn validate(&self) -> Result<(), String> {
+		if (self.generator == 5) != self.files.is_some() {
+			return Err("invalid project file recipe in identity".into());
+		}
 		// Format 3 predates sharing: no build kind, placeholder wrapper name.
 		// Format 4 records the build kind and names the wrapper by digest.
 		match (self.format, self.generator, &self.context.build) {
 			(3, 3, None) => {}
-			(4, 4, Some(build)) => {
+			(4, 4 | 5, Some(build)) => {
 				build.validate()?;
 				// The recorded name must be the digest of the recorded wrapper.
 				let name = crate::generate::executable_name(&self.manifest)?;
@@ -442,6 +456,7 @@ mod format_tests {
 			toml::Value::String(native.to_str().unwrap().into())
 		);
 		Document {
+			files: None,
 			format: 3,
 			generator: 3,
 			context: Context {

@@ -374,3 +374,101 @@ fn real_allowance_counts_each_alias_and_stops_before_a_later_open() {
 	);
 	assert_eq!(loader.opens, opens);
 }
+
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+#[test]
+fn project_handoff_replays_each_observation_and_resolves_unseen_at_its_mount() {
+	let tree = Tree::new();
+	let main = tree.write("app/main.rn", "// saved entry");
+	let file = tree.write("app/twice.rn", "first");
+	let mut loader = tree.loader(&[("unseen", "mounted")]);
+	let mut sources = Sources::new();
+	let id = sources.insert(loader.entry(&main).unwrap()).unwrap();
+	loader.record_module_reads();
+	let span = rune::ast::Span::empty();
+	let twice = ItemBuf::with_item(["twice"]).unwrap();
+	let missing = ItemBuf::with_item(["missing"]).unwrap();
+	loader.load(&sources, id, &twice, &span).unwrap();
+	std::fs::write(&file, "second").unwrap();
+	loader.load(&sources, id, &twice, &span).unwrap();
+	let miss = loader
+		.load(&sources, id, &missing, &span)
+		.unwrap_err()
+		.to_string();
+	let before = loader.remaining;
+	let bytes = serde_json::to_vec(&handoff::Journal::take(loader).unwrap()).unwrap();
+	std::fs::remove_file(main).unwrap();
+	std::fs::remove_file(file).unwrap();
+	tree.write("app/missing.rn", "appeared");
+	tree.write("mounted/mod.rn", "new");
+	let journal: handoff::Journal = serde_json::from_slice(&bytes).unwrap();
+	let (sources, mut restored) = journal.restore().unwrap();
+	assert_eq!(
+		sources.get(id).unwrap().source_line(span).unwrap().text,
+		"// saved entry"
+	);
+	for expected in ["first", "second"] {
+		assert_eq!(
+			restored
+				.load(&sources, id, &twice, &span)
+				.unwrap()
+				.source_line(span)
+				.unwrap()
+				.text,
+			expected
+		);
+	}
+	assert_eq!(
+		restored
+			.load(&sources, id, &missing, &span)
+			.unwrap_err()
+			.to_string(),
+		miss
+	);
+	assert_eq!((restored.opens, restored.remaining), (0, before));
+	let unseen = ItemBuf::with_item(["unseen"]).unwrap();
+	assert_eq!(
+		restored
+			.load(&sources, id, &unseen, &span)
+			.unwrap()
+			.source_line(span)
+			.unwrap()
+			.text,
+		"new"
+	);
+	assert_eq!((restored.opens, restored.remaining), (1, before - 3));
+}
+
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+#[test]
+fn project_handoff_keeps_exhaustion_for_unobserved_requests() {
+	let tree = Tree::new();
+	let main = tree.write("app/main.rn", "entry");
+	tree.write("app/large.rn", "1234");
+	tree.write("app/small.rn", "x");
+	let mut loader = Loader::with_limit(8);
+	let mut sources = Sources::new();
+	let entry = sources.insert(loader.entry(&main).unwrap()).unwrap();
+	loader.record_module_reads();
+	let span = rune::ast::Span::empty();
+	let large = ItemBuf::with_item(["large"]).unwrap();
+	let expected = loader
+		.load(&sources, entry, &large, &span)
+		.unwrap_err()
+		.to_string();
+	assert!(expected.contains("allowance of 8 bytes"));
+	let journal = handoff::Journal::take(loader).unwrap();
+	let (sources, mut restored) = journal.restore().unwrap();
+	let unseen_error = restored.limit_error().to_string();
+	for (name, expected_error) in [("large", expected), ("small", unseen_error)] {
+		let item = ItemBuf::with_item([name]).unwrap();
+		assert_eq!(
+			restored
+				.load(&sources, entry, &item, &span)
+				.unwrap_err()
+				.to_string(),
+			expected_error
+		);
+	}
+	assert_eq!(restored.opens, 0);
+}

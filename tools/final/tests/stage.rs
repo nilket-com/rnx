@@ -486,28 +486,31 @@ fn a_child_past_its_limit_is_killed() {
 #[test]
 fn cargo_progress_cannot_split_or_conceal_a_lint_record() {
 	let tmp = scratch();
-	let log = tmp.0.join("baseline.log");
 	let warning = line("planted", "src/lib.rs");
-	let command = [
-		"/bin/sh",
-		"-c",
-		r#"printf '    Finished' >&2; printf '%s' "$1"; printf ' profile\n' >&2"#,
-		"sh",
-		&warning,
-		"--message-format=json",
-	]
-	.map(str::to_owned);
-	let text = stage::Live {
-		env: Environment::new(),
+	for format in ["json", "json-render-diagnostics"] {
+		let log = tmp.0.join(format!("{format}.log"));
+		let flag = format!("--message-format={format}");
+		let command = [
+			"/bin/sh",
+			"-c",
+			r#"printf '    Finished' >&2; printf '%s' "$1"; printf ' profile\n' >&2"#,
+			"sh",
+			&warning,
+			&flag,
+		]
+		.map(str::to_owned);
+		let text = stage::Live {
+			env: Environment::new(),
+		}
+		.invoke(&command, &tmp.0, &log, &[])
+		.unwrap();
+		assert_eq!(text, warning);
+		assert_eq!(
+			std::fs::read_to_string(log.with_extension("stderr.log")).unwrap(),
+			"    Finished profile\n"
+		);
+		assert_eq!(diagnostics(&text, &tmp.0).unwrap().values().sum::<u64>(), 1);
 	}
-	.invoke(&command, &tmp.0, &log, &[])
-	.unwrap();
-	assert_eq!(text, warning);
-	assert_eq!(
-		std::fs::read_to_string(log.with_extension("stderr.log")).unwrap(),
-		"    Finished profile\n"
-	);
-	assert_eq!(diagnostics(&text, &tmp.0).unwrap().values().sum::<u64>(), 1);
 	assert!(diagnostics(&format!("    Finished{warning}"), &tmp.0).is_err());
 }
 

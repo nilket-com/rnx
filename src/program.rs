@@ -14,6 +14,8 @@ pub struct Text {
 	pub text: String,
 }
 
+#[cfg(all(target_os = "linux", feature = "project-handoff"))]
+pub(crate) mod handoff;
 #[cfg(feature = "project-sources")]
 mod mounts;
 #[cfg(feature = "project-sources")]

@@ -1,6 +1,6 @@
 # ADR 0326: Projects run on the installed engine image
 
-Status: Proposed
+Status: Accepted
 
 Base: published fef4fcb10376d865f7f4f68d8301e50b35493f42 (ADR 0325).
 

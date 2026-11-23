@@ -169,10 +169,56 @@ mod installed {
 		unsafe { rnx_installed_start(argc, argv) }
 	}
 
+	#[cfg(feature = "project-files")]
+	thread_local! {
+		static PROJECT: std::cell::Cell<Option<(*const crate::provider_abi::Provider, c_int)>> =
+			const { std::cell::Cell::new(None) };
+	}
+
+	/// Private startup entry shared by the embedded adapter helper and image.
+	///
+	/// # Safety
+	/// The launcher pins its project executable and owns the provider table
+	/// through the entire synchronous invocation on this thread.
+	#[cfg(feature = "project-files")]
+	#[unsafe(no_mangle)]
+	pub unsafe extern "C" fn rnx_engine_project_cli_v1(
+		argc: c_int,
+		argv: *mut *mut c_char,
+		observer: Option<RouteObserver>,
+		provider: *const crate::provider_abi::Provider,
+		target: c_int,
+	) -> c_int {
+		if provider.is_null()
+			|| !provider.is_aligned()
+			|| target < 3
+			|| OBSERVER.set(observer).is_err()
+		{
+			return INVALID;
+		}
+		PROJECT.set(Some((provider, target)));
+		unsafe { rnx_installed_start(argc, argv) }
+	}
+
 	#[unsafe(no_mangle)]
 	extern "C" fn rnx_installed_body() -> u8 {
 		match catch_unwind(AssertUnwindSafe(|| {
-			rnx::image_file::installed_file(OBSERVER.get().copied().flatten())
+			let observer = OBSERVER.get().copied().flatten();
+			#[cfg(feature = "project-files")]
+			if let Some((provider, target)) = PROJECT.take() {
+				// SAFETY: the startup helper keeps the registration alive for this call.
+				let (owner, modules) = unsafe { crate::adapters::install(provider) }
+					.map_err(|error| format!("invalid project provider: {error}"))?;
+				return owner.during(|| {
+					rnx::image_file::installed_pair(modules, target, observer, || {
+						match crate::adapters::take_fault() {
+							Some(error) => Err(error.to_string()),
+							None => Ok(()),
+						}
+					})
+				});
+			}
+			rnx::image_file::installed_file(observer)
 		})) {
 			Ok(Ok(())) => 0,
 			Ok(Err(error)) => {

@@ -4,6 +4,33 @@
 	target_os = "linux",
 	target_env = "gnu"
 ))]
+mod stock_bundle {
+	pub struct Stock;
+	impl super::installed_file::EmbeddedFileBundle for Stock {
+		const IMAGE: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/libengine_image.so"));
+		const HELPER: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/stock-file"));
+		const GENERATION: &str = concat!(
+			include_str!(concat!(env!("OUT_DIR"), "/libengine_image.so.sha256")),
+			"-",
+			include_str!(concat!(env!("OUT_DIR"), "/stock-file.sha256"))
+		);
+	}
+}
+#[cfg(all(
+	feature = "stock-management",
+	feature = "project-file-bundle",
+	target_arch = "x86_64",
+	target_os = "linux",
+	target_env = "gnu"
+))]
+use rnx::installed_file;
+#[cfg(not(feature = "project-file-bundle"))]
+#[cfg(all(
+	feature = "stock-management",
+	target_arch = "x86_64",
+	target_os = "linux",
+	target_env = "gnu"
+))]
 mod installed_file;
 #[cfg(feature = "stock-management")]
 mod coordinates {
@@ -52,7 +79,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 		target_env = "gnu"
 	))]
 	{
-		rnx::main_with_installed_files(installed_file::launch)
+		rnx::main_with_installed_files(
+			installed_file::launch_bundle::<stock_bundle::Stock, false, false>,
+		)
 	}
 	#[cfg(not(all(
 		feature = "stock-management",

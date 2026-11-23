@@ -7,6 +7,8 @@ mod cache_storage;
 #[allow(dead_code)]
 mod commands;
 mod fingerprint;
+#[cfg(all(test, target_os = "linux"))]
+mod fork_hold;
 mod generate;
 mod git_inventory;
 mod graph;
@@ -15,6 +17,9 @@ mod input;
 mod inventory;
 mod manifest;
 mod new_identity;
+// The probe decodes the schema without the product manager's selection code.
+#[allow(dead_code)]
+mod project_files;
 mod schemas;
 mod wire;
 use std::{ffi::OsString, path::Path};

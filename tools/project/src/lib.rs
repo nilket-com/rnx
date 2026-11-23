@@ -18,6 +18,7 @@ mod maintenance;
 mod manifest;
 mod maps;
 mod new_identity;
+mod project_files;
 mod runtime_install;
 mod schemas;
 mod wire;

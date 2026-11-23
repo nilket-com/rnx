@@ -66,7 +66,34 @@ impl<T: std::os::windows::io::AsHandle> Stream for T {}
 mod imp {
 	use super::*;
 
+	#[cfg(all(
+		target_os = "linux",
+		feature = "project-handoff",
+		feature = "engine-image"
+	))]
+	static PROJECT_THREAD: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
+
 	extern "C" fn interrupt(_: libc::c_int) {
+		#[cfg(all(
+			target_os = "linux",
+			feature = "project-handoff",
+			feature = "engine-image"
+		))]
+		{
+			INTERRUPTED.store(true, Ordering::SeqCst);
+			let thread = PROJECT_THREAD.load(Ordering::SeqCst);
+			if thread > 0 {
+				// The main thread is blocked. Multiple standard signals coalesce.
+				unsafe {
+					libc::syscall(libc::SYS_tgkill, libc::getpid(), thread, libc::SIGINT);
+				}
+			}
+		}
+		#[cfg(not(all(
+			target_os = "linux",
+			feature = "project-handoff",
+			feature = "engine-image"
+		)))]
 		INTERRUPTED.store(true, Ordering::Relaxed);
 	}
 
@@ -75,6 +102,18 @@ mod imp {
 		unsafe {
 			libc::signal(libc::SIGINT, interrupt as *const () as libc::sighandler_t);
 		}
+	}
+
+	/// After blocking SIGINT here, direct signals caught on other threads to
+	/// this thread as well. The kernel carries its pending SIGINT through exec.
+	#[cfg(all(
+		target_os = "linux",
+		feature = "project-handoff",
+		feature = "engine-image"
+	))]
+	pub(crate) fn redirect_project_interrupt() -> bool {
+		PROJECT_THREAD.store(unsafe { libc::gettid() }, Ordering::SeqCst);
+		INTERRUPTED.load(Ordering::SeqCst)
 	}
 
 	/// Whether standard input is a terminal, which record 0012 refuses to read
@@ -549,6 +588,13 @@ mod imp {
 		stream.as_handle().as_raw_handle() as Raw
 	}
 }
+
+#[cfg(all(
+	target_os = "linux",
+	feature = "project-handoff",
+	feature = "engine-image"
+))]
+pub(crate) use imp::redirect_project_interrupt;
 
 pub use imp::{
 	Raw, cancel, prepare_stream, raw, readable, spawn_in_group, stdin_is_a_terminal,

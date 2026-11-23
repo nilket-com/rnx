@@ -55,8 +55,24 @@ impl Project {
 			// The recipe the lock recorded, not the one a newer tool would
 			// write: a retained generator-three lock keeps launching and
 			// rebuilding its placeholder-named wrapper.
-			let (manifest, main) =
-				generate::git_wrapper_for(i.generator(), &lock.declarations, &self.base)?;
+			let (manifest, main) = if let Some(recipe) = i.files() {
+				let expected = crate::project_files::Recipe::resolve(
+					&self.base,
+					&lock.declarations,
+					i.git(),
+					i.native(),
+				)?;
+				if &expected != recipe {
+					return Err("project file recipe changed; run lock".into());
+				}
+				generate::file_wrapper(
+					generate::git_wrapper_retained(&lock.declarations, &self.base)?,
+					recipe,
+					true,
+				)?
+			} else {
+				generate::git_wrapper_for(i.generator(), &lock.declarations, &self.base)?
+			};
 			if i.wrapper() != (manifest.as_str(), main.as_str()) {
 				return Err("generated shared assembly changed; run lock".into());
 			}
@@ -194,6 +210,18 @@ impl Project {
 		self.git_verify_inputs(&lock, verify)?;
 		let (checked, digest) = self.git_checked_artifact(&lock, &bytes, verify, true)?;
 
+		#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+		let reason = if matches!(mode, Launch::Run { .. })
+			&& std::env::var_os("RNX_FILE_ROUTE_FD").is_some()
+		{
+			let identity = lock.shared()?;
+			crate::project_files::manager_reason(
+				lock.declarations.executable.is_some(),
+				identity.as_ref().and_then(|i| i.files()),
+			)
+		} else {
+			None
+		};
 		let mut command = match mode {
 			Launch::Run {
 				script,
@@ -233,6 +261,10 @@ impl Project {
 			}
 		};
 		commands::check()?;
+		#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+		if let Some(reason) = reason {
+			super::image_package::report_manager_route(&mut command, reason)?;
+		}
 		// Advisory lock descriptors are close-on-exec; the script is not a project
 		// writer. The immutable map/artifact outlive this process without a parent.
 		#[cfg(unix)]
@@ -271,7 +303,22 @@ impl Project {
 			Assembly::Shared { .. } => {
 				let i = lock.shared()?.unwrap();
 				let cargo = input::read(&self.base.join("rnx.Cargo.lock"), input::DOCUMENT_LIMIT)?;
-				let entry = cache_entry::acquire(&i, &cargo, &self.base, offline, recheck)?;
+				let entry = cache_entry::acquire(
+					&i,
+					&cargo,
+					&self.base,
+					offline,
+					|command, stage| {
+						super::prepare_file_inputs(
+							i.files(),
+							command,
+							stage,
+							&i.context().cache_root,
+							offline,
+						)
+					},
+					recheck,
+				)?;
 				let checked = artifact::check(
 					entry.artifact.path(),
 					&entry.digest,
@@ -375,6 +422,24 @@ impl Project {
 			fs::write(stage.join("Cargo.lock"), seed).map_err(err)?;
 			graph = metadata(false)?;
 		}
+		let (before_native, before_git) =
+			git_inventory::resolve(&graph, &stage, &root, &home, &mut Allowance::default())?;
+		let recipe = crate::project_files::Recipe::resolve(
+			&self.base,
+			declarations,
+			&before_git,
+			&before_native,
+		)?;
+		let wrapper = generate::file_wrapper(
+			generate::git_wrapper_retained(declarations, &self.base)?,
+			&recipe,
+			true,
+		)?;
+		if wrapper != (manifest, main) {
+			fs::write(stage.join("Cargo.toml"), &wrapper.0).map_err(err)?;
+			fs::write(stage.join("src/main.rs"), &wrapper.1).map_err(err)?;
+			graph = metadata(false)?;
+		}
 		let source = inventory::sources(&self.manifest, &mut Allowance::default())?;
 		let (native, git) =
 			git_inventory::resolve(&graph, &stage, &root, &home, &mut Allowance::default())?;
@@ -397,7 +462,7 @@ impl Project {
 			cargo,
 			target,
 			profile: "release".into(),
-			features: vec!["project-sources".into()],
+			features: crate::project_files::features(Some(&recipe)),
 			build: None,
 		};
 		// Record 0069, one eligibility rule, decided here and nowhere else: a
@@ -417,6 +482,7 @@ impl Project {
 			context,
 			inputs.native.clone().unwrap(),
 			git,
+			recipe,
 			&lock,
 		)?;
 		identity.revalidate(&stage)?;

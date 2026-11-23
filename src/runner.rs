@@ -287,7 +287,7 @@ pub(crate) fn run_loaded(
 		modules: file_modules,
 	} = file;
 	crate::host::running_a_script();
-	let Some(mut sources) = file_sources(&mut loader, path) else {
+	let Some(sources) = file_sources(&mut loader, path) else {
 		return 1;
 	};
 	if engine.choice == crate::engine::EngineChoice::Auto {
@@ -305,10 +305,40 @@ pub(crate) fn run_loaded(
 		) {
 			return code;
 		}
+		#[cfg(all(
+			target_os = "linux",
+			feature = "project-handoff",
+			feature = "engine-image"
+		))]
+		if crate::image_file::has_pair() {
+			let Err(err) = crate::image_file::continue_pair(loader, budget);
+			eprintln!("error: project continuation: {err}");
+			return 1;
+		}
 		loader.replay_module_reads();
 	} else {
 		engine.selected("legacy", None);
 	}
+	legacy_file(
+		context,
+		lifecycle,
+		arguments,
+		debug_source,
+		budget,
+		sources,
+		loader,
+	)
+}
+
+pub(crate) fn legacy_file(
+	context: &Context,
+	lifecycle: &crate::lifecycle::Lifecycle,
+	arguments: Value,
+	debug_source: bool,
+	budget: usize,
+	mut sources: Sources,
+	mut loader: Loader,
+) -> i32 {
 	let compiled = compile(context, &mut sources, &mut loader);
 	if debug_source {
 		debug_sources(&loader);

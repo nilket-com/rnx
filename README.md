@@ -434,6 +434,16 @@ runs before any runner context or settings are loaded. Generated applications
 omit management and delegate dependency preparation to their associated manager,
 or an explicit `RNX_PROJECT_TOOL`, or a capable stock `rnx` on PATH.
 
+On x86-64 GNU/Linux, newly locked projects using the stock runtime alone or
+the reviewed Candle and Polars pair embed the file engine in their executable.
+Both `rnx project run` and the generated app's `run` command use that engine.
+An existing lock keeps its original executable recipe. To migrate, update the
+pinned runtime if it predates project image support, then run `rnx project lock`
+and `rnx project build`, each with `--manifest PATH`. Until then, the project
+uses its previous runner. The manager counts runs of a historical lock under
+`historical_lock`. Direct launches of already-built executables keep their
+original reporting behavior.
+
 A clean stock build with known Git coordinates describes its revision without
 fetching. `:dep polars` uses Cargo to acquire that revision, builds or attaches
 to its assembly, probes startup and restarts the session; `:depv polars` does
