@@ -226,6 +226,32 @@ fn lattices_are_join_semilattices_with_bottom() {
 	laws!(ws, None::<Written>, Written::Maybe);
 	laws!(ks, Some(Konst::Bottom), Konst::Top);
 	laws!(fs, Some(FTy::Bottom), FTy::Top);
+	// Every ordered slot pair, including changes in either direction of the table.
+	let expected = [
+		[FTy::Bottom, FTy::Unit, FTy::Bool, FTy::I64, FTy::Top],
+		[FTy::Unit, FTy::Unit, FTy::Top, FTy::Top, FTy::Top],
+		[FTy::Bool, FTy::Top, FTy::Bool, FTy::Top, FTy::Top],
+		[FTy::I64, FTy::Top, FTy::Top, FTy::I64, FTy::Top],
+		[FTy::Top; 5],
+	];
+	for (i, a) in fs.into_iter().enumerate() {
+		for (j, b) in fs.into_iter().enumerate() {
+			let mut target = [a];
+			let joined = expected[i][j];
+			assert_eq!(super::join_slot_types(&mut target, &[b]), a != joined);
+			assert_eq!(target, [joined]);
+		}
+	}
+	assert!(!super::join_slot_types(&mut [], &[]));
+	let mut equal = fs;
+	assert!(!super::join_slot_types(&mut equal, &fs));
+	assert_eq!(equal, fs);
+	let mut mixed = [FTy::Bottom, FTy::Bool, FTy::Unit];
+	assert!(super::join_slot_types(
+		&mut mixed,
+		&[FTy::I64, FTy::Bool, FTy::I64]
+	));
+	assert_eq!(mixed, [FTy::I64, FTy::Bool, FTy::Top]);
 	// Product join is componentwise: an unwritten entry joined with an I64 write is
 	// "maybe written, I64 when written", never Top.
 	let entry = SlotState {

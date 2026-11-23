@@ -1,6 +1,6 @@
 # ADR 0328: Region type join does not depend on heap layout
 
-Status: Proposed
+Status: Accepted
 
 Base: published aa5af56504c1a7cc25d8e7f8315fcf31677d72b7 (ADR 0327).
 

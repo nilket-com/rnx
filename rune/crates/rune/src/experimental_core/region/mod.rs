@@ -2936,13 +2936,8 @@ pub(crate) fn function_types_in<'b>(
 		function_transfer(f.operation(pc)?, &mut scratch)?;
 		for q in successors(f, pc)?.into_iter().flatten() {
 			let target = &mut states[q * n..(q + 1) * n];
-			let mut changed = !reached[q];
+			let changed = join_slot_types(target, &scratch) | !reached[q];
 			reached[q] = true;
-			for (t, s) in target.iter_mut().zip(scratch.iter()) {
-				let joined = t.join(*s);
-				changed |= joined != *t;
-				*t = joined;
-			}
 			if changed && !in_work[q] {
 				in_work[q] = true;
 				work.push(q)?;
@@ -2950,6 +2945,18 @@ pub(crate) fn function_types_in<'b>(
 		}
 	}
 	Ok(Some(states))
+}
+
+// Keep the exclusive output borrow visible to the optimizer at the vectorized loop.
+#[inline(never)]
+fn join_slot_types(target: &mut [FTy], incoming: &[FTy]) -> bool {
+	let mut changed = false;
+	for (slot, source) in target.iter_mut().zip(incoming) {
+		let joined = slot.join(*source);
+		changed |= joined != *slot;
+		*slot = joined;
+	}
+	changed
 }
 
 fn function_transfer(op: Op, s: &mut [FTy]) -> Result<(), Error> {
