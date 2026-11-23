@@ -411,7 +411,7 @@ impl ProgramRegions {
 	}
 
 	/// The region whose header is `pc` in a table from [`Self::function`].
-	#[inline]
+	#[inline(never)]
 	pub(crate) fn header(&self, table: &[(u32, u32)], pc: usize) -> Option<&Ready> {
 		for &(header, index) in table {
 			if header as usize == pc {

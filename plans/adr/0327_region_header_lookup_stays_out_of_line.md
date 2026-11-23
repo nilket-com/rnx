@@ -1,6 +1,6 @@
 # ADR 0327: Region header lookup stays out of line
 
-Status: Proposed
+Status: Accepted
 
 Base: published df42ef8c1827b85f2473993d979555cb87964e01 (ADR 0326).
 
