@@ -31,6 +31,11 @@ pub(crate) fn validate_setup_context(row: &Value, policy: &Value) -> Result<()> 
 	let mode = row["policy"].as_str().context("capture mode")?;
 	let installed = row.get("dispatch").is_some();
 	if installed {
+		ensure!(
+			row["dispatch"].get("host_inputs")
+				== policy["installed_setup"]["outer_reference"].get("host_inputs"),
+			"installed loader or guest PID differs from the outer reference"
+		);
 		let reference = policy["installed_setup"].get("stack_query");
 		let observed = row["dispatch"].get("stack_query");
 		ensure!(
@@ -76,7 +81,83 @@ pub(crate) fn validate_setup_context(row: &Value, policy: &Value) -> Result<()> 
 	Ok(())
 }
 
+/// Confirm the observer saw complete returns and one timeline across phase boundaries.
+pub(super) fn validate_inputs(row: &Value, meter: &Value) -> Result<()> {
+	let proof = &row[if row["policy"] == "on" {
+		"boundary"
+	} else {
+		"image_boundary"
+	}];
+	ensure!(
+		proof.get("meter") == Some(meter)
+			&& proof["status"] == "PASS"
+			&& proof["exit"] == 0
+			&& proof["errors"] == json!([]),
+		"guest input observer did not complete"
+	);
+	let owner = if proof.get("engine").is_some() {
+		"/run/rnx-route/libengine_image.so"
+	} else {
+		"/run/rnx-route/rnx"
+	};
+	let mut seeds = 0;
+	let mut reads = 0;
+	for thread in proof["input_threads"]
+		.as_object()
+		.context("missing measured threads")?
+		.values()
+	{
+		let seed = integer(&thread["seed_returns"])?;
+		let clock = integer(&thread["clock_returns"])?;
+		ensure!(
+			thread["image"] == owner
+				&& integer(&thread["seed_entries"])? == seed
+				&& seed <= 1 && integer(&thread["clock_entries"])? == clock,
+			"unpaired guest input"
+		);
+		seeds += seed;
+		reads += clock;
+	}
+	ensure!(
+		seeds != 0 && reads != 0 && integer(&proof["clock"]["reads"])? == reads,
+		"missing guest input"
+	);
+	let phases = proof["clock"]["phases"]
+		.as_object()
+		.context("missing guest clock phases")?;
+	let epoch = integer(&meter["epoch_ns"])?;
+	let tick = integer(&meter["tick_ns"])?;
+	let mut elapsed = 0;
+	for name in ["before", "setup", "execution", "after"] {
+		if let Some(period) = phases.get(name) {
+			let n = integer(&period["count"])?;
+			ensure!(
+				n > 0
+					&& n <= reads - elapsed
+					&& integer(&period["first"])? == epoch + elapsed * tick,
+				"invalid first guest tick"
+			);
+			elapsed += n;
+			ensure!(
+				integer(&period["last"])? == epoch + (elapsed - 1) * tick,
+				"invalid last guest tick"
+			);
+		}
+	}
+	ensure!(elapsed == reads, "clock timeline does not cover all reads");
+	Ok(())
+}
+
 pub(super) fn validate_row(row: &Value, policy: &Value) -> Result<()> {
+	if let Some(meter) = policy.get("meter") {
+		validate_inputs(row, meter)?;
+		ensure!(
+			row["valgrind_sha256"]
+				.as_str()
+				.is_some_and(|s| s.len() == 64),
+			"missing Valgrind log"
+		);
+	}
 	validate_setup_context(row, policy)?;
 	if row["policy"] == "off" {
 		ensure!(
@@ -292,6 +373,30 @@ mod tests {
 	}
 
 	#[test]
+	fn frozen_inputs_require_the_seed_owner_and_a_contiguous_timeline() {
+		let meter = json!({"epoch_ns":1000,"tick_ns":10});
+		let proof = json!({"status":"PASS","exit":0,"errors":[],"meter":meter,
+			"input_threads":{"main":{"seed_entries":1,"seed_returns":1,"clock_entries":3,"clock_returns":3,"image":"/run/rnx-route/rnx"}},
+			"clock":{"reads":3,"phases":{"setup":{"count":2,"first":1000,"last":1010},
+				"execution":{"count":1,"first":1020,"last":1020}}}});
+		let row = json!({"policy":"on","boundary":proof});
+		validate_inputs(&row, &meter).unwrap();
+		for (path, value) in [
+			("/boundary/input_threads/main/seed_returns", json!(0)),
+			(
+				"/boundary/input_threads/main/image",
+				json!("/tmp/unrelated"),
+			),
+			("/boundary/clock/phases/execution/first", json!(1000)),
+			("/boundary/clock/phases/setup/count", json!(1)),
+		] {
+			let mut invalid = row.clone();
+			*invalid.pointer_mut(path).unwrap() = value;
+			assert!(validate_inputs(&invalid, &meter).is_err(), "{path}");
+		}
+	}
+
+	#[test]
 	fn off_dispatch_preserves_whole_verdict_and_uses_frozen_cumulative_reference() {
 		let policy = json!({"installed_setup":{"outer":{"off":{"W":1000}}}});
 		let stock = json!({});
@@ -371,6 +476,7 @@ mod tests {
 			);
 			let mut d = installed["outer_reference"]["on"].clone();
 			d["T"] = json!(d["T"].as_i64().unwrap() + observer);
+			d["host_inputs"] = installed["outer_reference"]["host_inputs"].clone();
 			d["stack_query"] = installed["stack_query"]["on"].clone();
 			d["stack_query"]["T"] = json!(d["stack_query"]["T"].as_i64().unwrap() + observer);
 			d["launch_sha256"] = installed["outer_launch_sha256"]["on"].clone();

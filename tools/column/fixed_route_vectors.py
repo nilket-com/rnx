@@ -1,4 +1,5 @@
 """Fixed-route exact program vectors for the existing eight CLI workloads."""
+import tempfile
 import argparse
 import sys,subprocess,json,hashlib,traceback,os
 from pathlib import Path
@@ -20,6 +21,46 @@ args=parser.parse_args()
 out=args.out.resolve();out.mkdir(exist_ok=False)
 result={'status':'FAIL','purpose':'exact unchanged program and unknown-object function vectors; system deltas reported separately'}
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+
+def retained_loader_cache(store, expected):
+	"""Seed once from matching host bytes. A retained copy survives host cache updates."""
+	if len(expected) != 64 or any(c not in '0123456789abcdef' for c in expected):
+		raise ValueError('invalid loader cache digest')
+	store.mkdir(parents=True, exist_ok=True)
+	path = store / expected
+	if not path.exists():
+		data = Path('/etc/ld.so.cache').read_bytes()
+		if hashlib.sha256(data).hexdigest() != expected:
+			raise ValueError(f'restore the fixed-route loader cache at {path}')
+		with tempfile.NamedTemporaryFile(dir=store) as scratch:
+			scratch.write(data)
+			scratch.flush()
+			try:
+				os.link(scratch.name, path)
+			except FileExistsError:
+				pass
+	if sha(path) != expected:
+		raise ValueError('retained loader cache digest mismatch')
+	return path
+
+def verify_mapped_libraries(maps, executable, libraries):
+	found = set()
+	for line in maps.splitlines():
+		fields = line.split(maxsplit=5)
+		if len(fields) < 6 or not fields[5].startswith('/') or fields[5] == executable:
+			continue
+		path = fields[5]
+		if path in found:
+			continue
+		if path not in libraries or sha(path) != libraries[path]:
+			raise ValueError(f'unexpected mapped library: {path}')
+		stat = Path(path).stat()
+		major, minor = [int(n, 16) for n in fields[3].split(':')]
+		if (stat.st_dev, stat.st_ino) != (os.makedev(major, minor), int(fields[4])):
+			raise ValueError(f'library mapping identity changed: {path}')
+		found.add(path)
+	if found != set(libraries):
+		raise ValueError('loaded library set differs from frozen outer reference')
 
 def native_stack_rows(prefix, executable, arguments, directory):
  """Count the native mappings at the same std -> libc call as the observer."""
@@ -63,7 +104,12 @@ def installed_dispatch(build, mode, directory, valgrind):
  executable=layout+'/installed'
  arguments=['run','--debug-engine','--native='+mode,'--budget','1000000000',layout+'/program.rn']
  bindings=[(build['installed_binary'],'installed'),(valgrind,'valgrind'),(fixture,'program.rn')]
- prefix=['/usr/bin/bwrap','--die-with-parent','--ro-bind','/','/','--dev-bind','/dev','/dev',
+ reference=json.loads((root/'tools/column/fixed_route_policy.json').read_text())['installed_setup']['outer_reference']['host_inputs']
+ if os.path.lexists('/etc/ld.so.preload'):
+  raise ValueError('unexpected /etc/ld.so.preload')
+ loader_cache=retained_loader_cache(root/'target/fixed-route-inputs',reference['loader_cache_sha256'])
+ prefix=['/usr/bin/bwrap','--unshare-pid','--die-with-parent','--ro-bind','/','/',
+  '--ro-bind',str(loader_cache),'/etc/ld.so.cache','--dev-bind','/dev','/dev',
   '--proc','/proc','--tmpfs','/tmp','--tmpfs','/run','--dir',layout]
  for src,name in bindings:prefix+=['--ro-bind',str(src),layout+'/'+name]
  env=dict(capture_environment(),XDG_CACHE_HOME=layout+'/cache',
@@ -105,15 +151,30 @@ def installed_dispatch(build, mode, directory, valgrind):
  if (header(query,'cmd:  ')!=[executable+' '+command]
      or header(query,'desc: Trigger: ')!=['--dump-before=execve']):
   raise ValueError('invalid query capture')
+ guest_pid=reference['guest_pid']
+ if any(header(path,'pid: ') != [str(guest_pid)] for path in (outer,inner,query)):
+  raise ValueError('outer or isolated query ran at a different guest PID')
  observed=ir_accounting.account(query,executable,system_window=True)
  if not (ir_accounting.outer_stack_query(outer,executable)
          == ir_accounting.outer_stack_query(query,executable) == observed['total_Ir']):
   raise ValueError('isolated query does not reproduce the raw outer edge')
  before=native_stack_rows(prefix,executable,arguments,directory)
+ verify_mapped_libraries((directory/'native.maps').read_text(),executable,reference['libraries'])
+ preload='/libexec/valgrind/vgpreload_core-amd64-linux.so'
+ if sha(str(valgrind)+preload)!=reference['vgpreload_sha256'] or sha(loader_cache)!=reference['loader_cache_sha256']:
+  raise ValueError('measurement host inputs changed during dispatch')
+ if os.path.lexists('/etc/ld.so.preload'):
+  raise ValueError('unexpected /etc/ld.so.preload')
+ libc='/usr/lib/x86_64-linux-gnu/libc.so.6'
+ allocator=ir_accounting.allocator_path(outer,libc,reference['libraries'][libc])
+ objects={line.split(') ',1)[1] for line in outer.read_text().splitlines()
+          if line.startswith(('ob=(', 'cob=(')) and ') /' in line}
+ if objects!={executable,layout+'/valgrind'+preload,*reference['libraries']}:
+  raise ValueError('outer profile library set differs from frozen reference')
  counts=ir_accounting.account(outer,executable)
  context={'argv':tracer+[executable,*arguments],'environ':list(env.items()),'cwd':layout}
  launch_hash=hashlib.sha256(json.dumps(context,sort_keys=True,separators=(',',':')).encode()).hexdigest()
- mapping={'launch_sha256':launch_hash,'profile':str(outer),'profile_sha256':sha(outer),'inner':str(inner),'inner_sha256':sha(inner),
+ mapping={'allocator':allocator,'host_inputs':reference,'launch_sha256':launch_hash,'profile':str(outer),'profile_sha256':sha(outer),'inner':str(inner),'inner_sha256':sha(inner),
   'W':counts['rnx_Ir']+counts['other_Ir'],'T':counts['total_Ir'],
   'stack_query':{'T':observed['total_Ir'],'W':observed['rnx_Ir']+observed['other_Ir'],'native_before_stack':before},
   'query':str(query),'query_sha256':sha(query),'maps':str(directory/'native.maps'),'maps_sha256':sha(directory/'native.maps')}
@@ -125,6 +186,7 @@ def installed_dispatch(build, mode, directory, valgrind):
 try:
  pair=json.loads(args.build_receipt.read_text());assert pair['status']=='PASS' and len(pair['builds'])==2
  binaries=dict(zip(('baseline','candidate'),pair['builds']))
+ meter=json.loads((root/'tools/column/fixed_route_policy.json').read_text())['meter']
  entries={}
  phase_symbols={}
  for role,b in binaries.items():
@@ -177,6 +239,7 @@ try:
    measured_binary=b['binary']
    if args.native_phases:
     cfg['canonical_layout']=True
+    cfg['meter']=meter
     measured_binary='/run/rnx-route/rnx'
    engine=None
    if 'measured' in b:cfg['measured']=b['measured']
@@ -190,8 +253,10 @@ try:
    with (d/'child.log').open('w') as log:p=subprocess.run([sys.executable,'-B',str(root/'tools/column/old_path_child.py'),str(d/'CONFIG.json')],env=capture_environment(),stdout=log,stderr=subprocess.STDOUT,timeout=720)
    assert p.returncode==0
    assert (d/'program.stdout').read_bytes()==direct.stdout
+   if 'meter' in cfg:
+    assert (d/'program.stderr').read_bytes()==direct.stderr
    if phased:
-    whole,parts=ir_accounting.phase_accounts(d,measured_binary,engine)
+    whole,parts=ir_accounting.phase_accounts(d,measured_binary,engine,log="valgrind.log")
     boundary=json.loads((d/'GDB.json').read_text())
     assert boundary['status']=='PASS' and boundary['split'] in phase_symbols[role]
     assert sum(v for k,v in parts['execution']['accounting']['rnx_functions'].items() if k==boundary['split'])>0
@@ -201,7 +266,7 @@ try:
     profile=callgrind.parse(profiles[0]);assert profile['total_Ir']>0
     assert sum(v['self_Ir'] for k,v in profile['functions'].items() if 'Executor' in k and 'invoke_args' in k)>0
     r.update(accounting=ir_accounting.account(profiles[0],measured_binary,engine),profile=str(profiles[0]),profile_sha256=sha(profiles[0]))
-   if engine and not phased:r['image_boundary']=json.loads((d/'GDB.json').read_text())
+   if not phased and (engine or 'meter' in cfg):r['image_boundary']=json.loads((d/'GDB.json').read_text())
    r.update(status='PASS',stdout_sha256=sha(d/'program.stdout'),fixture_sha256=sha(src))
   except Exception:r['error']=traceback.format_exc()
   atomic_json(d/'RESULT.json',r);return r

@@ -239,6 +239,12 @@ pub fn recipe(
 			policy["native_setup"]["launch_sha256"].clone(),
 		);
 	}
+	if let Some(host_inputs) = policy["installed_setup"]["outer_reference"].get("host_inputs") {
+		subset.insert("outer_host_inputs".into(), host_inputs.clone());
+	}
+	if let Some(meter) = policy.get("meter") {
+		subset.insert("meter".into(), meter.clone());
+	}
 	let mut tooling = Map::new();
 	for p in TOOLING {
 		tooling.insert(p.into(), json!(digest(&root.join(p))?));
@@ -857,6 +863,13 @@ pub fn capture_receipts(
 						&& config["valgrind_root"] == json!(valgrind),
 					"capture mount sources differ"
 				);
+				if let Some(meter) = policy.get("meter") {
+					anyhow::ensure!(
+						config.get("meter") == Some(meter),
+						"guest measurement inputs differ"
+					);
+					row["valgrind_sha256"] = json!(digest(&dir.join("valgrind.log"))?);
+				}
 				row["config_sha256"] = json!(digest(&config_path)?);
 				row["launch_sha256"] = json!(digest(&dir.join("LAUNCH.json"))?);
 				fr::validate_setup_context(row, policy)?;
@@ -884,7 +897,10 @@ pub fn capture_receipts(
 						images::dispatch_proof(row, desc, &read(&proof_path)?)?;
 					}
 				}
-				if mode == "on" || binary.get("engine_binary").is_some() {
+				if mode == "on"
+					|| policy.get("meter").is_some()
+					|| binary.get("engine_binary").is_some()
+				{
 					let boundary = dir.join("GDB.json");
 					anyhow::ensure!(
 						read(&boundary)?

@@ -98,6 +98,23 @@ pub(crate) fn dispatch_proof(row: &Value, desc: &Value, proof: &Value) -> Result
 			&& proof["launch_sha256"] == crate::pyjson::identity(&proof["launch"])?,
 		"installed dispatch proof differs"
 	);
+	ensure!(
+		d.get("host_inputs") == proof.get("host_inputs")
+			&& d.get("allocator") == proof.get("allocator"),
+		"installed host proof differs"
+	);
+	if let Some(host) = d.get("host_inputs") {
+		let expected = &host["libraries"]["/usr/lib/x86_64-linux-gnu/libc.so.6"];
+		ensure!(
+			expected.is_string()
+				&& d["allocator"]["library_sha256"] == *expected
+				&& d["allocator"]["site_visits"]
+					== serde_json::json!({
+						"0xb48a5": 1, "0xb48aa": 1, "0xb48cd": 1, "0xb48d2": 1, "0xb4ad5": 1, "0xb48f0": 0
+					}),
+			"missing accepted allocator read"
+		);
+	}
 	if d.get("stack_query").is_some() || proof.get("stack_query").is_some() {
 		for key in ["stack_query", "query_sha256", "maps_sha256"] {
 			ensure!(

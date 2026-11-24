@@ -1,6 +1,6 @@
 # ADR 0329: Fixed-route measures fixed random and clock inputs
 
-Status: Proposed
+Status: Accepted
 
 Base: published 4f0195becab680abb7e6caddc0be4b6fdb629eec (ADR 0328).
 

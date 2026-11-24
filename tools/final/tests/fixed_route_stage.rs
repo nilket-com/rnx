@@ -640,6 +640,7 @@ fn legacy_policy() -> Value {
 	policy["schema"] = json!(1);
 	policy.as_object_mut().unwrap().remove("native_setup");
 	policy.as_object_mut().unwrap().remove("installed_setup");
+	policy.as_object_mut().unwrap().remove("meter");
 	policy
 }
 

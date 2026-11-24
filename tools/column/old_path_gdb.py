@@ -1,13 +1,146 @@
 import gdb
 import json
 import os
+import struct
 from pathlib import Path
+
+
+def arm_inputs(config, state):
+	method = config['meter']
+	state['meter'] = method
+	counters = state['input_threads'] = {}
+	clock = state['clock'] = {'reads': 0, 'phases': {}}
+	image = config.get('engine_binary', config['binary'])
+	solib = '/proc/self/fd/9' if 'installed_binary' in config else config.get('engine_binary')
+	product = Path(image).stat()
+	seed = struct.pack('<QQ', *method['hash_keys'])
+	pending = set()
+
+	def observe_owner(frame):
+		pc = frame.pc()
+		if gdb.solib_name(pc) != solib:
+			raise ValueError('input caller belongs to the wrong image')
+		maps = Path('/proc', os.environ['COLUMN_CLIENT_PID'], 'maps')
+		for row in maps.read_text().splitlines():
+			span, perms, _, device, inode, *_ = row.split()
+			start, end = [int(n, 16) for n in span.split('-')]
+			if start <= pc < end and 'x' in perms:
+				major, minor = [int(n, 16) for n in device.split(':')]
+				if (os.makedev(major, minor), int(inode)) == (product.st_dev, product.st_ino):
+					return
+		raise ValueError('input caller is outside the pinned text mapping')
+
+	class Returned(gdb.FinishBreakpoint):
+		def __init__(self, frame, destination, kind, thread, counts):
+			super().__init__(frame, internal=True)
+			self.destination, self.kind, self.owner, self.counts = destination, kind, thread, counts
+
+		def stop(self):
+			try:
+				expected = 16 if self.kind == 'seed' else 0
+				frame = gdb.newest_frame()
+				if gdb.selected_thread().ptid != self.owner or int(frame.read_register('rax')) != expected:
+					raise ValueError('input return belongs to another thread or failed')
+				observe_owner(frame)
+				if self.kind == 'seed':
+					value = seed
+				else:
+					tick = clock['reads']
+					ns = method['epoch_ns'] + tick * method['tick_ns']
+					value = struct.pack('<qq', *divmod(ns, 10**9))
+					phase = ('after' if state['returns'] else 'execution' if 'split' in state
+						else 'setup' if state['entries'] else 'before')
+					period = clock['phases'].setdefault(phase, {'first': ns, 'count': 0})
+					period['count'] += 1
+					period['last'] = ns
+					clock['reads'] += 1
+				guest = gdb.selected_inferior()
+				guest.write_memory(self.destination, value)
+				if bytes(guest.read_memory(self.destination, len(value))) != value:
+					raise ValueError('guest input was not installed')
+				self.counts[self.kind + '_returns'] += 1
+				pending.remove((self.owner, self.kind))
+			except Exception as error:
+				state['errors'].append(str(error))
+			return False
+
+		def out_of_scope(self):
+			state['errors'].append('guest input call left its frame')
+
+	class Input(gdb.Breakpoint):
+		def __init__(self, symbol, kind):
+			super().__init__(symbol, internal=True)
+			self.kind = kind
+
+		def stop(self):
+			try:
+				frame = gdb.newest_frame()
+				caller = frame.older()
+				if caller is None:
+					raise ValueError('missing input caller')
+				name = caller.name() or ''
+				if self.kind == 'seed':
+					if name != 'std::sys::random::linux::getrandom':
+						return False
+					init = caller.older()
+					if (not init or 'RandomState>::new::KEYS::__rust_std_internal_init_fn' not in (init.name() or '')
+							or int(frame.read_register('rsi')) != 16 or int(frame.read_register('rdx')) != 4):
+						raise ValueError('unrecognized Rust seed initialization')
+					observe_owner(init)
+					buffer = int(frame.read_register('rdi'))
+				else:
+					if name != '<std::sys::pal::unix::time::Timespec>::now':
+						if state['entries'] and not state['returns']:
+							raise ValueError('unrecognized in-window clock caller')
+						return False
+					if int(frame.read_register('rdi')) != 1:
+						raise ValueError('unreviewed clock domain')
+					buffer = int(frame.read_register('rsi'))
+				observe_owner(caller)
+				thread = gdb.selected_thread().ptid
+				key = (thread, self.kind)
+				row = counters.setdefault(str(thread), dict(image=image, seed_entries=0,
+					seed_returns=0, clock_entries=0, clock_returns=0))
+				if key in pending or (self.kind == 'seed' and row['seed_entries']):
+					raise ValueError('unexpected overlapping or repeated input initialization')
+				pending.add(key)
+				row[self.kind + '_entries'] += 1
+				Returned(frame, buffer, self.kind, thread, row)
+			except Exception as error:
+				state['errors'].append(str(error))
+			return False
+
+	gdb.execute('set breakpoint pending on')
+	Input('getrandom', 'seed')
+	Input('clock_gettime', 'clock')
+
+	def finish():
+		if pending or sum(r['seed_returns'] for r in counters.values()) < 1:
+			raise ValueError('missing or unfinished RandomState initialization')
+		tick = method['tick_ns']
+		next_ns = method['epoch_ns']
+		for phase in ('before', 'setup', 'execution', 'after'):
+			period = clock['phases'].get(phase)
+			if period is None:
+				continue
+			if period['first'] != next_ns or period['last'] != next_ns + tick * (period['count'] - 1):
+				raise ValueError('monotonic timeline reset or skipped a guest read')
+			next_ns = period['last'] + tick
+		if (not clock['reads'] or clock['reads'] != sum(r['clock_returns'] for r in counters.values())) or any(r['seed_entries'] != r['seed_returns'] or
+				r['clock_entries'] != r['clock_returns'] for r in counters.values()):
+			raise ValueError('guest input entry/return counts do not reconcile')
+	return finish
+
+
 config=json.loads(Path(os.environ['COLUMN_BOUNDARY_CONFIG']).read_text())
 state={'status':'FAIL','entries':0,'returns':0,'errors':[],'armed':False}
 phases=config.get('phase_symbols')
 image = config.get('engine_binary')
 installed = 'installed_binary' in config
 solib = '/proc/self/fd/9' if installed else image
+finish_inputs = None
+if 'meter' in config:
+	finish_inputs = arm_inputs(config, state)
 if image:
 	gdb.execute('tbreak main')
 	gdb.execute('continue')
@@ -109,6 +242,11 @@ class Entry(gdb.Breakpoint):
 			state['errors'].append(repr(e));save();return True
 
 def exited(event):
+	if finish_inputs:
+		try:
+			finish_inputs()
+		except ValueError as error:
+			state['errors'].append(str(error))
 	state['exit']=event.exit_code
 	if event.exit_code==0 and state['armed'] and state['entries']==state['returns']==1 and not state['errors']:state['status']='PASS'
 	save()

@@ -31,6 +31,7 @@ fn policy() -> Value {
 	p["schema"] = json!(1);
 	p.as_object_mut().unwrap().remove("native_setup");
 	p.as_object_mut().unwrap().remove("installed_setup");
+	p.as_object_mut().unwrap().remove("meter");
 	p
 }
 
@@ -1297,7 +1298,7 @@ fn same_image_at_another_launch_configuration_is_incomparable_before_scoring() {
 	let policy: Value =
 		serde_json::from_slice(&std::fs::read(root().join(fr::POLICY)).unwrap()).unwrap();
 	let expected = &policy["native_setup"]["launch_sha256"];
-	let recipe = json!({"policy":{"schema":2,"launch_sha256":expected},"cpu":[],"environment":{},"run_environment":{},"valgrind":"v","fixtures":{},"tooling":{}});
+	let recipe = json!({"policy":{"schema":2,"launch_sha256":expected,"meter":policy["meter"],"outer_host_inputs":policy["installed_setup"]["outer_reference"]["host_inputs"]},"cpu":[],"environment":{},"run_environment":{},"valgrind":"v","fixtures":{},"tooling":{}});
 	let mut paths = json!({"binary":"/test/rnx","vectors":"/test/vectors","role":"candidate","cwd":"/test","valgrind_root":"/test/vg","launch_sha256":expected});
 	let image = "a".repeat(64);
 	let mut r = json!({"status":"PASS","policy_sha256":identity(&policy).unwrap(),"revision":policy["anchor"],"recipe":recipe,"binary_sha256":image,"capture_paths":paths,"capture_key":contextual_key(&image,&recipe,&paths).unwrap()});
@@ -1309,6 +1310,20 @@ fn same_image_at_another_launch_configuration_is_incomparable_before_scoring() {
 			.to_string()
 			.contains("case matrix")
 	);
+	for field in ["meter", "outer_host_inputs"] {
+		let mut stale = original.clone();
+		stale["recipe"]["policy"]
+			.as_object_mut()
+			.unwrap()
+			.remove(field);
+		stale["capture_key"] = json!(contextual_key(&image, &stale["recipe"], &paths).unwrap());
+		assert_ne!(stale["capture_key"], original["capture_key"]);
+		let error = fr::score(&stale, &r, Some(&r), &policy).unwrap_err();
+		assert!(
+			error.to_string().contains("frozen guest and host inputs"),
+			"{error}"
+		);
+	}
 	paths["vectors"] = json!("/other/vectors");
 	paths["launch_sha256"]["on"] = json!("b".repeat(64));
 	r["capture_paths"] = paths.clone();

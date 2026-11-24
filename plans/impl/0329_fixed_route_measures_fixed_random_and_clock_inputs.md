@@ -1,6 +1,6 @@
 # Implementation plan 0329: Fixed-route measures fixed random and clock inputs
 
-Status: Proposed
+Status: Implemented
 
 Paired ADR: ../adr/0329_fixed_route_measures_fixed_random_and_clock_inputs.md.
 
@@ -23,3 +23,42 @@ Paired ADR: ../adr/0329_fixed_route_measures_fixed_random_and_clock_inputs.md.
    planted-change controls.
 5. fmt, Clippy, preflight and the targeted checks under the final's
    real recipe. Sign. Source review, one complete final, Results.
+
+## Results
+
+The frozen observer measured the original binaries for 48fe3b15
+(execution), ff5bf81e (native setup), ed6b1a07 (installed setup)
+and 5530079d (outer reference). Across eight fixtures, two sizes,
+both native modes, two seeds and two launches, all 512 captures
+passed. Every repeated per-function instruction vector matched,
+including libc. All 84 reference comparisons had zero delta in both
+work and total instructions. The measured launch identity changed
+when Valgrind output moved to its own file.
+
+The loader cache is a measured input. Adding two unrelated entries
+cost 224 instructions in the dynamic loader. The production observer
+binds its reviewed bytes and checks the loaded libraries and profiler
+preload. Running the whole window at PID 99 and the separate query at
+100 gave a four-instruction discrepancy. Private namespaces at PID 2
+reproduced the inclusive query exactly. The allocator-path proof
+observes glibc's successful entropy read and accepted branch. The real
+entropy read remains charged.
+
+The control seed changed all three derived constant hashes and kept the
+program checksum. The original +11 collision was measured separately
+by forcing the constant-map keys. A planted 7,170 execution instructions
+failed both work and total limits with the meter enabled. The observer
+also rejected a missing seed hook, the wrong seed owner, a clock reset,
+and a substitute loader cache. The frozen method and reference deltas
+are recorded in target/0329/method-v3/FREEZE.json and TRANSITIONS.json.
+
+The standalone fixed-route stage on the clean implementation snapshot
+3a896aae passed all 32 per-record and all 32 cumulative rows.
+Formatting, Clippy, observer, gate and repository preflight controls
+passed. PRESIGN.json binds the stage and reference receipts.
+
+The complete final on fd017382 passed all 107 stages, with 53.6 minutes
+of accepted run and 54.1 minutes end to end. Both fixed-route bands
+held. There were no memory.high, memory.max or OOM events; the cgroup
+recorded two sock_throttled events. The host was in the performance
+profile.

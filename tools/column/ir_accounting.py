@@ -126,7 +126,7 @@ def evaluate(records, policy, whole_map_evaluator):
 		"system_bands": bands, "raw_whole_map_verdict": raw, "reviewed_exceptions_applied": []}
 
 
-def phase_accounts(directory, binary, engine=None):
+def phase_accounts(directory, binary, engine=None, *, log="program.stderr"):
 	"""Validate the ordered parts and reconstruct the original invocation window."""
 	import hashlib
 	directory = Path(directory)
@@ -151,7 +151,7 @@ def phase_accounts(directory, binary, engine=None):
 	if engine is not None:
 		whole["product_objects"] = {name: sum(p["accounting"]["product_objects"][name] for p in parts.values())
 			for name in a["product_objects"]}
-	stderr = (directory / "program.stderr").read_text()
+	stderr = (directory / log).read_text()
 	collected = re.findall(r"^==\d+== Collected\s*:\s*(\d+)$", stderr, re.M)
 	if collected != [str(whole["total_Ir"])]:
 		raise ValueError("phase dumps do not reconcile with process-wide Collected Ir")
@@ -197,3 +197,44 @@ def outer_stack_query(path, executable):
 	if cost <= 0:
 		raise ValueError("empty outer stack query")
 	return cost
+
+
+def allocator_path(profile, library, library_sha256):
+	"""Witness only control flow in the reviewed libc. Never inspect the heap key."""
+	if library_sha256 != '9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6':
+		raise ValueError('unreviewed outer allocator implementation')
+	# Argument setup, syscall, full-read successor, clock-based retry.
+	visits = dict.fromkeys((0xb48a5, 0xb48aa, 0xb48cd, 0xb48d2, 0xb4ad5, 0xb48f0), 0)
+	lines = Path(profile).read_text().splitlines()
+	names = {'ob': {}, 'fn': {}}
+	for line in lines:
+		m = re.fullmatch(r'c?(ob|fn)=\((\d+)\) (.+)', line)
+		if m:
+			names[m[1]][m[2]] = m[3]
+	obj = fn = None
+	pc = 0
+	call = False
+	for line in lines:
+		m = re.fullmatch(r'(ob|fn)=\((\d+)\)(?: .+)?', line)
+		if m:
+			if m[1] == 'ob':
+				obj = names['ob'][m[2]]
+			else:
+				fn = names['fn'][m[2]]
+				call = False
+		elif line.startswith('calls='):
+			call = True
+		elif (m := re.fullmatch(r'(0x[\da-fA-F]+|[+-]?\d+|\*) (?:[+-]?\d+|\*)(?: (\d+))?', line.strip())):
+			position = m[1]
+			if position.startswith(('+', '-')):
+				pc += int(position)
+			elif position != '*':
+				pc = int(position, 0)
+			if obj == library and fn == '__ptmalloc_init' and not call and pc in visits:
+				visits[pc] += int(m[2] or 0)
+			call = False
+	if visits[0xb48f0]:
+		raise ValueError('allocator entropy retry observed')
+	if any(count != 1 for pc, count in visits.items() if pc != 0xb48f0):
+		raise ValueError('missing verified allocator entropy read or full return')
+	return {'library_sha256': library_sha256, 'site_visits': {hex(pc): v for pc, v in visits.items()}}

@@ -92,14 +92,27 @@ pub fn validate_policy(policy: &Value) -> Result<()> {
 	};
 	let expected: BTreeSet<String> = KERNELS.iter().map(|k| json!(k).to_string()).collect();
 	let version = at(policy, "schema")?;
-	let reviewed = (*version == 1 && policy.get("native_setup").is_none())
-		|| (*version == 2
-			&& policy
-				.get("native_setup")
-				.map(identity)
-				.transpose()?
-				.as_deref() == Some(phases::TABLE_DIGEST));
-	if let Some(installed) = policy.get("installed_setup") {
+	let meter = policy.get("meter");
+	let reviewed = if let Some(meter) = meter {
+		*version == 2
+			&& identity(meter)?
+				== "86ad5c3482a81420684c6a0da6a577236583548511c915d893e242fb0fa68d08"
+			&& identity(&policy["native_setup"])?
+				== "b31375e03b1fa886b5d8534069a1f62496b42f523896e7e6e27573553d7e0bd2"
+			&& identity(&policy["installed_setup"])?
+				== "30e82f86f7c8a3c9d4cc4333a610dba0281e00710f1d4e6bd3a949da35d2f4f4"
+	} else {
+		(*version == 1 && policy.get("native_setup").is_none())
+			|| (*version == 2
+				&& policy
+					.get("native_setup")
+					.map(identity)
+					.transpose()?
+					.as_deref() == Some(phases::TABLE_DIGEST))
+	};
+	if meter.is_none()
+		&& let Some(installed) = policy.get("installed_setup")
+	{
 		anyhow::ensure!(
 			*version == 2
 				&& matches!(
@@ -294,6 +307,9 @@ pub fn source_condition(
 	validate_policy(policy)?;
 	match baseline_policy(root, baseline)? {
 		Some(old) => {
+			if old.get("meter").is_some() && policy.get("meter").is_none() {
+				bail!(value_error("guest input policy downgrade"));
+			}
 			if old["installed_setup"].get("stack_query").is_some()
 				&& policy["installed_setup"].get("stack_query").is_none()
 			{
@@ -603,6 +619,14 @@ pub fn score(
 							at(receipt, "capture_paths")?
 						)?,
 				"split capture recipe/binary binding"
+			);
+		}
+		if let Some(meter) = policy.get("meter") {
+			anyhow::ensure!(
+				receipt["recipe"]["policy"].get("meter") == Some(meter)
+					&& receipt["recipe"]["policy"]["outer_host_inputs"]
+						== policy["installed_setup"]["outer_reference"]["host_inputs"],
+				"capture recipe does not bind the frozen guest and host inputs"
 			);
 		}
 		if *at(receipt, "policy_sha256")? != json!(policy_sha) {
@@ -1278,6 +1302,13 @@ pub(crate) fn case_files(row: &Value, split: bool) -> Result<Vec<CaseFile>> {
 				sha: at(row, key)?.clone(),
 			});
 		}
+	}
+	if let Some(sha) = row.get("valgrind_sha256") {
+		files.push(CaseFile {
+			source: dir.join("valgrind.log"),
+			name: "valgrind.log",
+			sha: sha.clone(),
+		});
 	}
 	if phased || row.get("image_boundary").is_some() {
 		files.push(CaseFile {

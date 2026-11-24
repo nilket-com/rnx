@@ -55,6 +55,8 @@ argv = [str(vgroot / "bin/valgrind"), "--tool=callgrind", "--instr-atstart=no", 
 	"--separate-threads=no", "--collect-jumps=yes", "--dump-instr=yes", "--cache-sim=no", "--branch-sim=no",
 	"--vgdb=yes", "--vgdb-error=0", "--vgdb-prefix=" + prefix, "--callgrind-out-file=" + str(out / "map.callgrind"),
 	config["binary"], *(["11,10,-1"] if installed else []), "run", "--debug-engine", *config["options"], "--budget", str(config.get("budget", 1000000)), config["fixture"]]
+if 'meter' in config:
+	argv.insert(1, '--log-file=' + str(out / 'valgrind.log'))
 environment = os.environ.copy()
 if config.get("canonical_layout") or config.get("phase_symbols"):
 	# Bind exactly the argument and environment order passed to exec.

@@ -1,7 +1,20 @@
 {
   "schema": 2,
+  "meter": {"version":1,"hash_keys":[0,0],"epoch_ns":1000000000000,"tick_ns":1000},
   "installed_setup": {
     "outer_reference": {
+      "host_inputs": {
+        "guest_pid": 2,
+        "loader_cache_sha256": "fc9c96003541290b37f6552c1ae493e4a3246631a8c37e09ea096f27a8dabc5a",
+        "libraries": {
+          "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40",
+          "/usr/lib/x86_64-linux-gnu/libc.so.6": "9941dc28e68bc5fd788d9cd024c69e68c791d63799e7538a97b6040dd9f50fb6",
+          "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1": "9d339ecb409578d6a5d587e6c537a8f9589b8a13fefba30d167433a4b5758bee",
+          "/usr/lib/x86_64-linux-gnu/libm.so.6": "37b9e6c977b2a0b02a110d93eb8f01b643c9848653f18bd51682c5279ac88f54"
+        },
+        "preload_absent": true,
+        "vgpreload_sha256": "9e3027121551eabfca14b67f9587a7d7497666db50a93700eb73a86700755ad1"
+      },
       "revision": "5530079d447d1c7362d9a9d4434c2cd67f5ccd08",
       "measured": {
         "engine": {
@@ -123,8 +136,8 @@
       }
     },
     "launch_sha256": {
-      "off": "aef68d5ab88c5537c3a7d17a3f74ee64a73adbb988b7d17bf5bfbe2126b66b06",
-      "on": "397e3c117ca63d16812fadd27b1edfd8f1a44012705a4928e92e480f1efe004d"
+      "off": "6f6ce3881b31da42b8b8312ddaae9d784e79219f68f6d2dacc7c4a1e9a6cd3c9",
+      "on": "e2eb6ee9d0745df4f66add04e8721a87fc8b1dbbb9dc1905b4b61726f3718162"
     },
     "measured": {
       "engine": {
@@ -160,7 +173,7 @@
   },
   "native_setup": {
     "reference": "ff5bf81efba559573d0b8f0de84fd9fba919ef89",
-    "launch_sha256": {"off":"407bd3e940fc6d53d3bcca8b08f3c3c13078caa5048fc07a16f1e72eb85f600f","on":"b9690f039f7cbd7da0cd5c9dd598cd7f205b9d873053198b8e0b8dacb8fb00af"},
+    "launch_sha256": {"off":"ef81a5fe6771d12ff7aa164afd36f4ee99b303eaf3156917e93148aad2fddc6f","on":"ff6adceee4b8ec6e662c4cffee159283f92aa81bb0008012bebdf609f76c4332"},
     "freeze": "184a212df5304bb004fea1afe8e760510e4c4231",
     "kernels": {
       "fib": {
