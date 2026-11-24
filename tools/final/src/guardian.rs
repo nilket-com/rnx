@@ -62,11 +62,25 @@ pub fn read_record(path: &Path) -> Result<Record> {
 	)?)
 }
 
-/// A process's start time, or None when it no longer exists.
+/// The command name in /proc/PID/stat may contain ')' and non-UTF-8 bytes.
+fn group_and_start(pid: i32) -> Result<(i32, u64)> {
+	let stat = std::fs::read(format!("/proc/{pid}/stat"))?;
+	let end = stat
+		.iter()
+		.rposition(|&byte| byte == b')')
+		.context("missing stat command")?;
+	let tail = &stat[end + 1..];
+	let mut fields = std::str::from_utf8(tail)?.split_ascii_whitespace();
+	let pgid = fields.nth(2).context("missing stat PGID")?.parse()?;
+	let started = fields
+		.nth(16)
+		.context("missing stat start ticks")?
+		.parse()?;
+	Ok((pgid, started))
+}
+
 pub fn start_ticks(pid: i32) -> Option<u64> {
-	let text = std::fs::read_to_string(format!("/proc/{pid}/stat")).ok()?;
-	let fields: Vec<&str> = text[text.rfind(')')? + 2..].split_whitespace().collect();
-	fields.get(19)?.parse().ok()
+	group_and_start(pid).ok().map(|(_, started)| started)
 }
 
 /// True while the process recorded as `process` still exists as itself.
@@ -103,32 +117,7 @@ pub fn pidfd(pid: i32) -> Result<OwnedFd> {
 /// Wait for a process to exit, at most `limit`; true when it exited. A
 /// kernel exit notification, never a sampling loop.
 pub fn wait_exit(pidfd: &OwnedFd, limit: Option<Duration>) -> Result<bool> {
-	let deadline = limit.map(|limit| std::time::Instant::now() + limit);
-	loop {
-		let timeout = match deadline {
-			None => -1,
-			Some(deadline) => deadline
-				.saturating_duration_since(std::time::Instant::now())
-				.as_millis()
-				.min(i32::MAX as u128) as i32,
-		};
-		let mut ready = libc::pollfd {
-			fd: pidfd.as_raw_fd(),
-			events: libc::POLLIN,
-			revents: 0,
-		};
-		// SAFETY: one valid pollfd.
-		match unsafe { libc::poll(&mut ready, 1, timeout) } {
-			1 => return Ok(true),
-			0 => return Ok(false),
-			_ => {
-				let error = std::io::Error::last_os_error();
-				if error.kind() != std::io::ErrorKind::Interrupted {
-					return Err(error.into());
-				}
-			}
-		}
-	}
+	Ok(matches!(wait_either(pidfd, None, limit)?, Woke::Exited))
 }
 
 /// A stop request another thread raises; a guarded wait wakes on it.
@@ -182,25 +171,35 @@ fn wait_either(
 				.as_millis()
 				.min(i32::MAX as u128) as i32,
 		};
-		let mut fds = vec![libc::pollfd {
-			fd: pidfd.as_raw_fd(),
-			events: libc::POLLIN,
-			revents: 0,
-		}];
-		if let Some(stop) = stop {
-			fds.push(libc::pollfd {
-				fd: stop.read.as_raw_fd(),
+		let mut fds = [
+			libc::pollfd {
+				fd: pidfd.as_raw_fd(),
 				events: libc::POLLIN,
 				revents: 0,
-			});
-		}
-		// SAFETY: a valid array of pollfds.
+			},
+			libc::pollfd {
+				fd: stop.map_or(-1, |stop| stop.read.as_raw_fd()),
+				events: libc::POLLIN,
+				revents: 0,
+			},
+		];
+		// SAFETY: a valid array of pollfds; poll ignores a negative fd.
 		match unsafe { libc::poll(fds.as_mut_ptr(), fds.len() as libc::nfds_t, timeout) } {
 			0 => return Ok(Woke::TimedOut),
 			n if n > 0 => {
 				if fds[0].revents != 0 {
+					ensure!(
+						fds[0].revents & libc::POLLIN != 0,
+						"unexpected pidfd revents={:#x}",
+						fds[0].revents
+					);
 					return Ok(Woke::Exited);
 				}
+				ensure!(
+					fds[1].revents & libc::POLLIN != 0,
+					"unexpected stop revents={:#x}",
+					fds[1].revents
+				);
 				return Ok(Woke::Stopped);
 			}
 			_ => {
@@ -213,18 +212,32 @@ fn wait_either(
 	}
 }
 
-/// Signal a recorded process only while it is still the one recorded.
-pub fn signal(process: &Process, signal: i32) -> Result<bool> {
-	let fd = match pidfd(process.pid) {
-		Ok(fd) => fd,
-		Err(_) => return Ok(false),
+fn disappeared(error: &anyhow::Error) -> bool {
+	matches!(
+		error
+			.downcast_ref::<std::io::Error>()
+			.and_then(|e| e.raw_os_error()),
+		Some(libc::ENOENT | libc::ESRCH)
+	)
+}
+
+/// A late opener may see a vanished process, or a different process at that PID.
+pub fn recorded_pidfd(process: &Process) -> Result<Option<OwnedFd>> {
+	let inspect = || -> Result<Option<OwnedFd>> {
+		let fd = pidfd(process.pid)?;
+		let (_, started) = group_and_start(process.pid)?;
+		Ok((started == process.started).then_some(fd))
 	};
-	// The pidfd pins the identity: checked after opening, it cannot change.
-	if !alive(process) {
-		return Ok(false);
+	match inspect() {
+		Err(error) if disappeared(&error) => Ok(None),
+		result => result
+			.with_context(|| format!("identify pid={} started={}", process.pid, process.started)),
 	}
-	// SAFETY: pidfd_send_signal with a valid pidfd and no siginfo.
-	let sent = unsafe {
+}
+
+fn send_signal(fd: &OwnedFd, signal: i32) -> Result<()> {
+	// SAFETY: the descriptor pins the target; no siginfo is supplied.
+	if unsafe {
 		libc::syscall(
 			libc::SYS_pidfd_send_signal,
 			fd.as_raw_fd(),
@@ -232,51 +245,108 @@ pub fn signal(process: &Process, signal: i32) -> Result<bool> {
 			std::ptr::null::<libc::siginfo_t>(),
 			0,
 		)
-	};
-	Ok(sent == 0)
-}
-
-/// Every process in group `pgid` whose start is not before `since`, SIGKILLed
-/// and waited for. The leader's start time bounds membership, so a reused
-/// group id cannot reach older processes.
-fn drain_group(pgid: i32, since: u64) -> Result<()> {
-	let mut fds = Vec::new();
-	for entry in std::fs::read_dir("/proc")?.flatten() {
-		let Some(pid) = entry
-			.file_name()
-			.to_str()
-			.and_then(|n| n.parse::<i32>().ok())
-		else {
-			continue;
-		};
-		let Ok(fd) = pidfd(pid) else { continue };
-		let stat = std::fs::read_to_string(format!("/proc/{pid}/stat")).unwrap_or_default();
-		let Some(close) = stat.rfind(')') else {
-			continue;
-		};
-		let fields: Vec<&str> = stat[close + 2..].split_whitespace().collect();
-		let (group, started) = (
-			fields.get(2).and_then(|g| g.parse::<i32>().ok()),
-			fields.get(19).and_then(|s| s.parse::<u64>().ok()),
-		);
-		if group == Some(pgid) && started.is_some_and(|s| s >= since) {
-			// SAFETY: pidfd_send_signal with a valid pidfd.
-			unsafe {
-				libc::syscall(
-					libc::SYS_pidfd_send_signal,
-					fd.as_raw_fd(),
-					libc::SIGKILL,
-					std::ptr::null::<libc::siginfo_t>(),
-					0,
-				)
-			};
-			fds.push(fd);
-		}
-	}
-	for fd in fds {
-		wait_exit(&fd, None)?;
+	} < 0
+	{
+		return Err(last_error("pidfd_send_signal"));
 	}
 	Ok(())
+}
+
+/// Signal a recorded process only while it is still the one recorded.
+pub fn signal(process: &Process, signal: i32) -> Result<bool> {
+	let Some(fd) = recorded_pidfd(process)? else {
+		return Ok(false);
+	};
+	match send_signal(&fd, signal) {
+		Ok(()) => Ok(true),
+		Err(error) if disappeared(&error) => Ok(false),
+		Err(error) => Err(error.context(format!(
+			"signal {signal} pid={} started={}",
+			process.pid, process.started
+		))),
+	}
+}
+
+/// Signal every identified member first, then wait for every successful kill.
+/// Preserve failures until the other members have had their cleanup attempt.
+fn drain_members<F>(
+	pgid: i32,
+	since: u64,
+	pids: impl Iterator<Item = Result<i32>>,
+	identify: impl Fn(i32) -> Result<(F, i32, u64)>,
+	kill: impl Fn(&F) -> Result<()>,
+	wait: impl Fn(&F) -> Result<()>,
+) -> Result<()> {
+	let mut pending = Vec::new();
+	let mut errors = Vec::new();
+	for entry in pids {
+		let pid = match entry {
+			Ok(pid) => pid,
+			Err(error) => {
+				errors.push(format!(
+					"enumerate pid=unknown started=unknown pgid=unknown: {error:#}"
+				));
+				continue;
+			}
+		};
+		let (fd, group, started) = match identify(pid) {
+			Ok(member) => member,
+			Err(error) if disappeared(&error) => continue,
+			Err(error) => {
+				errors.push(format!(
+					"identify pid={pid} started=unknown pgid=unknown: {error:#}"
+				));
+				continue;
+			}
+		};
+		if group != pgid || started < since {
+			continue;
+		}
+		match kill(&fd) {
+			Ok(()) => pending.push((pid, started, fd)),
+			Err(error) if disappeared(&error) => {}
+			Err(error) => errors.push(format!(
+				"kill pid={pid} started={started} pgid={group}: {error:#}"
+			)),
+		}
+	}
+	for (pid, started, fd) in pending {
+		if let Err(error) = wait(&fd) {
+			errors.push(format!(
+				"wait pid={pid} started={started} pgid={pgid}: {error:#}"
+			));
+		}
+	}
+	ensure!(
+		errors.is_empty(),
+		"drain group {pgid} since {since}: {}",
+		errors.join("; ")
+	);
+	Ok(())
+}
+
+fn drain_group(pgid: i32, since: u64) -> Result<()> {
+	let entries = std::fs::read_dir("/proc")
+		.with_context(|| format!("enumerate /proc for group {pgid} since {since}"))?;
+	let pids = entries.filter_map(|entry| match entry {
+		Ok(entry) => entry.file_name().to_str()?.parse::<i32>().ok().map(Ok),
+		Err(error) => Some(Err(error.into())),
+	});
+	drain_members(
+		pgid,
+		since,
+		pids,
+		|pid| {
+			let fd = pidfd(pid)?;
+			let (group, started) = group_and_start(pid)?;
+			Ok((fd, group, started))
+		},
+		|fd| send_signal(fd, libc::SIGKILL),
+		|fd| {
+			ensure!(wait_exit(fd, None)?, "pidfd wait timed out");
+			Ok(())
+		},
+	)
 }
 
 /// What became of a guarded stage.
@@ -309,6 +379,50 @@ impl Guarded {
 		Ok(())
 	}
 
+	/// Reap the guardian even when a member fails to drain. The group pass
+	/// also reaches the guardian if the first signal failed.
+	fn force_drain(&mut self) -> Result<()> {
+		let mut errors = Vec::new();
+		if let Err(error) = send_signal(&self.pidfd, libc::SIGKILL) {
+			if !disappeared(&error) {
+				errors.push(format!(
+					"kill guardian pid={} started={} pgid={}: {error:#}",
+					self.guardian.pid, self.guardian.started, self.guardian.pid
+				));
+			}
+		} else if let Err(error) = wait_exit(&self.pidfd, None) {
+			errors.push(format!(
+				"wait guardian pid={} started={} pgid={}: {error:#}",
+				self.guardian.pid, self.guardian.started, self.guardian.pid
+			));
+		}
+		if let Err(error) = drain_group(self.guardian.pid, self.guardian.started) {
+			errors.push(format!("{error:#}"));
+		}
+		match read_record(&self.record) {
+			Ok(record) => {
+				if let Field::Value(stage) = record.stage
+					&& let Err(error) = drain_group(stage.pid, stage.started)
+				{
+					errors.push(format!("{error:#}"));
+				}
+			}
+			Err(error) => errors.push(format!("{error:#}")),
+		}
+		if !errors.is_empty() {
+			let reaped = self
+				.child
+				.try_wait()
+				.context("reap guardian after drain failure")?;
+			bail!(
+				"guardian drain failed (reaped={}): {}",
+				reaped.is_some(),
+				errors.join("; ")
+			);
+		}
+		Ok(())
+	}
+
 	/// Block until the guardian exits, stopping the stage after `timeout`.
 	pub fn wait(self, timeout: Option<Duration>) -> Result<Outcome> {
 		self.wait_until(timeout, None)
@@ -338,16 +452,7 @@ impl Guarded {
 				if !wait_exit(&self.pidfd, Some(self.drain_deadline))? {
 					// The guardian did not finish draining: kill it, its own
 					// group and its stage group, and report the drain incomplete.
-					signal(&self.guardian, libc::SIGKILL)?;
-					wait_exit(&self.pidfd, None)?;
-					drain_group(self.guardian.pid, self.guardian.started)?;
-					if let Ok(Record {
-						stage: Field::Value(stage),
-						..
-					}) = read_record(&self.record)
-					{
-						drain_group(stage.pid, stage.started)?;
-					}
+					self.force_drain()?;
 					stopped = Some("stage did not drain after it was stopped".into());
 				}
 			}
@@ -897,6 +1002,75 @@ pub fn drain_registry(groups: &Path, ledger: &crate::evidence::Ledger) -> Result
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	#[test]
+	fn a_member_error_surfaces_after_the_other_members_are_drained() {
+		use std::cell::RefCell;
+		let signaled = RefCell::new(Vec::new());
+		let waited = RefCell::new(Vec::new());
+		let errno = |number| anyhow::Error::from(std::io::Error::from_raw_os_error(number));
+		let error = drain_members(
+			10,
+			100,
+			(1..=9).map(Ok),
+			|pid| match pid {
+				1 => Err(errno(libc::ESRCH)),
+				2 => Err(errno(libc::EACCES)),
+				3 => Ok((pid, 10, 99)),
+				4 => Ok((pid, 11, 100)),
+				_ => Ok((pid, 10, 100)),
+			},
+			|pid| {
+				signaled.borrow_mut().push(*pid);
+				match pid {
+					5 => Err(errno(libc::EPERM)),
+					6 => Err(errno(libc::ESRCH)),
+					_ => Ok(()),
+				}
+			},
+			|pid| {
+				waited.borrow_mut().push(*pid);
+				if *pid == 7 {
+					bail!("unexpected pidfd revents=0x20")
+				}
+				Ok(())
+			},
+		)
+		.unwrap_err()
+		.to_string();
+		assert_eq!(signaled.into_inner(), [5, 6, 7, 8, 9]);
+		assert_eq!(waited.into_inner(), [7, 8, 9]);
+		for detail in [
+			"drain group 10 since 100",
+			"identify pid=2 started=unknown pgid=unknown:",
+			"os error 13",
+			"kill pid=5 started=100 pgid=10:",
+			"os error 1)",
+			"wait pid=7 started=100 pgid=10: unexpected pidfd revents=0x20",
+		] {
+			assert!(error.contains(detail), "{error}");
+		}
+		assert!(
+			!error.contains("pid=1 ") && !error.contains("pid=6 "),
+			"{error}"
+		);
+	}
+
+	#[test]
+	fn only_readable_pidfd_events_mean_exit() {
+		use std::io::Write as _;
+		let (read, write) = pipe().unwrap();
+		assert!(!wait_exit(&read, Some(Duration::ZERO)).unwrap());
+		drop(write);
+		let error = wait_exit(&read, Some(Duration::ZERO)).unwrap_err();
+		assert!(error.to_string().contains("revents=0x10"), "{error}");
+		let (read, write) = pipe().unwrap();
+		let mut writer = std::fs::File::from(write);
+		writer.write_all(b"x").unwrap();
+		drop(writer);
+		// A descriptor with both POLLIN and POLLHUP is readable.
+		assert!(wait_exit(&read, Some(Duration::ZERO)).unwrap());
+	}
 
 	fn tree() -> PathBuf {
 		let root = std::env::temp_dir().join(format!(

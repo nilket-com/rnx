@@ -1,6 +1,6 @@
 # ADR 0332: Guardian controls observe exits exactly
 
-Status: Proposed
+Status: Accepted
 
 Base: published 8e2370be5fb3e579a95e435eabcd03ac82dbcdda (ADR 0331).
 

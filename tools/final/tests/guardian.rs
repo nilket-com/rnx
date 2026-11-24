@@ -3,6 +3,7 @@
 use rnx_final::guardian::{self, Process, read_record, spawn, start_ticks};
 use rnx_final::receipt::{Field, invocation_id};
 use std::ffi::OsString;
+use std::os::fd::{AsRawFd as _, OwnedFd};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -50,17 +51,33 @@ fn gone(process: &Process) -> bool {
 	!guardian::alive(process)
 }
 
-/// A recorded process has exited: gone, or a zombie its new parent has not
-/// reaped yet.
-fn exited(process: &Process) -> bool {
-	gone(process)
-		|| std::fs::read_to_string(format!("/proc/{}/stat", process.pid))
-			.ok()
-			.and_then(|s| {
-				s.rsplit_once(')')
-					.and_then(|(_, r)| r.split_whitespace().next().map(|x| x == "Z"))
-			})
-			.unwrap_or(true)
+/// Independent of the production waiter. Sample the descriptor at the
+/// assertion, with no extra time for a missed kill to catch up.
+fn exited(fd: &OwnedFd) -> bool {
+	let mut pfd = libc::pollfd {
+		fd: fd.as_raw_fd(),
+		events: libc::POLLIN,
+		revents: 0,
+	};
+	loop {
+		// SAFETY: a single valid pollfd and a descriptor owned by the caller.
+		match unsafe { libc::poll(&mut pfd, 1, 0) } {
+			0 => return false,
+			1 => {
+				assert_ne!(
+					pfd.revents & libc::POLLIN,
+					0,
+					"unexpected revents={:#x}",
+					pfd.revents
+				);
+				return true;
+			}
+			_ => assert_eq!(
+				std::io::Error::last_os_error().kind(),
+				std::io::ErrorKind::Interrupted
+			),
+		}
+	}
 }
 
 fn process(pid: i32) -> Process {
@@ -313,18 +330,14 @@ fn a_killed_controller_leaves_nothing_running() {
 	let record_path = PathBuf::from(std::fs::read_to_string(dir.0.join("record")).unwrap());
 	let grandchild = process(read_pid(&dir.0.join("pid")));
 	let record = read_record(&record_path).unwrap();
-	let guardian_process = record.guardian.clone();
+	let guardian_fd = guardian::recorded_pidfd(&record.guardian).unwrap().unwrap();
 	controller.kill().unwrap();
 	controller.wait().unwrap();
 	// The guardian drains on its parent's death; wait on it by pidfd.
-	let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, guardian_process.pid, 0) } as i32;
-	if fd >= 0 && guardian::alive(&guardian_process) {
-		let owned = unsafe { <std::os::fd::OwnedFd as std::os::fd::FromRawFd>::from_raw_fd(fd) };
-		assert!(
-			guardian::wait_exit(&owned, Some(Duration::from_secs(60))).unwrap(),
-			"guardian did not finish"
-		);
-	}
+	assert!(
+		guardian::wait_exit(&guardian_fd, Some(Duration::from_secs(60))).unwrap(),
+		"guardian did not finish"
+	);
 	assert!(
 		gone(&grandchild),
 		"detached grandchild survived the controller"
@@ -380,25 +393,13 @@ fn a_guardian_that_dies_before_releasing_its_stage_leaves_it_unrun() {
 		.cloned()
 		.expect("the stage was recorded");
 	// Its only writer died, so it reads EOF and exits; wait on it by pidfd.
-	let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, stage.pid, 0) } as i32;
-	if fd >= 0 {
-		let owned = unsafe { <std::os::fd::OwnedFd as std::os::fd::FromRawFd>::from_raw_fd(fd) };
+	if let Some(fd) = guardian::recorded_pidfd(&stage).unwrap() {
 		assert!(
-			guardian::wait_exit(&owned, Some(Duration::from_secs(10))).unwrap(),
+			guardian::wait_exit(&fd, Some(Duration::from_secs(10))).unwrap(),
 			"the gated stage never saw EOF"
 		);
+		assert!(exited(&fd));
 	}
-	// Exited: gone, or a zombie its new parent has not reaped yet.
-	let state = std::fs::read_to_string(format!("/proc/{}/stat", stage.pid))
-		.ok()
-		.and_then(|s| {
-			s.rsplit_once(')')
-				.and_then(|(_, rest)| rest.split_whitespace().next().map(str::to_owned))
-		});
-	assert!(
-		gone(&stage) || state.as_deref() == Some("Z"),
-		"the stage is still running: {state:?}"
-	);
 	assert!(!marker.exists(), "the stage ran without its release");
 }
 
@@ -407,25 +408,21 @@ fn a_guardian_that_dies_before_releasing_its_stage_leaves_it_unrun() {
 /// the stage's three-hour timeout does not hold the controller.
 #[test]
 fn an_externally_stopped_guardian_that_hangs_is_killed_within_its_deadline() {
-	use std::os::unix::fs::PermissionsExt as _;
 	let dir = Dir::new();
-	let fake = dir.0.join("hung-guardian");
-	let pidfile = dir.0.join("child");
-	std::fs::write(
-		&fake,
-		format!(
-			"#!/bin/sh\ntrap '' TERM INT HUP\nsleep 1000 &\necho $! > {}\nwait\nwait\n",
-			pidfile.display()
-		),
-	)
-	.unwrap();
-	std::fs::set_permissions(&fake, std::fs::Permissions::from_mode(0o755)).unwrap();
+	let cwd = dir.0.join("working directory");
+	std::fs::create_dir(&cwd).unwrap();
+	let fake = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/hung-guardian.sh");
+	let pidfile = cwd.join("child");
 	let (out, err) = log(&dir.0);
-	let mut guarded = spawn(&fake, &dir.0, &sh("true"), &dir.0, &environment(), out, err).unwrap();
+	let mut guarded = spawn(&fake, &dir.0, &sh("true"), &cwd, &environment(), out, err).unwrap();
 	guarded.drain_deadline = Duration::from_millis(500);
 	wait_for(&pidfile);
-	let child = process(read_pid(&pidfile));
-	let hung = guarded.guardian().clone();
+	let child = guardian::pidfd(read_pid(&pidfile)).unwrap();
+	let hung = guardian::recorded_pidfd(guarded.guardian())
+		.unwrap()
+		.unwrap();
+	assert!(!exited(&hung), "guardian already exited at readiness");
+	assert!(!exited(&child), "child already exited at readiness");
 	let stop = rnx_final::guardian::StopSignal::new().unwrap();
 	let started = std::time::Instant::now();
 	let outcome = std::thread::scope(|scope| {
