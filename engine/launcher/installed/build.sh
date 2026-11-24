@@ -6,6 +6,7 @@ out=$1
 shift
 work=$(mktemp -d "$out/.stock-file-XXXXXX")
 trap 'rm -rf -- "$work"' EXIT
+if [ -n "${RNX_EXPORT_SOURCE-}" ]; then export RNX_EXPORT_NESTED="$work"; fi
 sh engine/launcher/installed/image.sh "$work" "$1"
 image=$work/target/$TARGET/release/examples/libengine_image.so
 helper=$work/stock-file

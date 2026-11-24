@@ -1,6 +1,6 @@
 # ADR 0331: The shipped image builds reproducibly
 
-Status: Proposed
+Status: Accepted
 
 Base: published 870413ea2516195ef1beb2ac95464fb68bf5df6a (ADR 0330).
 

@@ -25,7 +25,7 @@ def run(out, baseline, candidate, cargo):
 			revision = subprocess.check_output(['git', 'rev-parse', revision + '^{commit}'], cwd=ROOT, text=True).strip()
 			archive = out / (role + '.tar')
 			with archive.open('xb') as stream:
-				subprocess.run(['git', 'archive', revision], cwd=ROOT, stdout=stream, check=True)
+				subprocess.run(['sh', str(ROOT/'tools/export-source.sh'), revision], cwd=ROOT, stdout=stream, check=True)
 			source = out / 'source'
 			if source.exists():
 				shutil.rmtree(source)  # Only this invocation's prior fresh export.

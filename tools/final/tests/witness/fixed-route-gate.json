@@ -634,7 +634,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -1409,7 +1410,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -4485,7 +4487,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -5260,7 +5263,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -8180,7 +8184,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -8955,7 +8960,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -11874,7 +11880,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -12649,7 +12656,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -15597,7 +15605,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -16372,7 +16381,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -19293,7 +19303,8 @@
       "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
       "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
       "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-      "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+      "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+      "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
      },
      "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
     },
@@ -20217,7 +20228,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -20992,7 +21004,8 @@
        "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
        "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
        "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-       "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+       "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+       "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
       },
       "valgrind": "0b8133a10d1e7e9ea682176edb51898adae5a83eb97dd2f0c60bd7960330b6cb"
      },
@@ -23003,6 +23016,6 @@
    }
   }
  },
- "method": "fixed_route_gate.main() with --out <OUT> --cargo /planted/bin/cargo --valgrind-root <TMP>/valgrind (an executable bin/valgrind), gate.ROOT and cross_program_gate.ROOT a scratch checkout <ROOT> holding the checkout's own five tooling files, its kernels and a planted ci/execute_guard/target/debug/execute-guard; an environment of only PATH=/planted/bin, HOME=/planted/home, RUSTFLAGS=-Copt-level=3; /proc/cpuinfo read as a planted text; build_environment's rustup at /planted/rustup answering /planted/toolchain/NAME (strings only), the recipe's `rustup which` answering <TMP>/toolchain/NAME; gate_policy.record answering baseline 'b'*40 and candidate 'c'*40; child.head answering the candidate and child.source 'source-1' (then 'source-2' in 'the source changes during the gate'); git status --porcelain answering empty (' M dirty.rs' for 'a dirty tree'); drift_band.anchor_approval passing (refusing in 'an approval refusal') and source_condition answering a planted PASS; cross_program_gate's children planted: paired_build.py writes builds for its --baseline and --candidate (the record's build FAILs in 'a failing child stage'), fixed_route_vectors.py writes every kernel x mode x size row for both roles with rnx_Ir n*100000, dynamic 7; executor_identity.py writes an IDENTITY.json FAIL observation and exits 1 (with an error in 'an identity tool error'). The anchor cache is real under <ROOT>/target. Each scenario keeps the exit, every call in order (kind, command, cwd, check or timeout), the receipt without its two timings and with an error reduced to the traceback's last line, the files under <OUT>, and the cache journal's entries (key, state).",
+ "method": "ADR 0331 updates the paired builder digest and includes its source exporter in the build recipe. fixed_route_gate.main() with --out <OUT> --cargo /planted/bin/cargo --valgrind-root <TMP>/valgrind (an executable bin/valgrind), gate.ROOT and cross_program_gate.ROOT a scratch checkout <ROOT> holding the checkout's own five tooling files, its kernels and a planted ci/execute_guard/target/debug/execute-guard; an environment of only PATH=/planted/bin, HOME=/planted/home, RUSTFLAGS=-Copt-level=3; /proc/cpuinfo read as a planted text; build_environment's rustup at /planted/rustup answering /planted/toolchain/NAME (strings only), the recipe's `rustup which` answering <TMP>/toolchain/NAME; gate_policy.record answering baseline 'b'*40 and candidate 'c'*40; child.head answering the candidate and child.source 'source-1' (then 'source-2' in 'the source changes during the gate'); git status --porcelain answering empty (' M dirty.rs' for 'a dirty tree'); drift_band.anchor_approval passing (refusing in 'an approval refusal') and source_condition answering a planted PASS; cross_program_gate's children planted: paired_build.py writes builds for its --baseline and --candidate (the record's build FAILs in 'a failing child stage'), fixed_route_vectors.py writes every kernel x mode x size row for both roles with rnx_Ir n*100000, dynamic 7; executor_identity.py writes an IDENTITY.json FAIL observation and exits 1 (with an error in 'an identity tool error'). The anchor cache is real under <ROOT>/target. Each scenario keeps the exit, every call in order (kind, command, cwd, check or timeout), the receipt without its two timings and with an error reduced to the traceback's last line, the files under <OUT>, and the cache journal's entries (key, state).",
  "witness": "7991e30de16863b07289a8423678e8831c7687f4"
 }

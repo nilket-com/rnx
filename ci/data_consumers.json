@@ -1126,7 +1126,7 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/fixed_route_stage.rs"
       },
-      "max_bytes": 845359,
+      "max_bytes": 846768,
       "reason": "ADR 0298 witness fixture: the published fixed_route_gate.main() over a planted host (scratch checkout with the real tooling and kernels, intercepted git, cargo, rustup and children, a real anchor cache): every call, the receipt, the files and the cache state of eleven scenarios, generated once at 7991e30d (method recorded inside); the Rust stage is compared against it."
     },
     "tools/final/tests/witness/fixed-route-git.json": {
@@ -1144,7 +1144,7 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/fixed_route_stage.rs"
       },
-      "max_bytes": 14385,
+      "max_bytes": 14581,
       "reason": "ADR 0298 witness fixture: paired_build.build_environment, ir_pool.capture_environment, the gate's recipe and capture_key, reuse_anchor and verified over planted inputs, generated once at 7991e30d (method recorded inside); the Rust port is compared against it."
     },
     "tools/final/tests/witness/inventories.json": {

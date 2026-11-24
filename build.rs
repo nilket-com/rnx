@@ -284,7 +284,7 @@ fn verification_pins(root: &Path, out: &Path) -> Result<(), Box<dyn std::error::
 }
 
 fn main() {
-	identity::emit(Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap()));
+	let exported = identity::emit(Path::new(&std::env::var("CARGO_MANIFEST_DIR").unwrap()));
 	// The verifier declares this feature only in its private dev manifest.
 	println!("cargo:rustc-check-cfg=cfg(feature, values(\"cross-verification\"))");
 	let verification_only = std::env::var_os("CARGO_FEATURE_CROSS_VERIFICATION").is_some();
@@ -322,7 +322,11 @@ fn main() {
 	// The scan reruns when identity::emit's watched sources change.
 	let root = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").unwrap());
 	let url = std::env::var("CARGO_PKG_REPOSITORY").unwrap_or_default();
-	let rev = revision(&root).unwrap_or_else(|_| "unknown".into());
+	let rev = if exported || !root.join(".git").exists() {
+		"unknown".into()
+	} else {
+		revision(&root).unwrap_or_else(|_| "unknown".into())
+	};
 	let state = if rev == "unknown" {
 		"unknown"
 	} else {
@@ -340,7 +344,11 @@ fn main() {
 	};
 	let data = format!(
 		"pub const URL:&str={url:?};\npub const REV:&str={rev:?};\npub const STATE:&str={state:?};\npub const SOURCE:&str={:?};\n",
-		root.to_string_lossy()
+		if exported {
+			std::borrow::Cow::Borrowed("")
+		} else {
+			root.to_string_lossy()
+		}
 	);
 	let dest = out.join("coordinates.rs");
 	if fs::read_to_string(&dest).ok().as_deref() != Some(&data) {

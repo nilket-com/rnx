@@ -14,7 +14,10 @@ esac
 # The compiler emits the C main for an ordinary Rust process. Rename that
 # entry so the C helper can verify its pinned descriptors first. Link only
 # the entry object into the image, so startup and script execution share std.
-"$RUSTC" --edition=2024 --crate-name rnx_installed_process --target "$TARGET" \
+process_compiler() {
+	if [ -n "${RNX_EXPORT_NESTED-}" ]; then "$RUSTC_WRAPPER" "$RUSTC" "$@"; else "$RUSTC" "$@"; fi
+}
+process_compiler --edition=2024 --crate-name rnx_installed_process --target "$TARGET" \
 	-O -C relocation-model=pic --emit=obj engine/launcher/installed/process.rs -o "$work/process.o"
 objcopy --redefine-sym main=rnx_installed_start "$work/process.o" "$work/start.o"
 ar crs "$work/libinstalled_start.a" "$work/start.o"

@@ -546,7 +546,12 @@ pub fn measurement_recipe(current: &Value) -> Result<Value> {
 		.as_object()
 		.context("tooling is not an object")?
 		.iter()
-		.filter(|(k, _)| *k != "tools/column/paired_build.py")
+		.filter(|(k, _)| {
+			!matches!(
+				k.as_str(),
+				"tools/column/paired_build.py" | "tools/export-source.sh"
+			)
+		})
 		.map(|(k, v)| (k.clone(), v.clone()))
 		.collect();
 	out.insert("tooling".into(), Value::Object(tooling));

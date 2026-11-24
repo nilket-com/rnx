@@ -321,7 +321,8 @@
      "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
      "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
      "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
-     "tools/column/paired_build.py": "3a59863204c730b2d814e3926e3a564064d72e6298be5a4d27c9e67e9dabdefb"
+     "tools/column/paired_build.py": "1f88748097cf8eaeef98ee9238afa4fe54928628ed52cdc4b587e7b352034968",
+     "tools/export-source.sh": "71d123045e40b70f53b7a8b0d76277d5ea74d12031958b72e4fb54bee309ea2a"
     }
    }
   },
@@ -443,6 +444,6 @@
    "ok": true
   }
  },
- "method": "paired_build.build_environment over planted environments with shutil.which('rustup') answering /planted/rustup/bin/rustup and that absolute rustup's `which --toolchain 1.98.1 NAME` answering /planted/toolchain/bin/NAME (strings only); the recipe's own `rustup which --toolchain 1.98.1 NAME` answering <TMP>/toolchain/bin/NAME (files 'planted rustc', 'planted cargo'); BUILD_KEYS, BUILD_PREFIXES and ir_pool.capture_environment(); fixed_route_gate.recipe(live policy) under an environment of only PATH=/tools, HOME=/planted/home, RUSTFLAGS=-Copt-level=3, CARGO_HOME=/cargo, with /proc/cpuinfo read as a planted two-processor text (the checkout's own tooling and fixture digests); capture_key over that recipe (valgrind 'v'*64, binary 'a'*64) and over test_drift_band's cases; reuse_anchor and verified over test_drift_band's planted legacy capture. Each case is ok with the value or error with the class and message; <TMP> is the scratch root, and the legacy MANIFEST.json and receipt digests, which cover scratch paths, are <MANIFEST-DIGEST> and <RECEIPT-DIGEST>.",
+ "method": "ADR 0331 updates the paired builder digest and includes its source exporter in the build recipe. paired_build.build_environment over planted environments with shutil.which('rustup') answering /planted/rustup/bin/rustup and that absolute rustup's `which --toolchain 1.98.1 NAME` answering /planted/toolchain/bin/NAME (strings only); the recipe's own `rustup which --toolchain 1.98.1 NAME` answering <TMP>/toolchain/bin/NAME (files 'planted rustc', 'planted cargo'); BUILD_KEYS, BUILD_PREFIXES and ir_pool.capture_environment(); fixed_route_gate.recipe(live policy) under an environment of only PATH=/tools, HOME=/planted/home, RUSTFLAGS=-Copt-level=3, CARGO_HOME=/cargo, with /proc/cpuinfo read as a planted two-processor text (the checkout's own tooling and fixture digests); capture_key over that recipe (valgrind 'v'*64, binary 'a'*64) and over test_drift_band's cases; reuse_anchor and verified over test_drift_band's planted legacy capture. Each case is ok with the value or error with the class and message; <TMP> is the scratch root, and the legacy MANIFEST.json and receipt digests, which cover scratch paths, are <MANIFEST-DIGEST> and <RECEIPT-DIGEST>.",
  "witness": "7991e30de16863b07289a8423678e8831c7687f4"
 }

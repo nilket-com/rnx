@@ -18,8 +18,9 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 /// The measurement tooling the recipe digests; the children's own files.
-pub const TOOLING: [&str; 5] = [
+pub const TOOLING: [&str; 6] = [
 	"tools/column/paired_build.py",
+	"tools/export-source.sh",
 	"tools/column/fixed_route_vectors.py",
 	"tools/column/old_path_child.py",
 	"tools/column/ir_accounting.py",

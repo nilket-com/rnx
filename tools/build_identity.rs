@@ -1,4 +1,9 @@
-use std::{env, path::Path, process::Command};
+use std::{
+	env, fs,
+	io::Write,
+	path::Path,
+	process::{Command, Stdio},
+};
 
 fn command(root: &Path) -> Command {
 	let mut command = Command::new("git");
@@ -17,7 +22,75 @@ fn command(root: &Path) -> Command {
 	command
 }
 
-pub fn emit(root: &Path) {
+// Git expands this only in an archive. An unstamped source copy cannot
+// borrow the identity of a repository above it.
+const ARCHIVE: &str = "$Format:%H %T$";
+
+fn object_id(text: &str) -> bool {
+	text.len() == 40
+		&& text
+			.bytes()
+			.all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+}
+
+fn export_identity(root: &Path, stamp: &str) -> Result<(String, String), String> {
+	let (commit, tree) = stamp.split_once(' ').ok_or("invalid Git archive stamp")?;
+	if !object_id(commit) || !object_id(tree) {
+		return Err("invalid Git archive stamp".into());
+	}
+	let proof =
+		fs::read(root.join(".rnx-export")).map_err(|e| format!("missing export identity: {e}"))?;
+	let split = proof
+		.iter()
+		.position(|b| *b == b'\n')
+		.ok_or("incomplete export identity")?;
+	let (declared, rune) = std::str::from_utf8(&proof[..split])
+		.ok()
+		.and_then(|line| line.split_once(' '))
+		.ok_or("incomplete export identity")?;
+	if declared != commit || !object_id(rune) {
+		return Err("export revision or rune tree differs from declaration".into());
+	}
+	let bytes = &proof[split + 1..];
+	// Git's root tree authenticates both the entry name and its subtree ID.
+	let mut hash = command(root)
+		.arg("--git-dir=/dev/null")
+		.args(["hash-object", "--no-filters", "-t", "tree", "--stdin"])
+		.stdin(Stdio::piped())
+		.stdout(Stdio::piped())
+		.spawn()
+		.map_err(|e| e.to_string())?;
+	hash.stdin
+		.take()
+		.ok_or("missing Git input")?
+		.write_all(bytes)
+		.map_err(|e| e.to_string())?;
+	let result = hash.wait_with_output().map_err(|e| e.to_string())?;
+	if !result.status.success() || result.stdout.strip_suffix(b"\n") != Some(tree.as_bytes()) {
+		return Err("export root tree differs from Git archive".into());
+	}
+	let mut rest = bytes;
+	while !rest.is_empty() {
+		let end = rest
+			.iter()
+			.position(|b| *b == 0)
+			.ok_or("invalid Git tree")?;
+		let (id, next) = rest[end + 1..]
+			.split_at_checked(20)
+			.ok_or("invalid Git tree ID")?;
+		if &rest[..end] == b"40000 rune" {
+			let actual: String = id.iter().map(|b| format!("{b:02x}")).collect();
+			if actual == rune {
+				return Ok((commit.to_owned(), actual));
+			}
+			break;
+		}
+		rest = next;
+	}
+	Err("export rune subtree differs from declaration".into())
+}
+
+pub fn emit(root: &Path) -> bool {
 	fn git(root: &Path, args: &[&str]) -> String {
 		let output = command(root)
 			.args(args)
@@ -31,13 +104,33 @@ pub fn emit(root: &Path) {
 			.trim()
 			.to_owned()
 	}
-	let revision = git(root, &["rev-parse", "HEAD"]);
-	let tree = git(root, &["rev-parse", "HEAD:rune"]);
-	let dirty = !git(root, &["status", "--porcelain", "--untracked-files=normal"]).is_empty();
-	watch_sources(root);
+	let exported = !ARCHIVE.starts_with('$');
+	let (revision, tree, dirty) = if exported {
+		println!(
+			"cargo:rerun-if-changed={}",
+			root.join(".rnx-export").display()
+		);
+		println!(
+			"cargo:rerun-if-changed={}",
+			root.join("tools/build_identity.rs").display()
+		);
+		let (rev, tree) = export_identity(root, ARCHIVE).expect("declared archive identity");
+		(rev, tree, false)
+	} else if root.join(".git").exists() {
+		watch_sources(root);
+		(
+			git(root, &["rev-parse", "HEAD"]),
+			git(root, &["rev-parse", "HEAD:rune"]),
+			!git(root, &["status", "--porcelain", "--untracked-files=normal"]).is_empty(),
+		)
+	} else {
+		watch_sources(root);
+		("unknown".to_owned(), "unknown".to_owned(), true)
+	};
 	println!(
 		"cargo:rustc-env=RNX_ENGINE_IDENTITY=0.15.0 (monorepo {revision}; engine {tree}; dirty={dirty})"
 	);
+	exported
 }
 
 /// Rerun the build script when the checkout's revision or any tracked file
@@ -65,6 +158,9 @@ pub fn watch_sources(root: &Path) {
 /// states, so the loose reference's directory is watched too: creating,
 /// rewriting or packing that reference changes it.
 fn watched_paths(root: &Path) -> Option<Vec<std::path::PathBuf>> {
+	if !root.join(".git").exists() {
+		return None;
+	}
 	let mut watched = vec![git_path(root, "HEAD")?, git_path(root, "packed-refs")?];
 	let branch = command(root)
 		.args(["symbolic-ref", "--quiet", "HEAD"])

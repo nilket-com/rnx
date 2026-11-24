@@ -113,7 +113,7 @@ def run(out, baseline, candidate, cargo):
 			revision = subprocess.check_output(['git', '-c', 'color.ui=false', 'rev-parse', revision + '^{commit}'], cwd=ROOT, text=True).strip()
 			archive = out / (role + '.tar')
 			with archive.open('xb') as stream:
-				subprocess.run(['git', '-c', 'color.ui=false', 'archive', revision], cwd=ROOT, stdout=stream, check=True)
+				subprocess.run(['sh', str(ROOT/'tools/export-source.sh'), revision], cwd=ROOT, stdout=stream, check=True)
 			source = out / 'source'
 			if index:
 				shutil.rmtree(source)  # Only this invocation's preceding export.
@@ -124,7 +124,9 @@ def run(out, baseline, candidate, cargo):
 				env = dict(build_environment(os.environ), CARGO_TARGET_DIR=str(target))
 				log = out / (role + '.log')
 				with log.open('x') as stream:
-					p = run_process(command, cwd=source, env=env, stdout=stream,
+					wrapper = source / 'engine/launcher/installed/build-export.sh'
+					build = ['sh', str(wrapper), *command] if wrapper.is_file() else command
+					p = run_process(build, cwd=source, env=env, stdout=stream,
 						stderr=subprocess.STDOUT, timeout=14400)
 				assert p.returncode == 0, (role, 'build failed', p.returncode)
 				compiled = compiled_crates(log.read_text(), ('rune', 'rnx'))
@@ -132,7 +134,8 @@ def run(out, baseline, candidate, cargo):
 				shutil.copy2(target / 'release/rnx', binary)
 				row = dict(role=role, source_commit=revision, rnx=revision, rune=revision,
 					binary=str(binary), sha256=digest(binary), archive_sha256=digest(archive),
-					command=command, environment=environment(env), target_directory=str(target),
+					command=command, export_recipe=digest(wrapper) if wrapper.is_file() else None,
+					environment=environment(env), target_directory=str(target),
 					compiled_crates=compiled, log_sha256=digest(log))
 				row['measured'] = {'version': 1, 'target': 'x86_64-unknown-linux-gnu',
 					'runner': {'path': '/run/rnx-route/rnx', 'sha256': row['sha256']}}

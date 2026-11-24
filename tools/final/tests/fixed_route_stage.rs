@@ -255,6 +255,7 @@ fn the_recipe_identities_answer_as_the_published_python() {
 	changed["build_environment"] = json!("new");
 	changed["toolchain"] = json!("new");
 	changed["tooling"]["tools/column/paired_build.py"] = json!("new");
+	changed["tooling"]["tools/export-source.sh"] = json!("new export");
 	cases.push((
 		"capture_key: build-only changes".into(),
 		key(&"a".repeat(64), &changed),

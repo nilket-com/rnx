@@ -111,9 +111,9 @@ impl Invoke for Live {
 			.write(true)
 			.create_new(true)
 			.open(archive)?;
-		let mut child = crate::child::git_command();
+		let mut child = std::process::Command::new("sh");
 		child
-			.arg("archive")
+			.arg(root.join("tools/export-source.sh"))
 			.arg(commit)
 			.current_dir(root)
 			.stdout(file);
