@@ -342,6 +342,65 @@ fn legacy_probe() {
 	contract_completed("stock", cases.len());
 }
 
+/// Identity-bearing cases have a fixed prefix and suffix around each hex token.
+fn debug_identities(text: &[u8], prefix: &str) -> (String, Vec<u64>) {
+	let mut rest = core::str::from_utf8(text).unwrap();
+	let mut shape = String::new();
+	let mut ids = Vec::new();
+	while let Some((before, after)) = rest.split_once(prefix) {
+		shape.push_str(before);
+		shape.push_str(prefix);
+		let digits = after.bytes().take_while(u8::is_ascii_hexdigit).count();
+		assert!(digits > 0);
+		ids.push(u64::from_str_radix(&after[..digits], 16).unwrap());
+		rest = &after[digits..];
+	}
+	shape.push_str(rest);
+	(shape, ids)
+}
+
+fn compare_debug_stdout(label: &str, stock: &[u8], execution: &[u8]) -> &'static str {
+	let identity = match label {
+		"dbg/value/function" => Some("(at: 0x"),
+		"dbg/value/range" | "dbg/value/range-inclusive" | "closed/string" => Some(" object at 0x"),
+		_ => None,
+	};
+	if let Some(prefix) = identity {
+		let (a, old_ids) = debug_identities(stock, prefix);
+		let (b, new_ids) = debug_identities(execution, prefix);
+		assert_eq!((old_ids.len(), new_ids.len()), (1, 1), "{label}");
+		assert_eq!(a, b, "{label}: only the identity token may differ");
+		return "engine identity token";
+	}
+	if let Some(depth_case) = label.strip_prefix("depth/") {
+		let (kind, depth) = depth_case.split_once('/').unwrap();
+		let limit = crate::experimental_core::heap::FormatLimits::default().depth;
+		if depth.parse::<usize>().unwrap() > limit {
+			let (open, close) = match kind {
+				"vec" => ("[", "]"),
+				"tuple" => ("(", ")"),
+				"option" => ("Some(", ")"),
+				"result" => ("Ok(", ")"),
+				"object" => ("{\"x\": ", "}"),
+				_ => unreachable!(),
+			};
+			assert_eq!(
+				execution,
+				format!(
+					"\nrunning 1 test\n{}<depth-limit>{}\n",
+					open.repeat(limit),
+					close.repeat(limit)
+				)
+				.as_bytes(),
+				"{label}"
+			);
+			return "bounded debug depth";
+		}
+	}
+	assert_eq!(execution, stock, "{label} stdout");
+	"exact admitted behavior"
+}
+
 /// One stock run of a C2 case: record, streams, site and captured output.
 struct StockRow {
 	record: String,
@@ -385,8 +444,7 @@ fn stock_rows(cases: &[Case], out: &Path, scratch: &Path) -> Vec<StockRow> {
 			String::new()
 		};
 		let captured = fs::read(scratch.join("result.capture")).unwrap_or_default();
-		// Stock prints unstable addresses for these rows; no execution row
-		// compares their streams.
+		// Retain the complete stock observation, including its process-local identities.
 		observations += usize::from(
 			String::from_utf8_lossy(&run.stdout).contains("object at 0x")
 				|| String::from_utf8_lossy(&captured).contains("object at 0x"),
@@ -450,16 +508,13 @@ fn contract() {
 			assert_eq!(run.stdout, b"\nrunning 1 test\n");
 		};
 		let disposition;
-		if case.source.contains("dbg") && !case.label.starts_with("source-shadow/") {
-			disposition = "dbg deferred: compiler or native refusal";
-			assert_eq!(actual.0, "refused", "{}", case.label);
-			assert!(matches!(
-				actual.1,
-				"Some(FrontendDiagnostic)" | "Some(Native)"
-			));
-			no_output(&run);
-		} else if case.label.starts_with("fuel/print/") {
-			disposition = "execution print fuel invariants (not VM fuel parity)";
+		if case.label.starts_with("fuel/print/") || case.label.starts_with("fuel/dbg/") {
+			let dbg = case.label.starts_with("fuel/dbg/");
+			disposition = if dbg {
+				"execution dbg fuel invariants (not VM fuel parity)"
+			} else {
+				"execution print fuel invariants (not VM fuel parity)"
+			};
 			let fuel: u32 = case.mode.strip_prefix("c2-fuel-").unwrap().parse().unwrap();
 			assert!(matches!(actual.0, "value" | "error"));
 			if actual.0 == "error" {
@@ -470,11 +525,15 @@ fn contract() {
 					&b"\nrunning 1 test\n"[..],
 					&b"\nrunning 1 test\n1\n"[..],
 					&b"\nrunning 1 test\n1\n2\n"[..],
-					&b"\nrunning 1 test\n1\n2\n12"[..]
+					if dbg {
+						&b"\nrunning 1 test\n1\n2\n1\n2\n"[..]
+					} else {
+						&b"\nrunning 1 test\n1\n2\n12"[..]
+					}
 				]
 				.contains(&run.stdout.as_slice()));
 			} else {
-				let high = high("fuel/print/80");
+				let high = high(if dbg { "fuel/dbg/80" } else { "fuel/print/80" });
 				let high_obs = observation(&high.record);
 				assert_eq!((&actual.2, &actual.3), (&high_obs.2, &high_obs.3));
 				assert_eq!(hex(&run.stdout), hex(&high.stdout));
@@ -541,7 +600,6 @@ fn contract() {
 			assert_eq!((actual.0, actual.1), ("refused", "Some(Native)"));
 			no_output(&run);
 		} else {
-			disposition = "exact admitted behavior";
 			assert_eq!(actual.0, stock.0, "{}", case.label);
 			if stock.1.starts_with("stock:Panic ") {
 				assert_eq!(actual.1, "Panic");
@@ -554,7 +612,7 @@ fn contract() {
 				"{}",
 				case.label
 			);
-			assert_eq!(hex(&run.stdout), hex(&row.stdout), "{} stdout", case.label);
+			disposition = compare_debug_stdout(&case.label, &row.stdout, &run.stdout);
 			assert_eq!(hex(&run.stderr), hex(&row.stderr));
 			assert_eq!(site, row.site, "{} site", case.label);
 			assert_eq!(hex(&captured), hex(&row.captured));
@@ -577,10 +635,62 @@ fn contract() {
 		format!("{} C2 execution rows; {counts:?}\n", cases.len()),
 	)
 	.unwrap();
+	assert_eq!(
+		counts.get("execution dbg fuel invariants (not VM fuel parity)"),
+		Some(&81)
+	);
+	debug_supplement(&out.join("debug"));
 	direct_print_supplement(&out.join("direct-print"));
 	#[cfg(target_os = "linux")]
 	crate::modules::io::stdout_tests::c2_at(&out.join("descriptors"));
 	contract_completed("fresh", cases.len());
+}
+
+fn debug_supplement(out: &Path) {
+	fs::create_dir(out).unwrap();
+	let scratch = Scratch(out.join("scratch"));
+	fs::create_dir(&scratch.0).unwrap();
+	for (n, (label, source)) in [
+		("forms", r#"struct S{x} struct T(a,b); enum E{U,V(v),W{x}} pub fn main(){dbg!(i64, std::cmp::Ordering::Less, S{x:1},T(1.0,-0.0),E::U,E::V(1),E::W{x:2},`hello ${7}`);42}"#),
+		("alias", r#"pub fn main(){let r=2..4;let a=[r];let b=a;dbg!(a,b,[a,b]);42}"#),
+		("closure", r#"pub fn main(){let x=4;let f=|n|n+x;dbg!(f,[f]);42}"#),
+		("failure", r#"pub fn main(){let a=[1];let b=a;drop(a);dbg!(b,#{x:b},[b]);42}"#),
+		("cycle", r#"pub fn main(){let a=[];a.push(a);dbg!(a);42}"#),
+	] .into_iter().enumerate() {
+		let path=out.join(format!("{label}.rn"));
+		fs::write(&path,source).unwrap();
+		let stock=launch(&path,&path,"c2-default","stock",&scratch.0,out,&n.to_string());
+		let fresh=launch(&path,&path,"c2-default","fresh",&scratch.0,out,&n.to_string());
+		for r in [&stock,&fresh] {
+			assert!(r.complete, "{label}");
+			assert_eq!(observation(&r.record).0,"value", "{label}: {}",r.record);
+			assert!(r.stderr.is_empty(), "{label}");
+		}
+		assert_eq!(stock.record,fresh.record,"{label}");
+		match label {
+			"forms"=>assert_eq!(fresh.stdout,stock.stdout),
+			"cycle"=>{
+				assert_eq!(fresh.stdout,b"\nrunning 1 test\n[<cycle>]\n");
+				let (shape, ids)=debug_identities(&stock.stdout," object at 0x");
+				assert_eq!(ids.len(),1);
+				assert_eq!(shape,"\nrunning 1 test\n<::std::vec::Vec object at 0x: Value is nested too deeply to walk, limit is 64>\n");
+			}
+			_=>{
+				let (prefix,count)=match label {
+					"alias"=>(" object at 0x",4),
+					"closure"=>("(at: 0x",2),
+					"failure"=>(" object at 0x",3),
+					_=> unreachable!(),
+				};
+				let (stock_shape,stock_ids)=debug_identities(&stock.stdout,prefix);
+				let (fresh_shape,fresh_ids)=debug_identities(&fresh.stdout,prefix);
+				assert_eq!(stock_shape,fresh_shape,"{label}");
+				assert_eq!((stock_ids.len(),fresh_ids.len()),(count,count));
+				assert_eq!(fresh_ids[0],fresh_ids[1],"{label} alias");
+				if label=="alias" {assert!(fresh_ids.iter().all(|id|*id==fresh_ids[0]));}
+			}
+		}
+	}
 }
 
 fn direct_print_supplement(out: &Path) {

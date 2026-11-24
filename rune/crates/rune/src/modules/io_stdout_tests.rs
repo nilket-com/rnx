@@ -360,6 +360,9 @@ pub(crate) fn c2_at(out: &std::path::Path) {
 	std::fs::create_dir(out).unwrap();
 	let hex = |bytes: &[u8]| bytes.iter().map(|b| format!("{b:02x}")).collect::<String>();
 	for stock in [
+		"stock-c2-dbg-first",
+		"stock-c2-dbg-after",
+		"stock-c2-dbg-closed",
 		"stock-c2-print-first",
 		"stock-c2-print-after",
 		"stock-c2-print-closed",

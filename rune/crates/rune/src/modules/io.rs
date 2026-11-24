@@ -74,11 +74,17 @@ pub fn module(
 			/// dbg(number, string);
 			/// ```
 		})?;
+		#[cfg(feature = "execution")]
+		{
+			m.stdio_dbg = true;
+		}
 	}
 
 	// These are unconditionally included, but using them might cause a
 	// compilation error unless `::std::io::*` functions are provided somehow.
 	m.macro_meta(dbg_macro)?;
+	#[cfg(feature = "execution")]
+	m.mark_builtin_macro();
 	m.macro_meta(print_macro)?;
 	#[cfg(feature = "execution")]
 	m.mark_builtin_macro();

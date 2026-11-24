@@ -824,8 +824,7 @@
         },
         "fresh": {
           "before": "Division by zero",
-          "after": "Division by zero",
-          "observed_phase": "refused"
+          "after": "Division by zero in `i64` division (`/`)"
         }
       }
     },
@@ -842,8 +841,7 @@
         },
         "fresh": {
           "before": "Division by zero",
-          "after": "Division by zero",
-          "observed_phase": "refused"
+          "after": "Division by zero in `i64` division (`/`)"
         }
       }
     },

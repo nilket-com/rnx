@@ -332,7 +332,7 @@ fn generic(context: &Context, parameters: &[Hash]) -> String {
 fn free_policy(item: &str) -> Verdict {
 	if in_names(
 		item,
-		"::std::any::type_name_of_val ::std::char::from_i64 ::std::clone::clone ::std::io::print ::std::io::println ::std::iter::range ::std::mem::drop ::std::panic ::std::vec::Vec::new ::std::vec::Vec::with_capacity ::std::string::String::from",
+		"::std::any::type_name_of_val ::std::char::from_i64 ::std::clone::clone ::std::io::dbg ::std::io::print ::std::io::println ::std::iter::range ::std::mem::drop ::std::panic ::std::vec::Vec::new ::std::vec::Vec::with_capacity ::std::string::String::from",
 	) {
 		Verdict::Admit
 	} else {
@@ -591,7 +591,7 @@ fn constructors_and_macros_have_live_closed_policies() {
 					"::std::test::assert_eq" => ("1,1", Verdict::Admit),
 					"::std::test::assert_ne" => ("1,2", Verdict::Admit),
 					"::std::stringify" => ("hello", Verdict::Refuse(Refusal::FrontendDiagnostic)),
-					"::std::io::dbg" => ("1", Verdict::Refuse(Refusal::FrontendDiagnostic)),
+					"::std::io::dbg" => ("1", Verdict::Admit),
 					"::std::macros::builtin::file" | "::std::macros::builtin::line" => {
 						("", Verdict::Refuse(Refusal::FrontendDiagnostic))
 					}

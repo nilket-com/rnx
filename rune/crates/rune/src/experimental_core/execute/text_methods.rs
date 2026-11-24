@@ -15,6 +15,9 @@ impl Executor {
 		len: u32,
 	) -> Result<()> {
 		let invalid = || error(ErrorKind::InvalidCode);
+		if id == super::super::code::DEBUG_LINES {
+			return self.debug_lines(store, f, base, out, start, len);
+		}
 		if id >= 0x8000_0070 {
 			return self.pipeline_call(store, f, base, out, id, start, len);
 		}
@@ -105,5 +108,58 @@ impl Executor {
 			base.checked_add(out as usize).ok_or_else(invalid)?,
 			result,
 		)
+	}
+}
+
+impl Executor {
+	#[cold]
+	fn debug_lines(
+		&mut self,
+		store: &mut Store,
+		f: &super::super::code::Function,
+		base: usize,
+		out: u32,
+		start: u32,
+		len: u32,
+	) -> Result<()> {
+		use std::io::Write;
+		let invalid = || error(ErrorKind::InvalidCode);
+		let end = start.checked_add(len).ok_or_else(invalid)?;
+		let args = f
+			.args
+			.get(start as usize..end as usize)
+			.ok_or_else(invalid)?;
+		let dest = base.checked_add(out as usize).ok_or_else(invalid)?;
+		if out >= f.slots || dest >= self.slots.len() {
+			return Err(invalid());
+		}
+		let mut stdout = std::io::stdout().lock();
+		for &slot in args {
+			if slot >= f.slots {
+				return Err(invalid());
+			}
+			let value = *self
+				.slots
+				.get(base.checked_add(slot as usize).ok_or_else(invalid)?)
+				.ok_or_else(invalid)?;
+			let text = store.debug_line(value, &self.format_limits)?;
+			#[cfg(test)]
+			if let Some(capture) = self.test_output.as_mut() {
+				capture.extend_from_slice(text.as_bytes());
+				capture.push(b'\n');
+				continue;
+			}
+			writeln!(stdout, "{text}").map_err(|e| {
+				error(ErrorKind::Output).with_detail(Detail::Io {
+					kind: e.kind(),
+					os: e.raw_os_error(),
+				})
+			})?;
+			#[cfg(test)]
+			if let Some(hook) = self.test_after_print {
+				hook();
+			}
+		}
+		self.put(store, dest, Value::Unit)
 	}
 }

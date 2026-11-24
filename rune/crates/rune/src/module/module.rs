@@ -82,6 +82,8 @@ pub struct Module {
 	pub(crate) stdio_println: bool,
 	#[cfg(feature = "execution")]
 	pub(crate) stdio_print: bool,
+	#[cfg(feature = "execution")]
+	pub(crate) stdio_dbg: bool,
 	/// Execution core: this module/context certifies the std panic builtin.
 	#[cfg(feature = "execution")]
 	pub(crate) panic: bool,
@@ -672,6 +674,8 @@ impl Module {
 			stdio_println: false,
 			#[cfg(feature = "execution")]
 			stdio_print: false,
+			#[cfg(feature = "execution")]
+			stdio_dbg: false,
 			#[cfg(feature = "execution")]
 			panic: false,
 			#[cfg(feature = "execution")]

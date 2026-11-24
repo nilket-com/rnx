@@ -56,9 +56,9 @@
 			"name": "dbg",
 			"source": "pub fn main(){dbg!(1..3)}",
 			"source_sha256": "5d0957fd7ba5a77b1139ecd2d51e6358234ccd5bddd3db89eb8cc7600bde20a4",
-			"policy": "FrontendDiagnostic",
+			"policy": "Native",
 			"expected_stock_calls": 1,
-			"default_admitted": false
+			"default_admitted": true
 		},
 		{
 			"name": "to-string-i64",

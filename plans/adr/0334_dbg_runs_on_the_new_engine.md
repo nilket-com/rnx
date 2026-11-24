@@ -1,6 +1,6 @@
 # ADR 0334: `dbg!` runs on the new engine
 
-Status: Proposed
+Status: Accepted
 
 Base: published 6da26e4328ea29139a0889a9583de55dec4a7ff6 (ADR 0333).
 

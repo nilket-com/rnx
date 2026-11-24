@@ -152,11 +152,18 @@ struct Stats {
 	peak_scratch: usize,
 }
 
+// Store entries can move when the slot vector grows. The generation-qualified
+// handle identifies an object across those moves and across repeated prints.
+fn handle_identity(handle: crate::experimental_core::value::Handle) -> u64 {
+	(u64::from(handle.generation) << 32) | u64::from(handle.slot)
+}
+
 struct Sink<'a> {
 	limits: &'a FormatLimits,
 	// Templates reserve one legacy walk level for the formatting receiver.
 	// Host result inspection retains its independently selected depth policy.
 	template: bool,
+	debug_line: bool,
 	text: Option<String>,
 	bytes: usize,
 	nodes: usize,
@@ -173,6 +180,7 @@ impl<'a> Sink<'a> {
 		Self {
 			limits,
 			template: false,
+			debug_line: false,
 			text,
 			bytes: 0,
 			nodes: 0,
@@ -195,6 +203,19 @@ impl<'a> Sink<'a> {
 		}
 		self.bytes = bytes;
 		Ok(())
+	}
+
+	fn debug_marker(&mut self, marker: &str) -> Result<()> {
+		if self
+			.nodes
+			.checked_add(self.pending_nodes)
+			.ok_or_else(limit)?
+			>= self.limits.nodes
+		{
+			return Err(limit());
+		}
+		self.nodes += 1;
+		self.push(marker)
 	}
 
 	fn formatted(&mut self, value: fmt::Arguments<'_>) -> Result<()> {
@@ -568,7 +589,26 @@ impl Store {
 		result.map_err(|_| writer.0.failure.unwrap_or_else(invalid))
 	}
 
+	/// A heap identity encodes its generation and slot. A function identity is its
+	/// index within its program. Both print in hexadecimal and survive aliasing.
+	/// Ancestor references print `<cycle>` and subtrees beyond the traversal
+	/// bound print `<depth-limit>`. Shared children on separate paths print in full.
+	pub(crate) fn debug_line(&self, value: Value, limits: &FormatLimits) -> Result<String> {
+		let mut sink = Sink::new(limits, Some(String::new()));
+		sink.debug_line = true;
+		if let Err(e) = self.render(value, true, &mut sink) {
+			if e.kind != ErrorKind::AccessConflict {
+				return Err(e);
+			}
+			sink = Sink::new(limits, Some(String::new()));
+			sink.debug_line = true;
+			self.debug_failure_marker(value, &mut sink, e)?;
+		}
+		sink.text.ok_or_else(invalid)
+	}
+
 	fn render(&self, value: Value, debug: bool, sink: &mut Sink<'_>) -> Result<()> {
+		let mut ancestors = Vec::new();
 		let mut stack = Vec::new();
 		let mut current = Some((value, debug, false));
 		// All owned buffers drop on every return, including failures. No store
@@ -576,11 +616,33 @@ impl Store {
 		let result = (|| {
 			loop {
 				if let Some((value, debug, object_child)) = current.take() {
+					if sink.debug_line {
+						ancestors.truncate(stack.len());
+						if let Value::Heap(handle) = value {
+							if ancestors.contains(&handle) {
+								sink.debug_marker("<cycle>")?;
+								continue;
+							}
+							if stack.len() >= sink.limits.depth.min(crate::runtime::MAX_VALUE_DEPTH)
+							{
+								sink.debug_marker("<depth-limit>")?;
+								continue;
+							}
+							if ancestors.len() == ancestors.capacity() {
+								let needed = ancestors.len().checked_add(1).ok_or_else(limit)?;
+								sink.reserve(&mut ancestors, needed)?;
+							}
+							ancestors.try_push(handle)?;
+						}
+					}
 					match self.start_value(value, debug, sink, &mut stack, object_child) {
 						Ok(next) => current = next.map(|value| (value, true, false)),
 						// Rust Debug catches a failed child at the nearest Object.
 						// Host-selected resource failures keep propagating.
-						Err(error) if error.kind == ErrorKind::ValueDepth => {
+						Err(error)
+							if error.kind == ErrorKind::ValueDepth
+								|| sink.debug_line && error.kind == ErrorKind::AccessConflict =>
+						{
 							let catch = stack.iter().rposition(|frame| {
 								matches!(
 									frame,
@@ -617,7 +679,11 @@ impl Store {
 							if let Some(text) = &mut sink.text {
 								text.truncate(checkpoint.bytes);
 							}
-							self.object_depth_marker(checkpoint.value, sink)?;
+							if sink.debug_line {
+								self.debug_failure_marker(checkpoint.value, sink, error)?;
+							} else {
+								self.object_depth_marker(checkpoint.value, sink)?;
+							}
 						}
 						Err(error) => return Err(error),
 					}
@@ -700,6 +766,17 @@ impl Store {
 		// A reserve failure may already have dropped the stack. After any error
 		// the call ends, so no scratch reservation or pending work is reused.
 		if result.is_ok() {
+			if sink.debug_line {
+				sink.scratch_bytes = sink
+					.scratch_bytes
+					.checked_sub(
+						ancestors
+							.capacity()
+							.checked_mul(size_of::<super::super::value::Handle>())
+							.ok_or_else(accounting)?,
+					)
+					.ok_or_else(accounting)?;
+			}
 			sink.scratch_bytes = sink
 				.scratch_bytes
 				.checked_sub(
@@ -716,6 +793,39 @@ impl Store {
 	}
 
 	fn object_depth_marker(&self, value: Value, sink: &mut Sink<'_>) -> Result<()> {
+		self.object_marker(
+			value,
+			sink,
+			format_args!(
+				"Value is nested too deeply to walk, limit is {}",
+				crate::runtime::MAX_VALUE_DEPTH
+			),
+		)
+	}
+
+	fn debug_failure_marker(&self, value: Value, sink: &mut Sink<'_>, error: Error) -> Result<()> {
+		use crate::experimental_core::error::Detail;
+		match error.detail {
+			Detail::Moved { .. } => self.object_marker(
+				value,
+				sink,
+				format_args!("Cannot read the value: it has been moved"),
+			),
+			Detail::ReadExclusive => self.object_marker(
+				value,
+				sink,
+				format_args!("Cannot read the value: it is being written"),
+			),
+			_ => Err(error),
+		}
+	}
+
+	fn object_marker(
+		&self,
+		value: Value,
+		sink: &mut Sink<'_>,
+		reason: fmt::Arguments<'_>,
+	) -> Result<()> {
 		use crate::experimental_core::error::TypeName;
 		let Value::Heap(handle) = value else {
 			return Err(invalid());
@@ -737,10 +847,15 @@ impl Store {
 				other => super::opaque::full_name(other).ok_or_else(invalid)?,
 			}
 		};
+		if sink.debug_line {
+			return sink.formatted(format_args!(
+				"<{full} object at 0x{:x}: {reason}>",
+				handle_identity(handle)
+			));
+		}
 		sink.formatted(format_args!(
-			"<{full} object at {:p}: Value is nested too deeply to walk, limit is {}>",
-			self.entry(handle)?,
-			crate::runtime::MAX_VALUE_DEPTH
+			"<{full} object at {:p}: {reason}>",
+			self.entry(handle)?
 		))
 	}
 
@@ -796,7 +911,14 @@ impl Store {
 					.ok_or_else(invalid)?;
 				// Named Intentional divergence: the address is new's own object
 				// identity. Keep legacy's full text and nested generic spelling.
-				sink.formatted(format_args!("<{name} object at {:p}>", entry))?;
+				if sink.debug_line {
+					sink.formatted(format_args!(
+						"<{name} object at 0x{:x}>",
+						handle_identity(h)
+					))?;
+				} else {
+					sink.formatted(format_args!("<{name} object at {:p}>", entry))?;
+				}
 				return Ok(None);
 			}
 		}
@@ -820,6 +942,7 @@ impl Store {
 			Value::Bool(n) => sink.push(if n { "true" } else { "false" })?,
 			Value::I64(n) => sink.formatted(format_args!("{n}"))?,
 			Value::U64(n) => sink.formatted(format_args!("{n}"))?,
+			Value::F64(n) if sink.debug_line => sink.formatted(format_args!("{n:?}"))?,
 			Value::F64(n) => {
 				let mut buffer = ryu::Buffer::new();
 				sink.push(buffer.format(n))?;
@@ -882,7 +1005,11 @@ impl Store {
 				Payload::Closure {
 					function, captures, ..
 				} if debug => {
-					sink.formatted(format_args!("closure (function: {function}, env:"))?;
+					if sink.debug_line {
+						sink.formatted(format_args!("closure (at: 0x{function:x}, env:"))?;
+					} else {
+						sink.formatted(format_args!("closure (function: {function}, env:"))?;
+					}
 					sink.push("[")?;
 					sink.frame(
 						stack,
@@ -1018,6 +1145,9 @@ impl Store {
 			Value::Type(tag) => type_value(tag, sink)?,
 			// Legacy prints its bytecode offset here; new names the function index,
 			// as the closure form does.
+			Value::Function { id, .. } if sink.debug_line => {
+				sink.formatted(format_args!("immediate function (at: 0x{id:x})"))?
+			}
 			Value::Function { id, .. } if debug => {
 				sink.formatted(format_args!("immediate function (function: {id})"))?
 			}

@@ -121,10 +121,10 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 		INSTANCE_METHOD => Some(false),
 		// Scalar results and forwarding from captures, variants, ranges, iterators,
 		// sort scratch or collection arguments; none manufactures a code ID.
-		PRINT_RAW | VARIANT_SUCCESS | MATCH_VARIANT | SORT_BEGIN | SORT_LEN | SORT_LOAD
-		| SORT_VALUE | SORT_STORE | SORT_COMMIT | SORT_ORDERING | ANY_READY | CAPTURE_TAKE
-		| RANGE_FROM | RANGE_FULL | RANGE_INCLUSIVE | RANGE_TO_INCLUSIVE | RANGE_TO
-		| OBJECT_HAS_FIELD | ITER_METHOD | NEXT_METHOD | VEC_NEW | VEC_WITH_CAPACITY
+		PRINT_RAW | DEBUG_LINES | VARIANT_SUCCESS | MATCH_VARIANT | SORT_BEGIN | SORT_LEN
+		| SORT_LOAD | SORT_VALUE | SORT_STORE | SORT_COMMIT | SORT_ORDERING | ANY_READY
+		| CAPTURE_TAKE | RANGE_FROM | RANGE_FULL | RANGE_INCLUSIVE | RANGE_TO_INCLUSIVE
+		| RANGE_TO | OBJECT_HAS_FIELD | ITER_METHOD | NEXT_METHOD | VEC_NEW | VEC_WITH_CAPACITY
 		| VEC_RESIZE | ANY_TYPE_OF | ANY_TYPE_NAME => Some(false),
 		// Certified text functions: string/char/scalar results and text iterators.
 		TEXT_SPLIT

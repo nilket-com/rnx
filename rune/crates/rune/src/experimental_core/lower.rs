@@ -883,6 +883,25 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		}
 	}
 
+	#[inline(never)]
+	fn debug_call(&mut self, call: &hir::ExprCall<'_>, out: u32, span: Span) -> Result<()> {
+		if !self.context.stdio_dbg() || !self.context.formatting() {
+			return Err(self.refused(span, Refusal::Native));
+		}
+		let slots = self.operands(call.args)?;
+		let (args_start, args_len) = self.function.arguments(&slots)?;
+		self.emit(
+			Op::Call {
+				out,
+				function: super::code::DEBUG_LINES,
+				args_start,
+				args_len,
+			},
+			span,
+		)?;
+		Ok(())
+	}
+
 	fn print_call(&mut self, call: &hir::ExprCall<'_>, out: u32, span: Span) -> Result<()> {
 		if !self.context.stdio_print() || !self.context.formatting() {
 			return Err(self.refused(span, Refusal::Native));
@@ -2628,6 +2647,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			let value = self.operand(call.args[0])?;
 			self.emit(Op::StringFrom { out, value }, span)?;
 			return Ok(());
+		}
+		if hash == crate::hash!(::std::io::dbg) {
+			return self.debug_call(call, out, span);
 		}
 		if hash == Hash::type_hash(crate::item!(::std::io::print)) {
 			return self.print_call(call, out, span);

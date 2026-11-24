@@ -414,16 +414,16 @@ pub struct Context {
 	implemented_traits: hash::Map<Vec<Hash>>,
 	/// Registered native macro handlers.
 	macros: hash::Map<MacroHandler>,
-	/// Execution core: certified std formatting and assertion macros. A hash here implies that the handler stored
-	/// in `macros` at that hash is the marked std builtin; a builtin may be absent from it
-	/// after an allocation failure (fail closed).
+	/// Bits for marked builtin handlers currently installed under their certified names.
 	#[cfg(feature = "execution")]
-	builtin_macros: HashSet<Hash>,
+	builtin_macros: u8,
 	/// Execution core: the handler installed at `::std::io::println` is the std stdio builtin.
 	#[cfg(feature = "execution")]
 	stdio_println: bool,
 	#[cfg(feature = "execution")]
 	stdio_print: bool,
+	#[cfg(feature = "execution")]
+	stdio_dbg: bool,
 	/// Execution core: this module/context certifies the std panic builtin.
 	#[cfg(feature = "execution")]
 	panic: bool,
@@ -893,6 +893,13 @@ impl Context {
 			{
 				self.stdio_print = true;
 			}
+			#[cfg(feature = "execution")]
+			if module.stdio_dbg
+				&& item.hash == crate::hash!(::std::io::dbg)
+				&& matches!(item.kind, rune::module::ModuleItemKind::Function(..))
+			{
+				self.stdio_dbg = true;
+			}
 		}
 
 		tracing::trace!(associated = module.associated.len(), "associated");
@@ -1241,15 +1248,31 @@ impl Context {
 	}
 
 	#[cfg(feature = "execution")]
+	fn builtin_macro_bit(hash: Hash) -> u8 {
+		const FORMAT: Hash = crate::hash!(::std::fmt::format);
+		const PRINTLN: Hash = crate::hash!(::std::io::println);
+		const PRINT: Hash = crate::hash!(::std::io::print);
+		const DBG: Hash = crate::hash!(::std::io::dbg);
+		const PANIC: Hash = crate::hash!(::std::panic);
+		const ASSERT: Hash = crate::hash!(::std::test::assert);
+		const ASSERT_EQ: Hash = crate::hash!(::std::test::assert_eq);
+		const ASSERT_NE: Hash = crate::hash!(::std::test::assert_ne);
+		match hash {
+			FORMAT => 1 << 0,
+			PRINTLN => 1 << 1,
+			PRINT => 1 << 2,
+			DBG => 1 << 3,
+			PANIC => 1 << 4,
+			ASSERT => 1 << 5,
+			ASSERT_EQ => 1 << 6,
+			ASSERT_NE => 1 << 7,
+			_ => 0,
+		}
+	}
+
+	#[cfg(feature = "execution")]
 	pub(crate) fn builtin_macro(&self, hash: Hash) -> bool {
-		self.builtin_macros.contains(&hash)
-			&& (hash == Hash::type_hash(crate::item!(::std::fmt::format))
-				|| hash == Hash::type_hash(crate::item!(::std::io::println))
-				|| hash == Hash::type_hash(crate::item!(::std::io::print))
-				|| hash == Hash::type_hash(crate::item!(::std::panic))
-				|| hash == Hash::type_hash(crate::item!(::std::test::assert))
-				|| hash == Hash::type_hash(crate::item!(::std::test::assert_eq))
-				|| hash == Hash::type_hash(crate::item!(::std::test::assert_ne)))
+		self.builtin_macros & Self::builtin_macro_bit(hash) != 0
 	}
 
 	/// Execution core: whether `::std::io::println` resolves to the certified std
@@ -1268,6 +1291,11 @@ impl Context {
 			&& self
 				.functions
 				.contains_key(&Hash::type_hash(crate::item!(::std::io::print)))
+	}
+
+	#[cfg(feature = "execution")]
+	pub(crate) fn stdio_dbg(&self) -> bool {
+		self.stdio_dbg && self.functions.contains_key(&crate::hash!(::std::io::dbg))
 	}
 
 	#[cfg(feature = "execution")]
@@ -1874,17 +1902,15 @@ impl Context {
 			rune::module::ModuleItemKind::Macro(macro_) => {
 				// Execution core: certification implies that the handler stored at this hash is
 				// the marked std builtin. A non-builtin macro drops it before replacing the
-				// handler, and the builtin is certified only after it is stored. The reverse
-				// is not guaranteed: after an allocation failure a stored builtin may stay
-				// uncertified, which only refuses (fail closed).
+				// handler, and the builtin is certified only after it is stored.
 				#[cfg(feature = "execution")]
 				if !macro_.builtin_macro {
-					self.builtin_macros.remove(&m.hash);
+					self.builtin_macros &= !Self::builtin_macro_bit(m.hash);
 				}
 				self.macros.try_insert(m.hash, macro_.handler.clone())?;
 				#[cfg(feature = "execution")]
 				if macro_.builtin_macro {
-					self.builtin_macros.try_insert(m.hash)?;
+					self.builtin_macros |= Self::builtin_macro_bit(m.hash);
 				}
 				meta::Kind::Macro
 			}

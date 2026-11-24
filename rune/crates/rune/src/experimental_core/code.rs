@@ -896,6 +896,7 @@ const TEXT_REPLACE: u32 = crate::function::text::Method::Replace.id();
 const TEXT_STARTS_WITH: u32 = crate::function::text::Method::StartsWith.id();
 const TEXT_ENDS_WITH: u32 = crate::function::text::Method::EndsWith.id();
 const TEXT_CONTAINS: u32 = crate::function::text::Method::Contains.id();
+pub(crate) const DEBUG_LINES: u32 = FIRST_INTRINSIC_ID + 0x66;
 const TEXT_TRIM: u32 = crate::function::text::Method::Trim.id();
 const PIPELINE_CHARS: u32 = crate::function::pipeline::Method::Chars.id();
 const PIPELINE_UNWRAP: u32 = crate::function::pipeline::Method::Unwrap.id();
@@ -1181,6 +1182,23 @@ const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
 ];
 pub(crate) const ANY_TYPE_OF: u32 = 0x8000_007c;
 pub(crate) const ANY_TYPE_NAME: u32 = 0x8000_007d;
+
+/// The debug handler consumes the complete, bounds-checked argument slice.
+fn call_certificate(id: u32) -> Option<CertifiedIntrinsic> {
+	if id == DEBUG_LINES {
+		return Some(CertifiedIntrinsic {
+			id,
+			arity: u32::MAX,
+		});
+	}
+	certified_intrinsic(CERTIFIED_INTRINSICS, id)
+}
+
+impl CertifiedIntrinsic {
+	fn accepts(self, len: u32) -> bool {
+		self.id == DEBUG_LINES || self.arity == len
+	}
+}
 
 fn certified_intrinsic(table: &[CertifiedIntrinsic], id: u32) -> Option<CertifiedIntrinsic> {
 	if !reserved_intrinsic_id(id) {
@@ -2013,17 +2031,12 @@ fn validate_operands(
 						return Err(invalid());
 					}
 				} else {
-					let arity = if let Some(host) = host_binding(hosts, function) {
-						if !host.signature.valid() {
-							return Err(invalid());
-						}
-						u32::from(host.signature.arity)
+					let valid = if let Some(host) = host_binding(hosts, function) {
+						host.signature.valid() && args_len == u32::from(host.signature.arity)
 					} else {
-						certified_intrinsic(CERTIFIED_INTRINSICS, function)
-							.ok_or_else(invalid)?
-							.arity
+						call_certificate(function).is_some_and(|cert| cert.accepts(args_len))
 					};
-					if args_len != arity {
+					if !valid {
 						return Err(invalid());
 					}
 				}
@@ -2083,7 +2096,7 @@ impl Code {
 				arity: u32::from(host.signature.arity),
 			});
 		}
-		certified_intrinsic(CERTIFIED_INTRINSICS, id)
+		call_certificate(id)
 	}
 	pub(crate) fn host(&self, id: u32) -> Option<&crate::function::host::HostBinding> {
 		host_binding(&self.hosts, id)
@@ -3444,6 +3457,11 @@ mod intrinsic_partition_tests {
 		// C18b3c adds two Vec constructors and C17f adds resize.
 		// C17c numeric intrinsics live outside this table.
 		assert_eq!(CERTIFIED_INTRINSICS.len(), 67);
+		assert!(certified_intrinsic(CERTIFIED_INTRINSICS, DEBUG_LINES).is_none());
+		let debug = call_certificate(DEBUG_LINES).unwrap();
+		for arity in [0, 1, 2, u32::MAX] {
+			assert!(debug.accepts(arity));
+		}
 		assert_eq!(
 			certified_intrinsic(CERTIFIED_INTRINSICS, VEC_RESIZE)
 				.unwrap()

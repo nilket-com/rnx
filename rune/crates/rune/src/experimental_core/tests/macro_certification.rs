@@ -98,7 +98,7 @@ fn output_macro(name: &'static str, calls: Option<&Arc<AtomicUsize>>) -> Module 
 )]
 fn output_macro_replacement_restore_partial_failure_and_unique_skip() {
 	use crate::experimental_core::error::Refusal;
-	for name in ["panic", "print"] {
+	for name in ["panic", "print", "dbg"] {
 		let calls = Arc::new(AtomicUsize::new(0));
 		let source = output_source(name);
 		let mut context = Context::with_default_modules().unwrap();
@@ -135,7 +135,7 @@ fn output_macro_replacement_restore_partial_failure_and_unique_skip() {
 #[test]
 #[cfg_attr(miri, ignore = "std-module installation; native CI checks identity")]
 fn output_custom_macro_first_is_overwritten_only_by_actual_builtin() {
-	for name in ["panic", "print"] {
+	for name in ["panic", "print", "dbg"] {
 		let calls = Arc::new(AtomicUsize::new(0));
 		let mut context = Context::new();
 		context.install(output_macro(name, Some(&calls))).unwrap();
@@ -176,7 +176,7 @@ fn output_callee(name: &'static str, calls: &Arc<AtomicUsize>) -> Module {
 )]
 fn output_callee_custom_first_and_failed_replacement_stay_identity_bound() {
 	use crate::experimental_core::error::Refusal;
-	for name in ["panic", "print"] {
+	for name in ["panic", "print", "dbg"] {
 		let calls = Arc::new(AtomicUsize::new(0));
 		let mut first = Context::new();
 		first.install(output_callee(name, &calls)).unwrap();
@@ -194,6 +194,7 @@ fn output_callee_custom_first_and_failed_replacement_stay_identity_bound() {
 		assert!(!match name {
 			"panic" => first.panic(),
 			"print" => first.stdio_print(),
+			"dbg" => first.stdio_dbg(),
 			_ => unreachable!(),
 		});
 		let mut after = Context::with_default_modules().unwrap();
@@ -225,15 +226,7 @@ fn output_panic_admitted_but_alternate_print_and_dbg_contexts_refuse_before_outp
 		}
 		assert!(compile(&context, &output_source("panic")));
 		for name in ["print", "dbg"] {
-			refusal(
-				&context,
-				&output_source(name),
-				if name == "print" {
-					Refusal::Native
-				} else {
-					Refusal::FrontendDiagnostic
-				},
-			);
+			refusal(&context, &output_source(name), Refusal::Native);
 		}
 		refusal(
 			&context,
@@ -785,15 +778,7 @@ fn stdio_false_module_cannot_certify_publicly_added_custom_functions() {
 	context.install(module).unwrap();
 	assert!(!context.stdio_print());
 	for name in ["print", "dbg"] {
-		refusal(
-			&context,
-			&output_source(name),
-			if name == "dbg" {
-				Refusal::FrontendDiagnostic
-			} else {
-				Refusal::Native
-			},
-		);
+		refusal(&context, &output_source(name), Refusal::Native);
 	}
 	assert_eq!(calls.load(Ordering::SeqCst), 0);
 }
@@ -812,6 +797,7 @@ fn failed_dbg_install_certifies_only_the_print_handlers_already_inserted() {
 		.is_err());
 	assert!(context.stdio_print());
 	assert!(context.stdio_println());
+	assert!(!context.stdio_dbg());
 	assert_eq!(calls.load(Ordering::SeqCst), 0);
 }
 
