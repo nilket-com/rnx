@@ -47,17 +47,27 @@ toolchain_sha=${toolchain_sha%% *}
 digest "the toolchain digest" "$toolchain_sha"
 
 # Disk: the final's floor and one cold Cargo target directory.
-free=$(df -B1 --output=avail "$root") || fail "df failed"
-free=$(printf '%s\n' "$free" | tail -n 1 | tr -d ' ')
+fixture=false
+target=$root/target/final-controller
+probe=$target
+while [ ! -e "$probe" ]; do probe=${probe%/*}; done
+filesystem=$(stat -f -c '%T:%i' -- "$probe") || fail "cannot identify filesystem for $probe"
+if [ "${RNX_BOOTSTRAP_DISK_BYTES+x}" ]; then
+	[ -n "${RNX_BOOTSTRAP_FIXTURE:-}" ] || fail "fixture disk bytes are refused outside the bootstrap controls"
+	fixture=true
+	free=$RNX_BOOTSTRAP_DISK_BYTES
+else
+	free=$(df -B1 --output=avail -- "$probe") || fail "df failed for $probe"
+	free=$(printf '%s\n' "$free" | tail -n 1 | tr -d ' ')
+fi
 number "free disk" "$free"
-[ "$free" -ge $((FLOOR_BYTES + COLD_BYTES)) ] || fail "disk: $free bytes free, $((FLOOR_BYTES + COLD_BYTES)) needed"
+[ "$free" -ge $((FLOOR_BYTES + COLD_BYTES)) ] || fail "disk: $target (filesystem $filesystem at $probe): $free bytes free, $((FLOOR_BYTES + COLD_BYTES)) needed"
 
 # Memory: the least of the host's available memory and every enclosing
 # control group's finite high or max limit minus its usage, with no credit
 # for page cache; one build job and the reserve must fit.
 cgroup_root=${RNX_BOOTSTRAP_CGROUP_ROOT:-/sys/fs/cgroup}
 meminfo=${RNX_BOOTSTRAP_MEMINFO:-/proc/meminfo}
-fixture=false
 if [ -n "${RNX_BOOTSTRAP_CGROUP_ROOT:-}${RNX_BOOTSTRAP_MEMINFO:-}${RNX_BOOTSTRAP_MEMBERSHIP:-}" ]; then
 	# Only the bootstrap controls use fixture sources; the controller refuses
 	# a handoff that says so.
@@ -88,7 +98,6 @@ done
 
 # One job, and no jobserver inherited from whatever started this entry.
 unset MAKEFLAGS CARGO_MAKEFLAGS MFLAGS
-target=$root/target/final-controller
 # Claim a new target atomically. A previous version may have used this
 # pathname without claiming it. Only the agreed migration may remove it.
 parent=$root/target

@@ -33,6 +33,7 @@ type StageFn = dyn Fn(&StageCall) -> Result<Done> + Send + Sync;
 
 #[derive(Default)]
 struct Fake {
+	scratch_probe: bool,
 	stages: Vec<&'static str>,
 	scope: &'static str,
 	stage: Option<Box<StageFn>>,
@@ -62,7 +63,16 @@ impl Hooks for Fake {
 		let stages: Vec<Value> = self
 			.stages
 			.iter()
-			.map(|s| json!([s, ["command"]]))
+			.map(|s| {
+				if self.scratch_probe {
+					json!([
+						s,
+						["git", "-c", "alias.observe=!sh ./fixture.sh", "observe", s]
+					])
+				} else {
+					json!([s, ["command"]])
+				}
+			})
 			.collect();
 		Ok(common::selection(
 			if self.scope.is_empty() {
@@ -94,8 +104,8 @@ impl Hooks for Fake {
 			None => Ok(common::finalization()),
 		}
 	}
-	fn resources(&self, _: &str, _: &[String], _: &Path, _: &Targets) -> Result<Resources> {
-		Ok(["fake".to_string()].into())
+	fn resources(&self, name: &str, _: &[String], _: &Path, _: &Targets) -> Result<Resources> {
+		Ok([if self.scratch_probe { name } else { "fake" }.to_string()].into())
 	}
 	fn weight(&self, _: &str, _: &[String], _: &Path) -> Result<usize> {
 		Ok(1)
@@ -833,6 +843,114 @@ fn a_census_failure_keeps_its_cases_through_the_final() {
 					.any(|o| o == "budget exhausted"),
 				"{index}"
 			);
+		}
+	}
+}
+
+#[test]
+fn real_children_and_grandchildren_share_only_their_own_scratch() {
+	use std::process::Command;
+	for fail in [false, true] {
+		let dir = Dir::new();
+		let out = dir.0.join("final");
+		let probe = dir.0.join("target/probe");
+		std::fs::create_dir_all(&probe).unwrap();
+		std::fs::write(dir.0.join(".gitignore"), "target/\nfinal/\n").unwrap();
+		std::fs::write(
+			dir.0.join("fixture.sh"),
+			r#"set -eu
+test -d "$TMPDIR"
+check_external() {
+  dir=$(realpath "$1")
+  while :; do
+    for marker in .git Cargo.toml .cargo rust-toolchain rust-toolchain.toml; do
+      test ! -e "$dir/$marker" && test ! -L "$dir/$marker" || exit 1
+    done
+    test "$dir" != / || break
+    dir=$(dirname "$dir")
+  done
+}
+check_external "$TMPDIR"
+test "$(stat -c %a "$TMPDIR")" = 700
+printf '%s\n' "$TMPDIR" > "target/probe/$1.path"
+sh -c 'echo grandchild > "$TMPDIR/planted"'
+if [ "$1" = generated-projects ]; then
+  check_external "$RNX_FINAL_PROJECT_ROOT"
+  printf '%s\n' "$RNX_FINAL_PROJECT_ROOT" > target/probe/project.path
+  timeout 15 sh -c 'echo ready > target/probe/ready'
+  timeout 15 cat target/probe/reply >/dev/null
+else
+  timeout 15 cat target/probe/ready >/dev/null
+  timeout 15 sh -c 'echo ready > target/probe/reply'
+  test ! -e target/probe/fail
+fi
+"#,
+		)
+		.unwrap();
+		let git = |args: &[&str]| {
+			assert!(
+				Command::new("git")
+					.args(args)
+					.current_dir(&dir.0)
+					.status()
+					.unwrap()
+					.success()
+			)
+		};
+		git(&["init", "-q"]);
+		git(&["add", "."]);
+		git(&[
+			"-c",
+			"commit.gpgsign=false",
+			"-c",
+			"user.name=t",
+			"-c",
+			"user.email=t@invalid",
+			"commit",
+			"-qm",
+			"fixture",
+		]);
+		assert!(
+			Command::new("mkfifo")
+				.args([probe.join("ready"), probe.join("reply")])
+				.status()
+				.unwrap()
+				.success()
+		);
+		if fail {
+			std::fs::write(probe.join("fail"), "").unwrap();
+		}
+		let hooks = Arc::new(Fake {
+			scratch_probe: true,
+			stages: vec!["generated-projects", "peer"],
+			..Default::default()
+		});
+		let r = controller::run(&settings(
+			&dir.0,
+			"explicit",
+			Some(vec!["generated-projects".into(), "peer".into()]),
+			hooks,
+			Instant::now(),
+		))
+		.unwrap();
+		assert_eq!(r["status"], if fail { "FAIL" } else { "PASS" }, "{r}");
+		let paths: Vec<PathBuf> = ["generated-projects", "peer", "project"]
+			.iter()
+			.map(|name| {
+				PathBuf::from(
+					std::fs::read_to_string(probe.join(format!("{name}.path")))
+						.unwrap()
+						.trim(),
+				)
+			})
+			.collect();
+		assert_ne!(paths[0], paths[1]);
+		assert!(
+			paths.iter().all(|p| !p.starts_with(&dir.0) && !p.exists()),
+			"{paths:?}"
+		);
+		if fail {
+			assert!(out.join("FAILURE.json").is_file());
 		}
 	}
 }

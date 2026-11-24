@@ -149,15 +149,19 @@ fn checked_pair_scores_and_ordered_errors() {
 		("columns", MODEL, "input has 2 columns, the model takes 3"),
 		(
 			"columns-before-size",
-			&wide,
+			wide.to_str().unwrap(),
 			"input has 2 columns, the model takes 1",
 		),
 		(
 			"hidden",
-			&wide,
+			wide.to_str().unwrap(),
 			"65537 x 256 hidden values, at most 16777216",
 		),
-		("out", &out, "4097 x 4096 out values, at most 16777216"),
+		(
+			"out",
+			out.to_str().unwrap(),
+			"4097 x 4096 out values, at most 16777216",
+		),
 	] {
 		run(
 			id,

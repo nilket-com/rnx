@@ -179,19 +179,26 @@ fn same_progress(a: &Observation, b: &Observation) -> bool {
 
 #[test]
 fn live_budget_edges_obey_all_four_classes_and_two_way_progress_prefixes() {
-	let root: PathBuf = std::env::var_os("E1_EDGE_OUTPUT")
-		.map(PathBuf::from)
-		.unwrap_or_else(|| {
-			std::env::temp_dir().join(std::format!(
-				"rune-e1-budget-{}-{}",
-				std::process::id(),
-				std::time::SystemTime::now()
-					.duration_since(std::time::UNIX_EPOCH)
-					.unwrap()
-					.as_nanos()
-			))
-		});
+	struct Owned(PathBuf);
+	impl Drop for Owned {
+		fn drop(&mut self) {
+			let _ = fs::remove_dir_all(&self.0);
+		}
+	}
+	let output = std::env::var_os("E1_EDGE_OUTPUT");
+	let keep = output.is_some();
+	let root: PathBuf = output.map(PathBuf::from).unwrap_or_else(|| {
+		std::env::temp_dir().join(std::format!(
+			"rune-e1-budget-{}-{}",
+			std::process::id(),
+			std::time::SystemTime::now()
+				.duration_since(std::time::UNIX_EPOCH)
+				.unwrap()
+				.as_nanos()
+		))
+	});
 	fs::create_dir(&root).unwrap();
+	let _owned = (!keep).then(|| Owned(root.clone()));
 	let mut counts = std::collections::BTreeMap::<&str, usize>::new();
 	for case in [
 		"success",

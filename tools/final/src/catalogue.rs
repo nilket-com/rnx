@@ -47,6 +47,13 @@ pub enum Bulk {
 	Contracts,
 }
 
+/// Temp paths inside these consumers have a distinct ownership contract:
+/// cross's census child uses its capped work and /tmp mounts; cross's
+/// dependency audit uses a writable /tmp inside a read-only namespace.
+/// Sandboxed rune-suite contracts own a private /tmp, and manifest cases
+/// name their individual output directories. Fixed-route observers use
+/// the canonical namespace and measured environment.
+///
 /// Final-owned bulk roots; producers refuse a missing assignment in a final.
 pub fn bulk_roots(stage: &str) -> Vec<Bulk> {
 	match stage {
@@ -839,7 +846,11 @@ pub fn graph_change(paths: &[String]) -> bool {
 
 /// The sources compiled into the `async_execution` test binary, which only
 /// the async-test-support stage builds (with the `test-support` feature).
-const ASYNC_TEST_SOURCES: &[&str] = &["tests/async_execution.rs", "tests/harness/scratch.rs"];
+const ASYNC_TEST_SOURCES: &[&str] = &[
+	"tests/async_execution.rs",
+	"tests/harness/scratch.rs",
+	"tests/harness/owned_scratch.rs",
+];
 
 /// Stages a change requires from its paths alone.
 pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet<String>> {
@@ -854,6 +865,14 @@ pub fn direct(paths: &[String], manifests: Option<&[String]>) -> Result<BTreeSet
 		// `tests/async_execution.rs` is gated on `test-support`, which
 		// root-tests leaves off; only async-test-support compiles and runs it.
 		// The helper it includes by path is part of the same test binary.
+		if p == "tests/harness/owned_scratch.rs" {
+			add(&[
+				"suite-adapter-candle",
+				"clippy-adapter-candle",
+				"polars-suite",
+				"clippy-adapter-polars",
+			]);
+		}
 		if ASYNC_TEST_SOURCES.contains(&p.as_str()) {
 			add(&["async-test-support"]);
 		}

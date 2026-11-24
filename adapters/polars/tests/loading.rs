@@ -4,6 +4,9 @@
 //! path parameter accepts a local path string, refusing anything Polars would
 //! read with a URI scheme, before any Polars call.
 #![cfg(feature = "generated")]
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 
@@ -39,10 +42,8 @@ fn text(script: &str) -> Result<String, String> {
 	}
 }
 
-fn dir(name: &str) -> std::path::PathBuf {
-	let d = std::env::temp_dir().join(format!("rnx-0125-{name}-{}", std::process::id()));
-	std::fs::create_dir_all(&d).unwrap();
-	d
+fn dir(name: &str) -> Scratch {
+	Scratch::temp(&format!("rnx-0125-{name}"))
 }
 
 fn sales(d: &std::path::Path) -> String {

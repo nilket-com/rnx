@@ -2,14 +2,17 @@
 //! at the Rune boundary before it builds a table per text, observed through
 //! the allocator's peak (review round 1: it had built two tables of the
 //! whole list first). One test, so no parallel test moves the peak.
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
 use candle_core::{DType, Device};
 use candle_nn::{VarBuilder, VarMap};
 use candle_transformers::models::bert::{BertModel, Config};
+use owned_scratch::Scratch;
 use rnx::allocation::{peak, reset_peak};
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use serde_json::json;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// A list that large, refused, may cost a few small allocations only.
 const SMALL: usize = 64 << 10;
@@ -21,10 +24,8 @@ fn write(d: &Path, name: &str, v: &serde_json::Value) {
 }
 
 /// The smallest model the loader admits: a whole-word tokenizer.
-fn model() -> PathBuf {
-	let d = std::env::temp_dir().join(format!("rnx-0136-count-{}", std::process::id()));
-	let _ = std::fs::remove_dir_all(&d);
-	std::fs::create_dir_all(&d).unwrap();
+fn model() -> Scratch {
+	let d = Scratch::temp("rnx-0136-count");
 	let config = json!({
 		"model_type": "bert", "hidden_act": "gelu", "position_embedding_type": "absolute",
 		"vocab_size": 8, "hidden_size": 8, "num_hidden_layers": 1, "num_attention_heads": 2,
@@ -128,5 +129,4 @@ fn an_oversized_list_is_refused_before_any_table_is_built() {
 	let none = vm.call(["many"], (0i64,)).unwrap();
 	let e = result(vm.call(["count"], (enc, none)).unwrap()).unwrap_err();
 	assert!(e.contains("0 texts"), "{e}");
-	let _ = std::fs::remove_dir_all(&d);
 }

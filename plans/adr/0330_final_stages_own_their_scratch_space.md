@@ -1,6 +1,6 @@
 # ADR 0330: Final stages own their scratch space
 
-Status: Proposed
+Status: Accepted
 
 Base: published 0f3df71d4126b6893460a692cfd70bfeefb0a604 (ADR 0329).
 
@@ -23,8 +23,10 @@ it measured.
 
 ## Decision
 
-1. Each stage gets an atomically claimed private scratch directory under
-   the final output. Pass its absolute path as `TMPDIR` through the real
+1. Each stage gets an atomically claimed private scratch directory outside
+   Git, Cargo workspace, Cargo config and toolchain ancestry. When the
+   output has such an ancestor, use a private ledger root in /var/tmp
+   after validating that location. Pass its absolute path as `TMPDIR` through the real
    launch path to child tools and their descendants. Route controller-
    assigned temp roots too, including `Bulk::Project`, which currently
    reads the controller's own temporary directory before the child starts.
@@ -46,7 +48,7 @@ it measured.
    routes. Keep outputs explicitly requested by the caller. No new crate.
 4. Preserve the existing checkout, output and Cargo-target admission
    checks. Account for private scratch on the filesystem that backs it,
-   including when output and build targets use separate mounts. Count
+   including when scratch, output and build targets use separate mounts. Count
    concurrent demand on a shared filesystem once per allocation. A
    namespace-private tmpfs is memory-backed; its presence alone does
    not require checking the host's /tmp. Keep its existing size and

@@ -99,9 +99,10 @@ fn finish_in_launcher_and_product_object_counts() {
 		let config = out.join("CONFIG.json");
 		atomic_json(&config, &cfg).unwrap();
 		let output = Command::new("/usr/bin/python3")
-			// Cargo adds its target directories to the loader path. Each control
-			// selects its fixture image through the runner's own RUNPATH.
-			.env_remove("LD_LIBRARY_PATH")
+			// Use the gate's measured environment inside its canonical namespace.
+			// The outer stage's temporary path is read-only in that namespace.
+			.env_clear()
+			.envs(rnx_final::fixed_route_stage::capture_environment())
 			.arg("-B")
 			.arg(col.join("old_path_child.py"))
 			.arg(config)

@@ -2,7 +2,10 @@
 //! own readers and writers as the parity oracle, NumPy-written fixtures
 //! (`tests/data/0143`, written by `probes/0143/fixtures.py` at 107e2bde with
 //! NumPy and Python's `zipfile`, since deleted), and every refusal.
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
 use candle_core::{Device, Tensor as CTensor};
+use owned_scratch::Scratch;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
 use std::path::{Path, PathBuf};
@@ -13,11 +16,8 @@ fn data(name: &str) -> PathBuf {
 		.join(name)
 }
 
-fn scratch(tag: &str) -> PathBuf {
-	let d = std::env::temp_dir().join(format!("rnx-0143-{tag}-{}", std::process::id()));
-	let _ = std::fs::remove_dir_all(&d);
-	std::fs::create_dir_all(&d).unwrap();
-	d
+fn scratch(tag: &str) -> Scratch {
+	Scratch::temp(&format!("rnx-0143-{tag}"))
 }
 
 /// `pub fn main() { body }`, its Result unwrapped into ours.

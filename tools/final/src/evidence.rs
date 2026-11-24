@@ -166,6 +166,21 @@ impl Owners {
 
 	/// A new root `parent/name`, journaled as creating before it exists.
 	pub fn assign(&mut self, parent: &Path, label: &str, name: Option<&str>) -> Result<PathBuf> {
+		self.claim(parent, label, name, &std::fs::DirBuilder::new())
+	}
+
+	pub fn assign_private(&mut self, parent: &Path, label: &str) -> Result<PathBuf> {
+		use std::os::unix::fs::DirBuilderExt;
+		self.claim(parent, label, None, std::fs::DirBuilder::new().mode(0o700))
+	}
+
+	fn claim(
+		&mut self,
+		parent: &Path,
+		label: &str,
+		name: Option<&str>,
+		builder: &std::fs::DirBuilder,
+	) -> Result<PathBuf> {
 		let parent = canonical(parent)?;
 		std::fs::create_dir_all(&parent)?;
 		let name = name.map_or_else(|| format!("{}-{label}", self.id), str::to_owned);
@@ -191,7 +206,7 @@ impl Owners {
 			creation: Field::Absent,
 		});
 		atomic_json(&self.path, &self.row)?;
-		std::fs::create_dir(&path)?;
+		builder.create(&path)?;
 		sync_directory(&parent)?;
 		let (made, after) = (std::fs::metadata(&path)?, std::fs::metadata(&parent)?);
 		let entry = self.row.roots.last_mut().expect("just pushed");

@@ -157,6 +157,7 @@ fn the_recipe_identities_answer_as_the_published_python() {
 		}
 		e
 	};
+	assert!(!frs::capture_environment().contains_key("TMPDIR"));
 	let every: Vec<(String, String)> = frs::BUILD_KEYS
 		.iter()
 		.map(|k| (k.to_string(), format!("v-{k}")))
@@ -232,6 +233,15 @@ fn the_recipe_identities_answer_as_the_published_python() {
 		mark(&json!({"ok": recipe}), &marks),
 	));
 	recipe["valgrind"] = json!("v".repeat(64));
+	let mut private_env = recipe_env.clone();
+	private_env.insert("TMPDIR".into(), "/stage/owned/t0".into());
+	let mut private = frs::recipe(&root(), &policy, &private_env, &mut host).unwrap();
+	private["valgrind"] = recipe["valgrind"].clone();
+	assert_ne!(recipe["build_environment"], private["build_environment"]);
+	assert_eq!(
+		frs::capture_key("binary", &recipe).unwrap(),
+		frs::capture_key("binary", &private).unwrap()
+	);
 	cases.push((
 		"capture_key: the planted recipe".into(),
 		json!({"ok": frs::capture_key(&"a".repeat(64), &recipe).unwrap()}),

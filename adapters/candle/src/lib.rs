@@ -388,6 +388,10 @@ pub fn display_forms(t: &candle_core::Tensor) -> (String, String) {
 #[doc(hidden)]
 pub mod image_provider;
 
+#[cfg(any(test, feature = "test-support"))]
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -419,22 +423,18 @@ mod tests {
 	}
 
 	/// A unique path per call, so parallel tests never share a file.
-	fn path(tag: &str) -> std::path::PathBuf {
-		static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-		let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-		let d = std::env::temp_dir().join(format!("rnx-0129-candle-{}", std::process::id()));
-		std::fs::create_dir_all(&d).unwrap();
-		d.join(format!("{tag}-{n}.safetensors"))
+	fn path(tag: &str) -> owned_scratch::Scratch {
+		owned_scratch::Scratch::temp_file("rnx-0129-candle", &format!("{tag}.safetensors"))
 	}
 
-	pub(super) fn weights(entries: Vec<(&str, CTensor)>) -> String {
+	pub(super) fn weights(entries: Vec<(&str, CTensor)>) -> owned_scratch::Scratch {
 		let p = path("w");
 		let map: HashMap<String, CTensor> = entries
 			.into_iter()
 			.map(|(k, t)| (k.to_string(), t))
 			.collect();
 		candle_core::safetensors::save(&map, &p).unwrap();
-		p.to_str().unwrap().to_owned()
+		p
 	}
 
 	fn t(v: Vec<f32>, shape: &[usize]) -> CTensor {
@@ -548,10 +548,10 @@ mod tests {
 
 	#[test]
 	fn load_takes_exactly_the_fixed_model() {
-		let m = load(&weights(good(3, 4, 1))).unwrap();
+		let m = load(weights(good(3, 4, 1)).to_str().unwrap()).unwrap();
 		assert_eq!(mlp_dims(&m), (3, 4, 1));
 		let refused = |entries: Vec<(&'static str, CTensor)>, want: &str| {
-			let e = load(&weights(entries)).err().unwrap();
+			let e = load(weights(entries).to_str().unwrap()).err().unwrap();
 			assert!(e.contains(want), "{e} (wanted {want})");
 		};
 		let mut extra = good(3, 4, 1);
@@ -625,7 +625,7 @@ mod tests {
 	#[test]
 	fn forward_equals_candle_and_refuses_before_running() {
 		let w = weights(good(3, 4, 2));
-		let m = load(&w).unwrap();
+		let m = load(w.to_str().unwrap()).unwrap();
 		let x = from_dense(&block(5, 3, false)).unwrap();
 		let y = forward(&m, &x).unwrap();
 		// the twin: Candle directly, the same weights
@@ -667,7 +667,7 @@ mod tests {
 				.contains("input has 2 columns, the model takes 3")
 		);
 		// a small input that would make an oversized hidden activation
-		let wide = load(&weights(good(1, 4096, 1))).unwrap();
+		let wide = load(weights(good(1, 4096, 1)).to_str().unwrap()).unwrap();
 		let tall = from_dense(&block(4097, 1, false)).unwrap();
 		assert!(
 			forward(&wide, &tall)

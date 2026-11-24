@@ -3,6 +3,9 @@
 //! buffer is the intentional allocation (at most 64 MiB, the file's own
 //! size); everything after it must stay under `SMALL`. One test, so no
 //! parallel test moves the peak.
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx::allocation::{peak, reset_peak};
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
@@ -74,9 +77,7 @@ fn npy_header(version: u8, header: &str) -> Vec<u8> {
 
 #[test]
 fn refusals_allocate_nothing_proportional_beyond_the_file_buffer() {
-	let d = std::env::temp_dir().join(format!("rnx-0143-alloc-{}", std::process::id()));
-	let _ = std::fs::remove_dir_all(&d);
-	std::fs::create_dir_all(&d).unwrap();
+	let d = Scratch::temp("rnx-0143-alloc");
 	let mut vm = vm();
 	let write = |name: &str, b: &[u8]| {
 		let p = d.join(name);
@@ -180,7 +181,6 @@ fn refusals_allocate_nothing_proportional_beyond_the_file_buffer() {
 		"{e}"
 	);
 	assert!(used < SMALL, "write_npz allocated {used} bytes");
-	let _ = std::fs::remove_dir_all(&d);
 }
 
 fn one_npy() -> Vec<u8> {

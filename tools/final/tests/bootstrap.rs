@@ -71,16 +71,27 @@ impl Checkout {
 	/// unit's), and these controls are about the entry, not the host. The
 	/// real sources are the complete final's own path.
 	fn entry(&self, env: &[(&str, &str)]) -> std::process::Output {
+		self.launch(env, true)
+	}
+
+	fn launch(&self, env: &[(&str, &str)], with_memory: bool) -> std::process::Output {
 		let mut command = std::process::Command::new("sh");
 		command
 			.arg(self.0.join("tools/final/final.sh"))
 			.args(["--out", "OUT"])
-			.env_remove("RNX_BOOTSTRAP_FIXTURE");
-		if !env.iter().any(|(k, _)| *k == "RNX_BOOTSTRAP_CGROUP_ROOT") {
+			.env_remove("RNX_BOOTSTRAP_FIXTURE")
+			.env_remove("RNX_BOOTSTRAP_DISK_BYTES");
+		if with_memory && !env.iter().any(|(k, _)| *k == "RNX_BOOTSTRAP_CGROUP_ROOT") {
 			for (k, v) in fixture_memory(&self.0.join("target/ample"), 64 * 1024 * 1024 * 1024) {
 				command.env(k, v);
 			}
 			command.env("RNX_BOOTSTRAP_FIXTURE", "1");
+		}
+		if with_memory
+			&& (env.iter().any(|(k, _)| *k == "RNX_BOOTSTRAP_FIXTURE")
+				|| !env.iter().any(|(k, _)| *k == "RNX_BOOTSTRAP_CGROUP_ROOT"))
+		{
+			command.env("RNX_BOOTSTRAP_DISK_BYTES", "34359738368");
 		}
 		for (k, v) in env {
 			command.env(k, v);
@@ -374,4 +385,70 @@ fn a_failing_git_status_is_not_a_clean_tree() {
 		);
 	}
 	std::fs::set_permissions(&index, std::fs::Permissions::from_mode(0o644)).unwrap();
+}
+
+#[test]
+fn disk_only_fixture_is_guarded_and_taints_the_handoff() {
+	use std::os::unix::fs::PermissionsExt;
+	let checkout = Checkout::new(ECHO);
+	let required = 24_u64 << 30;
+	let short = (required - 1).to_string();
+	let output = checkout.launch(&[("RNX_BOOTSTRAP_DISK_BYTES", &short)], false);
+	assert!(String::from_utf8_lossy(&output.stderr).contains("fixture disk bytes are refused"));
+	let output = checkout.launch(
+		&[
+			("RNX_BOOTSTRAP_DISK_BYTES", &short),
+			("RNX_BOOTSTRAP_FIXTURE", "1"),
+		],
+		false,
+	);
+	let refusal = String::from_utf8_lossy(&output.stderr);
+	assert!(
+		refusal.contains(checkout.0.join("target/final-controller").to_str().unwrap())
+			&& refusal.contains("filesystem ")
+			&& refusal.contains(&format!("{short} bytes free, {required} needed")),
+		"{refusal}"
+	);
+	assert!(!checkout.0.join("target/final-controller").exists());
+
+	// Supply deterministic OS readings at the command boundary so this
+	// disk-only control also works inside a memory-constrained final.
+	let bin = checkout.0.join("target/os");
+	std::fs::create_dir_all(&bin).unwrap();
+	for (name, source) in [
+		(
+			"awk",
+			"#!/bin/sh\ncase \"$2\" in /proc/meminfo) echo 104857600;; *) exec /usr/bin/awk \"$@\";; esac\n",
+		),
+		(
+			"sed",
+			"#!/bin/sh\ncase \"$3\" in /proc/self/cgroup) echo /;; *) exec /usr/bin/sed \"$@\";; esac\n",
+		),
+	] {
+		let path = bin.join(name);
+		std::fs::write(&path, source).unwrap();
+		std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+	}
+	let path = format!("{}:{}", bin.display(), std::env::var("PATH").unwrap());
+	let output = checkout.launch(
+		&[
+			("RNX_BOOTSTRAP_FIXTURE", "1"),
+			("RNX_BOOTSTRAP_DISK_BYTES", &required.to_string()),
+			("PATH", &path),
+		],
+		false,
+	);
+	assert!(
+		output.status.success(),
+		"{}",
+		String::from_utf8_lossy(&output.stderr)
+	);
+	let handed = std::fs::read_to_string(checkout.0.join("handed")).unwrap();
+	let path = Path::new(handed.lines().nth(1).unwrap());
+	assert!(
+		accept(path, &checkout.0)
+			.unwrap_err()
+			.to_string()
+			.contains("fixture sources")
+	);
 }

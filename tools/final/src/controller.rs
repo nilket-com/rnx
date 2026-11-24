@@ -488,10 +488,45 @@ struct StageFailed {
 	row: Value,
 }
 
+/// Git, Cargo and rustup search ancestors, including through a linked worktree.
+fn neutral_parent(path: &Path) -> Result<bool> {
+	for ancestor in path.ancestors() {
+		for name in [
+			".git",
+			"Cargo.toml",
+			".cargo",
+			"rust-toolchain",
+			"rust-toolchain.toml",
+		] {
+			match ancestor.join(name).symlink_metadata() {
+				Ok(_) => return Ok(false),
+				Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+				Err(e) => return Err(e.into()),
+			}
+		}
+	}
+	Ok(true)
+}
+
+fn scratch_parent(out: &Path) -> Result<&Path> {
+	if neutral_parent(out)? {
+		return Ok(out);
+	}
+	let parent = Path::new("/var/tmp");
+	evidence::canonical(parent)?;
+	anyhow::ensure!(
+		neutral_parent(parent)?,
+		"stage scratch under {} would inherit project configuration",
+		parent.display()
+	);
+	Ok(parent)
+}
+
 /// Owned roots and the environment of one stage, fixed before it starts.
 fn stage_environment(
 	settings: &Settings,
-	name: &str,
+	stage: (usize, &str),
+	temporaries: &Path,
 	command: &[String],
 	owner: &mut Owners,
 	base: &Environment,
@@ -499,6 +534,11 @@ fn stage_environment(
 ) -> Result<Environment> {
 	let (root, out) = (&settings.root, &settings.out);
 	let mut env = base.clone();
+	let (index, name) = stage;
+	let scratch = temporaries.join(index.to_string());
+	use std::os::unix::fs::DirBuilderExt as _;
+	std::fs::DirBuilder::new().mode(0o700).create(&scratch)?;
+	env.insert("TMPDIR".into(), scratch.display().to_string());
 	env.insert(
 		"RNX_FINAL_ROUTING_ROOT".into(),
 		owner
@@ -518,7 +558,10 @@ fn stage_environment(
 			),
 			Bulk::Project => (
 				"RNX_FINAL_PROJECT_ROOT",
-				owner.assign(&std::env::temp_dir(), name, None)?,
+				owner.assign_private(
+					temporaries.parent().context("scratch parent")?,
+					&format!("{name}-project"),
+				)?,
 			),
 			Bulk::Cross => {
 				let parent = PathBuf::from(
@@ -833,20 +876,31 @@ fn run_stages(
 		})
 		.collect::<Result<_>>()?;
 	let needs = scheduler::producers(&stages);
-	let bulk: Vec<u64> = stages
+	let bulk: Vec<[u64; 3]> = stages
 		.iter()
-		.map(|(n, _)| {
-			let scratch = if cache.is_some() {
-				match n.as_str() {
-					// Rounded up from the published inventory and generator trees.
-					"polars-inventories" => 4 * scheduler::GIB,
-					"polars-suite" => 2 * scheduler::GIB,
-					_ => 0,
+		.map(|(name, _)| {
+			let mut checkout = 0;
+			let mut output = 0;
+			let mut scratch = 0;
+			for kind in catalogue::bulk_roots(name) {
+				let bytes = scheduler::bulk_bytes(kind);
+				match kind {
+					Bulk::Cross => checkout += bytes,
+					Bulk::Project => scratch += bytes,
+					_ => output += bytes,
 				}
-			} else {
-				0
-			};
-			scheduler::declared_bulk(n) + scratch
+			}
+			if cache.is_some() {
+				match name.as_str() {
+					"polars-inventories" => {
+						checkout += 2 * scheduler::GIB; // generator
+						output += 2 * scheduler::GIB; // consumer's inventories
+					}
+					"polars-suite" => checkout += 2 * scheduler::GIB,
+					_ => {}
+				}
+			}
+			[checkout, output, scratch]
 		})
 		.collect();
 	let tokens: usize = base
@@ -883,14 +937,36 @@ fn run_stages(
 			Ok((r.clone(), bytes))
 		})
 		.collect::<Result<_>>()?;
-	let declared = |indices: &mut dyn Iterator<Item = usize>| -> u64 {
+	let parent = scratch_parent(&settings.out)?;
+	let temporaries = owner.assign_private(parent, "stage-temporaries")?;
+	// Charge each writer to its device; sites sharing a device also share one floor.
+	use std::os::unix::fs::MetadataExt as _;
+	let sites = [root.as_path(), settings.out.as_path(), parent];
+	let devices = [
+		sites[0].metadata()?.dev(),
+		sites[1].metadata()?.dev(),
+		sites[2].metadata()?.dev(),
+	];
+	let bindings = std::array::from_fn::<_, 3, _>(|i| {
+		devices[..i]
+			.iter()
+			.position(|&dev| dev == devices[i])
+			.unwrap_or(i)
+	});
+	let declared = |indices: &mut dyn Iterator<Item = usize>| {
 		let mut lanes = BTreeSet::new();
-		let mut total = 0;
+		let mut bytes = [0; 3];
+		let mut count = 0;
 		for i in indices {
-			total += bulk[i];
+			count += 1;
+			for (site, demand) in bulk[i].iter().enumerate() {
+				bytes[bindings[site]] += demand;
+			}
 			lanes.extend(plan[i].iter().cloned());
 		}
-		total + lanes.iter().map(|r| growth[r]).sum::<u64>()
+		bytes[bindings[0]] += lanes.iter().map(|r| growth[r]).sum::<u64>();
+		bytes[bindings[2]] += count.min(tokens) as u64 * scheduler::STAGE_SCRATCH_BYTES;
+		bytes
 	};
 	let pool = Arc::new(Pool::create(&settings.out.join("jobserver.fifo"), tokens)?);
 	// Armed before any stage, so no write after a refusal is missed.
@@ -905,13 +981,28 @@ fn run_stages(
 		tokens_pending.clone(),
 		settings.hooks.clone(),
 	)?;
+	let estimates = declared(&mut (0..stages.len()));
+	let keys = [
+		("binding", "estimate_bytes", "lowest_free_bytes"),
+		(
+			"output_path",
+			"output_estimate_bytes",
+			"output_lowest_free_bytes",
+		),
+		(
+			"scratch_path",
+			"scratch_estimate_bytes",
+			"scratch_lowest_free_bytes",
+		),
+	];
 	disk.insert("floor_bytes".into(), json!(DISK_FLOOR_BYTES));
-	disk.insert(
-		"estimate_bytes".into(),
-		json!(DISK_FLOOR_BYTES + declared(&mut (0..stages.len()))),
-	);
-	disk.insert("binding".into(), json!(root.to_string_lossy()));
 	disk.insert("lowest_free_bytes".into(), Value::Null);
+	for (site, &(path, estimate, _)) in keys.iter().enumerate() {
+		if bindings[site] == site {
+			disk.insert(path.into(), json!(sites[site]));
+			disk.insert(estimate.into(), json!(DISK_FLOOR_BYTES + estimates[site]));
+		}
+	}
 	let mut pending: Vec<usize> = (0..stages.len()).collect();
 	let mut running: BTreeMap<usize, (Tokens, Arc<Stopper>, std::thread::JoinHandle<()>)> =
 		BTreeMap::new();
@@ -963,12 +1054,6 @@ fn run_stages(
 		if !done["validation"].is_null() {
 			evidence_map.insert(name.clone(), done["validation"].clone());
 		}
-		if done["returncode"] == 0 {
-			succeeded.insert(index);
-		}
-		recorder
-			.borrow_mut()
-			.end(index, now(), done["returncode"] == 0);
 		if done["returncode"] != 0 && failed.is_none() {
 			let message = stage_failure(settings, name, &done, owner, &mut row);
 			*failed = Some(StageFailed {
@@ -976,6 +1061,19 @@ fn run_stages(
 				row: row.clone(),
 			});
 		}
+		if let Err(error) = owner.release_child("stage-temporaries", &index.to_string()) {
+			row["exit"] = json!(1);
+			row["cleanup_error"] = json!(error.to_string());
+			failed.get_or_insert_with(|| StageFailed {
+				message: error.to_string(),
+				row: row.clone(),
+			});
+		}
+		let passed = row["exit"] == 0;
+		if passed {
+			succeeded.insert(index);
+		}
+		recorder.borrow_mut().end(index, now(), passed);
 		done_rows.insert(index, row);
 	};
 	let (mut token_waiting, mut tokens_noted) = (false, false);
@@ -1064,27 +1162,45 @@ fn run_stages(
 						continue;
 					}
 					recorder.borrow_mut().ready(index, now());
-					let free = settings.hooks.disk_free(root)?;
-					if disk["lowest_free_bytes"].as_u64().is_none_or(|l| free < l) {
-						disk.insert("lowest_free_bytes".into(), json!(free));
+					let estimates =
+						declared(&mut pending.iter().copied().chain(running.keys().copied()));
+					let mut refusal = None;
+					for (site, &path) in sites.iter().enumerate() {
+						if bindings[site] != site {
+							continue;
+						}
+						let key = keys[site].2;
+						let bytes = estimates[site];
+						let free = settings.hooks.disk_free(path)?;
+						if disk
+							.get(key)
+							.and_then(Value::as_u64)
+							.is_none_or(|l| free < l)
+						{
+							disk.insert(key.into(), json!(free));
+						}
+						let needed = DISK_FLOOR_BYTES + bytes;
+						if free < needed {
+							refusal = Some((path, free, needed));
+							break;
+						}
 					}
-					let needed = DISK_FLOOR_BYTES
-						+ declared(&mut pending.iter().copied().chain(running.keys().copied()));
-					if free < needed {
+					if let Some((path, free, needed)) = refusal {
 						recorder.borrow_mut().wait(
 							index,
 							now(),
 							"disk",
 							vec![],
-							json!({"free_bytes": free, "needed_bytes": needed}),
+							json!({"path": path,"free_bytes": free, "needed_bytes": needed}),
 						);
 						queue_rest(position, index);
 						if !running.is_empty() {
 							break;
 						}
 						return Err(value_error(&format!(
-							"disk admission before {}: {free} bytes free, {needed} needed",
-							stages[index].0
+							"disk admission before {} at {}: {free} bytes free, {needed} needed",
+							stages[index].0,
+							path.display()
 						)));
 					}
 					// A stage's tokens, whole or not at all: no part is held while
@@ -1114,14 +1230,21 @@ fn run_stages(
 						.hooks
 						.check_selection(selection_value, root, &settings.environment)?;
 					let shared = (!plan[index].contains(ALONE)).then_some((&*pool, weights[index]));
-					let mut env =
-						match stage_environment(settings, &name, &command, owner, base, shared) {
-							Ok(env) => env,
-							Err(error) => {
-								drop(lease);
-								return Err(error);
-							}
-						};
+					let mut env = match stage_environment(
+						settings,
+						(index, &name),
+						&temporaries,
+						&command,
+						owner,
+						base,
+						shared,
+					) {
+						Ok(env) => env,
+						Err(error) => {
+							drop(lease);
+							return Err(error);
+						}
+					};
 					if let Some(cache) = cache.as_ref() {
 						cache.environment(&name, &mut env)?;
 					}

@@ -7,6 +7,9 @@
 //! Record 0149 also compared these logits with the transformers
 //! implementation; that external comparison is history, its Python
 //! comparator retired in ADR 0285, and nothing here replaces it.
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx_candle::text::generate;
 
 fn gate() -> (Vec<(String, String)>, Vec<usize>) {
@@ -210,8 +213,7 @@ fn the_memory_estimate_holds_across_the_grid() {
 #[ignore = "needs the pinned model in RNX_GEN_MODEL"]
 fn a_sparse_tokenizer_is_refused_not_a_panic() {
 	let dir = std::env::var("RNX_GEN_MODEL").expect("RNX_GEN_MODEL");
-	let d = std::env::temp_dir().join(format!("rnx-0149-sparse-{}", std::process::id()));
-	std::fs::create_dir_all(&d).unwrap();
+	let d = Scratch::temp("rnx-0149-sparse");
 	std::fs::copy(format!("{dir}/config.json"), d.join("config.json")).unwrap();
 	let mut t: serde_json::Value =
 		serde_json::from_slice(&std::fs::read(format!("{dir}/tokenizer.json")).unwrap()).unwrap();
@@ -233,7 +235,6 @@ fn a_sparse_tokenizer_is_refused_not_a_panic() {
 		e.contains("is not below the tokenizer's size 151665"),
 		"{e}"
 	);
-	std::fs::remove_dir_all(&d).ok();
 }
 
 /// Review round 1 (a): the load's own peak, measured, and what stays

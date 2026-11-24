@@ -133,16 +133,12 @@ impl Private {
 			NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
 		));
 		std::fs::create_dir(&dir).unwrap();
-		let exe = dir.join("child");
-		std::fs::hard_link(std::env::current_exe().unwrap(), &exe)
-			.or_else(|_| std::fs::copy(std::env::current_exe().unwrap(), &exe).map(|_| ()))
-			.unwrap();
 		Self(dir)
 	}
 	fn input(&self, mode: &str, options: &str) -> String {
 		format!(
 			"process::run({:?},[\"--exact\",\"session::domain_session::snapshot_hosts::process_fixture\",\"--nocapture\"],#{{cwd:{:?},env_clear:true,env:#{{RNX_0275_CHILD:{mode:?},RNX_0275_VALUE:\"fixture\",RNX_0275_SOCKET:{:?}}},{options}}})",
-			self.0.join("child").to_str().unwrap(),
+			std::env::current_exe().unwrap().to_str().unwrap(),
 			self.0.to_str().unwrap(),
 			self.0.join("ready").to_str().unwrap()
 		)
@@ -216,6 +212,41 @@ fn supervised_child_capture_timeout_and_bytes_refusal() {
 	);
 	old.close().unwrap();
 	new.close().unwrap();
+}
+
+#[test]
+#[cfg(unix)]
+fn same_device_process_fixture_preserves_the_producer_inode() {
+	use std::os::unix::fs::MetadataExt;
+
+	let scratch = Private::new();
+	let device = std::fs::metadata(&scratch.0).unwrap().dev();
+	let mut exe = std::env::current_exe().unwrap();
+	if std::fs::metadata(&exe).unwrap().dev() != device {
+		// A standalone cargo test can put its scratch on a different mount.
+		let copy = scratch.0.join("producer");
+		std::fs::copy(&exe, &copy).unwrap();
+		exe = copy;
+	}
+	let binding = || {
+		let m = std::fs::metadata(&exe).unwrap();
+		assert_eq!(m.dev(), device);
+		(m.ino(), m.ctime(), m.ctime_nsec(), m.nlink())
+	};
+	let before = binding();
+	let case = "session::domain_session::snapshot_hosts::supervised_child_capture_timeout_and_bytes_refusal";
+	let output = std::process::Command::new(&exe)
+		.args(["--exact", case])
+		.env("TMPDIR", &scratch.0)
+		.output()
+		.unwrap();
+	assert_eq!(before, binding(), "process fixture changed its producer");
+	let stdout = String::from_utf8_lossy(&output.stdout);
+	assert!(
+		output.status.success() && stdout.contains("1 passed;"),
+		"{case}: {stdout}\n{}",
+		String::from_utf8_lossy(&output.stderr)
+	);
 }
 
 #[test]

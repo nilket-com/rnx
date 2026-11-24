@@ -8,6 +8,9 @@
 //! permitted difference is the typed path's "Bad argument #n" layer, which
 //! rune 0.14.2 attaches through a crate-private API; both texts are shown.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 
@@ -43,20 +46,17 @@ fn outcome(script: &str) -> String {
 	}
 }
 
-fn frame() -> String {
+fn frame() -> Scratch {
 	// review of 0127: a unique file per call, so parallel tests never share one
-	static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-	let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-	let d = std::env::temp_dir().join(format!("rnx-0127-{}", std::process::id()));
-	std::fs::create_dir_all(&d).unwrap();
-	let p = d.join(format!("a-{n}.csv"));
+	let p = Scratch::temp_file("rnx-0127", "a.csv");
 	std::fs::write(&p, "a,b\n1,2\n3,4\n5,6\n").unwrap();
-	format!("polars::read_csv({:?})?", p.to_str().unwrap())
+	p
 }
 
 /// The same body, with the method under its typed and its raw name.
 fn both(body: &str) -> (String, String) {
-	let f = frame();
+	let path = frame();
+	let f = format!("polars::read_csv({path:?})?");
 	let script = |m: &str| {
 		format!(
 			"pub fn main() {{ let df = {f}; let other = {f}; {} }}",
@@ -70,7 +70,8 @@ fn both(body: &str) -> (String, String) {
 }
 
 fn both_vm(body: &str) -> (String, String) {
-	let f = frame();
+	let path = frame();
+	let f = format!("polars::read_csv({path:?})?");
 	let script = |m: &str| {
 		format!(
 			"pub fn main() {{ let df = {f}; let other = {f}; {} }}",

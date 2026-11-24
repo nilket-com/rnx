@@ -7,6 +7,9 @@
 //! whatever the script does to its own binding afterwards (drop, replace,
 //! mutate in place), and `sliced` is refused.
 #![cfg(all(feature = "generated", feature = "test-support"))]
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use polars::prelude::*;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
@@ -46,10 +49,8 @@ const CSV: &str = "region,product,qty,price\nnorth,apple,3,1.25\nsouth,pear,,2.5
 const SCHEMA: &str =
 	r#"[("region", "string"), ("product", "string"), ("qty", "i64"), ("price", "f64")]"#;
 
-fn fixture(name: &str, body: &str) -> (String, DataFrame) {
-	let d = std::env::temp_dir().join(format!("rnx-0126-{}", std::process::id()));
-	std::fs::create_dir_all(&d).unwrap();
-	let p = d.join(name);
+fn fixture(name: &str, body: &str) -> (Scratch, DataFrame) {
+	let p = Scratch::temp_file("rnx-0126", name);
 	std::fs::write(&p, body).unwrap();
 	let schema = Schema::from_iter([
 		Field::new("region".into(), DataType::String),
@@ -60,11 +61,11 @@ fn fixture(name: &str, body: &str) -> (String, DataFrame) {
 	let df = CsvReadOptions::default()
 		.with_has_header(true)
 		.with_schema(Some(Arc::new(schema)))
-		.try_into_reader_with_file_path(Some(p.clone()))
+		.try_into_reader_with_file_path(Some(p.to_path_buf()))
 		.unwrap()
 		.finish()
 		.unwrap();
-	(p.to_str().unwrap().to_owned(), df)
+	(p, df)
 }
 
 fn repr(df: PolarsResult<DataFrame>) -> String {

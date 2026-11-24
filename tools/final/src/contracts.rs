@@ -467,6 +467,12 @@ pub fn run_case(
 			("LANG".to_string(), "C.UTF-8".to_string()),
 		]
 		.into();
+		if env.contains_key("RNX_FINAL")
+			&& !truthy(&c["sandbox"])
+			&& let Some(tmp) = env.get("TMPDIR")
+		{
+			case_env.insert("TMPDIR".into(), tmp.clone());
+		}
 		for (key, folder) in FOLDERS {
 			case_env.insert(key.into(), d.join(folder).to_string_lossy().into_owned());
 		}

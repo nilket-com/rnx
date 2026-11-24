@@ -1194,6 +1194,11 @@ fn run(
 		]
 		.map(String::from)
 		.into();
+		if env.contains_key("RNX_FINAL") {
+			// Only Cargo runs in this read-only namespace with a writable /tmp.
+			// The verifier and host check below inherit the stage-owned directory.
+			namespace.extend(["--setenv", "TMPDIR", "/tmp"].map(String::from));
+		}
 		for (kind, from, to) in [
 			("--ro-bind", text(rnx), text(rnx)),
 			("--bind", text(output), text(output)),

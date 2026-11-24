@@ -1243,13 +1243,10 @@ mod tests {
 	//! contract refusal is tested without the pinned 90 MB download.
 	use super::*;
 	use serde_json::json;
-	use std::path::{Path, PathBuf};
+	use std::path::Path;
 
-	fn fresh(tag: &str) -> PathBuf {
-		static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-		let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-		let d =
-			std::env::temp_dir().join(format!("rnx-0131-text-{}/{tag}-{n}", std::process::id()));
+	fn fresh(tag: &str) -> crate::owned_scratch::Scratch {
+		let d = crate::owned_scratch::Scratch::temp(&format!("rnx-0131-text-{tag}"));
 		std::fs::create_dir_all(d.join("1_Pooling")).unwrap();
 		d
 	}
@@ -1292,7 +1289,7 @@ mod tests {
 	}
 
 	/// A complete model directory; `edit` changes one file before writing.
-	fn model(edit: impl FnOnce(&Path, &mut serde_json::Value)) -> PathBuf {
+	fn model(edit: impl FnOnce(&Path, &mut serde_json::Value)) -> crate::owned_scratch::Scratch {
 		let d = fresh("m");
 		let mut c = config();
 		write(
@@ -1332,7 +1329,7 @@ mod tests {
 	fn loads(d: &Path) -> Result<TextEncoder, String> {
 		load(d.to_str().unwrap())
 	}
-	fn refused(d: PathBuf, want: &str) {
+	fn refused(d: crate::owned_scratch::Scratch, want: &str) {
 		let e = loads(&d).err().unwrap();
 		assert!(e.contains(want), "{e} (wanted {want})");
 	}

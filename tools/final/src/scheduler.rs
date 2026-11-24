@@ -26,6 +26,9 @@ pub const TEST_THREADS: usize = 4;
 pub const WARM_GROWTH_BYTES: u64 = GIB;
 pub const WARM_GROWTH_SHARE: f64 = 0.05;
 pub const COLD_BYTES: u64 = 4 * GIB;
+/// Temporary test fixtures, independently of bulk and Cargo outputs. Reserve
+/// one allowance per possible concurrent writer, bounded by available tokens.
+pub const STAGE_SCRATCH_BYTES: u64 = GIB / 8;
 
 pub type Resources = BTreeSet<String>;
 

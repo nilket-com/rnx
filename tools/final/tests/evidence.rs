@@ -296,7 +296,14 @@ fn tree_identity_matches_the_witness() {
 	std::os::unix::fs::symlink("../elsewhere", p.join("a/link")).unwrap();
 	let mut actual = tree(&p, &Map::new()).unwrap();
 	actual.as_object_mut().unwrap().remove("seconds");
-	assert_eq!(actual, common::witness::expected("tree", &[]));
+	// Directory sizes and allocated blocks depend on the backing filesystem.
+	use std::os::unix::fs::MetadataExt;
+	let entries = ["a", "a/b", "a/b/file", "é", "Z", "a/link"]
+		.map(|name| std::fs::symlink_metadata(p.join(name)).unwrap());
+	let mut expected = common::witness::expected("tree", &[]);
+	expected["logical_bytes"] = json!(entries.iter().map(|m| m.size()).sum::<u64>());
+	expected["allocated_bytes"] = json!(entries.iter().map(|m| m.blocks() * 512).sum::<u64>());
+	assert_eq!(actual, expected);
 }
 
 /// A Python stage program's own process group, recorded through its
@@ -494,4 +501,25 @@ fn a_python_schema_one_ledger_is_recovered() {
 	assert!(!bulk.exists(), "the schema-1 root was released");
 	assert!(!path.exists(), "the schema-1 ledger was retired");
 	let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
+fn interrupted_stage_scratch_is_recovered_and_a_foreign_candidate_survives() {
+	let (f, mut owner) = Fixture::new();
+	let foreign = f.root.join("t0");
+	std::fs::create_dir(&foreign).unwrap();
+	std::fs::write(foreign.join("sentinel"), "keep").unwrap();
+	assert!(
+		owner
+			.assign(&f.root, "stage-temporaries", Some("t0"))
+			.is_err()
+	);
+	let owned = owner
+		.assign(&f.root, "stage-temporaries", Some("t1"))
+		.unwrap();
+	std::fs::write(owned.join("partial"), "interrupted").unwrap();
+	owner.close();
+	recover(&f.registry, no_drain).unwrap();
+	assert!(!owned.exists());
+	assert_eq!(std::fs::read(foreign.join("sentinel")).unwrap(), b"keep");
 }

@@ -1129,8 +1129,8 @@ pub(crate) fn build(
 }
 
 #[cfg(feature = "test-support")]
-pub fn fixture_dir() -> String {
-	tests_impl::good().to_str().unwrap().to_string()
+pub fn fixture_dir() -> impl AsRef<std::path::Path> {
+	tests_impl::good()
 }
 
 #[cfg(test)]
@@ -1535,14 +1535,10 @@ mod tests_impl {
 	pub(super) use super::*;
 	pub(super) use serde_json::json;
 	pub(super) use std::collections::HashMap;
-	pub(super) use std::path::{Path, PathBuf};
+	pub(super) use std::path::Path;
 
-	pub(super) fn fresh(tag: &str) -> PathBuf {
-		static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-		let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-		let d = std::env::temp_dir().join(format!("rnx-0149-gen-{}/{tag}-{n}", std::process::id()));
-		std::fs::create_dir_all(&d).unwrap();
-		d
+	pub(super) fn fresh(tag: &str) -> crate::owned_scratch::Scratch {
+		crate::owned_scratch::Scratch::temp(&format!("rnx-0149-gen-{tag}"))
 	}
 
 	pub(super) fn config() -> serde_json::Value {
@@ -1605,7 +1601,7 @@ mod tests_impl {
 		edit_config: impl FnOnce(&mut serde_json::Value),
 		edit_tokenizer: impl FnOnce(&mut serde_json::Value),
 		edit_weights: impl FnOnce(&mut HashMap<String, CTensor>),
-	) -> PathBuf {
+	) -> crate::owned_scratch::Scratch {
 		let d = fresh("m");
 		let mut c = config();
 		edit_config(&mut c);
@@ -1617,11 +1613,11 @@ mod tests_impl {
 		d
 	}
 
-	pub(super) fn good() -> PathBuf {
+	pub(super) fn good() -> crate::owned_scratch::Scratch {
 		model(|_| {}, |_| {}, |_| {})
 	}
 
-	pub(super) fn refused(d: PathBuf, want: &str) {
+	pub(super) fn refused(d: crate::owned_scratch::Scratch, want: &str) {
 		let e = load(d.to_str().unwrap())
 			.err()
 			.unwrap_or_else(|| panic!("accepted (wanted {want})"));

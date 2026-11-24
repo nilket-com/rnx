@@ -3,10 +3,12 @@
 //! for every oracle shape; lazy values stay opaque and unexecuted; the frame
 //! is unchanged by presentation; explicit formatting agrees.
 #![cfg(target_os = "linux")]
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use std::io::{BufRead, BufReader, Write};
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::process::CommandExt;
-use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 
 fn pipe() -> (OwnedFd, OwnedFd) {
@@ -78,18 +80,11 @@ struct Worker {
 	send: std::fs::File,
 	receive: BufReader<std::fs::File>,
 	next: u64,
-	dir: PathBuf,
+	dir: Scratch,
 }
 impl Worker {
 	fn spawn() -> Self {
-		static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-		let dir = std::env::temp_dir().join(format!(
-			"rnx-polars-presentation-{}-{}",
-			std::process::id(),
-			NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
-		));
-		let _ = std::fs::remove_dir_all(&dir);
-		std::fs::create_dir_all(&dir).unwrap();
+		let dir = Scratch::temp("rnx-polars-presentation");
 		let (child_read, parent_write) = pipe();
 		let (parent_read, child_write) = pipe();
 		let (r, w) = (child_read.as_raw_fd(), child_write.as_raw_fd());
@@ -172,7 +167,6 @@ impl Drop for Worker {
 	fn drop(&mut self) {
 		let _ = self.child.kill();
 		let _ = self.child.wait();
-		let _ = std::fs::remove_dir_all(&self.dir);
 	}
 }
 fn json_quote(s: &str) -> String {

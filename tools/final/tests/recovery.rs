@@ -203,16 +203,23 @@ fn a_guardian_killed_without_its_record_makes_recovery_refuse() {
 	let (_, row) = ledger(&root);
 	let groups = PathBuf::from(&row.groups);
 	let record = read_record(&guard_record(&groups)).unwrap();
-	// The guardian dies outright first, then the controller: nothing drains.
-	// SAFETY: signals to processes this test started.
-	unsafe { libc::kill(record.guardian.pid, libc::SIGKILL) };
-	controller.kill().unwrap();
-	controller.wait().unwrap();
 	let grandchild: i32 = std::fs::read_to_string(root.join("pids"))
 		.unwrap()
 		.trim()
 		.parse()
 		.unwrap();
+	let grandchild = Process {
+		pid: grandchild,
+		started: start_ticks(grandchild).unwrap(),
+	};
+	// Pin all three fixture processes while the stage is waiting.
+	let stage = record.stage.value().unwrap();
+	let processes = [&record.guardian, stage, &grandchild];
+	let handles = processes.map(|p| guardian::pidfd(p.pid).unwrap());
+	// The guardian dies outright first, then the controller: nothing drains.
+	assert!(guardian::signal(&record.guardian, libc::SIGKILL).unwrap());
+	controller.kill().unwrap();
+	controller.wait().unwrap();
 	let routing = PathBuf::from(&row.roots[0].path);
 	let error =
 		evidence::recover(&root.join("target/final-owners"), guardian::drain_registry).unwrap_err();
@@ -224,15 +231,23 @@ fn a_guardian_killed_without_its_record_makes_recovery_refuse() {
 		routing.exists(),
 		"no root is released without a completed drain or an ended unit"
 	);
-	// The test cleans up what the refused recovery left, by identity.
-	if let Some(started) = start_ticks(grandchild) {
-		let _ = guardian::signal(
-			&Process {
-				pid: grandchild,
-				started,
-			},
-			libc::SIGKILL,
+	// Recovery already drained the stage group. This fixture also owns the
+	// detached sleep. Wait for every writer before releasing its ledger.
+	assert!(guardian::signal(&grandchild, libc::SIGKILL).unwrap());
+	let receipts = evidence::recover(&root.join("target/final-owners"), |_, _| {
+		for handle in &handles {
+			anyhow::ensure!(guardian::wait_exit(handle, Some(Duration::from_secs(10)))?);
+		}
+		Ok(())
+	})
+	.unwrap();
+	assert_eq!(receipts.len(), 1);
+	for entry in row.roots {
+		assert!(
+			!Path::new(&entry.path).try_exists().unwrap(),
+			"{}",
+			entry.path
 		);
 	}
-	let _ = std::fs::remove_dir_all(&root);
+	std::fs::remove_dir_all(&root).unwrap();
 }

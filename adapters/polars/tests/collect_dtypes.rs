@@ -4,6 +4,9 @@
 //! refuses a dtype it cannot show, and the hand-written readers keep their
 //! four-dtype schema contract.
 #![cfg(feature = "generated")]
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 
@@ -27,13 +30,9 @@ fn run(script: &str) -> Result<rune::Value, String> {
 	vm.call(["main"], ()).map_err(|e| e.to_string())
 }
 
-fn sales() -> std::path::PathBuf {
+fn sales() -> Scratch {
 	// record 0127 (review): a unique file per call, so parallel tests never share one
-	static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-	let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-	let dir = std::env::temp_dir().join(format!("rnx-0122-collect-{}", std::process::id()));
-	std::fs::create_dir_all(&dir).unwrap();
-	let p = dir.join(format!("sales-{n}.csv"));
+	let p = Scratch::temp_file("rnx-0122-collect", "sales.csv");
 	std::fs::write(&p, "region,qty\nnorth,3\nsouth,\nnorth,5\n").unwrap();
 	p
 }

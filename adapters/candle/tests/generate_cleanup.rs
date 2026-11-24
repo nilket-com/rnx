@@ -9,7 +9,8 @@ use rnx_candle::text::{Knobs, generate};
 
 #[test]
 fn nothing_outlives_a_failed_or_panicked_request() {
-	let g = generate::load_dir(&generate::fixture_dir()).unwrap();
+	let fixture = generate::fixture_dir();
+	let g = generate::load_dir(fixture.as_ref().to_str().unwrap()).unwrap();
 	let (s, u) = (["be brief"; 3], ["a cat sat", "a dog ran", "is it"]);
 	let force = Knobs {
 		force_length: true,

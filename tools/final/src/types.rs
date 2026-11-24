@@ -243,6 +243,8 @@ pub struct CheckRow {
 	pub failure: Field<FailureRef>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub failure_retention_error: Field<String>,
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub cleanup_error: Field<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -252,6 +254,18 @@ pub struct Disk {
 	pub estimate_bytes: u64,
 	pub binding: String,
 	pub lowest_free_bytes: Option<u64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub output_path: Option<String>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub output_estimate_bytes: Option<u64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub output_lowest_free_bytes: Option<u64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub scratch_path: Option<String>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub scratch_estimate_bytes: Option<u64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub scratch_lowest_free_bytes: Option<u64>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

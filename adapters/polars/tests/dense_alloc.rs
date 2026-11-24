@@ -1,6 +1,9 @@
 //! Record 0129: `to_dense` refuses a bad column list or a non-numeric column
 //! before the row-major buffer exists, observed through the allocator's
 //! peak. One test, so no parallel test moves the peak.
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx::allocation::{peak, reset_peak};
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Value, Vm};
@@ -59,8 +62,7 @@ fn observe(vm: &mut Vm, df: &Value, cols: Value, dtype: &str) -> (usize, Result<
 
 #[test]
 fn refusals_come_before_the_buffer() {
-	let dir = std::env::temp_dir().join(format!("rnx-0129-alloc-{}", std::process::id()));
-	std::fs::create_dir_all(&dir).unwrap();
+	let dir = Scratch::temp("rnx-0129-alloc");
 	let path = dir.join("f.csv");
 	let mut csv = String::from("a,s\n");
 	for i in 0..ROWS {
@@ -95,6 +97,4 @@ fn refusals_come_before_the_buffer() {
 	let (grew, out) = observe(&mut vm, &df, list(vec!["a".into(); 100_000]), "f64");
 	assert!(out.unwrap_err().contains("100000 columns, at most 4096"));
 	assert!(grew < SMALL, "long-list refusal allocated {grew}");
-
-	let _ = std::fs::remove_dir_all(&dir);
 }

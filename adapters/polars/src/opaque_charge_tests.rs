@@ -1,4 +1,7 @@
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
 use super::*;
+use owned_scratch::Scratch;
 use rune::experimental_core::{
 	domain::{CrossOutcome, DomainRoot, ProgramDomain},
 	error::ErrorKind,
@@ -94,12 +97,7 @@ fn frame_from_program(
 
 #[test]
 fn loaded_frame_charges_the_data_and_releases_the_allowance() {
-	let nonce = std::time::SystemTime::now()
-		.duration_since(std::time::UNIX_EPOCH)
-		.unwrap()
-		.as_nanos();
-	let path =
-		std::env::temp_dir().join(format!("rnx-csv-charge-{}-{nonce}.csv", std::process::id()));
+	let path = Scratch::temp_file("rnx-csv-charge", "input.csv");
 	const ROWS: usize = 1_800;
 	let data = format!("a\n{}", "42\n".repeat(ROWS));
 	std::fs::write(&path, data).unwrap();
@@ -143,17 +141,11 @@ fn loaded_frame_charges_the_data_and_releases_the_allowance() {
 		measured(false) - measured(true),
 		i64::try_from(charge).unwrap()
 	);
-	std::fs::remove_file(path).unwrap();
 }
 
 #[test]
 fn checked_csv_parser_bounded_input_edges() {
-	let nonce = std::time::SystemTime::now()
-		.duration_since(std::time::UNIX_EPOCH)
-		.unwrap()
-		.as_nanos();
-	let path =
-		std::env::temp_dir().join(format!("rnx-csv-edges-{}-{nonce}.csv", std::process::id()));
+	let path = Scratch::temp_file("rnx-csv-edges", "input.csv");
 	let path_str = path.to_str().unwrap();
 	let int = p::DataType::Int64;
 	let string = p::DataType::String;
@@ -214,7 +206,6 @@ fn checked_csv_parser_bounded_input_edges() {
 			None => assert!(parsed.is_err(), "{label} parsed successfully"),
 		}
 	}
-	std::fs::remove_file(path).unwrap();
 }
 
 #[test]

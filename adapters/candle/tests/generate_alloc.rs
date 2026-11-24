@@ -54,9 +54,10 @@ fn strings(n: usize, s: &str) -> Value {
 
 #[test]
 fn refusals_allocate_nothing_proportional() {
+	let fixture = rnx_candle::text::generate::fixture_dir();
 	let mut vm = vm();
 	let g = result(
-		vm.call(["load"], (rnx_candle::text::generate::fixture_dir(),))
+		vm.call(["load"], (fixture.as_ref().to_str().unwrap().to_owned(),))
 			.unwrap(),
 	)
 	.unwrap();

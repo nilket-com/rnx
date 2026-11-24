@@ -738,7 +738,8 @@ const GIB: u64 = 1024 * 1024 * 1024;
 #[test]
 fn disk_short_of_the_estimate_or_the_remaining_estimate_is_refused() {
 	let floor = controller::DISK_FLOOR_BYTES;
-	let bulk = rnx_final::scheduler::declared_bulk("clippy");
+	let bulk = rnx_final::scheduler::declared_bulk("clippy")
+		+ 2 * rnx_final::scheduler::STAGE_SCRATCH_BYTES;
 	let fake = Fake::new(vec![("a", vec!["x"]), ("clippy", vec!["x"])], &[]);
 	*fake.free.lock().unwrap() = vec![floor + bulk - 1];
 	let fake = Arc::new(fake);
@@ -754,7 +755,10 @@ fn disk_short_of_the_estimate_or_the_remaining_estimate_is_refused() {
 	let _ = dir;
 	// Enough for both at first; the second stage then finds too little.
 	let fake = Fake::new(vec![("a", vec!["x"]), ("clippy", vec!["x"])], &[]);
-	*fake.free.lock().unwrap() = vec![floor + bulk, floor + bulk - 1];
+	*fake.free.lock().unwrap() = vec![
+		floor + bulk,
+		floor + bulk - rnx_final::scheduler::STAGE_SCRATCH_BYTES - 1,
+	];
 	let (r, dir) = run(Arc::new(fake), 2);
 	assert!(
 		r["error"]
@@ -770,7 +774,7 @@ fn disk_short_of_the_estimate_or_the_remaining_estimate_is_refused() {
 	assert_eq!(acceptance["disk"]["estimate_bytes"], json!(floor + bulk));
 	assert_eq!(
 		acceptance["disk"]["lowest_free_bytes"],
-		json!(floor + bulk - 1)
+		json!(floor + bulk - rnx_final::scheduler::STAGE_SCRATCH_BYTES - 1)
 	);
 }
 
@@ -817,7 +821,11 @@ fn a_cold_target_directory_counts_its_growth() {
 			.unwrap();
 	assert_eq!(
 		acceptance["disk"]["estimate_bytes"],
-		json!(controller::DISK_FLOOR_BYTES + rnx_final::scheduler::COLD_BYTES)
+		json!(
+			controller::DISK_FLOOR_BYTES
+				+ rnx_final::scheduler::COLD_BYTES
+				+ rnx_final::scheduler::STAGE_SCRATCH_BYTES
+		)
 	);
 }
 
@@ -1610,4 +1618,95 @@ fn capacity_returned_after_the_recheck_is_not_lost() {
 	);
 	let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
 	assert!(waiter.0 < returner.1);
+}
+
+#[test]
+fn project_and_temporary_bytes_follow_the_scratch_filesystem() {
+	for marker in [
+		None,
+		Some("Cargo.toml"),
+		Some(".cargo"),
+		Some("rust-toolchain"),
+		Some("rust-toolchain.toml"),
+	] {
+		check_scratch_admission(marker);
+	}
+}
+
+fn check_scratch_admission(marker: Option<&str>) {
+	use std::os::unix::fs::MetadataExt;
+	let root = Dir::new();
+	let mount = Path::new("/dev/shm");
+	assert_ne!(
+		root.0.metadata().unwrap().dev(),
+		mount.metadata().unwrap().dev()
+	);
+	let path = mount.join(format!("rnx-final-disk-{}", invocation_id()));
+	std::fs::create_dir(&path).unwrap();
+	let scratch = Dir(path);
+	if let Some(name) = marker {
+		std::fs::write(scratch.0.join(name), "").unwrap();
+	}
+	let out = scratch.0.join("final");
+	let mock = Arc::new(Fake::new(vec![("generated-projects", vec!["x"])], &[]));
+	let floor = controller::DISK_FLOOR_BYTES;
+	let need = floor + rnx_final::scheduler::GIB + rnx_final::scheduler::STAGE_SCRATCH_BYTES;
+	let scratch_parent = if marker.is_some() {
+		Path::new("/var/tmp")
+	} else {
+		&scratch.0
+	};
+	let scratch_dev = scratch_parent.metadata().unwrap().dev();
+	let (key, path, readings) = if scratch_dev == root.0.metadata().unwrap().dev() {
+		("estimate_bytes", root.0.as_path(), vec![need - 1])
+	} else if scratch_dev == scratch.0.metadata().unwrap().dev() {
+		(
+			"output_estimate_bytes",
+			out.as_path(),
+			vec![floor, need - 1],
+		)
+	} else {
+		(
+			"scratch_estimate_bytes",
+			scratch_parent,
+			vec![floor, floor, need - 1],
+		)
+	};
+	*mock.free.lock().unwrap() = readings;
+	let s = Settings {
+		root: root.0.clone(),
+		out: out.clone(),
+		names: Some(vec!["generated-projects".into()]),
+		scope: "explicit".into(),
+		fresh: false,
+		environment: std::env::vars().collect(),
+		guardian: PathBuf::from(env!("CARGO_BIN_EXE_rnx-final")),
+		started: Instant::now(),
+		bootstrap: None,
+		unit: None,
+		hooks: mock.clone(),
+		tokens: Some(1),
+	};
+	let r = controller::run(&s).unwrap();
+	assert!(
+		r["error"].as_str().unwrap().contains(&format!(
+			"{}: {} bytes free, {need} needed",
+			path.display(),
+			need - 1
+		)),
+		"{r}"
+	);
+	let receipt: Value =
+		serde_json::from_slice(&std::fs::read(out.join("ACCEPTANCE.json")).unwrap()).unwrap();
+	assert_eq!(receipt["disk"][key], need);
+	for other in [
+		"estimate_bytes",
+		"output_estimate_bytes",
+		"scratch_estimate_bytes",
+	] {
+		if other != key && !receipt["disk"][other].is_null() {
+			assert_eq!(receipt["disk"][other], floor);
+		}
+	}
+	assert!(mock.span("generated-projects").is_none());
 }

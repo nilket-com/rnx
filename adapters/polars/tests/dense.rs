@@ -2,6 +2,9 @@
 //! Each conversion policy is tested at its boundary, as a policy; every
 //! refusal names the column and row; the frame, the block and the column
 //! list stay usable after every call.
+#[path = "../../../tests/harness/owned_scratch.rs"]
+mod owned_scratch;
+use owned_scratch::Scratch;
 use rnx::rune::sync::Arc as RuneArc;
 use rnx::rune::{self, Context, Module, Source, Sources, Vm};
 
@@ -38,14 +41,10 @@ fn outcome(script: &str) -> Result<String, String> {
 }
 
 /// A unique CSV per call, so parallel tests never share a file.
-fn csv(body: &str) -> String {
-	static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
-	let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-	let d = std::env::temp_dir().join(format!("rnx-0129-dense-{}", std::process::id()));
-	std::fs::create_dir_all(&d).unwrap();
-	let p = d.join(format!("f-{n}.csv"));
+fn csv(body: &str) -> Scratch {
+	let p = Scratch::temp_file("rnx-0129-dense", "frame.csv");
 	std::fs::write(&p, body).unwrap();
-	p.to_str().unwrap().to_owned()
+	p
 }
 
 /// `to_dense` of one column read with `schema`, as `dtype`.
