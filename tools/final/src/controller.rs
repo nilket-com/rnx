@@ -168,6 +168,14 @@ pub struct Settings {
 	pub tokens: Option<usize>,
 }
 
+impl Settings {
+	fn checkpoint(&self) -> Option<&Value> {
+		self.bootstrap
+			.as_ref()
+			.and_then(|record| record.get("checkpoint"))
+	}
+}
+
 /// One stage's call to its child, as a test runner sees it.
 pub struct StageCall {
 	pub name: String,
@@ -533,12 +541,40 @@ fn stage_environment(
 	pool: Option<(&Pool, usize)>,
 ) -> Result<Environment> {
 	let (root, out) = (&settings.root, &settings.out);
+	// Keep Cargo payloads outside caller configuration, even when the
+	// durable receipt lives in the caller's checkout.
+	let payload_parent = if settings.checkpoint().is_some() {
+		temporaries.parent().context("scratch parent")?
+	} else {
+		out.as_path()
+	};
+	let lint_parent = if settings.checkpoint().is_some() {
+		// The archived xtask queries its enclosing Git revision. Keep its
+		// original context below the verified checkout's ignored target.
+		root.join("target/routing-cli")
+	} else {
+		out.clone()
+	};
 	let mut env = base.clone();
+	env.remove("RNX_FINAL_CHECKPOINT_ROOT");
+	env.remove("RNX_FINAL_CHECKPOINT_STORE");
+	env.remove("RNX_FINAL_CHECKPOINT_INVOCATION");
 	let (index, name) = stage;
 	let scratch = temporaries.join(index.to_string());
 	use std::os::unix::fs::DirBuilderExt as _;
 	std::fs::DirBuilder::new().mode(0o700).create(&scratch)?;
 	env.insert("TMPDIR".into(), scratch.display().to_string());
+	// Product tests exercise the real cache-selection paths. Start them
+	// cold, including children of Cargo that inherit the stage environment.
+	let product_cache = scratch.join("product-cache");
+	std::fs::DirBuilder::new()
+		.mode(0o700)
+		.create(&product_cache)?;
+	env.insert("XDG_CACHE_HOME".into(), product_cache.display().to_string());
+	env.insert(
+		"RNX_PROJECT_CACHE".into(),
+		product_cache.join("rnx/assemblies").display().to_string(),
+	);
 	env.insert(
 		"RNX_FINAL_ROUTING_ROOT".into(),
 		owner
@@ -550,11 +586,11 @@ fn stage_environment(
 		let (key, path) = match kind {
 			Bulk::Baseline => (
 				"RNX_FINAL_BASELINE_ROOT",
-				owner.assign(out, &format!("{name}-baseline"), None)?,
+				owner.assign_private(&lint_parent, &format!("{name}-baseline"))?,
 			),
 			Bulk::Fixed => (
 				"RNX_FINAL_FIXED_ROOT",
-				owner.assign(out, &format!("{name}-payload"), None)?,
+				owner.assign_private(payload_parent, &format!("{name}-payload"))?,
 			),
 			Bulk::Project => (
 				"RNX_FINAL_PROJECT_ROOT",
@@ -585,7 +621,7 @@ fn stage_environment(
 			}
 			Bulk::Contracts => (
 				"RNX_FINAL_CONTRACT_ROOT",
-				owner.assign(out, &format!("{name}-contracts"), None)?,
+				owner.assign_private(payload_parent, &format!("{name}-contracts"))?,
 			),
 		};
 		env.insert(key.into(), path.to_string_lossy().into_owned());
@@ -827,6 +863,33 @@ struct Collected {
 	disk: Map<String, Value>,
 }
 
+pub(crate) fn bulk_demand(name: &str, checkpoint: bool, cached: bool) -> [u64; 3] {
+	let mut checkout = 0;
+	let mut output = 0;
+	let mut scratch = 0;
+	for kind in catalogue::bulk_roots(name) {
+		let bytes = scheduler::bulk_bytes(kind);
+		match kind {
+			Bulk::Cross => checkout += bytes,
+			Bulk::Baseline if checkpoint => checkout += bytes,
+			Bulk::Project => scratch += bytes,
+			_ if checkpoint => scratch += bytes,
+			_ => output += bytes,
+		}
+	}
+	if cached {
+		match name {
+			"polars-inventories" => {
+				checkout += 2 * scheduler::GIB; // generator
+				output += 2 * scheduler::GIB; // consumer's inventories
+			}
+			"polars-suite" => checkout += 2 * scheduler::GIB,
+			_ => {}
+		}
+	}
+	[checkout, output, scratch]
+}
+
 fn run_stages(
 	settings: &Settings,
 	selection_value: &Value,
@@ -878,30 +941,7 @@ fn run_stages(
 	let needs = scheduler::producers(&stages);
 	let bulk: Vec<[u64; 3]> = stages
 		.iter()
-		.map(|(name, _)| {
-			let mut checkout = 0;
-			let mut output = 0;
-			let mut scratch = 0;
-			for kind in catalogue::bulk_roots(name) {
-				let bytes = scheduler::bulk_bytes(kind);
-				match kind {
-					Bulk::Cross => checkout += bytes,
-					Bulk::Project => scratch += bytes,
-					_ => output += bytes,
-				}
-			}
-			if cache.is_some() {
-				match name.as_str() {
-					"polars-inventories" => {
-						checkout += 2 * scheduler::GIB; // generator
-						output += 2 * scheduler::GIB; // consumer's inventories
-					}
-					"polars-suite" => checkout += 2 * scheduler::GIB,
-					_ => {}
-				}
-			}
-			[checkout, output, scratch]
-		})
+		.map(|(name, _)| bulk_demand(name, settings.checkpoint().is_some(), cache.is_some()))
 		.collect();
 	let tokens: usize = base
 		.get("CARGO_BUILD_JOBS")
@@ -1591,7 +1631,17 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	// Inspect fresh targets before this invocation creates any directory.
 	let violation = fresh_violation(&root, settings.fresh, &settings.environment);
 	std::fs::create_dir_all(out.parent().context("output has no parent")?)?;
-	std::fs::create_dir(out).with_context(|| format!("output exists: {}", out.display()))?;
+	if settings.checkpoint().is_some() {
+		let entries: BTreeSet<_> = std::fs::read_dir(out)?
+			.map(|e| e.map(|entry| entry.file_name()))
+			.collect::<std::io::Result<_>>()?;
+		anyhow::ensure!(
+			entries == BTreeSet::from(["preparation".into()]),
+			"unexpected checkpoint output contents"
+		);
+	} else {
+		std::fs::create_dir(out).with_context(|| format!("output exists: {}", out.display()))?;
+	}
 	let registry = root.join("target/final-owners");
 	std::fs::create_dir_all(&registry)?;
 	let free_before = disk_free(&root)?;
@@ -1696,9 +1746,6 @@ pub fn run(settings: &Settings) -> Result<Value> {
 			if let Some(failure) = failure {
 				failed_row = Some(failure.row);
 				bail!(failure.message);
-			}
-			if let Some(over) = wall_budget_error(scope, settings.hooks.elapsed(settings.started)) {
-				return Err(value_error(&over));
 			}
 			acceptance["status"] = json!("PASS");
 			acceptance["finalization"] =
@@ -1816,7 +1863,61 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		}
 	}
 	// The budget covers the whole run: stages, finalization and release.
-	let seconds = settings.hooks.elapsed(settings.started);
+	if let Some(value) = settings.checkpoint() {
+		let settled = (|| -> Result<()> {
+			let run = PathBuf::from(
+				settings
+					.environment
+					.get("RNX_FINAL_CHECKPOINT_INVOCATION")
+					.context("missing invocation directory")?,
+			);
+			let output = std::process::Command::new("/bin/bash")
+				.arg(root.join("tools/final/checkpoint/settle.sh"))
+				.arg(&run)
+				.arg(
+					r["status"]
+						.as_str()
+						.context("missing provisional verdict")?,
+				)
+				.arg(out.join("preparation/admission.json"))
+				.output()?;
+			anyhow::ensure!(
+				output.status.success(),
+				"checkpoint release: {}",
+				String::from_utf8_lossy(&output.stderr)
+			);
+			let released: Value = serde_json::from_slice(&output.stdout)?;
+			anyhow::ensure!(
+				released["developer_state_sha256"] == value["developer_state_sha256"],
+				"developer home changed"
+			);
+			let path = out.join("CHECKPOINTRELEASE.json");
+			crate::receipt::atomic_json(&path, &released)?;
+			r["records"]["CHECKPOINTRELEASE"] = json!(digest(&path)?);
+			Ok(())
+		})();
+		if let Err(error) = settled {
+			r["status"] = json!("FAIL");
+			r["publication_eligible"] = json!(false);
+			r["complete_final"] = json!(false);
+			r["release_error"] = json!(format!("{error:#}"));
+		}
+	}
+	let seconds = if let Some(value) = settings.checkpoint() {
+		let admission: crate::checkpoint::Admission = serde_json::from_value(value.clone())?;
+		let seconds = crate::bootstrap::boottime() - admission.admitted;
+		let proof = out.join("CHECKPOINT.json");
+		let timing = admission.timing(seconds);
+		crate::receipt::atomic_json(&proof, &timing)?;
+		r["records"]["CHECKPOINT"] = json!(digest(&proof)?);
+		eprintln!(
+			"Preparation {:.1} s, timed final {:.1} s, total wait {:.1} s",
+			timing.preparation_seconds, seconds, timing.total_seconds
+		);
+		seconds
+	} else {
+		settings.hooks.elapsed(settings.started)
+	};
 	r["seconds"] = json!(seconds);
 	if let Some(over) = wall_budget_error(scope, seconds) {
 		r["status"] = json!("FAIL");
@@ -1826,10 +1927,41 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		// A stage failure stays the reported cause; otherwise the budget is.
 		if r["error"].is_null() {
 			r["error"] = json!(over);
+			if let Some(store) = settings.environment.get("RNX_FINAL_CHECKPOINT_STORE")
+				&& r["records"].get("CHECKPOINT").is_some()
+				&& pass && r["release_error"].is_null()
+				&& r.get("retirement_error").is_none()
+			{
+				let candidate = r["candidate"]
+					.as_str()
+					.context("overrun without candidate")?;
+				let path = Path::new(store).join("overruns").join(candidate);
+				atomic_json(&path, out)?;
+			}
 		}
 	}
 	child_publish(&out.join("RESULT.json"), &r)?;
 	if r["status"] == "PASS"
+		&& let Some(store) = settings.environment.get("RNX_FINAL_CHECKPOINT_STORE")
+		&& r["records"].get("CHECKPOINT").is_some()
+	{
+		// The next entry revalidates this terminal and the actual state
+		// under its lease before it may admit a published successor.
+		let store = Path::new(store);
+		let release: Value =
+			serde_json::from_reader(std::fs::File::open(out.join("CHECKPOINTRELEASE.json"))?)?;
+		atomic_json(
+			&store.join("previous.json"),
+			&json!({
+				"candidate":r["candidate"], "checkout":root, "out":out,
+				"result":digest(&out.join("RESULT.json"))?, "seal":release["terminal_state_sha256"]
+			}),
+		)?;
+		std::fs::remove_file(store.join("in-use"))?;
+		crate::receipt::sync_directory(store)?;
+	}
+	if r["status"] == "PASS"
+		&& scope != "complete"
 		&& let Some(cache) = cache
 	{
 		cache.finish()?;

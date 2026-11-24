@@ -3,7 +3,7 @@
 mod plan;
 use crate::receipt::{atomic_json, invocation_id, sync_directory};
 use anyhow::{Context, Result, ensure};
-pub use plan::{CachePlan, Route, cargo_main, lookup};
+pub use plan::{CachePlan, Route, cargo_main, checkpoint_recipes, disk_declaration, lookup};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};

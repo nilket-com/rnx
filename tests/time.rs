@@ -21,6 +21,7 @@ impl Fixture {
 	fn command(&self) -> Command {
 		let mut c = Command::new(env!("CARGO_BIN_EXE_rnx"));
 		c.env_clear()
+			.env("XDG_CACHE_HOME", self.0.join("cache"))
 			.env("TZ", "Europe/Paris")
 			.env("TERM", "dumb")
 			.current_dir(&self.0);

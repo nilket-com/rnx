@@ -1,6 +1,6 @@
 # ADR 0333: Finals start from the published baseline
 
-Status: Proposed
+Status: Accepted
 
 Base: published ee52b405e9cea581c514ec87463faaa34d803b13 (ADR 0332).
 

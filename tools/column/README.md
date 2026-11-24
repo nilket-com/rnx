@@ -8,6 +8,15 @@ own systemd unit:
 sh tools/final/final.sh --complete --out target/RECORD/FINAL
 ```
 
+Set `RNX_FINAL_CHECKPOINT_ROOT` in that unit to an existing, persistent
+directory owned by the account running the final. The directory and
+its ancestors must be writable only by their owners, and each ancestor
+must belong to that account or root. An enclosing `.cargo/config` or
+`.cargo/config.toml` would affect the build, so admission reports its
+path and stops. The final keeps its checkpoint in the directory's
+`store` child. The receipt reports preparation, timed execution and
+total wait separately.
+
 ADR 0205's ordered prerequisite workflow was
 retired in ADR 0287. Development runs are not final signed acceptance or
 performance evidence.

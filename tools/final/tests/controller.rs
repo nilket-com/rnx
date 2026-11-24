@@ -872,6 +872,11 @@ check_external() {
 }
 check_external "$TMPDIR"
 test "$(stat -c %a "$TMPDIR")" = 700
+test "$XDG_CACHE_HOME" = "$TMPDIR/product-cache"
+test "$RNX_PROJECT_CACHE" = "$XDG_CACHE_HOME/rnx/assemblies"
+test "$(stat -c %a "$XDG_CACHE_HOME")" = 700
+test -z "$(ls -A "$XDG_CACHE_HOME")"
+sh -c 'mkdir -p "$RNX_PROJECT_CACHE" && echo child > "$RNX_PROJECT_CACHE/compiled"'
 printf '%s\n' "$TMPDIR" > "target/probe/$1.path"
 sh -c 'echo grandchild > "$TMPDIR/planted"'
 if [ "$1" = generated-projects ]; then

@@ -21,6 +21,45 @@ fail() {
 	exit 1
 }
 
+# Only a real complete run needs baseline preparation. Verification and a
+# docs-successor read their existing evidence in the caller's checkout.
+complete=false
+reader=false
+need_value=false
+out=
+option=
+for argument in "$@"; do
+	if $need_value; then
+		if [ "$option" = --out ]; then out=$argument; fi
+		need_value=false
+		continue
+	fi
+	option=$argument
+	case "$argument" in
+		--out|--bootstrap|--stages) need_value=true ;;
+		--docs-successor) reader=true; need_value=true ;;
+		--revalidate|--abandon-diagnostics) reader=true ;;
+		--complete) complete=true ;;
+	esac
+done
+checkpoint_member=
+if [ -f "$root/.git/rnx-final-store" ]; then
+	[ -n "${RNX_FINAL_CHECKPOINT_STORE:-}" ] && $complete && ! $reader ||
+		fail "the checkpoint checkout is reserved for its leased complete final"
+fi
+if $complete && ! $reader; then
+	if [ -z "${RNX_FINAL_CHECKPOINT_STORE:-}" ]; then
+		exec /bin/bash "$root/tools/final/checkpoint/entry.sh" "$started" "$@"
+	fi
+	[ -n "$out" ] || fail "complete checkpoint has no output"
+	[ "$root" = "$RNX_FINAL_CHECKPOINT_STORE/generation/source" ] || fail "bootstrap outside the checkpoint checkout"
+	[ -d /proc/self/fd/7 ] && [ /proc/self/fd/7 -ef "$RNX_FINAL_CHECKPOINT_STORE" ] || fail "missing checkpoint lease"
+	trap 'code=$?; if [ "$code" -ne 0 ]; then /bin/bash -ceu '"'"'set -o pipefail; source "$1"; timed_refusal "$2"'"'"' report "$root/tools/final/checkpoint/state.sh" "$out"; fi; exit "$code"' EXIT
+	checkpoint=$(jq -ce . "$out/preparation/admission.json") || fail "checkpoint admission missing"
+	started=$(printf '%s' "$checkpoint" | jq -er '.admitted | numbers') || fail "missing admission boundary"
+	checkpoint_member=$(printf ', "checkpoint": %s' "$checkpoint")
+fi
+
 # Each command's own status is checked before its output is believed: a
 # pipeline or a substitution inside a test would hide a failure.
 number() {
@@ -35,21 +74,13 @@ digest() {
 	esac
 }
 
-candidate=$(git rev-parse --verify HEAD) || fail "no candidate commit"
-status=$(git status --porcelain) || fail "git status failed"
-[ -z "$status" ] || fail "the checkout is not clean"
-lock_sha=$(sha256sum Cargo.lock) || fail "cannot hash Cargo.lock"
-lock_sha=${lock_sha%% *}
-digest "the lock file digest" "$lock_sha"
-toolchain=$(rustc +1.98.1 -vV) || fail "the pinned toolchain is missing"
-toolchain_sha=$(printf '%s\n' "$toolchain" | sha256sum) || fail "cannot hash the toolchain"
-toolchain_sha=${toolchain_sha%% *}
-digest "the toolchain digest" "$toolchain_sha"
-
 # Disk: the final's floor and one cold Cargo target directory.
 fixture=false
 target=$root/target/final-controller
 probe=$target
+if [ "${1:-}" = --checkpoint-resources ]; then
+	probe=${2:?checkpoint directory required}
+fi
 while [ ! -e "$probe" ]; do probe=${probe%/*}; done
 filesystem=$(stat -f -c '%T:%i' -- "$probe") || fail "cannot identify filesystem for $probe"
 if [ "${RNX_BOOTSTRAP_DISK_BYTES+x}" ]; then
@@ -96,6 +127,23 @@ while [ -n "$group" ] && [ "$group" != "/" ]; do
 done
 [ "$usable" -ge $((RESERVE_BYTES + JOB_MEMORY_BYTES)) ] || fail "memory: $usable bytes usable, $((RESERVE_BYTES + JOB_MEMORY_BYTES)) needed for one build job"
 
+if [ "${1:-}" = --checkpoint-resources ]; then
+	[ "$fixture" = false ] || fail "a fixture cannot admit checkpoint preparation"
+	printf '{"disk_free_bytes":%s,"memory_usable_bytes":%s}\n' "$free" "$usable"
+	exit 0
+fi
+
+candidate=$(git rev-parse --verify HEAD) || fail "no candidate commit"
+status=$(git status --porcelain) || fail "git status failed"
+[ -z "$status" ] || fail "the checkout is not clean"
+lock_sha=$(sha256sum Cargo.lock) || fail "cannot hash Cargo.lock"
+lock_sha=${lock_sha%% *}
+digest "the lock file digest" "$lock_sha"
+toolchain=$(rustc +1.98.1 -vV) || fail "the pinned toolchain is missing"
+toolchain_sha=$(printf '%s\n' "$toolchain" | sha256sum) || fail "cannot hash the toolchain"
+toolchain_sha=${toolchain_sha%% *}
+digest "the toolchain digest" "$toolchain_sha"
+
 # One job, and no jobserver inherited from whatever started this entry.
 unset MAKEFLAGS CARGO_MAKEFLAGS MFLAGS
 # Claim a new target atomically. A previous version may have used this
@@ -136,7 +184,7 @@ cat > "$record.pending" <<EOF
  "cargo_lock_sha256": "$lock_sha", "toolchain_sha256": "$toolchain_sha", "jobs": 1,
  "recipe": ["cargo", "+1.98.1", "build", "--locked", "--release", "-p", "rnx-final", "--target-dir", "$target"],
  "artifact": "$artifact", "artifact_sha256": "$artifact_sha", "memory_usable_bytes": $usable, "disk_free_bytes": $free,
- "fixture": $fixture}
+ "fixture": $fixture$checkpoint_member}
 EOF
 mv "$record.pending" "$record"
 exec "$artifact" --bootstrap "$record" "$@"

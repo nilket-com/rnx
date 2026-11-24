@@ -3,6 +3,7 @@
 pub mod bootstrap;
 pub mod cache;
 pub mod catalogue;
+pub mod checkpoint;
 pub mod child;
 pub mod cli;
 pub mod compare;

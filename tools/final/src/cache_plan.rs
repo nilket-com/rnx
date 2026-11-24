@@ -80,11 +80,136 @@ fn sharing_group(
 	Ok(group.join(scheduler::profile(cmd)))
 }
 
+fn declarations(name: &str, args: &[String], root: &Path) -> Result<Vec<(Vec<String>, bool)>> {
+	let mut declarations = Vec::new();
+	if writer(args) {
+		declarations.push((args.to_vec(), false));
+	} else if name == "fixed-route" {
+		declarations.push((
+			[
+				"cargo",
+				"+1.98.1",
+				"build",
+				"--locked",
+				"--manifest-path",
+				"ci/execute_guard/Cargo.toml",
+			]
+			.map(String::from)
+			.to_vec(),
+			false,
+		));
+	} else if name == "commit-discipline" {
+		declarations.push((
+			[
+				"cargo",
+				"run",
+				"--locked",
+				"--quiet",
+				"--manifest-path",
+				"ci/execute_guard/Cargo.toml",
+			]
+			.map(String::from)
+			.to_vec(),
+			false,
+		));
+	} else {
+		match args.get(2).map(String::as_str) {
+			Some("suite") => {
+				for cmd in catalogue::recipes(name, root)?
+					.into_iter()
+					.filter(|c| writer(c))
+				{
+					if scheduler::cargo_verb(&cmd) == "clippy"
+						&& catalogue::bulk_roots(name).contains(&catalogue::Bulk::Baseline)
+					{
+						declarations.push((cmd.clone(), true));
+					}
+					declarations.push((cmd, false));
+				}
+			}
+			Some("clippy") => {
+				let cmd = stage::clippy_command(name == "adapter-clippy");
+				declarations.extend([(cmd.clone(), true), (cmd, false)]);
+			}
+			Some("jupyter") => declarations.extend(
+				stage::jupyter_children("", root)
+					.into_iter()
+					.filter(|c| writer(c))
+					.map(|c| (c, false)),
+			),
+			_ => {}
+		}
+	}
+	Ok(declarations)
+}
+
 pub struct CachePlan {
 	root: PathBuf,
 	out: PathBuf,
 	routes: BTreeMap<String, Routes>,
 	lanes: BTreeMap<PathBuf, Lane>,
+}
+
+/// Describe the builds in this revision without claiming or warming a lane.
+/// Run the published controller in its own checkout: the candidate can add
+/// recipes, change a profile, or change the target selected by Cargo metadata.
+pub fn checkpoint_recipes(root: &Path) -> Result<Value> {
+	let targets = scheduler::Targets::new(root);
+	let mut recipes = BTreeMap::new();
+	let mut fetch = Vec::new();
+	for (name, args) in catalogue::commands(root, root)? {
+		if args.first().is_some_and(|a| a == "cargo") && scheduler::cargo_verb(&args) == "fetch" {
+			fetch.push(args.clone());
+		}
+		for (command, published) in declarations(&name, &args, root)? {
+			let group = sharing_group(root, &targets, &name, &command, published)?;
+			let recipe = format!("{name}-{}", recipe_key(&command, published)?);
+			let source = if !published {
+				"checkout"
+			} else if matches!(name.as_str(), "clippy" | "adapter-clippy") {
+				stage::CLIPPY_BASE
+			} else {
+				"record-baseline"
+			};
+			let mut build = command;
+			let verb = scheduler::cargo_verb(&build);
+			let verb_at = build
+				.iter()
+				.position(|a| a == verb)
+				.context("missing Cargo verb")?;
+			match verb {
+				"test" | "run" => {
+					build.truncate(build.iter().position(|a| a == "--").unwrap_or(build.len()));
+					if build[verb_at] == "test" && build.iter().any(|a| a == "--doc") {
+						// Stable rustdoc does not support --doc with --no-run.
+						// Discover the same doctests without executing their bodies.
+						build.extend(["--".into(), "--list".into()]);
+					} else if build[verb_at] == "test" {
+						build.insert(verb_at + 1, "--no-run".into());
+					} else {
+						build[verb_at] = "build".into();
+					}
+				}
+				"clippy" if name == "clippy-adapter-polars" => {
+					build.extend(stage::POLARS_LINT_ARGS.map(String::from));
+				}
+				"build" | "check" | "clippy" => {}
+				_ => anyhow::bail!("unknown checkpoint build: {build:?}"),
+			}
+			if !build.iter().any(|a| a == "--locked") {
+				build.insert(verb_at + 1, "--locked".into());
+			}
+			recipes.insert(
+				recipe,
+				json!({
+					"source": source, "group": group, "lane": pyjson::identity(&group)?,
+					"cold_bytes": CachePlan::group_cold_growth(group.to_str()),
+					"incremental": keep_incremental(&name), "command": build
+				}),
+			);
+		}
+	}
+	Ok(json!({"schema": 1, "recipes": recipes, "fetch": fetch}))
 }
 
 impl CachePlan {
@@ -103,65 +228,7 @@ impl CachePlan {
 		let stage_dir = out.join("cache-recipes");
 		fs::create_dir(&stage_dir)?;
 		for (name, args) in catalogue::commands(out, root)? {
-			let mut declarations = Vec::new();
-			if writer(&args) {
-				declarations.push((args.clone(), false));
-			} else if name == "fixed-route" {
-				declarations.push((
-					[
-						"cargo",
-						"+1.98.1",
-						"build",
-						"--locked",
-						"--manifest-path",
-						"ci/execute_guard/Cargo.toml",
-					]
-					.map(String::from)
-					.to_vec(),
-					false,
-				));
-			} else if name == "commit-discipline" {
-				declarations.push((
-					[
-						"cargo",
-						"run",
-						"--locked",
-						"--quiet",
-						"--manifest-path",
-						"ci/execute_guard/Cargo.toml",
-					]
-					.map(String::from)
-					.to_vec(),
-					false,
-				));
-			} else {
-				match args.get(2).map(String::as_str) {
-					Some("suite") => {
-						for cmd in catalogue::recipes(&name, root)?
-							.into_iter()
-							.filter(|c| writer(c))
-						{
-							if scheduler::cargo_verb(&cmd) == "clippy"
-								&& catalogue::bulk_roots(&name).contains(&catalogue::Bulk::Baseline)
-							{
-								declarations.push((cmd.clone(), true));
-							}
-							declarations.push((cmd, false));
-						}
-					}
-					Some("clippy") => {
-						let cmd = stage::clippy_command(name == "adapter-clippy");
-						declarations.extend([(cmd.clone(), true), (cmd, false)]);
-					}
-					Some("jupyter") => declarations.extend(
-						stage::jupyter_children("", root)
-							.into_iter()
-							.filter(|c| writer(c))
-							.map(|c| (c, false)),
-					),
-					_ => {}
-				}
-			}
+			let declarations = declarations(&name, &args, root)?;
 			let mut stage_routes = Routes::new();
 			for (cmd, published) in declarations {
 				let key = recipe_key(&cmd, published)?;
@@ -242,6 +309,10 @@ impl CachePlan {
 			.flat_map(|routes| routes.values())
 			.find(|r| r.target == Path::new(target))
 			.and_then(|r| r.group.to_str());
+		Self::group_cold_growth(group)
+	}
+
+	fn group_cold_growth(group: Option<&str>) -> u64 {
 		let gib = match group {
 			Some("adapters/polars/target/debug") => 49,
 			Some("adapters/candle/target/debug") => 15,
@@ -374,6 +445,40 @@ impl CachePlan {
 			rows.insert(path.clone(), changes);
 		}
 		let transaction = self.out.join("CACHE.json");
+		if complete {
+			// All lanes are still leased. Release and record the footprint
+			// before the last wall check. These files alone cannot promote
+			// this invocation to a published checkpoint.
+			let started = std::time::Instant::now();
+			let mut report = BTreeMap::new();
+			for (path, changes) in &rows {
+				let lane = &self.lanes[path];
+				let reclaimed = lane.commit(changes.updates.clone(), &changes.live, true)?;
+				report.insert(
+					path,
+					json!({
+						"footprint":lane.footprint()?, "reclaimed_bytes":reclaimed, "recipes":changes.live
+					}),
+				);
+			}
+			let footprint = self.out.join("CACHE-FOOTPRINT.json");
+			atomic_json(&footprint, &report)?;
+			let release = self.out.join("CACHE-RELEASE.json");
+			atomic_json(
+				&release,
+				&json!({
+					"schema":2, "footprint":crate::receipt::digest(&footprint)?,
+					"seconds":started.elapsed().as_secs_f64()
+				}),
+			)?;
+			atomic_json(
+				&transaction,
+				&json!({
+					"complete":true, "rows":rows, "release_sha256":crate::receipt::digest(&release)?
+				}),
+			)?;
+			return crate::receipt::digest(&transaction);
+		}
 		atomic_json(&transaction, &Transaction { complete, rows })?;
 		let sha = crate::receipt::digest(&transaction)?;
 		atomic_json(
@@ -722,6 +827,65 @@ pub fn cargo_main(args: &[OsString]) -> Result<i32> {
 	Ok(status.code().unwrap_or(1))
 }
 
+/// The pre-clock shell cannot build the candidate to discover its writers.
+/// Store the portable inputs to admission with the source. The adoption
+/// catalogue already supplies most recipe identities.
+pub fn disk_declaration(root: &Path) -> Result<Value> {
+	let commands = catalogue::commands(root, root)?;
+	let recipes = checkpoint_recipes(root)?;
+	let routes = |v: &Value| json!([v["lane"], v["cold_bytes"]]);
+	let adoption = root.join("tools/final/checkpoint/ee52b405.jsonl");
+	let mut reference = BTreeMap::new();
+	for row in fs::read_to_string(adoption)?.lines() {
+		let value: Value = serde_json::from_str(row)?;
+		reference.insert(
+			value["key"].as_str().context("recipe key")?.to_owned(),
+			routes(&value["value"]),
+		);
+	}
+	let mut added = BTreeMap::new();
+	let mut other = BTreeSet::new();
+	let mut bulk = [0_u64; 3];
+	let targets = scheduler::Targets::new(root);
+	let current = recipes["recipes"].as_object().context("recipes")?;
+	for (key, value) in current {
+		let route = routes(value);
+		if reference.get(key) != Some(&route) {
+			added.insert(key, route);
+		}
+	}
+	for (name, args) in &commands {
+		for (sum, bytes) in bulk
+			.iter_mut()
+			.zip(crate::controller::bulk_demand(name, true, true))
+		{
+			*sum += bytes;
+		}
+		if !declarations(name, args, root)?.is_empty()
+			|| matches!(
+				name.as_str(),
+				"polars-inventory-preflight" | "polars-inventories" | "production-cli-controls"
+			) {
+			continue;
+		}
+		for resource in scheduler::resources(name, args, root, &targets)? {
+			if resource != scheduler::FIRST && resource != scheduler::ALONE {
+				other.insert(PathBuf::from(resource).strip_prefix(root)?.to_owned());
+			}
+		}
+	}
+	let removed: Vec<_> = reference
+		.keys()
+		.filter(|k| !current.contains_key(*k))
+		.collect();
+	Ok(
+		json!({"added":added,"removed":removed,"other":other,"bulk":bulk,"stages":commands.len(),
+		"floor":crate::controller::DISK_FLOOR_BYTES,"cold":scheduler::COLD_BYTES,
+		"warm":scheduler::WARM_GROWTH_BYTES,"share":scheduler::WARM_GROWTH_SHARE,
+		"temp":scheduler::STAGE_SCRATCH_BYTES}),
+	)
+}
+
 #[cfg(test)]
 mod controls {
 	use super::*;
@@ -813,6 +977,32 @@ mod controls {
 		};
 		let stages = [("stage".into(), Vec::new())];
 		let resource = target.to_str().unwrap();
+		let bootstrap_estimate = |cold: u64| {
+			let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("checkpoint/disk.sh");
+			let result = Command::new("bash")
+				.args([
+					"-ceu",
+					r#"set -o pipefail; source "$1"; disk_lane_growth "$2" "$3" '["producer"]' "$4" "$5""#,
+					"estimate",
+				])
+				.arg(script)
+				.arg(&target)
+				.arg(cold.to_string())
+				.arg(scheduler::WARM_GROWTH_BYTES.to_string())
+				.arg(scheduler::WARM_GROWTH_SHARE.to_string())
+				.output()
+				.unwrap();
+			assert!(
+				result.status.success(),
+				"{}",
+				String::from_utf8_lossy(&result.stderr)
+			);
+			String::from_utf8(result.stdout)
+				.unwrap()
+				.trim()
+				.parse::<u64>()
+				.unwrap()
+		};
 		let allocated: u64 = [
 			target.as_path(),
 			&target.join(".rnx-cache-owner.json"),
@@ -827,6 +1017,7 @@ mod controls {
 		let cold = plan.cold_growth(resource);
 		assert!(allocated > 0 && allocated < cold - scheduler::WARM_GROWTH_BYTES);
 		assert_eq!(plan.growth(resource, &stages).unwrap(), cold - allocated);
+		assert_eq!(bootstrap_estimate(cold), cold - allocated);
 
 		// A one-GiB group's remainder is already below the warm floor.
 		plan.routes
@@ -857,6 +1048,10 @@ mod controls {
 				false,
 			)
 			.unwrap();
+		assert_eq!(
+			bootstrap_estimate(cold),
+			plan.growth(resource, &stages).unwrap()
+		);
 		assert_eq!(
 			plan.growth(resource, &stages).unwrap(),
 			scheduler::growth_with_cold(resource, &plan.root, cold)

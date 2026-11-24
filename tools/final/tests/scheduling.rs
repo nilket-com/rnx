@@ -102,6 +102,11 @@ struct Flow {
 	gate_returned: bool,
 	gate_processed: bool,
 	gate_refusals: usize,
+	/// First disk-admission site, revisited before the gate takes its lease.
+	first_site: Option<PathBuf>,
+	competitor_reached_gate_wait: bool,
+	competitor_holds_token: bool,
+	refused_with_competitor: bool,
 	blocks: usize,
 	started: BTreeSet<String>,
 	written: bool,
@@ -231,6 +236,10 @@ impl Hooks for Fake {
 				flow.gate_refusals += 1;
 				self.moved.notify_all();
 			}
+			if flow.gate_processed && flow.competitor_holds_token && flow.written {
+				flow.refused_with_competitor = true;
+				self.moved.notify_all();
+			}
 			flow.taken_after_written >= 1
 		};
 		self.handoff(Handoff::AfterRecheck, armed);
@@ -304,6 +313,20 @@ impl Hooks for Fake {
 		Ok(json!({"schema": 1, "candidate": "c", "roots": []}))
 	}
 	fn disk_free(&self, path: &Path) -> Result<u64> {
+		if self.returns.as_ref().is_some_and(|r| r.competitor) {
+			// Force the returner to request the spare token before the gate
+			// can acquire its lease. Other filesystems in the first stage's
+			// disk check must not block that stage from starting.
+			let mut flow = self.flow.lock().unwrap();
+			if flow.first_site.as_deref() == Some(path) && !flow.gate_processed {
+				drop(flow);
+				self.until("the competitor had its first turn", |f| {
+					f.competitor_reached_gate_wait || f.competitor_holds_token
+				});
+			} else if flow.first_site.is_none() {
+				flow.first_site = Some(path.to_owned());
+			}
+		}
 		let mut free = self.free.lock().unwrap();
 		match free.len() {
 			0 => controller::disk_free(path),
@@ -426,23 +449,22 @@ fn write_tokens(fifo: &Path, chunks: &[usize]) {
 }
 
 impl Fake {
-	/// Wait, bounded, until `done` holds of the flow.
 	/// Wait, bounded, until `done` holds of the flow; a wait that runs out
 	/// is recorded, and fails the control.
-	fn until(&self, what: &str, done: impl Fn(&Flow) -> bool) {
+	fn until(&self, what: &str, done: impl Fn(&mut Flow) -> bool) {
 		let flow = self.flow.lock().unwrap();
-		let (mut flow, _) = self
+		let (mut flow, wait) = self
 			.moved
 			.wait_timeout_while(flow, Duration::from_secs(20), |f| !done(f))
 			.unwrap();
-		if !done(&flow) {
+		if wait.timed_out() {
 			flow.timeouts.push(what.to_owned());
 		}
 	}
 
 	fn returning(&self, r: &Returns, call: &StageCall) {
 		let name = call.name.as_str();
-		if name == r.waiter {
+		if name == r.waiter || (r.competitor && name == r.gate) {
 			self.flow.lock().unwrap().started.insert(name.into());
 			self.moved.notify_all();
 		}
@@ -476,9 +498,18 @@ impl Fake {
 			flow.borrowed = true;
 		}
 		self.moved.notify_all();
-		let mut held = vec![0u8; usize::from(r.competitor)];
-		// The competitor takes the gate's token as it comes back.
-		std::io::Read::read_exact(&mut fifo, &mut held).unwrap();
+		let mut held = [0u8; 1];
+		if r.competitor {
+			self.until("the admitted gate entered", |f| {
+				f.competitor_reached_gate_wait = true;
+				self.moved.notify_all();
+				f.started.contains(r.gate)
+			});
+			// The gate owns its lease. This read completes once the gate ends.
+			std::io::Read::read_exact(&mut fifo, &mut held).unwrap();
+			self.flow.lock().unwrap().competitor_holds_token = true;
+			self.moved.notify_all();
+		}
 		self.until("the controller blocked behind the refusal", |f| {
 			f.blocks >= 1
 		});
@@ -520,8 +551,15 @@ impl Fake {
 			flow.written = true;
 		}
 		if r.competitor {
-			self.until("the controller took the returns", |f| f.blocks > handled);
+			self.until(
+				"the waiter was refused with the competitor's token held",
+				|f| f.refused_with_competitor,
+			);
+			let mut flow = self.flow.lock().unwrap();
+			assert!(!flow.started.contains(r.waiter));
 			std::io::Write::write_all(&mut fifo, &held).unwrap();
+			flow.competitor_holds_token = false;
+			flow.enough_at = Some(Instant::now());
 		}
 		if r.expect_start {
 			self.until("the waiter started", |f| f.started.contains(r.waiter));
@@ -1481,6 +1519,7 @@ fn a_competing_client_delays_the_waiter_until_it_returns() {
 	);
 	assert_eq!(r["status"], "PASS", "{r}");
 	let (returner, waiter) = (fake.span("returner").unwrap(), fake.span("waiter").unwrap());
+	assert!(fake.flow.lock().unwrap().enough_at.unwrap() <= waiter.0);
 	assert!(waiter.0 < returner.1);
 }
 

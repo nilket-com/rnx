@@ -640,15 +640,60 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 		&& let Some(hash) = result.records.get("CACHE")
 	{
 		let released = read(&out.join("CACHE-RELEASE.json"))?;
-		ensure!(
+		let binding = if released["schema"] == 2 {
+			let txn = read(&out.join("CACHE.json"))?;
+			txn["complete"] == true
+				&& txn["release_sha256"] == digest(&out.join("CACHE-RELEASE.json"))?
+		} else {
 			released["transaction"] == *hash
 				&& released["result"] == digest(&out.join("RESULT.json"))?
-				&& released["footprint"] == digest(&out.join("CACHE-FOOTPRINT.json"))?,
+		};
+		ensure!(
+			binding && released["footprint"] == digest(&out.join("CACHE-FOOTPRINT.json"))?,
 			"cache sweep receipt mismatch"
 		);
 	}
 	let a: Acceptance = types::read(&out.join("ACCEPTANCE.json"))?;
 	let m: Manifest = types::read(&out.join("MANIFEST.json"))?;
+	let manifest = serde_json::to_value(&m)?;
+	if manifest["tools"]["controller"]["bootstrap"]
+		.get("checkpoint")
+		.is_some()
+		|| result.records.contains_key("CHECKPOINT")
+	{
+		ensure!(
+			result.records.contains_key("CHECKPOINT"),
+			"missing checkpoint timing"
+		);
+		let timing = serde_json::from_value(read(&out.join("CHECKPOINT.json"))?)?;
+		crate::checkpoint::revalidate(
+			out,
+			&manifest,
+			&timing,
+			result
+				.candidate
+				.as_deref()
+				.context("no checkpoint candidate")?,
+			result.seconds,
+		)?;
+		let selected = read(&out.join("SELECTION.json"))?;
+		ensure!(
+			result.records.contains_key("CHECKPOINTRELEASE"),
+			"missing checkpoint release"
+		);
+		let released = read(&out.join("CHECKPOINTRELEASE.json"))?;
+		ensure!(
+			released["developer_state_sha256"] == timing.admission.developer_state_sha256
+				&& released["terminal_state_sha256"]
+					.as_str()
+					.is_some_and(|s| s.len() == 64 && s.bytes().all(|b| b.is_ascii_hexdigit())),
+			"checkpoint release identity differs"
+		);
+		ensure!(
+			selected["record"]["baseline"] == timing.admission.baseline,
+			"different published baseline in selection"
+		);
+	}
 	let r: Release = types::read(&out.join("RELEASE.json"))?;
 	check_schedule(out, &result, &a)?;
 	ensure!(

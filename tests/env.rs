@@ -26,6 +26,11 @@ impl Fixture {
 		c.args(["eval", source]);
 		c
 	}
+	fn file_command(&self) -> Command {
+		let mut c = self.command();
+		c.env("XDG_CACHE_HOME", self.0.join("cache"));
+		c
+	}
 }
 impl Drop for Fixture {
 	fn drop(&mut self) {
@@ -51,7 +56,7 @@ fn arguments_agree_and_never_share_mutable_storage() {
 		vec!["two words", "--flag", "run"],
 		vec![""],
 	] {
-		yes(f.command().arg("run").arg(&script).args(args));
+		yes(f.file_command().arg("run").arg(&script).args(args));
 	}
 	std::fs::write(
 		&script,
@@ -65,7 +70,7 @@ fn arguments_agree_and_never_share_mutable_storage() {
 	)
 	.unwrap();
 	yes(f
-		.command()
+		.file_command()
 		.args(["run", "--budget", "10000"])
 		.arg(&script)
 		.args(["original", "second"]));

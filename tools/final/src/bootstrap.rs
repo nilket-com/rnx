@@ -52,6 +52,50 @@ pub fn accept(record_path: &Path, root: &Path) -> Result<(Value, Instant)> {
 			"bootstrap times are out of order or in the future",
 		));
 	}
+	if let Some(checkpoint) = record.get("checkpoint") {
+		use std::os::unix::fs::MetadataExt;
+		let admission: crate::checkpoint::Admission = serde_json::from_value(checkpoint.clone())?;
+		admission.check(
+			record["candidate"].as_str().context("missing candidate")?,
+			started,
+		)?;
+		let boot_id = std::fs::read_to_string("/proc/sys/kernel/random/boot_id")?;
+		anyhow::ensure!(
+			admission.boot_id == boot_id.trim(),
+			"checkpoint from a different boot"
+		);
+		let state =
+			std::env::var_os("RNX_FINAL_CHECKPOINT_STORE").context("missing checkpoint store")?;
+		let directory = std::fs::File::open(&state)?;
+		let held = std::fs::metadata("/proc/self/fd/7")?;
+		let expected = directory.metadata()?;
+		anyhow::ensure!(
+			held.is_dir() && (held.dev(), held.ino()) == (expected.dev(), expected.ino()),
+			"lost checkpoint lease"
+		);
+		match directory.try_lock() {
+			Err(std::fs::TryLockError::WouldBlock) => {}
+			_ => anyhow::bail!("checkpoint store is not exclusively leased"),
+		}
+		// SAFETY: flock neither dereferences a pointer nor takes ownership.
+		// The independent open above was refused. This succeeds only if the
+		// inherited open file description is itself the holder.
+		anyhow::ensure!(
+			unsafe { libc::flock(7, libc::LOCK_EX | libc::LOCK_NB) } == 0,
+			"another process owns the checkpoint lease"
+		);
+		// SAFETY: descriptor 7 is the verified lease above. The controller
+		// owns it until exit; no subprocess may prolong that ownership.
+		anyhow::ensure!(
+			unsafe { libc::fcntl(7, libc::F_SETFD, libc::FD_CLOEXEC) } == 0,
+			"cannot confine checkpoint lease to controller"
+		);
+		anyhow::ensure!(
+			std::fs::read_to_string(Path::new(&state).join("in-use"))?.trim()
+				== admission.candidate,
+			"checkpoint was not marked in use"
+		);
+	}
 	if record["artifact_sha256"].as_str() != Some(digest(Path::new("/proc/self/exe"))?.as_str()) {
 		return Err(value_error("running controller is not the bootstrap build"));
 	}
