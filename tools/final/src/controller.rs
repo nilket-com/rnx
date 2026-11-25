@@ -39,11 +39,14 @@ pub fn wall_budget_error(scope: &str, seconds: f64) -> Option<String> {
 
 /// What a test may replace, as the Python controls patch the same calls.
 pub trait Hooks: Send + Sync {
-	fn cargo_caches(&self) -> bool {
+	fn route_builds(&self) -> bool {
 		false
 	}
-	fn suite_debug_target(&self, cache: Option<&crate::cache::CachePlan>) -> Option<PathBuf> {
-		cache?.suite_debug_target().map(Path::to_owned)
+	fn suite_debug_target(
+		&self,
+		build_targets: Option<&crate::build_targets::BuildTargets>,
+	) -> Option<PathBuf> {
+		build_targets?.suite_debug_target().map(Path::to_owned)
 	}
 	fn head(&self, root: &Path) -> Option<String> {
 		child::head(root)
@@ -145,7 +148,7 @@ pub trait Hooks: Send + Sync {
 /// The real calls.
 pub struct Live;
 impl Hooks for Live {
-	fn cargo_caches(&self) -> bool {
+	fn route_builds(&self) -> bool {
 		true
 	}
 }
@@ -173,10 +176,10 @@ pub struct Settings {
 }
 
 impl Settings {
-	fn checkpoint(&self) -> Option<&Value> {
+	fn clean_run(&self) -> Option<&Value> {
 		self.bootstrap
 			.as_ref()
-			.and_then(|record| record.get("checkpoint"))
+			.and_then(|record| record.get("clean_run"))
 	}
 }
 
@@ -534,11 +537,48 @@ fn scratch_parent(out: &Path) -> Result<&Path> {
 	Ok(parent)
 }
 
+/// The payload parent and the separately journaled TMPDIR root for this final.
+struct StageScratch {
+	parent: PathBuf,
+	temporaries: PathBuf,
+}
+
+impl StageScratch {
+	fn claim(run: Option<&Value>, out: &Path, owner: &mut Owners) -> Result<Self> {
+		let label = "stage-temporaries";
+		let (parent, temporaries) = if let Some(run) = run {
+			let dir = Path::new(
+				run["directory"]
+					.as_str()
+					.context("missing build directory")?,
+			);
+			// The clean entry has exclusive custody of this mode-0700 directory.
+			(dir.join("scratch"), owner.assign(dir, label, Some("t"))?)
+		} else {
+			let parent = scratch_parent(out)?;
+			(parent.to_owned(), owner.assign_private(parent, label)?)
+		};
+		Ok(Self {
+			parent,
+			temporaries,
+		})
+	}
+
+	fn stage_dir(&self, index: usize, fixed_route: bool) -> PathBuf {
+		if fixed_route {
+			// TMPDIR participates in the fixed-route build recipe.
+			self.parent.join("fixed-route-tmp")
+		} else {
+			self.temporaries.join(index.to_string())
+		}
+	}
+}
+
 /// Owned roots and the environment of one stage, fixed before it starts.
 fn stage_environment(
 	settings: &Settings,
 	stage: (usize, &str),
-	temporaries: &Path,
+	scratch_roots: &StageScratch,
 	command: &[String],
 	owner: &mut Owners,
 	base: &Environment,
@@ -547,12 +587,12 @@ fn stage_environment(
 	let (root, out) = (&settings.root, &settings.out);
 	// Keep Cargo payloads outside caller configuration, even when the
 	// durable receipt lives in the caller's checkout.
-	let payload_parent = if settings.checkpoint().is_some() {
-		temporaries.parent().context("scratch parent")?
+	let payload_parent = if settings.clean_run().is_some() {
+		scratch_roots.parent.as_path()
 	} else {
 		out.as_path()
 	};
-	let lint_parent = if settings.checkpoint().is_some() {
+	let lint_parent = if settings.clean_run().is_some() {
 		// The archived xtask queries its enclosing Git revision. Keep its
 		// original context below the verified checkout's ignored target.
 		root.join("target/routing-cli")
@@ -560,11 +600,27 @@ fn stage_environment(
 		out.clone()
 	};
 	let mut env = base.clone();
-	env.remove("RNX_FINAL_CHECKPOINT_ROOT");
-	env.remove("RNX_FINAL_CHECKPOINT_STORE");
-	env.remove("RNX_FINAL_CHECKPOINT_INVOCATION");
+	if let Some(area) = env.remove("RNX_FINAL_AREA")
+		&& stage.1 == "fixed-route"
+	{
+		env.insert("RNX_FINAL_GATE_AREA".into(), area);
+	}
+
+	for key in [
+		"RNX_FINAL_RUN",
+		"RNX_FINAL_BASELINE",
+		"RNX_FINAL_CANDIDATE",
+		"RNX_FINAL_STARTED",
+		"RNX_FINAL_RECEIPTS",
+		"RNX_FINAL_RUNS_ROOT",
+	] {
+		env.remove(key);
+	}
 	let (index, name) = stage;
-	let scratch = temporaries.join(index.to_string());
+	let scratch = scratch_roots.stage_dir(
+		index,
+		settings.clean_run().is_some() && name == "fixed-route",
+	);
 	use std::os::unix::fs::DirBuilderExt as _;
 	std::fs::DirBuilder::new().mode(0o700).create(&scratch)?;
 	env.insert("TMPDIR".into(), scratch.display().to_string());
@@ -598,10 +654,7 @@ fn stage_environment(
 			),
 			Bulk::Project => (
 				"RNX_FINAL_PROJECT_ROOT",
-				owner.assign_private(
-					temporaries.parent().context("scratch parent")?,
-					&format!("{name}-project"),
-				)?,
+				owner.assign_private(scratch_roots.parent.as_path(), &format!("{name}-project"))?,
 			),
 			Bulk::Cross => {
 				let parent = PathBuf::from(
@@ -637,7 +690,7 @@ fn stage_environment(
 			scratch.display().to_string(),
 		);
 		let assets = if name == "polars-inventories" {
-			owner.assign(out, "polars-assets", None)?
+			owner.assign(payload_parent, "polars-assets", None)?
 		} else {
 			let entry = owner
 				.row
@@ -890,13 +943,13 @@ fn notifier() -> (Notifier, mpsc::Receiver<Event>) {
 /// in selection order, and the disk admission record.
 #[derive(Default)]
 struct Collected {
-	cache: Option<crate::cache::CachePlan>,
+	build_targets: Option<crate::build_targets::BuildTargets>,
 	evidence: Map<String, Value>,
 	rows: Vec<Value>,
 	disk: Map<String, Value>,
 }
 
-pub(crate) fn bulk_demand(name: &str, checkpoint: bool, cached: bool) -> [u64; 3] {
+pub(crate) fn bulk_demand(name: &str, private_build: bool, routed: bool) -> [u64; 3] {
 	let mut checkout = 0;
 	let mut output = 0;
 	let mut scratch = 0;
@@ -904,13 +957,13 @@ pub(crate) fn bulk_demand(name: &str, checkpoint: bool, cached: bool) -> [u64; 3
 		let bytes = scheduler::bulk_bytes(kind);
 		match kind {
 			Bulk::Cross => checkout += bytes,
-			Bulk::Baseline if checkpoint => checkout += bytes,
+			Bulk::Baseline if private_build => checkout += bytes,
 			Bulk::Project => scratch += bytes,
-			_ if checkpoint => scratch += bytes,
+			_ if private_build => scratch += bytes,
 			_ => output += bytes,
 		}
 	}
-	if cached {
+	if routed {
 		match name {
 			"polars-inventories" => {
 				checkout += 2 * scheduler::GIB; // generator
@@ -933,7 +986,7 @@ fn run_stages(
 	events: (&Notifier, &mpsc::Receiver<Event>),
 ) -> Result<Option<StageFailed>> {
 	let Collected {
-		cache,
+		build_targets,
 		evidence: evidence_map,
 		rows,
 		disk,
@@ -955,8 +1008,8 @@ fn run_stages(
 		.iter()
 		.map(|(n, c)| {
 			let mut resources = settings.hooks.resources(n, c, root, &targets)?;
-			if let Some(cache) = cache.as_ref() {
-				let lanes = cache.targets(n);
+			if let Some(targets) = build_targets.as_ref() {
+				let lanes = targets.targets(n);
 				if !lanes.is_empty()
 					|| matches!(
 						n.as_str(),
@@ -974,7 +1027,13 @@ fn run_stages(
 	let needs = scheduler::producers(&stages);
 	let bulk: Vec<[u64; 3]> = stages
 		.iter()
-		.map(|(name, _)| bulk_demand(name, settings.checkpoint().is_some(), cache.is_some()))
+		.map(|(name, _)| {
+			bulk_demand(
+				name,
+				settings.clean_run().is_some(),
+				build_targets.is_some(),
+			)
+		})
 		.collect();
 	let tokens: usize = base
 		.get("CARGO_BUILD_JOBS")
@@ -1003,15 +1062,12 @@ fn run_stages(
 		.collect::<BTreeSet<_>>()
 		.into_iter()
 		.map(|r| {
-			let bytes = match &*cache {
-				Some(plan) => plan.growth(r, &stages)?,
-				None => scheduler::growth(r, root),
-			};
+			let bytes = scheduler::growth(r, root);
 			Ok((r.clone(), bytes))
 		})
 		.collect::<Result<_>>()?;
-	let parent = scratch_parent(&settings.out)?;
-	let temporaries = owner.assign_private(parent, "stage-temporaries")?;
+	let scratch_roots = StageScratch::claim(settings.clean_run(), &settings.out, owner)?;
+	let parent = scratch_roots.parent.as_path();
 	// Charge each writer to its device; sites sharing a device also share one floor.
 	use std::os::unix::fs::MetadataExt as _;
 	let sites = [root.as_path(), settings.out.as_path(), parent];
@@ -1027,6 +1083,9 @@ fn run_stages(
 			.unwrap_or(i)
 	});
 	let declared = |indices: &mut dyn Iterator<Item = usize>| {
+		if settings.clean_run().is_some() {
+			return [0; 3];
+		}
 		let mut lanes = BTreeSet::new();
 		let mut bytes = [0; 3];
 		let mut count = 0;
@@ -1091,8 +1150,8 @@ fn run_stages(
 	let suite_debug = names
 		.iter()
 		.position(|n| n == "rune-suite")
-		.zip(settings.hooks.suite_debug_target(cache.as_ref()));
-	let marker = temporaries.join("release-rune-suite-debug");
+		.zip(settings.hooks.suite_debug_target(build_targets.as_ref()));
+	let marker = scratch_roots.temporaries.join("release-rune-suite-debug");
 	let _release_watch = suite_debug
 		.as_ref()
 		.map(|_| Watcher::debug_release(&marker, sender.clone()))
@@ -1334,7 +1393,7 @@ fn run_stages(
 					let mut env = match stage_environment(
 						settings,
 						(index, &name),
-						&temporaries,
+						&scratch_roots,
 						&command,
 						owner,
 						base,
@@ -1350,8 +1409,8 @@ fn run_stages(
 					if suite_debug.as_ref().is_some_and(|(i, _)| *i == index) {
 						env.insert(DEBUG_RELEASE.into(), marker.display().to_string());
 					}
-					if let Some(cache) = cache.as_ref() {
-						cache.environment(&name, &mut env)?;
+					if let Some(targets) = build_targets.as_ref() {
+						targets.environment(&name, &mut env)?;
 					}
 					let cross = command
 						.windows(2)
@@ -1703,14 +1762,11 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	// Inspect fresh targets before this invocation creates any directory.
 	let violation = fresh_violation(&root, settings.fresh, &settings.environment);
 	std::fs::create_dir_all(out.parent().context("output has no parent")?)?;
-	if settings.checkpoint().is_some() {
+	if settings.clean_run().is_some() && scope != "docs" {
 		let entries: BTreeSet<_> = std::fs::read_dir(out)?
 			.map(|e| e.map(|entry| entry.file_name()))
 			.collect::<std::io::Result<_>>()?;
-		anyhow::ensure!(
-			entries == BTreeSet::from(["preparation".into()]),
-			"unexpected checkpoint output contents"
-		);
+		anyhow::ensure!(entries.is_empty(), "unexpected files in fresh output");
 	} else {
 		std::fs::create_dir(out).with_context(|| format!("output exists: {}", out.display()))?;
 	}
@@ -1719,6 +1775,20 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	let free_before = disk_free(&root)?;
 	let (sender, receiver) = notifier();
 	signal_events(sender.clone())?;
+	let sampler = if let Some(run) = settings.clean_run().filter(|_| scope != "docs") {
+		Some(crate::space::Sampler::start(
+			PathBuf::from(run["directory"].as_str().context("missing directory")?),
+			out.clone(),
+			{
+				let tx = sender.clone();
+				move || {
+					let _ = tx.send(Event::Signal(libc::SIGTERM));
+				}
+			},
+		)?)
+	} else {
+		None
+	};
 	let interrupted = Arc::new(AtomicI32::new(0));
 	// Stages fingerprint .git: no git command may refresh the index meanwhile.
 	let mut environment = settings.environment.clone();
@@ -1743,7 +1813,7 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	let (mut selection_value, mut owner, mut failed_row) = (None, None, None);
 	// Set once the stages begin: from then on the final owes a schedule.
 	let mut scheduled = false;
-	let mut cache = None;
+
 	let (mut evidence_map, mut tools, mut rows, mut disk) =
 		(Map::new(), json!({}), Vec::new(), Map::new());
 	let lock = std::fs::OpenOptions::new()
@@ -1775,14 +1845,11 @@ pub fn run(settings: &Settings) -> Result<Value> {
 			if let Some(violation) = &violation {
 				return Err(value_error(violation));
 			}
-			if settings.hooks.cargo_caches() {
-				let mut prepared =
-					crate::cache::CachePlan::prepare(&root, out, scope == "complete")?;
-				if settings.bootstrap.is_some() {
-					prepared.bootstrap()?;
-				}
-				cache = Some(prepared);
-			}
+			let build_targets = if settings.hooks.route_builds() {
+				Some(crate::build_targets::BuildTargets::prepare(&root, out)?)
+			} else {
+				None
+			};
 			settings.hooks.disk_check(&root, out, &environment)?;
 			let selected = settings.hooks.select(
 				&root,
@@ -1798,7 +1865,7 @@ pub fn run(settings: &Settings) -> Result<Value> {
 			selection_value = Some(selected.clone());
 			tools = settings.hooks.tools_identity(&settings)?;
 			let mut collected = Collected {
-				cache: cache.take(),
+				build_targets,
 				..Default::default()
 			};
 			scheduled = true;
@@ -1811,7 +1878,7 @@ pub fn run(settings: &Settings) -> Result<Value> {
 				&interrupted,
 				(&sender, &receiver),
 			);
-			cache = collected.cache.take();
+
 			// Rows and evidence count even when the stages ended in an error.
 			(evidence_map, rows, disk) = (collected.evidence, collected.rows, collected.disk);
 			let failure = failure?;
@@ -1921,122 +1988,87 @@ pub fn run(settings: &Settings) -> Result<Value> {
 		r["publication_eligible"] = json!(false);
 		r["retirement_error"] = json!(format!("{error:#}"));
 	}
-	if r["status"] == "PASS"
-		&& let Some(plan) = &cache
-	{
-		match plan.transaction(scope == "complete") {
-			Ok(hash) => r["records"]["CACHE"] = json!(hash),
-			Err(error) => {
+	// The budget covers the whole run: stages, finalization and release.
+	if r["status"] == "PASS" && scope == "complete" && settings.clean_run().is_some() {
+		match crate::gate_inputs::retain(&root, out) {
+			Ok(sha) => r["records"]["GATEINPUTS"] = json!(sha),
+			Err(e) => {
 				r["status"] = json!("FAIL");
 				r["complete_final"] = json!(false);
 				r["publication_eligible"] = json!(false);
-				r["error"] = json!(format!("Cargo cache transaction: {error:#}"));
+				r["error"] = json!(format!("retaining gate inputs: {e:#}"));
 			}
 		}
 	}
-	// The budget covers the whole run: stages, finalization and release.
-	if let Some(value) = settings.checkpoint() {
-		let settled = (|| -> Result<()> {
-			let run = PathBuf::from(
-				settings
-					.environment
-					.get("RNX_FINAL_CHECKPOINT_INVOCATION")
-					.context("missing invocation directory")?,
-			);
-			let output = std::process::Command::new("/bin/bash")
-				.arg(root.join("tools/final/checkpoint/settle.sh"))
-				.arg(&run)
-				.arg(
-					r["status"]
-						.as_str()
-						.context("missing provisional verdict")?,
-				)
-				.arg(out.join("preparation/admission.json"))
-				.output()?;
-			anyhow::ensure!(
-				output.status.success(),
-				"checkpoint release: {}",
-				String::from_utf8_lossy(&output.stderr)
-			);
-			let released: Value = serde_json::from_slice(&output.stdout)?;
-			anyhow::ensure!(
-				released["developer_state_sha256"] == value["developer_state_sha256"],
-				"developer home changed"
-			);
-			let path = out.join("CHECKPOINTRELEASE.json");
-			crate::receipt::atomic_json(&path, &released)?;
-			r["records"]["CHECKPOINTRELEASE"] = json!(digest(&path)?);
-			Ok(())
-		})();
-		if let Err(error) = settled {
-			r["status"] = json!("FAIL");
-			r["publication_eligible"] = json!(false);
-			r["complete_final"] = json!(false);
-			r["release_error"] = json!(format!("{error:#}"));
+	let mut seconds = settings.hooks.elapsed(settings.started);
+	let mut limit = Some(WALL_BUDGET_SECONDS);
+	if let Some(run) = settings.clean_run() {
+		// A docs successor completes its nested checks before releasing the enclosing run.
+		if scope != "docs" {
+			let usage = sampler.context("missing filesystem sampler")?.finish();
+			let released = crate::clean::release(&root, out, run);
+			let settled = usage.and(released);
+			match settled {
+				Ok(record) => {
+					seconds = record.elapsed()?;
+					r["records"]["CLEANUP"] = json!(digest(&out.join("CLEANUP.json"))?);
+				}
+				Err(e) => {
+					r["status"] = json!("FAIL");
+					r["publication_eligible"] = json!(false);
+					r["complete_final"] = json!(false);
+					r["release_error"] = json!(format!("{e:#}"));
+				}
+			}
 		}
+		limit = run["limits"]["seconds"].as_u64().map(|n| n as f64);
 	}
-	let seconds = if let Some(value) = settings.checkpoint() {
-		let admission: crate::checkpoint::Admission = serde_json::from_value(value.clone())?;
-		let seconds = crate::bootstrap::boottime() - admission.admitted;
-		let proof = out.join("CHECKPOINT.json");
-		let timing = admission.timing(seconds);
-		crate::receipt::atomic_json(&proof, &timing)?;
-		r["records"]["CHECKPOINT"] = json!(digest(&proof)?);
-		eprintln!(
-			"Preparation {:.1} s, timed final {:.1} s, total wait {:.1} s",
-			timing.preparation_seconds, seconds, timing.total_seconds
-		);
-		seconds
-	} else {
-		settings.hooks.elapsed(settings.started)
-	};
 	r["seconds"] = json!(seconds);
-	if let Some(over) = wall_budget_error(scope, seconds) {
+	if scope == "complete"
+		&& let Some(maximum) = limit
+		&& seconds > maximum
+	{
+		let error = format!(
+			"complete final took {:.1} minutes; its budget is {}",
+			seconds / 60.0,
+			maximum / 60.0
+		);
 		r["status"] = json!("FAIL");
 		r["complete_final"] = json!(false);
 		r["publication_eligible"] = json!(false);
-		r["wall_budget_error"] = json!(over);
-		// A stage failure stays the reported cause; otherwise the budget is.
+		r["wall_budget_error"] = json!(error);
 		if r["error"].is_null() {
-			r["error"] = json!(over);
-			if let Some(store) = settings.environment.get("RNX_FINAL_CHECKPOINT_STORE")
-				&& r["records"].get("CHECKPOINT").is_some()
-				&& pass && r["release_error"].is_null()
-				&& r.get("retirement_error").is_none()
-			{
-				let candidate = r["candidate"]
-					.as_str()
-					.context("overrun without candidate")?;
-				let path = Path::new(store).join("overruns").join(candidate);
-				atomic_json(&path, out)?;
-			}
+			r["error"] = json!(error);
 		}
 	}
-	child_publish(&out.join("RESULT.json"), &r)?;
-	if r["status"] == "PASS"
-		&& let Some(store) = settings.environment.get("RNX_FINAL_CHECKPOINT_STORE")
-		&& r["records"].get("CHECKPOINT").is_some()
-	{
-		// The next entry revalidates this terminal and the actual state
-		// under its lease before it may admit a published successor.
-		let store = Path::new(store);
-		let release: Value =
-			serde_json::from_reader(std::fs::File::open(out.join("CHECKPOINTRELEASE.json"))?)?;
-		atomic_json(
-			&store.join("previous.json"),
-			&json!({
-				"candidate":r["candidate"], "checkout":root, "out":out,
-				"result":digest(&out.join("RESULT.json"))?, "seal":release["terminal_state_sha256"]
-			}),
-		)?;
-		std::fs::remove_file(store.join("in-use"))?;
-		crate::receipt::sync_directory(store)?;
+	if settings.clean_run().is_some() && scope == "complete" && r["status"] != "PASS" {
+		crate::gate_inputs::discard(out)?;
 	}
-	if r["status"] == "PASS"
-		&& scope != "complete"
-		&& let Some(cache) = cache
+	let result_path = out.join("RESULT.json");
+	child_publish(&result_path, &r)?;
+	if let Some(run) = settings.clean_run()
+		&& scope == "complete"
+		&& r["status"] == "PASS"
 	{
-		cache.finish()?;
+		if run["limits"].is_null() {
+			let cleanup: crate::clean::Cleanup =
+				serde_json::from_reader(std::fs::File::open(out.join("CLEANUP.json"))?)?;
+			atomic_json(
+				&out.join("DERIVED-LIMITS.json"),
+				&cleanup.limits(&result_path)?,
+			)?;
+		}
+		let area = Path::new(
+			settings
+				.environment
+				.get("RNX_FINAL_AREA")
+				.context("missing build area")?,
+		);
+		crate::gate_inputs::index(
+			area,
+			r["candidate"].as_str().context("missing candidate")?,
+			out,
+		)?;
 	}
 	Ok(r)
 }
@@ -2108,8 +2140,18 @@ pub fn successor(settings: &Settings, prior: &Path) -> Result<Value> {
 		earlier["candidate"].as_str().unwrap_or_default(),
 		&candidate,
 	)?;
+	crate::clean::check_successor(
+		root,
+		&prior,
+		&changed,
+		earlier["candidate"]
+			.as_str()
+			.context("missing tested revision")?,
+	)?;
 	let out = &settings.out;
-	std::fs::create_dir(out)?;
+	if settings.clean_run().is_none() {
+		std::fs::create_dir(out)?;
+	}
 	let plans_final = out.join("plans-final");
 	let docs = run(&Settings {
 		out: plans_final.clone(),
@@ -2126,7 +2168,20 @@ pub fn successor(settings: &Settings, prior: &Path) -> Result<Value> {
 		r["plans_final_result_sha256"] = json!(digest(&plans_final.join("RESULT.json"))?);
 		r["status"] = json!("PASS");
 	}
+	if let Some(run) = settings.clean_run() {
+		crate::clean::release(root, out, run)?;
+		r["cleanup_sha256"] = json!(digest(&out.join("CLEANUP.json"))?);
+	}
 	types::write_as::<types::Successor>(&out.join("SUCCESSOR.json"), &r)?;
+	if settings.clean_run().is_some() && r["status"] == "PASS" {
+		let area = Path::new(
+			settings
+				.environment
+				.get("RNX_FINAL_AREA")
+				.context("missing build area")?,
+		);
+		crate::gate_inputs::index(area, &candidate, &prior)?;
+	}
 	let pass = r["status"] == "PASS";
 	r["acceptance_scope"] = if pass { json!("complete") } else { Value::Null };
 	Ok(r)
@@ -2168,7 +2223,29 @@ pub fn revalidate_successor(out: &Path, root: Option<&Path>) -> Result<Value> {
 	if plans["acceptance_scope"] != "docs" {
 		return Err(value_error("plans final ran another selection"));
 	}
+	let docs_manifest: Value =
+		serde_json::from_reader(std::fs::File::open(plans_final.join("MANIFEST.json"))?)?;
+	if docs_manifest["tools"]["controller"]["bootstrap"]
+		.get("clean_run")
+		.is_some()
+	{
+		let path = out.join("CLEANUP.json");
+		anyhow::ensure!(
+			r["cleanup_sha256"] == digest(&path)?,
+			"docs cleanup changed"
+		);
+		let record: crate::clean::Cleanup = serde_json::from_reader(std::fs::File::open(path)?)?;
+		anyhow::ensure!(
+			record.candidate == typed.candidate && record.elapsed().is_ok(),
+			"invalid docs cleanup"
+		);
+	}
 	let default_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+	let default_root = if default_root.is_dir() {
+		default_root
+	} else {
+		std::env::current_dir()?
+	};
 	let root = root.unwrap_or(&default_root);
 	let changed: Value = json!(docs_change(
 		root,
@@ -2181,4 +2258,33 @@ pub fn revalidate_successor(out: &Path, root: Option<&Path>) -> Result<Value> {
 	Ok(
 		json!({"status": "PASS", "candidate": r["candidate"], "acceptance_scope": "complete", "complete_final": true, "publication_eligible": true, "extends": r["prior"], "changed": r["changed"]}),
 	)
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn clean_stage_temporaries_fit_the_admitted_socket_budget() -> Result<()> {
+		let run = std::env::temp_dir().join(crate::receipt::invocation_id());
+		std::fs::create_dir(&run)?;
+		let out = run.join("out");
+		let mut owner = Owners::new(&run.join("registry"), &out)?;
+		let scratch = StageScratch::claim(Some(&json!({"directory": run})), &out, &mut owner)?;
+		let ordinary = scratch.stage_dir(usize::MAX, false);
+		let fixed = scratch.stage_dir(0, true);
+		let admitted_root = Path::new("/0123456789012345678901234567890");
+		let maximum_socket = admitted_root
+			.join("run")
+			.join(fixed.strip_prefix(&run)?)
+			.join("rnx-0275-4294967295-18446744073709551615/ready");
+		owner.release()?;
+		drop(owner);
+		std::fs::remove_dir_all(&run)?;
+		assert_eq!(ordinary, run.join("t").join(usize::MAX.to_string()));
+		assert_eq!(fixed, run.join("scratch/fixed-route-tmp"));
+		assert!(ordinary.as_os_str().len() <= fixed.as_os_str().len());
+		assert_eq!(maximum_socket.as_os_str().len(), 107);
+		Ok(())
+	}
 }

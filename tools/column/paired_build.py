@@ -101,7 +101,7 @@ def installed_artifacts(row, target, binary, role):
 	return [binary, helper, engine]
 
 
-def run(out, baseline, candidate, cargo):
+def run(out, baseline, candidate, cargo, baseline_input=None):
 	out.mkdir(parents=True, exist_ok=False)
 	result = dict(status='FAIL', builds=[])
 	try:
@@ -111,11 +111,22 @@ def run(out, baseline, candidate, cargo):
 			'--bin', 'rnx']
 		for index, (role, revision) in enumerate((('baseline', baseline), ('candidate', candidate))):
 			revision = subprocess.check_output(['git', '-c', 'color.ui=false', 'rev-parse', revision + '^{commit}'], cwd=ROOT, text=True).strip()
+			if index == 0 and baseline_input is not None:
+				row = json.loads(baseline_input.read_text())
+				if row.get('publication_commit', row['source_commit']) != revision:
+					raise ValueError('verified baseline refers to a different revision')
+				if digest(row['binary']) != row['sha256']:
+					raise ValueError('verified runner changed')
+				result['builds'].append(dict(row, role=role))
+				continue
+			if index == 1 and result['builds'][0]['source_commit'] == revision:
+				result['builds'].append(dict(result['builds'][0], role=role))
+				continue
 			archive = out / (role + '.tar')
 			with archive.open('xb') as stream:
 				subprocess.run(['sh', str(ROOT/'tools/export-source.sh'), revision], cwd=ROOT, stdout=stream, check=True)
 			source = out / 'source'
-			if index:
+			if source.exists():
 				shutil.rmtree(source)  # Only this invocation's preceding export.
 			source.mkdir()
 			subprocess.run(['tar', '-xf', str(archive), '-C', str(source)], check=True)
@@ -163,8 +174,9 @@ def main():
 	p.add_argument('--out', required=True, type=Path)
 	p.add_argument('--baseline', required=True)
 	p.add_argument('--candidate', required=True)
+	p.add_argument('--baseline-input', type=Path)
 	a = p.parse_args()
-	return run(a.out.resolve(), a.baseline, a.candidate, a.cargo.absolute())
+	return run(a.out.resolve(), a.baseline, a.candidate, a.cargo.absolute(), a.baseline_input)
 
 
 if __name__ == '__main__':

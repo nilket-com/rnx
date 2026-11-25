@@ -1261,15 +1261,15 @@ fn all_writes_including_a_later_debug_recipe_precede_release() {
 			let key = rnx_final::pyjson::identity(&(cmd, false)).unwrap();
 			routes.insert(
 				key,
-				json!({"group":group,"target":out.join(group),"recipe":"test","mark":out.join("marks")}),
+				json!({"group":group,"target":out.join(group),"recipe":"test","products":out.join("products")}),
 			);
 		}
 		let path = out.join("routes.json");
 		std::fs::write(&path, serde_json::to_vec(&routes).unwrap()).unwrap();
 		let env = Environment::from([
-			("RNX_FINAL_CACHE_ROUTES".into(), path.display().to_string()),
+			("RNX_FINAL_BUILD_ROUTES".into(), path.display().to_string()),
 			(
-				"RNX_FINAL_CACHE_CHECKOUT".into(),
+				"RNX_FINAL_BUILD_CHECKOUT".into(),
 				root.display().to_string(),
 			),
 			(

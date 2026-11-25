@@ -88,6 +88,39 @@ class History(Fixture, unittest.TestCase):
 		self.commit("impl: adr 0209 checker")
 		self.assertEqual(self.check()["status"], "PASS")
 
+	def test_calibration_impl_adopts_only_its_own_limits(self):
+		# Reserve the intervening record numbers in this fixture's sequence baseline.
+		self.write("plans/adr/0337_fixture.md", "Status: Accepted\n")
+		base = self.commit("old history")
+		policy = replace(self.policy, sequence_base=base)
+		def check():
+			return segment(self.repo, base, self.git("rev-parse", "HEAD"), policy, require_sequence=True)
+		self.plan("0338")
+		self.write("tool", "implementation")
+		tested = self.commit("impl: adr 0338 clean final")
+		check()
+		self.write("plans/impl/0338_test.md", "Results of calibration")
+		limits = "plans/impl/0338-final-limits.json"
+		self.write(limits, '{"seconds":120}')
+		adopted = self.commit("impl: adr 0338 clean final", "--amend")
+		self.assertIn(limits, check()["commits"][-1]["documents"])
+		self.write("plans/impl/0338_test.md", "Updated Results")
+		self.commit("impl: adr 0338 clean final", "--amend")
+		check()
+		for path in ("plans/adr/0337_fixture.md", "plans/impl/0337-final-limits.json", "plans/impl/0338-other.json"):
+			with self.subTest(path=path):
+				self.git("reset", "--hard", tested)
+				self.write(path, "foreign change")
+				self.commit("impl: adr 0338 clean final", "--amend")
+				with self.assertRaisesRegex(HistoryError, "another record"):
+					check()
+		self.git("reset", "--hard", adopted)
+		self.plan("0339")
+		self.write(limits, "changed")
+		self.commit("impl: adr 0339 later record")
+		with self.assertRaisesRegex(HistoryError, "another record"):
+			check()
+
 	def test_unsigned(self):
 		self.plan("0209")
 		self.commit("impl: adr 0209 unsigned", "--no-gpg-sign")

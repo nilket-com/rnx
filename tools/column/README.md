@@ -8,14 +8,15 @@ own systemd unit:
 sh tools/final/final.sh --complete --out target/RECORD/FINAL
 ```
 
-Set `RNX_FINAL_CHECKPOINT_ROOT` in that unit to an existing, persistent
-directory owned by the account running the final. The directory and
-its ancestors must be writable only by their owners, and each ancestor
-must belong to that account or root. An enclosing `.cargo/config` or
-`.cargo/config.toml` would affect the build, so admission reports its
-path and stops. The final keeps its checkpoint in the directory's
-`store` child. The receipt reports preparation, timed execution and
-total wait separately.
+The entry claims a private build directory under `RNX_FINAL_RUNS_ROOT`
+(default `$HOME/.rnx-finals`). The root path may use up to 32 bytes,
+leaving room for stage-local Unix socket names. The entry verifies the published baseline,
+builds the candidate, and releases its build directory after collecting
+evidence. The receipt includes the time from entry through cleanup and
+the filesystem peaks. The entry first fetches offline from verified registry
+archives, sparse index entries and Git objects. A missing dependency is
+fetched inside the clock. FETCH.json records whether online fetch was needed.
+Keep the receipt outside the build area.
 
 ADR 0205's ordered prerequisite workflow was
 retired in ADR 0287. Development runs are not final signed acceptance or

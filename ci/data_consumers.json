@@ -1084,21 +1084,6 @@
       "max_bytes": 65536,
       "reason": "ADR 0283 policy: each Python final control and its Rust pair; read by tools/final/tests/controls.rs."
     },
-    "tools/final/checkpoint/disk-plan.json": {
-      "class": "source-configuration",
-      "max_bytes": 4096,
-      "reason": "The checkpoint entry reads the candidate's projected complete disk catalogue before compiling it. The controller regenerates and checks the declaration."
-    },
-    "tools/final/checkpoint/ee52b405-fetch.json": {
-      "class": "source-configuration",
-      "max_bytes": 963,
-      "reason": "tools/final/checkpoint/baseline.sh uses these locked fetch commands to seed the private dependency home for the adoption baseline, which predates checkpoint-recipes."
-    },
-    "tools/final/checkpoint/ee52b405.jsonl": {
-      "class": "source-configuration",
-      "max_bytes": 42523,
-      "reason": "tools/final/checkpoint/baseline.sh uses these build commands and sharing groups to establish the first checkpoint for the adoption baseline, which predates checkpoint-recipes."
-    },
     "tools/final/tests/witness/catalogue.json": {
       "class": "live-fixture",
       "consumer": {

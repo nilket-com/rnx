@@ -82,47 +82,6 @@ impl Admission {
 	}
 }
 
-/// Retain the admission intervals even if the controller cannot enter
-/// its ordinary finalization path. The exclusive lease still belongs to
-/// this process when an error unwinds to main.
-pub fn record_startup_failure(out: &Path, store: &Path) -> Result<()> {
-	use std::os::unix::fs::MetadataExt as _;
-	let held = std::fs::metadata("/proc/self/fd/7")?;
-	let directory = store.metadata()?;
-	ensure!(
-		held.is_dir() && (held.dev(), held.ino()) == (directory.dev(), directory.ino()),
-		"missing checkpoint lease"
-	);
-	let attempt: Value = serde_json::from_reader(std::fs::File::open(store.join("attempt.json"))?)?;
-	ensure!(
-		attempt["out"].as_str().map(Path::new) == Some(out),
-		"checkpoint attempt differs"
-	);
-	if out.join("RESULT.json").try_exists()? {
-		return Ok(());
-	}
-	let a: Admission =
-		serde_json::from_reader(std::fs::File::open(out.join("preparation/admission.json"))?)?;
-	a.check(
-		attempt["candidate"].as_str().context("missing candidate")?,
-		a.admitted,
-	)?;
-	let finished = crate::bootstrap::boottime();
-	let timing = a.timing(finished - a.admitted);
-	let path = out.join("PREPARATION-FAIL.json");
-	crate::receipt::atomic_json(
-		&path,
-		&serde_json::json!({
-			"status":"FAIL", "phase":"candidate", "candidate":a.candidate, "baseline":a.baseline,
-			"requested":a.requested, "acquired":a.acquired, "admitted":a.admitted, "finished":finished,
-			"lease_wait_seconds":timing.lease_wait_seconds, "preparation_seconds":timing.preparation_seconds,
-			"timed_seconds":timing.timed_seconds, "total_seconds":timing.total_seconds
-		}),
-	)?;
-	eprintln!("FAIL {}", path.display());
-	Ok(())
-}
-
 pub fn revalidate(
 	out: &Path,
 	manifest: &Value,

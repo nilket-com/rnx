@@ -473,7 +473,7 @@ fn run_guarded(run: &Run, command: &[String], env: &Environment, log: &Path) -> 
 		return Err(raise("RuntimeError", "producer interrupted by signal 15"));
 	}
 	let wrapped;
-	let command = if let Some(route) = crate::cache::lookup(env, run.cwd, command)? {
+	let command = if let Some(route) = crate::build_targets::lookup(env, run.cwd, command)? {
 		wrapped = route.wrap(run.guardian, command)?;
 		wrapped.as_slice()
 	} else {

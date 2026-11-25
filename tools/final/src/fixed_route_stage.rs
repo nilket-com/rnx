@@ -680,8 +680,9 @@ fn build(
 	py: &str,
 	env: &Environment,
 	host: &mut dyn Host,
+	inputs: Option<&Value>,
 ) -> Result<Value> {
-	let command = [
+	let mut command = vec![
 		py.to_string(),
 		"-B".into(),
 		"tools/column/paired_build.py".into(),
@@ -694,6 +695,11 @@ fn build(
 		"--cargo".into(),
 		cargo.into(),
 	];
+	if let Some(row) = inputs {
+		let path = out.join("verified-baseline.json");
+		atomic_json(&path, row)?;
+		command.extend(["--baseline-input".into(), text(&path)]);
+	}
 	checked_pair(stage(
 		out,
 		root,
@@ -930,6 +936,9 @@ pub fn capture_receipts(
 		let paths = capture_paths(binary, vectors_dir, role, root, valgrind, &launches);
 		let mut receipt = json!({"status": "PASS", "revision": binary["source_commit"], "recipe": current, "policy_sha256": policy_sha,
 			"binary_sha256": sha, "capture_key": contextual_key(sha,current,&paths)?, "records": selected, "artifacts": artifacts});
+		if let Some(publication) = binary.get("publication_commit") {
+			receipt["publication_commit"] = publication.clone();
+		}
 		if split {
 			receipt["capture_paths"] = paths;
 			if let Some(path) = binary.get("installed_binary") {
@@ -1105,7 +1114,7 @@ fn run_gate(
 	.to_vec();
 	let route = env
 		.get("RNX_FINAL_GUARD_ROUTE")
-		.map(|value| serde_json::from_str::<crate::cache::Route>(value))
+		.map(|value| serde_json::from_str::<crate::build_targets::Route>(value))
 		.transpose()?;
 	if let Some(route) = &route {
 		let exe = env
@@ -1184,6 +1193,12 @@ fn run_gate(
 		.as_str()
 		.unwrap_or_default()
 		.to_owned();
+	let shared = env.get("RNX_FINAL_GATE_AREA").map(Path::new);
+	let anchor_input = shared
+		.and_then(|area| {
+			crate::gate_inputs::load(area, root, &baseline, "anchor", &current, &policy).ok()
+		})
+		.filter(|row| row["source_commit"] == anchor_revision);
 	let anchor_pair = build(
 		&attempt,
 		root,
@@ -1193,6 +1208,7 @@ fn run_gate(
 		&py,
 		env,
 		host,
+		anchor_input.as_ref(),
 	)?;
 	let anchor_build_seconds = anchor_started.elapsed().as_secs_f64();
 	let anchor_binary = anchor_pair["builds"][0].clone();
@@ -1209,7 +1225,12 @@ fn run_gate(
 		),
 	)?;
 	let mut cache = Cache::open(&root.join(CACHE))?;
-	let (found, reason) = cache.lookup(&key)?;
+	let published =
+		shared.and_then(|area| crate::gate_inputs::prior_anchor(area, root, &baseline, &key).ok());
+	let (found, reason) = match published {
+		Some(anchor) => (Some(anchor), "verified published anchor"),
+		None => cache.lookup(&key)?,
+	};
 	let mut state = if found.is_some() { "hit" } else { "miss" };
 	let mut legacy_outcome = json!({"status": "none"});
 	let anchor = match found {
@@ -1298,7 +1319,33 @@ fn run_gate(
 	} else {
 		let pair = out.join("record");
 		std::fs::create_dir(&pair)?;
-		let built = build(&pair, root, &baseline, &candidate, &cargo, &py, env, host)?;
+		let prior = shared.and_then(|area| {
+			crate::gate_inputs::load(area, root, &baseline, "candidate", &current, &policy).ok()
+		});
+		let built = build(
+			&pair,
+			root,
+			&baseline,
+			&candidate,
+			&cargo,
+			&py,
+			env,
+			host,
+			prior.as_ref(),
+		)?;
+		if shared.is_some() {
+			let dir = root.join("target/gate-inputs");
+			std::fs::create_dir(&dir)?;
+			atomic_json(&dir.join("capture.json"), &anchor)?;
+			crate::gate_inputs::save(&dir.join("anchor"), &anchor_binary, &current, &policy)?;
+			crate::gate_inputs::save(
+				&dir.join("candidate"),
+				&built["builds"][1],
+				&current,
+				&policy,
+			)?;
+		}
+
 		let mut both = captures(
 			&pair, root, &built, &valgrind, &policy, &current, &py, env, host,
 		)?;

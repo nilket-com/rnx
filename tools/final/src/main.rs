@@ -22,7 +22,6 @@ fn final_main(arguments: &[OsString]) -> Result<i32> {
 		options.abandon,
 		options.bootstrap.clone(),
 	);
-	let root = root();
 	let out = if out.is_absolute() {
 		out
 	} else {
@@ -34,11 +33,7 @@ fn final_main(arguments: &[OsString]) -> Result<i32> {
 	} else if revalidate {
 		controller::revalidate_any(&out)?
 	} else {
-		if root.join(".git/rnx-final-store").is_file()
-			&& (scope != "complete" || bootstrap.is_none() || successor.is_some())
-		{
-			bail!("the checkpoint checkout is reserved for its leased complete final");
-		}
+		let root = root();
 		let (record, started) = match &bootstrap {
 			Some(path) => {
 				let (record, started) = rnx_final::bootstrap::accept(path, &root)?;
@@ -52,10 +47,10 @@ fn final_main(arguments: &[OsString]) -> Result<i32> {
 				"a complete final starts from tools/final/final.sh, which builds and hands over the controller"
 			);
 		}
-		if complete && record.as_ref().and_then(|r| r.get("checkpoint")).is_none() {
-			bail!("complete final requires a prepared published baseline");
+		if record.as_ref().and_then(|r| r.get("clean_run")).is_none() {
+			bail!("start the final using tools/final/final.sh with its own build directory");
 		}
-		let unit = if complete {
+		let unit = if record.is_some() {
 			Some(rnx_final::guardian::own_unit()?)
 		} else {
 			None
@@ -74,10 +69,17 @@ fn final_main(arguments: &[OsString]) -> Result<i32> {
 			hooks: std::sync::Arc::new(controller::Live),
 			tokens: None,
 		};
-		match &successor {
-			Some(prior) => controller::successor(&settings, prior)?,
-			None => controller::run(&settings)?,
+		let verdict = match &successor {
+			Some(prior) => controller::successor(&settings, prior),
+			None => controller::run(&settings),
+		};
+		if verdict.is_err()
+			&& let Some(run) = settings.bootstrap.as_ref().and_then(|r| r.get("clean_run"))
+			&& root.try_exists()?
+		{
+			rnx_final::clean::release(&root, &out, run)?;
 		}
+		verdict?
 	};
 	let receipt = rnx_final::cli::receipt(&options);
 	println!(
@@ -92,19 +94,7 @@ fn final_main(arguments: &[OsString]) -> Result<i32> {
 fn main() {
 	let arguments: Vec<OsString> = std::env::args_os().skip(1).collect();
 	let result = match arguments.first().and_then(|a| a.to_str()) {
-		Some("checkpoint-disk-plan") if arguments.len() == 1 => {
-			rnx_final::cache::disk_declaration(&root()).and_then(|plan| {
-				serde_json::to_writer_pretty(std::io::stdout().lock(), &plan)?;
-				Ok(0)
-			})
-		}
-		Some("checkpoint-recipes") if arguments.len() == 1 => {
-			rnx_final::cache::checkpoint_recipes(&root()).and_then(|recipes| {
-				serde_json::to_writer(std::io::stdout().lock(), &recipes)?;
-				Ok(0)
-			})
-		}
-		Some("cached-cargo") => rnx_final::cache::cargo_main(&arguments[1..]),
+		Some("build-cargo") => rnx_final::build_targets::cargo_main(&arguments[1..]),
 		Some("guardian") => rnx_final::guardian::main(&arguments[1..]),
 		Some("stage") => rnx_final::stage::main(&arguments[1..], &root()),
 		// Never resolved: a copied controller's build checkout may be gone.
@@ -131,17 +121,7 @@ fn main() {
 				if r["status"] == "PASS" { 0 } else { 1 }
 			})
 		}
-		_ => final_main(&arguments).inspect_err(|_| {
-			if let Some(store) = std::env::var_os("RNX_FINAL_CHECKPOINT_STORE")
-				&& let Ok(options) = rnx_final::cli::parse(&arguments)
-				&& options.scope == "complete"
-				&& options.bootstrap.is_some()
-				&& let Err(e) =
-					rnx_final::checkpoint::record_startup_failure(&options.out, Path::new(&store))
-			{
-				eprintln!("checkpoint startup receipt: {e:#}");
-			}
-		}),
+		_ => final_main(&arguments),
 	};
 	match result {
 		Ok(status) => std::process::exit(status),

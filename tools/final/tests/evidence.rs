@@ -225,6 +225,32 @@ fn compact_and_revalidate() {
 		revalidate(&f.out).unwrap()["bulk"],
 		"released; not rehashed"
 	);
+	// The same receipt schema remains readable for old finals. When the
+	// bootstrap declares a clean run, the terminal cleanup must be bound.
+	let result_path = f.out.join("RESULT.json");
+	let mut result: Value = serde_json::from_slice(&std::fs::read(&result_path).unwrap()).unwrap();
+	let mut live = manifest;
+	live["tools"]["controller"]["bootstrap"] =
+		json!({"clean_run":{"directory":"/owned","baseline":"base"}});
+	let manifest_path = f.out.join("MANIFEST.json");
+	let release_path = f.out.join("RELEASE.json");
+	atomic_json(&manifest_path, &live).unwrap();
+	r["manifest_sha256"] = json!(digest(&manifest_path).unwrap());
+	atomic_json(&release_path, &r).unwrap();
+	result["records"]["MANIFEST"] = r["manifest_sha256"].clone();
+	result["records"]["RELEASE"] = json!(digest(&release_path).unwrap());
+	atomic_json(&result_path, &result).unwrap();
+	assert!(
+		revalidate(&f.out)
+			.unwrap_err()
+			.to_string()
+			.contains("missing cleanup evidence")
+	);
+	let cleanup_path = f.out.join("CLEANUP.json");
+	atomic_json(&cleanup_path,&json!({"candidate":"c","baseline":"base","started":1,"finished":2,"directory":"/owned","removed":true,"targets_cleaned":1,"peak_bytes":{"build":4}})).unwrap();
+	result["records"]["CLEANUP"] = json!(digest(&cleanup_path).unwrap());
+	atomic_json(&result_path, &result).unwrap();
+	revalidate(&f.out).unwrap();
 	std::fs::remove_file(f.out.join("RELEASE.json")).unwrap();
 	assert!(revalidate(&f.out).is_err());
 }

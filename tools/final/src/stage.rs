@@ -21,7 +21,7 @@ use std::time::Duration;
 /// its own executable.
 pub const PROGRAM: &str = "rnx-final";
 /// The published commit `clippy` and `adapter-clippy` compare against.
-pub const CLIPPY_BASE: &str = "0873610926649d8c79094c1aa346fa6728c5251a";
+pub const CLIPPY_BASE: &str = include_str!("../clippy-base").trim_ascii_end();
 /// Kept in the Polars Clippy comparison: the existing preview test
 /// diagnostic is counted at warning level, not denied.
 pub const POLARS_LINT_ARGS: [&str; 2] = ["--", "-Wclippy::erasing_op"];
@@ -80,7 +80,7 @@ impl Invoke for Live {
 			file.try_clone()?
 		};
 		let wrapped;
-		let command = if let Some(route) = crate::cache::lookup(&self.env, cwd, command)? {
+		let command = if let Some(route) = crate::build_targets::lookup(&self.env, cwd, command)? {
 			wrapped = route.wrap(Path::new("/proc/self/exe"), command)?;
 			wrapped.as_slice()
 		} else {
@@ -143,7 +143,7 @@ impl Invoke for Live {
 			.create_new(true)
 			.open(stderr)?;
 		let wrapped;
-		let command = if let Some(route) = crate::cache::lookup(&self.env, cwd, command)? {
+		let command = if let Some(route) = crate::build_targets::lookup(&self.env, cwd, command)? {
 			wrapped = route.wrap(Path::new("/proc/self/exe"), command)?;
 			wrapped.as_slice()
 		} else {
@@ -241,13 +241,13 @@ pub fn suite(
 		.map(|(_, n, _)| n)
 		.collect();
 	// The controller may share this directory as soon as the last routed
-	// invocation has returned, including its cached-cargo marks and products.
+	// invocation has returned, including its build-cargo marks and products.
 	let release = if let Some(marker) = env.get(crate::controller::DEBUG_RELEASE) {
 		anyhow::ensure!(stage == "rune-suite", "unexpected debug-lane writer");
 		let mut last = None;
 		for (index, command) in commands.iter().enumerate() {
-			let route =
-				crate::cache::lookup(env, root, command)?.context("missing suite cache route")?;
+			let route = crate::build_targets::lookup(env, root, command)?
+				.context("missing suite cache route")?;
 			if route.is_root_debug() {
 				last = Some(index);
 			}
@@ -998,9 +998,9 @@ pub fn jupyter(
 		child_env.insert("CARGO_BUILD_JOBS".into(), jobs(env)?.to_string());
 		let commands = jupyter_children(&python.to_string_lossy(), root);
 		for (i, template) in commands.iter().enumerate() {
-			let command = if i == 2 && env.contains_key("RNX_FINAL_CACHE_ROUTES") {
+			let command = if i == 2 && env.contains_key("RNX_FINAL_BUILD_ROUTES") {
 				let product = |producer: usize, name: &str| -> Result<PathBuf> {
-					crate::cache::lookup(env, root, &commands[producer])?
+					crate::build_targets::lookup(env, root, &commands[producer])?
 						.context("missing Jupyter build route")?
 						.binary(name)
 				};

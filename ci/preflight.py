@@ -15,7 +15,7 @@ def main():
 	root = Path(git(args.repo, "rev-parse", "--show-toplevel").strip())
 	guard = ["cargo", "run", "--locked", "--quiet"]
 	if route := os.environ.pop("RNX_FINAL_GUARD_ROUTE", None):
-		guard = [os.environ.pop("RNX_FINAL_GUARD_CONTROLLER"), "cached-cargo", route, *guard]
+		guard = [os.environ.pop("RNX_FINAL_GUARD_CONTROLLER"), "build-cargo", route, *guard]
 	else:
 		guard.extend(["--target-dir", str(root / "target/execute-guard")])
 	subprocess.run([*guard, "--manifest-path", str(root / "ci/execute_guard/Cargo.toml"), "--", str(root)], cwd=root, check=True)

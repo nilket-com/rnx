@@ -194,6 +194,10 @@ fn read(path: &Path) -> Value {
 
 fn exercise(fail_stage: bool, fail_release: bool, names: Option<Vec<String>>) {
 	let dir = Dir::new();
+	if fail_release {
+		// Force the external scratch path even when the test runs from /tmp.
+		std::fs::create_dir(dir.0.join(".cargo")).unwrap();
+	}
 	let fake = Arc::new(Fake {
 		stages: vec!["stage"],
 		scope: if names.is_some() {
@@ -263,6 +267,26 @@ fn exercise(fail_stage: bool, fail_release: bool, names: Option<Vec<String>>) {
 	}
 	if r["status"] == "PASS" {
 		assert_eq!(evidence::revalidate(&out).unwrap()["status"], "PASS");
+	}
+	if fail_release {
+		assert_eq!(r["release_error"], "release failed");
+		let registry = dir.0.join("target/final-owners");
+		let recovered = evidence::recover(&registry, rnx_final::guardian::drain_registry).unwrap();
+		assert_eq!(recovered.len(), 1);
+		let report = read(Path::new(&recovered[0]));
+		let roots = report["roots"].as_array().unwrap();
+		assert!(
+			roots
+				.iter()
+				.any(|entry| entry["stage"] == "stage-temporaries")
+		);
+		for entry in roots {
+			assert!(
+				!Path::new(entry["path"].as_str().unwrap())
+					.try_exists()
+					.unwrap()
+			);
+		}
 	}
 }
 

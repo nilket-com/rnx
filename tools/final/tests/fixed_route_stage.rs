@@ -19,7 +19,8 @@ fn root() -> PathBuf {
 }
 
 // ADRs 0316 and 0324 update the capture-script hashes and their derived keys
-// under the original schema-1 recipe in both witnesses.
+// under the original schema-1 recipe in both witnesses. ADR 0338 updates
+// the paired builder digest for its verified baseline input.
 fn witness(name: &str) -> Value {
 	let path = root().join("tools/final/tests/witness").join(name);
 	let value: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();

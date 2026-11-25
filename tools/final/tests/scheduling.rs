@@ -182,7 +182,10 @@ impl Fake {
 }
 
 impl Hooks for Fake {
-	fn suite_debug_target(&self, _: Option<&rnx_final::cache::CachePlan>) -> Option<PathBuf> {
+	fn suite_debug_target(
+		&self,
+		_: Option<&rnx_final::build_targets::BuildTargets>,
+	) -> Option<PathBuf> {
 		self.plan
 			.iter()
 			.any(|(n, lanes)| *n == "rune-suite" && lanes.contains(&"fixture-debug"))

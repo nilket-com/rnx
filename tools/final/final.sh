@@ -21,9 +21,8 @@ fail() {
 	exit 1
 }
 
-# Only a real complete run needs baseline preparation. Verification and a
-# docs-successor read their existing evidence in the caller's checkout.
-complete=false
+# Read-only modes can inspect a finished receipt from the caller checkout.
+
 reader=false
 need_value=false
 out=
@@ -37,27 +36,43 @@ for argument in "$@"; do
 	option=$argument
 	case "$argument" in
 		--out|--bootstrap|--stages) need_value=true ;;
-		--docs-successor) reader=true; need_value=true ;;
+		--docs-successor) need_value=true ;;
 		--revalidate|--abandon-diagnostics) reader=true ;;
-		--complete) complete=true ;;
+
 	esac
 done
-checkpoint_member=
-if [ -f "$root/.git/rnx-final-store" ]; then
-	[ -n "${RNX_FINAL_CHECKPOINT_STORE:-}" ] && $complete && ! $reader ||
-		fail "the checkpoint checkout is reserved for its leased complete final"
+if [ -z "${RNX_BOOTSTRAP_FIXTURE:-}" ]; then
+	[ -z "${RNX_BOOTSTRAP_DISK_BYTES+x}" ] || fail "fixture disk bytes are refused outside the bootstrap controls"
+	[ -z "${RNX_BOOTSTRAP_CGROUP_ROOT:-}${RNX_BOOTSTRAP_MEMINFO:-}${RNX_BOOTSTRAP_MEMBERSHIP:-}" ] || fail "fixture memory sources are refused outside the bootstrap controls"
 fi
-if $complete && ! $reader; then
-	if [ -z "${RNX_FINAL_CHECKPOINT_STORE:-}" ]; then
-		exec /bin/bash "$root/tools/final/checkpoint/entry.sh" "$started" "$@"
+# These commands read terminal records and do not enter the stage scheduler.
+# A caller with an installed controller can also invoke it directly.
+if $reader; then
+	reader_dir=$(mktemp -d "${TMPDIR:-/tmp}/rnx-final-reader.XXXXXXXX")
+	trap 'rm -rf -- "$reader_dir"' EXIT
+	trap 'exit 130' INT
+	trap 'exit 143' TERM
+	export RUSTUP_HOME=${RUSTUP_HOME:-$HOME/.rustup} CARGO_HOME="$reader_dir/cargo"
+	export HOME="$reader_dir" XDG_CACHE_HOME="$reader_dir/cache" TMPDIR="$reader_dir/tmp"
+	mkdir "$TMPDIR"
+	unset RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER CARGO_TARGET_DIR CARGO_BUILD_BUILD_DIR
+	CARGO_BUILD_JOBS=1 CARGO_INCREMENTAL=0 cargo +1.98.1 build --locked -p rnx-final --target-dir "$reader_dir/target"
+	"$reader_dir/target/debug/rnx-final" "$@"
+	exit $?
+fi
+run_member=
+if ! $reader && [ -z "${RNX_BOOTSTRAP_FIXTURE:-}" ]; then
+	if [ -z "${RNX_FINAL_RUN:-}" ]; then
+		exec /bin/bash "$root/tools/final/clean/entry.sh" "$started" "$@"
 	fi
-	[ -n "$out" ] || fail "complete checkpoint has no output"
-	[ "$root" = "$RNX_FINAL_CHECKPOINT_STORE/generation/source" ] || fail "bootstrap outside the checkpoint checkout"
-	[ -d /proc/self/fd/7 ] && [ /proc/self/fd/7 -ef "$RNX_FINAL_CHECKPOINT_STORE" ] || fail "missing checkpoint lease"
-	trap 'code=$?; if [ "$code" -ne 0 ]; then /bin/bash -ceu '"'"'set -o pipefail; source "$1"; timed_refusal "$2"'"'"' report "$root/tools/final/checkpoint/state.sh" "$out"; fi; exit "$code"' EXIT
-	checkpoint=$(jq -ce . "$out/preparation/admission.json") || fail "checkpoint admission missing"
-	started=$(printf '%s' "$checkpoint" | jq -er '.admitted | numbers') || fail "missing admission boundary"
-	checkpoint_member=$(printf ', "checkpoint": %s' "$checkpoint")
+	[ "$root" = "$RNX_FINAL_RUN/source" ] && [ /proc/self/fd/7 -ef "$RNX_FINAL_AREA" ] || fail "lost build area lease"
+	[ "$out" = "$RNX_FINAL_RECEIPTS" ] || fail "receipt directory differs"
+	started=$RNX_FINAL_STARTED
+	run_member=$(jq -nc --arg run "$RNX_FINAL_RUN" --arg base "$RNX_FINAL_BASELINE" --slurpfile limits "$RNX_FINAL_RUN/limits" '{directory:$run,baseline:$base,limits:$limits[0]}')
+	run_member=", \"clean_run\": $run_member"
+	trap 'code=$?; if [ "$code" -ne 0 ]; then bash "$root/tools/final/clean/release.sh" "$RNX_FINAL_RUN" "$out" bootstrap; fi; exit "$code"' EXIT
+	trap 'exit 130' INT
+	trap 'exit 143' TERM
 fi
 
 # Each command's own status is checked before its output is believed: a
@@ -78,9 +93,6 @@ digest() {
 fixture=false
 target=$root/target/final-controller
 probe=$target
-if [ "${1:-}" = --checkpoint-resources ]; then
-	probe=${2:?checkpoint directory required}
-fi
 while [ ! -e "$probe" ]; do probe=${probe%/*}; done
 filesystem=$(stat -f -c '%T:%i' -- "$probe") || fail "cannot identify filesystem for $probe"
 if [ "${RNX_BOOTSTRAP_DISK_BYTES+x}" ]; then
@@ -127,11 +139,6 @@ while [ -n "$group" ] && [ "$group" != "/" ]; do
 done
 [ "$usable" -ge $((RESERVE_BYTES + JOB_MEMORY_BYTES)) ] || fail "memory: $usable bytes usable, $((RESERVE_BYTES + JOB_MEMORY_BYTES)) needed for one build job"
 
-if [ "${1:-}" = --checkpoint-resources ]; then
-	[ "$fixture" = false ] || fail "a fixture cannot admit checkpoint preparation"
-	printf '{"disk_free_bytes":%s,"memory_usable_bytes":%s}\n' "$free" "$usable"
-	exit 0
-fi
 
 candidate=$(git rev-parse --verify HEAD) || fail "no candidate commit"
 status=$(git status --porcelain) || fail "git status failed"
@@ -158,11 +165,12 @@ owner_id() {
 }
 if [ ! -e "$target" ] && [ ! -L "$target" ]; then
 	pending=$(mktemp -d -- "$parent/.bootstrap-owner-XXXXXXXX")
-	trap 'rm -f -- "$pending/OWNER"; rmdir -- "$pending"' EXIT
+
+	# Cargo adds its standard signature only to directories it creates.
+	printf '%s\n' 'Signature: 8a477f597d28d172789f06886806bc55' > "$pending/CACHEDIR.TAG"
 	owner_id "$pending" > "$pending/OWNER"
 	mv -nT -- "$pending" "$target"
 	[ ! -d "$pending" ] || fail "bootstrap target appeared during claim"
-	trap - EXIT
 fi
 [ -d "$target" ] && [ ! -L "$target" ] && [ -f "$target/OWNER" ] && [ ! -L "$target/OWNER" ] || fail "unowned bootstrap target"
 owner_id "$target" | cmp -s - "$target/OWNER" || fail "bootstrap owner changed"
@@ -184,7 +192,7 @@ cat > "$record.pending" <<EOF
  "cargo_lock_sha256": "$lock_sha", "toolchain_sha256": "$toolchain_sha", "jobs": 1,
  "recipe": ["cargo", "+1.98.1", "build", "--locked", "--release", "-p", "rnx-final", "--target-dir", "$target"],
  "artifact": "$artifact", "artifact_sha256": "$artifact_sha", "memory_usable_bytes": $usable, "disk_free_bytes": $free,
- "fixture": $fixture$checkpoint_member}
+ "fixture": $fixture$run_member}
 EOF
 mv "$record.pending" "$record"
 exec "$artifact" --bootstrap "$record" "$@"

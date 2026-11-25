@@ -656,6 +656,24 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 	let a: Acceptance = types::read(&out.join("ACCEPTANCE.json"))?;
 	let m: Manifest = types::read(&out.join("MANIFEST.json"))?;
 	let manifest = serde_json::to_value(&m)?;
+	if let Some(run) = manifest["tools"]["controller"]["bootstrap"].get("clean_run")
+		&& result.acceptance_scope != types::Scope::Docs
+	{
+		ensure!(
+			result.records.contains_key("CLEANUP"),
+			"missing cleanup evidence"
+		);
+		let record: crate::clean::Cleanup =
+			serde_json::from_value(read(&out.join("CLEANUP.json"))?)?;
+		ensure!(
+			run["directory"] == record.directory
+				&& run["baseline"] == record.baseline
+				&& manifest["candidate"] == record.candidate
+				&& (record.elapsed()? - result.seconds).abs() < 0.001,
+			"cleanup does not describe this run"
+		);
+	}
+
 	if manifest["tools"]["controller"]["bootstrap"]
 		.get("checkpoint")
 		.is_some()

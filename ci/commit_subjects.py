@@ -185,6 +185,10 @@ def segment(repo, base, head, policy, engine=False, occupied=None, require_seque
 			implementations[number] = implementations.get(number, 0) + 1
 			need(implementations[number] <= MAX_IMPLEMENTATIONS, "implementation limit exceeded")
 			if not is_import:
+				# The calibration impl adopts its receipt-derived limits alongside Results.
+				# Keep plans, withdrawals and all later records on their existing rules.
+				if not engine and number == "0338" and "plans/impl/0338-final-limits.json" in changed:
+					allowed.add("plans/impl/0338-final-limits.json")
 				for path in changed:
 					if path.startswith(("plans/", "rune/plans/")):
 						need(path in allowed, "implementation changes another record's documents")

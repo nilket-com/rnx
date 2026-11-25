@@ -519,7 +519,7 @@ fn identical_crates_have_the_same_lints_on_independent_cold_and_warm_runs() {
 	let tmp = scratch();
 	let mut env: Environment = std::env::vars().collect();
 	for key in [
-		"RNX_FINAL_CACHE_ROUTES",
+		"RNX_FINAL_BUILD_ROUTES",
 		"CARGO_TARGET_DIR",
 		"CARGO_BUILD_BUILD_DIR",
 	] {
