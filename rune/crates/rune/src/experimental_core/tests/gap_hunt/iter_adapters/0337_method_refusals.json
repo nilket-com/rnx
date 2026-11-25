@@ -1,0 +1,740 @@
+{
+  "rule": "Unproved map calls name the method as written. Refusal class and primary location stay fixed. Deferred receiver resolution can also diagnose later unproved calls in the same body.",
+  "rows": [
+    {
+      "index": 721,
+      "legacy": {
+        "index": 721,
+        "label": "fnmove/stored-iterator-after",
+        "source_sha256": "5ed4262471bb03194c46f8a5def9b0311707658aa00d543ac27320b0f7333e4c",
+        "stock_row_sha256": "199ef31daa5cdcf9a96834d0488cc163787b13b8ba985edd5cd0ce0db5ea2250",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 101,
+            "source": 0,
+            "start": 84
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 84, end: 101 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 84:101, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 101,
+            "source": 0,
+            "start": 84
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 84, end: 101 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 84:101, kind: Custom { error: \"map\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 103:122, kind: Custom { error: \"Method\" } }) })]"
+      }
+    },
+    {
+      "index": 947,
+      "legacy": {
+        "index": 947,
+        "label": "nest/flat_map-inner-map",
+        "source_sha256": "492bff06f13f7953292a2fe3b3f00cf47f0c5628a257955d5678943661b900c7",
+        "stock_row_sha256": "eafdb4eec007e2a084419254f3facc1bd640681b9e398997d720ffcf575c198c",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 116,
+            "source": 0,
+            "start": 95
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 95, end: 116 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 95:116, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 116,
+            "source": 0,
+            "start": 95
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 95, end: 116 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 95:116, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1020,
+      "legacy": {
+        "index": 1020,
+        "label": "receiver/option-map",
+        "source_sha256": "660ae6d914c65638435f5af29ddc75f8a1eac5afe8b9689b6bcbb63ef43d75c4",
+        "stock_row_sha256": "503b1f77b40e2bae36fd58825657e66898ea1b8e129d342471fb3f286ddfbea5",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 84,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 84 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:84, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 84,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 84 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:84, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1021,
+      "legacy": {
+        "index": 1021,
+        "label": "receiver/option-and-iter-map",
+        "source_sha256": "6b1a1445fdaa3fe820b594706b008cf5a3ebea8411882113b38dc821925238fc",
+        "stock_row_sha256": "fbedeb1ff6d097caf27fa48561de770e091a84a1abe755fc5ac722f7dc16d6f9",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 84,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 84 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:84, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 84,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 84 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:84, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1024,
+      "legacy": {
+        "index": 1024,
+        "label": "receiver/vec-map",
+        "source_sha256": "898cdfd440e23e70666dd2574b4d244143e0e517eb30c62ecd0841dad1fcc62b",
+        "stock_row_sha256": "de30116612160a791943c46c8856c5664af51ac1bc024bf42e1fa9b5d2a71819",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 79,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 79 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:79, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 79,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 79 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:79, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1031,
+      "legacy": {
+        "index": 1031,
+        "label": "receiver/range-map",
+        "source_sha256": "22cf1790491f93a77ed85cbd3716553b34ee3ecd829cdbc7a92dbc4831030e00",
+        "stock_row_sha256": "2f906427e1ef57034a3a1d797ae9fc9e7de296722e2a738680add9ad203a0421",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 80,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 80 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:80, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 80,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 80 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:80, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1033,
+      "legacy": {
+        "index": 1033,
+        "label": "receiver/string-map",
+        "source_sha256": "146c2e8cfa1ec1c6e6ffc4b59849184cfc7c3bb305a68a5579b5e2a6c9185f38",
+        "stock_row_sha256": "194a41b54552c0fdd5a8430f3bcc58d4a860f08a0f01b8740150f8289feb486b",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 78,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 78 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:78, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 78,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 78 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:78, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1035,
+      "legacy": {
+        "index": 1035,
+        "label": "receiver/int-map",
+        "source_sha256": "fc4c551cfe8448084df19cdc375c3092a2e056e75d92a63222948209629eb9d0",
+        "stock_row_sha256": "527bbe23959e2a1f1dd608f2540a3d8150f10fa335de336e0acb6c25b170fa0f",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 75,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 75 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:75, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 75,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 75 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:75, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1036,
+      "legacy": {
+        "index": 1036,
+        "label": "receiver/object-map",
+        "source_sha256": "f5ad199ee162d5af5a38fc103d5a93eb3768a13fc56def28d89f50ffd5404de0",
+        "stock_row_sha256": "4e5b97151f39f57b2ca3ccaf1f94d26909c5ec6f5e79e133edd0b3909b11400b",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 80,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 80 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:80, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 80,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 80 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:80, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1038,
+      "legacy": {
+        "index": 1038,
+        "label": "receiver/struct-map",
+        "source_sha256": "9bff83e104f322c069ea807d3fe48ad25412d0a909eca7d9876799c32aff2c1f",
+        "stock_row_sha256": "848f7c9a46fb7cf772435366870fe939a59e8db9870dda28db2238f1921c1c7d",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 80,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 80 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:80, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 80,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 80 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:80, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1049,
+      "legacy": {
+        "index": 1049,
+        "label": "missing/last",
+        "source_sha256": "7e92a3d03db80a1769724e3d6faf39c0c08767baaea8519358b15610a504fc76",
+        "stock_row_sha256": "05ab1bea369f735603b3ae28af33f8d260f76899a860a258771ddf8287b2a38f",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 86,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 86 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:86, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 86,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 86 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:86, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1061,
+      "legacy": {
+        "index": 1061,
+        "label": "present/len-map",
+        "source_sha256": "294a1dc870696862b5e263553c3199d17b82576bf53818dde5c58073f904a46b",
+        "stock_row_sha256": "b3e18b37ebc41eb0d02a1490f6366e5ce2eba1410dafc87ce381e6cff2f2f5b6",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 86,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 86 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:86, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 86,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 86 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:86, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1070,
+      "legacy": {
+        "index": 1070,
+        "label": "compile/try-on-adapter",
+        "source_sha256": "2e6c60d2a05b909ee984a3f64f6efb91efb3f563916d729f78485108d390b1ba",
+        "stock_row_sha256": "1588d7e50bb425e40632dc3041c05d101dd885f52dc11fc67307cf38059e423d",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 85,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 85 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:85, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 85,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 85 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:85, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1082,
+      "legacy": {
+        "index": 1082,
+        "label": "stored/map-collect",
+        "source_sha256": "4fe3c05726193b0849fa6fb57dac0c7bd6985e11154f71e94c0227ddd03603d7",
+        "stock_row_sha256": "f865d32b31869a0a4888d20e49ee90c522c54102d1996b1428c08d27edc0a17f",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 95,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 95 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:95, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 95,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 95 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:95, kind: Custom { error: \"map\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 96:115, kind: Custom { error: \"Method\" } }) })]"
+      }
+    },
+    {
+      "index": 1087,
+      "legacy": {
+        "index": 1087,
+        "label": "stored/lazy-taps",
+        "source_sha256": "367af510b357203bf30e7af579ca45fe9159201fd0028c1f15d3781f2c3a0ced",
+        "stock_row_sha256": "cf82e621a41a0298429f07eb72c908b6b8328d3c969c9548655ad53f1d11037c",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 99,
+            "source": 0,
+            "start": 70
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 70, end: 99 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 70:99, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 99,
+            "source": 0,
+            "start": 70
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 70, end: 99 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 70:99, kind: Custom { error: \"map\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 109:127, kind: Custom { error: \"Method\" } }) })]"
+      }
+    },
+    {
+      "index": 1090,
+      "legacy": {
+        "index": 1090,
+        "label": "stored/tuple-held",
+        "source_sha256": "02ce8d1f6b22a2d8e09ab2a3b4a6be2c06bedad6eaac46423a3700164fa534e1",
+        "stock_row_sha256": "5c0e52d8b4e124daf7b18113b65de73c2844a15c12c7a07bf6958035738b8fce",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 91,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 91 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:91, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 91,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 91 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:91, kind: Custom { error: \"map\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 95:106, kind: Custom { error: \"Method\" } }) })]"
+      }
+    },
+    {
+      "index": 1091,
+      "legacy": {
+        "index": 1091,
+        "label": "stored/closure-captured",
+        "source_sha256": "ff1eed68e7f49b3f9d360ea48e9d81d82ddd8259b44e9a2fb11ea51f3aecc1f0",
+        "stock_row_sha256": "b3e18b37ebc41eb0d02a1490f6366e5ce2eba1410dafc87ce381e6cff2f2f5b6",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 93,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 93 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:93, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 93,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 93 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:93, kind: Custom { error: \"map\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 102:112, kind: Custom { error: \"Method\" } }) })]"
+      }
+    },
+    {
+      "index": 1092,
+      "legacy": {
+        "index": 1092,
+        "label": "stored/unused",
+        "source_sha256": "b30a6024904caba10bbd10e08cc114ecccd1cf02317d476d24ac6eadb8f9564e",
+        "stock_row_sha256": "ce72b667d702fdea6160d039b9d90b56320d85b8e3efeca22fe9d07dbccb39b8",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 100,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 100 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:100, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 100,
+            "source": 0,
+            "start": 71
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 71, end: 100 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 71:100, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1093,
+      "legacy": {
+        "index": 1093,
+        "label": "passed/map-count",
+        "source_sha256": "9d61d13fcfe7e299d278c44f02a48f1e90804adc2a5e0da18c95f19f4dea7d5e",
+        "stock_row_sha256": "b3e18b37ebc41eb0d02a1490f6366e5ce2eba1410dafc87ce381e6cff2f2f5b6",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 108,
+            "source": 0,
+            "start": 86
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 86, end: 108 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 86:108, kind: Custom { error: \"Method\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:69, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 108,
+            "source": 0,
+            "start": 86
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 86, end: 108 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 86:108, kind: Custom { error: \"map\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 59:69, kind: Custom { error: \"Method\" } }) })]"
+      }
+    },
+    {
+      "index": 1096,
+      "legacy": {
+        "index": 1096,
+        "label": "returned/map",
+        "source_sha256": "ab21967a6b6d6585eb926ed1cba23e1604131bf96f4ca852cad179246680f8d6",
+        "stock_row_sha256": "ae3be1ebd3a85d64094f0ba2d242c42e16fe7d1aa22a6524238c03aba0c3756d",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 118,
+            "source": 0,
+            "start": 97
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 97, end: 118 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 97:118, kind: Custom { error: \"Method\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 58:82, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 118,
+            "source": 0,
+            "start": 97
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 97, end: 118 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 97:118, kind: Custom { error: \"Method\" } }) }), Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 58:82, kind: Custom { error: \"map\" } }) })]"
+      }
+    },
+    {
+      "index": 1098,
+      "legacy": {
+        "index": 1098,
+        "label": "returned/flat_map-iterator",
+        "source_sha256": "d3bd4bae14b40c46b90e363bed910572a04cb15606e4f21a264a553006fff026",
+        "stock_row_sha256": "b39b77c5b0893445a456a2e996a7e5d8bcac8e725020d0fd839222f025053d78",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 112,
+            "source": 0,
+            "start": 89
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 89, end: 112 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 89:112, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 112,
+            "source": 0,
+            "start": 89
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 89, end: 112 }), operation: \"map\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 89:112, kind: Custom { error: \"map\" } }) })]"
+      }
+    }
+  ]
+}

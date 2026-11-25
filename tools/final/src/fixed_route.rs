@@ -123,6 +123,14 @@ pub fn validate_policy(policy: &Value) -> Result<()> {
 			"unreviewed installed setup reference"
 		);
 	}
+	if let Some(rule) = policy.get("relative_relocations") {
+		anyhow::ensure!(
+			meter.is_some()
+				&& identity(rule)?
+					== "d1936c1ce3a08e25e05cb91732022dc0ba3d59ad750a94bd15abda290b11c3b0",
+			"unreviewed relocation calibration"
+		);
+	}
 	if !reviewed || kernels != expected {
 		bail!(value_error(
 			"policy schema/kernel set changed: review required"
@@ -307,6 +315,11 @@ pub fn source_condition(
 	validate_policy(policy)?;
 	match baseline_policy(root, baseline)? {
 		Some(old) => {
+			if old.get("relative_relocations").is_some()
+				&& policy.get("relative_relocations").is_none()
+			{
+				bail!(value_error("relocation policy downgrade"));
+			}
 			if old.get("meter").is_some() && policy.get("meter").is_none() {
 				bail!(value_error("guest input policy downgrade"));
 			}

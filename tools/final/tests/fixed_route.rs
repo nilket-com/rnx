@@ -32,6 +32,7 @@ fn policy() -> Value {
 	p.as_object_mut().unwrap().remove("native_setup");
 	p.as_object_mut().unwrap().remove("installed_setup");
 	p.as_object_mut().unwrap().remove("meter");
+	p.as_object_mut().unwrap().remove("relative_relocations");
 	p
 }
 

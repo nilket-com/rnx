@@ -13,6 +13,52 @@ pub(crate) enum VariantOutcome {
 }
 
 impl Store {
+	pub(crate) fn is_readable(&self, value: Value) -> Result<bool> {
+		let Value::Heap(h) = value else {
+			return Ok(true);
+		};
+		let entry = self.entry(h)?;
+		let payload = entry
+			.payload
+			.as_ref()
+			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "readable value"))?;
+		Ok(entry.readers != super::sorting::EXCLUSIVE && !matches!(payload, Payload::Moved(_)))
+	}
+
+	/// Check the conversion at the native callback boundary without invalidating aliases.
+	pub(crate) fn check_callback_conversion(
+		&self,
+		value: Value,
+		expected: crate::experimental_core::error::TypeName,
+	) -> Result<()> {
+		use crate::experimental_core::error::{Detail, MovedAccess};
+		let found = self
+			.diagnostic_type(value)
+			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "callback operand"))?;
+		if found != expected {
+			return Err(
+				super::err(ErrorKind::Type).with_detail(Detail::ExpectedType { expected, found })
+			);
+		}
+		if let Value::Heap(h) = value {
+			let entry = self.entry(h)?;
+			if entry.readers != 0 {
+				return Err(super::sorting::conflict(
+					super::sorting::Access::Take,
+					entry,
+				));
+			}
+			if !self.is_readable(value)? {
+				return Err(
+					super::err(ErrorKind::AccessConflict).with_detail(Detail::Moved {
+						access: MovedAccess::Take,
+					}),
+				);
+			}
+		}
+		Ok(())
+	}
+
 	/// Runs `method` on an evaluated receiver. `message` is the `expect` argument.
 	/// Unwrapping retains and returns the payload handle itself, never a copy.
 	#[cold]

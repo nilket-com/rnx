@@ -14,6 +14,10 @@ use crate::{docstring, ContextError, Module};
 pub fn module() -> Result<Module, ContextError> {
 	let mut module = Module::from_meta(self::module__meta)?.with_unique("std");
 
+	#[cfg(feature = "execution")]
+	{
+		module.pipeline = crate::function::pipeline::CORE_MARKER;
+	}
 	module.ty::<bool>()?.docs(docstring! {
 		/// The primitive boolean type.
 	})?;

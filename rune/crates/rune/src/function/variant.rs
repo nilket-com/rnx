@@ -27,6 +27,33 @@ pub(crate) enum Family {
 	Result,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Operation {
+	Method(Method),
+	Readable,
+	CheckCallback,
+	CheckReturn,
+}
+
+impl Operation {
+	pub(crate) const fn id(self) -> u32 {
+		match self {
+			Self::Method(method) => method.id(),
+			Self::Readable => 0x8000_0096,
+			Self::CheckCallback => 0x8000_0097,
+			Self::CheckReturn => 0x8000_0098,
+		}
+	}
+
+	pub(crate) const fn arity(self) -> u32 {
+		match self {
+			Self::Method(method) => method.arity(),
+			Self::CheckCallback => 2,
+			Self::Readable | Self::CheckReturn => 1,
+		}
+	}
+}
+
 impl Method {
 	pub(crate) const ALL: [Self; 6] = [
 		Self::Unwrap,
@@ -71,10 +98,20 @@ impl Method {
 		Self::ALL.into_iter().find(|m| m.hash() == hash)
 	}
 
-	pub(crate) fn from_id(id: u32) -> Option<Self> {
+	pub(crate) fn from_id(id: u32) -> Option<Operation> {
+		for op in [
+			Operation::Readable,
+			Operation::CheckCallback,
+			Operation::CheckReturn,
+		] {
+			if op.id() == id {
+				return Some(op);
+			}
+		}
 		Self::ALL
 			.get(id.checked_sub(Self::FIRST_ID)? as usize)
 			.copied()
+			.map(Operation::Method)
 	}
 
 	pub(crate) const fn id(self) -> u32 {
@@ -151,6 +188,12 @@ impl Callback {
 		1 << self as u8
 	}
 
+	pub(crate) fn name(self) -> &'static str {
+		match self {
+			Self::Map => "map",
+			Self::AndThen => "and_then",
+		}
+	}
 	pub(crate) fn refusal(self) -> &'static str {
 		match self {
 			Self::Map => "Result::map",
@@ -250,9 +293,9 @@ mod tests {
 			assert_eq!(m.hash(), Hash::ident(name));
 			assert_eq!(Method::from_name(name), Some(m));
 			assert_eq!(Method::from_hash(Hash::ident(name)), Some(m));
-			assert_eq!(Method::from_id(m.id()), Some(m));
+			assert_eq!(Method::from_id(m.id()), Some(Operation::Method(m)));
 		}
-		assert_eq!(Method::from_id(Method::IsErr.id() + 1), None);
+		assert_eq!(Method::from_id(Operation::CheckReturn.id() + 1), None);
 		assert_eq!(Method::from_id(Method::Unwrap.id() - 1), None);
 		assert_eq!(Method::from_name("unwrap_or"), None);
 	}

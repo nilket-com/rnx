@@ -65,6 +65,7 @@ impl State {
 /// while indexing. A failed insert makes every lookup miss, so no target is guessed.
 #[derive(Default)]
 pub(crate) struct Instances {
+	pub(crate) result_callback_site: bool,
 	items: hash::Map<(Hash, usize)>,
 	incomplete: bool,
 }

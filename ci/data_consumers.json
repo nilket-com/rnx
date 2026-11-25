@@ -456,6 +456,15 @@
       "max_bytes": 27649,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
     },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/0337_method_refusals.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0337_method_refusals.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/contract.rs"
+      },
+      "max_bytes": 32516,
+      "reason": "The iterator adapter contract checks the prior and current refusal diagnostics for each affected source."
+    },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/cases.json": {
       "class": "live-fixture",
       "consumer": {
@@ -1067,7 +1076,7 @@
         "expression": "(root/'tools/column/fixed_route_policy.json').read_text()",
         "path": "tools/column/fixed_route_vectors.py"
       },
-      "max_bytes": 16477,
+      "max_bytes": 16823,
       "reason": "Fixed-route measurement policy, reviewed setup references and host input identities. The observer reads it for every installed dispatch."
     },
     "tools/final/CONTROLS.txt": {
@@ -1141,7 +1150,7 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/fixed_route_stage.rs"
       },
-      "max_bytes": 846768,
+      "max_bytes": 846880,
       "reason": "ADR 0298 witness fixture: the published fixed_route_gate.main() over a planted host (scratch checkout with the real tooling and kernels, intercepted git, cargo, rustup and children, a real anchor cache): every call, the receipt, the files and the cache state of eleven scenarios, generated once at 7991e30d (method recorded inside); the Rust stage is compared against it."
     },
     "tools/final/tests/witness/fixed-route-git.json": {
@@ -1159,7 +1168,7 @@
         "expression": "std::fs::read_to_string(&path)",
         "path": "tools/final/tests/fixed_route_stage.rs"
       },
-      "max_bytes": 14581,
+      "max_bytes": 14693,
       "reason": "ADR 0298 witness fixture: paired_build.build_environment, ir_pool.capture_environment, the gate's recipe and capture_key, reuse_anchor and verified over planted inputs, generated once at 7991e30d (method recorded inside); the Rust port is compared against it."
     },
     "tools/final/tests/witness/inventories.json": {

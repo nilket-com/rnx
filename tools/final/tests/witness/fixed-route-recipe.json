@@ -152,7 +152,7 @@
    "ok": "f3823601de07705995aaf670c509b11aa333bba02fc5b2ecc26a30da09cc5d68"
   },
   "capture_key: the planted recipe": {
-   "ok": "c7e41493bb5084a08e1b421110bb13334d62e4dcb4a695d803816a2767b86da8"
+   "ok": "109931e0a4f7729b776301a3de5ad97c9db07c798d9fa67d91b021afc9742324"
   },
   "capture_key: valgrind changed": {
    "ok": "04ea42d125a21a32dbc294e6c6999d48eddff7e902da012c720311e5a6160d1d"
@@ -317,7 +317,7 @@
      "rustc": "ac6da5eae5865720b786669232e6736ab2e7e6cb5a1b784e55e4f5cfaea61d72"
     },
     "tooling": {
-     "tools/column/fixed_route_vectors.py": "3ee6483997e690b833aade383b2a99b024df20c7cceaa620c42566c6dcc8bf50",
+     "tools/column/fixed_route_vectors.py": "4eaaf0e135db8d8ecf5a5d0bafbc30374fac1b7657c7698352190633cc09efa3",
      "tools/column/ir_accounting.py": "d23ed20c77327235f4a49d4c92cf83e05b9cb43200754a3c660feb108b45e369",
      "tools/column/old_path_child.py": "76c6fde57b74fc5b62db90c2d3ee8fa63529819ffa024c0ca0d323a06a90eb12",
      "tools/column/old_path_programs.py": "8f2820d55df7d0a7acb33a44ac8e82d3e62314b875f43107ef4a39f0d1ecd219",
@@ -444,6 +444,6 @@
    "ok": true
   }
  },
- "method": "ADR 0331 updates the paired builder digest and includes its source exporter in the build recipe. paired_build.build_environment over planted environments with shutil.which('rustup') answering /planted/rustup/bin/rustup and that absolute rustup's `which --toolchain 1.98.1 NAME` answering /planted/toolchain/bin/NAME (strings only); the recipe's own `rustup which --toolchain 1.98.1 NAME` answering <TMP>/toolchain/bin/NAME (files 'planted rustc', 'planted cargo'); BUILD_KEYS, BUILD_PREFIXES and ir_pool.capture_environment(); fixed_route_gate.recipe(live policy) under an environment of only PATH=/tools, HOME=/planted/home, RUSTFLAGS=-Copt-level=3, CARGO_HOME=/cargo, with /proc/cpuinfo read as a planted two-processor text (the checkout's own tooling and fixture digests); capture_key over that recipe (valgrind 'v'*64, binary 'a'*64) and over test_drift_band's cases; reuse_anchor and verified over test_drift_band's planted legacy capture. Each case is ok with the value or error with the class and message; <TMP> is the scratch root, and the legacy MANIFEST.json and receipt digests, which cover scratch paths, are <MANIFEST-DIGEST> and <RECEIPT-DIGEST>.",
+ "method": "ADR 0331 updates the paired builder digest and includes its source exporter in the build recipe. paired_build.build_environment over planted environments with shutil.which('rustup') answering /planted/rustup/bin/rustup and that absolute rustup's `which --toolchain 1.98.1 NAME` answering /planted/toolchain/bin/NAME (strings only); the recipe's own `rustup which --toolchain 1.98.1 NAME` answering <TMP>/toolchain/bin/NAME (files 'planted rustc', 'planted cargo'); BUILD_KEYS, BUILD_PREFIXES and ir_pool.capture_environment(); fixed_route_gate.recipe(live policy) under an environment of only PATH=/tools, HOME=/planted/home, RUSTFLAGS=-Copt-level=3, CARGO_HOME=/cargo, with /proc/cpuinfo read as a planted two-processor text (the checkout's own tooling and fixture digests); capture_key over that recipe (valgrind 'v'*64, binary 'a'*64) and over test_drift_band's cases; reuse_anchor and verified over test_drift_band's planted legacy capture. Each case is ok with the value or error with the class and message; <TMP> is the scratch root, and the legacy MANIFEST.json and receipt digests, which cover scratch paths, are <MANIFEST-DIGEST> and <RECEIPT-DIGEST>. ADR 0337 updates the installed capture observer digest and its derived capture keys under this original policy.",
  "witness": "7991e30de16863b07289a8423678e8831c7687f4"
 }

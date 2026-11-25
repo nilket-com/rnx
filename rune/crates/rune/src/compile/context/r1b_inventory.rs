@@ -197,7 +197,7 @@ fn method_policy(r: &Receiver, name: &str, parameters: &[Hash], inline: bool) ->
 			name,
 			"clone cmp expect is_none is_some iter unwrap unwrap_or",
 		),
-		"::std::result::Result" => in_names(name, "clone cmp expect is_err is_ok unwrap unwrap_or"),
+		"::std::result::Result" => in_names(name, "and_then clone cmp expect is_err is_ok map unwrap unwrap_or"),
 		"::std::ops::Function" => name == "clone",
 		"::std::object::Iter" => name == "len",
 		"::std::option::Iter" => name == "clone",
@@ -289,6 +289,9 @@ fn arguments(
 	match name {
 		"chain" => args = vec!["[3]".into()],
 		"map" => args = vec!["|x|x".into()],
+		"and_then" if receiver.is_some_and(|r| r.name == "::std::result::Result") => {
+			args = vec!["|x|Ok(x)".into()]
+		}
 		"filter" | "any" | "all" | "find" | "position" | "rposition" => {
 			args = vec!["|x|true".into()]
 		}
@@ -332,7 +335,7 @@ fn generic(context: &Context, parameters: &[Hash]) -> String {
 fn free_policy(item: &str) -> Verdict {
 	if in_names(
 		item,
-		"::std::any::type_name_of_val ::std::char::from_i64 ::std::clone::clone ::std::io::dbg ::std::io::print ::std::io::println ::std::iter::range ::std::mem::drop ::std::panic ::std::vec::Vec::new ::std::vec::Vec::with_capacity ::std::string::String::from",
+		"::std::any::type_name_of_val ::std::char::from_i64 ::std::clone::clone ::std::io::dbg ::std::io::print ::std::io::println ::std::is_readable ::std::iter::range ::std::mem::drop ::std::panic ::std::vec::Vec::new ::std::vec::Vec::with_capacity ::std::string::String::from",
 	) {
 		Verdict::Admit
 	} else {
@@ -448,6 +451,7 @@ fn registry_verdicts_are_live_and_every_metadata_row_is_accounted_for() {
 						};
 						let mut expr = expression(&r, kind, name, &args, &g, &target);
 						if inline
+							&& r.name != "::std::result::Result"
 							&& matches!(kind, AssociatedKind::Instance(_))
 							&& in_names(
 								name,

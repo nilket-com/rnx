@@ -136,6 +136,8 @@ impl State {
 			&& self.certified[m as usize] == m.required()
 	}
 }
+pub(crate) const IS_READABLE: Hash = crate::hash_in!(crate, ::std::is_readable);
+pub(crate) const CORE_MARKER: u8 = 32;
 pub(crate) const TYPE_OF: Hash = crate::hash_in!(crate, ::std::any::Type::of_val);
 pub(crate) const TYPE_OF_ASSOC: Hash = crate::hash_in!(crate, ::std::any::Type.of_val);
 pub(crate) fn any_kind(h: Hash) -> Option<bool> {
@@ -152,12 +154,15 @@ impl State {
 	pub(crate) fn begin_any(&mut self, h: Hash) -> Option<u8> {
 		let bit = if h == TYPE_OF || h == TYPE_OF_ASSOC {
 			1
+		} else if h == IS_READABLE {
+			4
 		} else if h == TYPE_NAME {
 			2
 		} else {
 			return None;
 		};
-		if self.pending & 16 == 0 {
+		let marker = if h == IS_READABLE { CORE_MARKER } else { 16 };
+		if self.pending & marker == 0 {
 			self.any_closed |= bit;
 			None
 		} else {
@@ -173,6 +178,8 @@ impl State {
 	pub(crate) fn any_ready(&self, h: Hash) -> bool {
 		let bit = if h == TYPE_OF || h == TYPE_OF_ASSOC {
 			1
+		} else if h == IS_READABLE {
+			4
 		} else if h == TYPE_NAME {
 			2
 		} else {

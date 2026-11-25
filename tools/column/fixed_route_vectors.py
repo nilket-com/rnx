@@ -178,6 +178,18 @@ def installed_dispatch(build, mode, directory, valgrind):
   'W':counts['rnx_Ir']+counts['other_Ir'],'T':counts['total_Ir'],
   'stack_query':{'T':observed['total_Ir'],'W':observed['rnx_Ir']+observed['other_Ir'],'native_before_stack':before},
   'query':str(query),'query_sha256':sha(query),'maps':str(directory/'native.maps'),'maps_sha256':sha(directory/'native.maps')}
+ # Record the outer ELF's loader work. A different loader keeps the ordinary rule.
+ rule=json.loads((root/'tools/column/fixed_route_policy.json').read_text()).get('relative_relocations')
+ if mode=='on' and rule and reference['libraries'].get(rule['loader'])==rule['sha256']:
+  symbol=rule['loader']+'::'+rule['symbol']
+  if symbol in counts['dynamic_functions'] and observed['dynamic_functions'].get(symbol,0)==0:
+   table=subprocess.check_output(['/usr/bin/readelf','-Wr',build['installed_binary']],text=True)
+   ordinary=sum(len(fields)>=3 and fields[2]=='R_X86_64_RELATIVE' for fields in map(str.split,table.splitlines()))
+   if sha(build['installed_binary'])!=desc['installed']['sha256']:
+    raise ValueError('installed image changed during relocation measurement')
+   mapping['relative_relocations']={'version':rule['version'],'artifacts':desc,'count':ordinary,
+    'loader_sha256':rule['sha256'],'symbol':symbol,'self_Ir':counts['dynamic_functions'][symbol],
+    'profile_sha256':mapping['profile_sha256'],'launch_sha256':launch_hash}
  receipt=dict(status='PASS',mode=mode,artifacts=desc,launch=context,route=expected,**mapping)
  proof=directory/'DISPATCH.json'
  atomic_json(proof,receipt)

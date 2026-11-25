@@ -1,7 +1,7 @@
 //! C17a Option and Result method calls. Operands were evaluated in source order.
 use super::*;
 use crate::experimental_core::heap::VariantOutcome;
-use crate::function::variant::Method;
+use crate::function::variant::Operation;
 
 impl Executor {
 	#[cold]
@@ -14,7 +14,7 @@ impl Executor {
 		function: &super::super::code::Function,
 		base: usize,
 		out: u32,
-		method: Method,
+		method: Operation,
 		start: u32,
 		count: u32,
 	) -> Result<()> {
@@ -38,17 +38,33 @@ impl Executor {
 		};
 		let receiver = read(args[0])?;
 		let message = args.get(1).map(|slot| read(*slot)).transpose()?;
-		let outcome = store
-			.variant_method(method, receiver, message, &self.format_limits)
-			.map_err(|e| {
-				// A wrong receiver needs the compile-time absence proof.
-				match e.detail {
-					Detail::MissingInstanceFunction { hash, .. } if !code.absent_method(hash) => {
-						invalid()
+		let outcome = match method {
+			Operation::Readable => VariantOutcome::Value(Value::Bool(store.is_readable(receiver)?)),
+			Operation::CheckCallback => {
+				let success = store.variant_success(receiver)?;
+				store
+					.check_callback_conversion(message.ok_or_else(invalid)?, TypeName::Function)?;
+				VariantOutcome::Value(Value::Bool(success))
+			}
+			Operation::CheckReturn => {
+				store.check_callback_conversion(receiver, TypeName::Result)?;
+				let (tag, ok, child) = store.variant_parts(receiver)?;
+				VariantOutcome::Value(store.variant(tag, ok, child)?)
+			}
+			Operation::Method(method) => store
+				.variant_method(method, receiver, message, &self.format_limits)
+				.map_err(|e| {
+					// A wrong receiver needs the compile-time absence proof.
+					match e.detail {
+						Detail::MissingInstanceFunction { hash, .. }
+							if !code.absent_method(hash) =>
+						{
+							invalid()
+						}
+						_ => e,
 					}
-					_ => e,
-				}
-			})?;
+				})?,
+		};
 		match outcome {
 			VariantOutcome::Value(value) => self.put(
 				store,

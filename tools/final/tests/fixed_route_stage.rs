@@ -653,6 +653,10 @@ fn legacy_policy() -> Value {
 	policy.as_object_mut().unwrap().remove("installed_setup");
 	policy.as_object_mut().unwrap().remove("meter");
 	policy
+		.as_object_mut()
+		.unwrap()
+		.remove("relative_relocations");
+	policy
 }
 
 fn checkout(tmp: &Path) -> PathBuf {

@@ -375,6 +375,19 @@ impl<'a> Processor<'a> {
 					.try_push(State::Closure(guard, item, async_token, move_token))?;
 				node.replace(Closure(idx.item.id));
 			}
+			#[cfg(feature = "execution")]
+			ExprField if !idx.q.inner.instances.result_callback_site => {
+				if let Some(path) = node.find(Path) {
+					if let Some([name]) = path.nodes() {
+						if matches!(name.kind(), K![ident]) {
+							let ident = name.ast::<ast::Ident>()?;
+							let name = ident.resolve(resolve_context!(idx.q))?;
+							idx.q.inner.instances.result_callback_site =
+								matches!(name, "map" | "and_then");
+						}
+					}
+				}
+			}
 			ExprChain => {
 				let mut p = node.into_stream();
 

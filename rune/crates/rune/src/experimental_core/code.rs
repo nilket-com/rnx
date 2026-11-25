@@ -910,7 +910,20 @@ const PIPELINE_CHILD: u32 = FIRST_INTRINSIC_ID + 0x78;
 const PIPELINE_SKIP_REMAINING: u32 = FIRST_INTRINSIC_ID + 0x79;
 const PIPELINE_TAKE_NEXT: u32 = FIRST_INTRINSIC_ID + 0x7a;
 const PIPELINE_APPEND: u32 = FIRST_INTRINSIC_ID + 0x7b;
+use crate::function::variant::Operation as VariantOp;
 const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
+	CertifiedIntrinsic {
+		id: VariantOp::Readable.id(),
+		arity: 1,
+	},
+	CertifiedIntrinsic {
+		id: VariantOp::CheckCallback.id(),
+		arity: 2,
+	},
+	CertifiedIntrinsic {
+		id: VariantOp::CheckReturn.id(),
+		arity: 1,
+	},
 	CertifiedIntrinsic {
 		id: PRINT_RAW,
 		arity: 1,
@@ -1448,7 +1461,6 @@ impl Builder {
 /// separately supplied Staging. The public Builder seal remains strict.
 #[derive(Default)]
 pub(crate) struct CompileTransaction {
-	pub(super) result_callbacks: super::lower::result_callbacks::Proofs,
 	builder: Builder,
 	staging: nominal::Staging,
 	checked_absent: Vec<crate::Hash>,
@@ -3457,7 +3469,8 @@ mod intrinsic_partition_tests {
 		// adds the six Option and Result methods and C17b the five Object methods.
 		// C18b3c adds two Vec constructors and C17f adds resize.
 		// C17c numeric intrinsics live outside this table.
-		assert_eq!(CERTIFIED_INTRINSICS.len(), 67);
+		// 0337 adds Readable, CheckCallback and CheckReturn.
+		assert_eq!(CERTIFIED_INTRINSICS.len(), 70);
 		assert!(certified_intrinsic(CERTIFIED_INTRINSICS, DEBUG_LINES).is_none());
 		let debug = call_certificate(DEBUG_LINES).unwrap();
 		for arity in [0, 1, 2, u32::MAX] {
@@ -3499,10 +3512,16 @@ mod intrinsic_partition_tests {
 				.arity,
 			2
 		);
-		assert_eq!(CERTIFIED_INTRINSICS[0].id, PRINT_RAW);
-		assert_eq!(CERTIFIED_INTRINSICS[0].arity, 1);
-		assert_eq!(CERTIFIED_INTRINSICS[1].id, VARIANT_SUCCESS);
-		assert_eq!(CERTIFIED_INTRINSICS[1].arity, 1);
+		for (id, arity) in [
+			(PRINT_RAW, 1),
+			(VARIANT_SUCCESS, 1),
+			(VariantOp::Readable.id(), 1),
+			(VariantOp::CheckCallback.id(), 2),
+			(VariantOp::CheckReturn.id(), 1),
+		] {
+			let entry = certified_intrinsic(CERTIFIED_INTRINSICS, id).unwrap();
+			assert_eq!((entry.id, entry.arity), (id, arity));
+		}
 		assert_ne!(PRINT_RAW, VARIANT_SUCCESS);
 		for id in [0, FIRST_INTRINSIC_ID, VARIANT_SUCCESS + 1, u32::MAX] {
 			assert!(certified_intrinsic(CERTIFIED_INTRINSICS, id).is_none());

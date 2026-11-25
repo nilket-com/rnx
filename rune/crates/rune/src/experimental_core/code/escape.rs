@@ -87,7 +87,10 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 	if let Some(effect) = variant::Method::from_id(id) {
 		use variant::Method::*;
 		return Some(match effect {
-			Unwrap | Expect | IsSome | IsNone | IsOk | IsErr => false,
+			variant::Operation::Method(Unwrap | Expect | IsSome | IsNone | IsOk | IsErr)
+			| variant::Operation::CheckCallback
+			| variant::Operation::CheckReturn
+			| variant::Operation::Readable => false,
 		});
 	}
 	if let Some(effect) = object::Method::from_id(id) {

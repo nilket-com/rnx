@@ -205,14 +205,6 @@ impl Collector {
 		}
 	}
 
-	pub(crate) fn prepare_closure_exits(
-		&mut self,
-		exprs: &crate::hir::Exprs<'_>,
-		bodies: impl Iterator<Item = (Hash, crate::hir::ExprId)>,
-	) -> Result<()> {
-		self.transaction.result_callbacks.prepare(exprs, bodies)
-	}
-
 	pub(crate) fn observe(
 		&mut self,
 		arena: Hash,
@@ -230,8 +222,8 @@ impl Collector {
 			return Ok(());
 		}
 		// The source index is complete before the HIR handoff. With no script
-		// instance target, no formerly refused method can need a nominal proof.
-		if !query.instances.has_functions() {
+		// instance target or Result callback site, no deferred receiver needs a proof.
+		if !query.instances.has_functions() && !query.instances.result_callback_site {
 			self.proofs.disabled = true;
 			return Ok(());
 		}

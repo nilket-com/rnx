@@ -99,7 +99,8 @@ pub(crate) fn dispatch_proof(row: &Value, desc: &Value, proof: &Value) -> Result
 		"installed dispatch proof differs"
 	);
 	ensure!(
-		d.get("host_inputs") == proof.get("host_inputs")
+		d.get("relative_relocations") == proof.get("relative_relocations")
+			&& d.get("host_inputs") == proof.get("host_inputs")
 			&& d.get("allocator") == proof.get("allocator"),
 		"installed host proof differs"
 	);
@@ -137,6 +138,12 @@ pub(crate) fn validate_row(row: &Value, desc: &Value) -> Result<()> {
 		row.get("dispatch").is_some() == desc.get("installed").is_some(),
 		"installed dispatch evidence mismatch"
 	);
+	if let Some(observed) = row["dispatch"].get("relative_relocations") {
+		ensure!(
+			observed["artifacts"] == *desc && row["relocation_images"] == *desc,
+			"relocation proof belongs to another image"
+		);
+	}
 	if let Some(dispatch) = row.get("dispatch") {
 		let w = dispatch["W"].as_u64().context("missing dispatch work")?;
 		let t = dispatch["T"]

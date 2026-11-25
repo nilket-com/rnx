@@ -886,6 +886,9 @@ pub fn capture_receipts(
 					"wrong measured execution route"
 				);
 				if let Some(desc) = binary.get("measured") {
+					if row["dispatch"].get("relative_relocations").is_some() {
+						row["relocation_images"] = desc.clone();
+					}
 					images::validate_row(row, desc)?;
 					if let Some(d) = row.get("dispatch") {
 						let proof_path = vectors_dir

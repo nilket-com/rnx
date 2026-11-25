@@ -2627,7 +2627,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		if let Some(with_capacity) = vec_constructors::constructor(hash) {
 			return self.call_vec_constructor(call, with_capacity, out, span);
 		}
-		if crate::function::pipeline::any_kind(hash).is_some() {
+		if hash == crate::function::pipeline::IS_READABLE
+			|| crate::function::pipeline::any_kind(hash).is_some()
+		{
 			return self.call_any_value(hash, call, out, span);
 		}
 		if let Some(pair) = crate::function::numeric::Pair::from_item(hash) {
@@ -2745,18 +2747,18 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		out: u32,
 		span: Span,
 	) -> Result<()> {
-		if hash == name_hash {
-			if let Some(method) = crate::function::variant::Callback::from_name(hash) {
-				if let Some(ok) = self
-					.result_receiver(target)
-					.map_err(|_| result_callbacks::refusal(method, self.location(span)))?
-				{
-					if self.constants.method_script.closed(hash) {
-						return Err(result_callbacks::refusal(method, self.location(span)));
-					}
-					return self.result_callback(call, target, ok, method, out, span);
-				}
+		let callback = (hash == name_hash)
+			.then(|| crate::function::variant::Callback::from_name(hash))
+			.flatten();
+		if let Some(method) = callback.filter(|_| self.direct_result(target)) {
+			let &[argument] = call.args else {
+				return Err(result_callbacks::refusal(method, self.location(span)));
+			};
+			if !self.context.result_callback(method) {
+				return Err(result_callbacks::refusal(method, self.location(span)));
 			}
+			let values = self.operands(&[target, argument])?;
+			return self.result_callback(&values, method, out, span);
 		}
 		let before = (
 			self.function.code.len(),
@@ -2783,13 +2785,10 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				) {
 			return Err(error);
 		}
-		let error = if let Some(method) = crate::function::variant::Callback::from_name(hash)
-			.filter(|_| self.result_refusal_site(target))
-		{
-			result_callbacks::refusal(method, at)
-		} else {
-			error
-		};
+		let mut error = error;
+		if let Some(method) = callback {
+			error.operation = method.name();
+		}
 		if self.proofs.disabled {
 			return Err(error);
 		}
@@ -2800,7 +2799,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			Err(failure) if failure.refusal == Some(Refusal::CodeLimit) => return Err(error),
 			result => result?,
 		};
-		if methods.is_empty() {
+		if methods.is_empty() && callback.is_none() {
 			return Err(error);
 		}
 		let site = self.proofs.sites.len();
@@ -2812,6 +2811,8 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				diagnostic_span: self.proofs.diagnostic_span,
 				body: self.body_hash,
 				receiver,
+				callback,
+				callback_target: None,
 				methods,
 				at,
 				instruction: None,
@@ -2832,6 +2833,15 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			span,
 		)?;
 		self.proofs.sites[site].instruction = Some((pc, out, args_start, args_len));
+		if let Some(method) =
+			callback.filter(|&m| self.context.result_callback(m) && values.len() == 2)
+		{
+			let jump = self.emit(Op::Jump { target: 0 }, span)?;
+			self.proofs.sites[site].callback_target = Some(self.pc());
+			self.result_callback(&values, method, out, span)?;
+			self.function.patch(jump, Op::Jump { target: self.pc() })?;
+		}
+
 		Ok(())
 	}
 
@@ -3090,6 +3100,8 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			)?;
 			values.try_push(meta)?;
 			super::code::ANY_TYPE_OF
+		} else if hash == crate::function::pipeline::IS_READABLE {
+			crate::function::variant::Operation::Readable.id()
 		} else {
 			super::code::ANY_TYPE_NAME
 		};

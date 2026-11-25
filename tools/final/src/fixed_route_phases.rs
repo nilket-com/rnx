@@ -286,6 +286,70 @@ pub(super) fn score_off_dispatch(
 	Ok(())
 }
 
+/// Installed dispatch is measured once per image and mode. Both size rows
+/// must carry that observation and their own independently bound inner launch.
+fn relocation_levels(
+	inputs: [[&Value; 2]; 2],
+	policy: &Value,
+	kind: &str,
+	raw: [i128; 2],
+	allowance: i128,
+) -> Option<Value> {
+	let rule = policy.get("relative_relocations")?;
+	let loader = rule["loader"].as_str()?;
+	let symbol = format!("{loader}::{}", rule["symbol"].as_str()?);
+	let installed = &policy["installed_setup"];
+	let mut counts = [[0i128; 2]; 2];
+	let mut costs = [[0i128; 2]; 2];
+	for (side, rows) in inputs.iter().enumerate() {
+		for (index, row) in rows.iter().enumerate() {
+			let dispatch = &row["dispatch"];
+			let obs = dispatch.get("relative_relocations")?;
+			let desc = row.get("relocation_images")?;
+			crate::fixed_route_images::validate(desc, &desc["runner"]["sha256"]).ok()?;
+			desc.get("installed")?;
+			desc.get("engine")?;
+			if obs["version"] != rule["version"]
+				|| obs["loader_sha256"] != rule["sha256"]
+				|| dispatch["host_inputs"]["libraries"][loader] != rule["sha256"]
+				|| obs["symbol"] != symbol
+				|| obs["profile_sha256"].as_str()?.len() != 64
+				|| obs["profile_sha256"] != dispatch["profile_sha256"]
+				|| obs["launch_sha256"] != installed["outer_launch_sha256"]["on"]
+				|| obs["launch_sha256"] != dispatch["launch_sha256"]
+				|| row["launch_sha256"] != installed["launch_sha256"]["on"]
+				|| row["policy"] != "on"
+				|| row["kind"] != kind
+				|| row["n"] != [1, 5][index]
+				|| obs["artifacts"] != row["relocation_images"]
+				|| obs["artifacts"] != rows[0]["dispatch"]["relative_relocations"]["artifacts"]
+				|| obs["artifacts"]["engine"] != row["boundary"]["engine"]["artifact"]
+			{
+				return None;
+			}
+			counts[side][index] = count(&obs["count"])?;
+			costs[side][index] = count(&obs["self_Ir"])?;
+			if costs[side][index] > count(&dispatch["T"])? {
+				return None;
+			}
+		}
+	}
+	let added = counts[1][0] - counts[0][0];
+	if counts.iter().any(|pair| pair[0] != pair[1]) {
+		return None;
+	}
+	let loader_delta = [costs[1][0] - costs[0][0], costs[1][1] - costs[0][1]];
+	let residual = [raw[0] - loader_delta[0], raw[1] - loader_delta[1]];
+	let unit = count(&rule["unit_Ir"])?;
+	let max = count(&rule["max_added"])?;
+	let pass = (1..=max).contains(&added)
+		&& loader_delta == [added * unit; 2]
+		&& raw.into_iter().all(|n| n <= allowance.max(unit * max))
+		&& residual.into_iter().all(|n| n <= allowance);
+	Some(json!({"version":rule["version"],"added":added,"raw":raw,
+		"loader":loader_delta,"residual":residual,"pass":pass}))
+}
+
 pub(super) fn score_row(
 	whole: &mut Value,
 	inputs: [[&Value; 2]; 2],
@@ -353,8 +417,29 @@ pub(super) fn score_row(
 			let delta = after - before;
 			let pass = delta <= allowance;
 			checks.push(json!({"axis":axis,"before":before,"after":after,"delta":delta,"allowance":allowance,"pass":pass}));
-			passed &= pass;
 		}
+		if !cumulative
+			&& phase == "setup"
+			&& metric == "T"
+			&& installed
+			&& !migration
+			&& (checks[0]["pass"] == false || checks[1]["pass"] == false)
+			&& let Some(observation) = relocation_levels(
+				inputs,
+				policy,
+				kind,
+				[c1 - b1, c5 - b5],
+				integer(&budget[scope]["level"])?,
+			) {
+			if observation["pass"] == true {
+				for check in &mut checks[..2] {
+					check["ordinary_pass"] = check["pass"].clone();
+					check["pass"] = json!(true);
+				}
+			}
+			phases["relative_relocations"] = observation;
+		}
+		passed &= checks.iter().all(|check| check["pass"] == true);
 		phases[phase] = json!(checks);
 	}
 	whole["phases"] = phases;
@@ -370,6 +455,115 @@ mod tests {
 	fn row(setup: i64, execution: i64) -> Value {
 		let account = |n| json!({"total_Ir":n,"rnx_Ir":n,"other_Ir":0,"dynamic_Ir":0});
 		json!({"phases":{"setup":{"accounting":account(setup)},"execution":{"accounting":account(execution)}}})
+	}
+
+	// The counts are the 0337 link plants measured on the published 0336 PIE.
+	#[test]
+	fn only_calibrated_loader_work_can_explain_an_installed_setup_level() {
+		let policy: Value =
+			serde_json::from_str(include_str!("../../column/fixed_route_policy.json")).unwrap();
+		let rule = &policy["relative_relocations"];
+		let setup = &policy["installed_setup"];
+		let loader = rule["loader"].as_str().unwrap();
+		let samples = |added: u32, unrelated: u32| {
+			[1,5].map(|size| {
+				let mut r = row(126103, 100000 * size);
+				let image = json!({"version":2,"target":"x86_64-unknown-linux-gnu",
+					"installed":{"path":"/run/rnx-route/installed","sha256":format!("{added:064x}")},
+					"engine":{"path":"/run/rnx-route/libengine_image.so","sha256":"e".repeat(64)},
+					"runner":{"path":"/run/rnx-route/rnx","sha256":"a".repeat(64)}});
+				r["kind"] = json!("shared_rows");
+				r["policy"] = json!("on");
+				r["n"] = json!(size);
+				r["relocation_images"] = image.clone();
+				r["boundary"] = json!({"engine":{"artifact":image["engine"]}});
+				r["launch_sha256"] = setup["launch_sha256"]["on"].clone();
+				let launch = &setup["outer_launch_sha256"]["on"];
+				let profile = format!("{unrelated:064x}");
+				r["dispatch"] = json!({"launch_sha256": launch, "profile_sha256":profile,
+					"T":745474+12*added+unrelated, "host_inputs":{"libraries":{(loader):rule["sha256"]}},
+					"relative_relocations":{"version":1,"count":31573+added,"self_Ir":431120+12*added,
+						"artifacts":image,"loader_sha256":rule["sha256"],
+						"symbol":format!("{loader}::_dl_relocate_object_no_relro"),"launch_sha256":launch,"profile_sha256":profile}});
+				r
+			})
+		};
+		let check = |a: &[Value; 2], b: &[Value; 2], policy: &Value, limit| {
+			let mut v = json!({"kind":"shared_rows","mode":"on","metric":"T","level_pass":true,"growth_pass":true});
+			score_row(&mut v, [a.each_ref(), b.each_ref()], policy, limit).unwrap();
+			v
+		};
+		let base = samples(0, 0);
+		for (added, extra, pass) in [
+			(0, 0, true),
+			(1, 0, true),
+			(4, 0, true),
+			(5, 0, false),
+			(0, 12, false),
+			(1, 12, false),
+		] {
+			let v = check(&base, &samples(added, extra), &policy, 5);
+			assert_eq!(v["pass_all"], pass, "{v}");
+		}
+		let one = samples(1, 0);
+		let two = samples(2, 0);
+		assert_eq!(check(&one, &two, &policy, 5)["pass_all"], true);
+		let mut cumulative = policy.clone();
+		// Anchor the planted cumulative comparison on the same raw setup level.
+		cumulative["installed_setup"]
+			.as_object_mut()
+			.unwrap()
+			.remove("stack_query");
+		cumulative["installed_setup"]["outer_reference"] =
+			cumulative["installed_setup"]["outer"].clone();
+		cumulative["installed_setup"]["kernels"]["shared_rows"]["T"] = json!([871577, 871577]);
+		cumulative["native_setup"]["kernels"]["shared_rows"]["T"]["cumulative"]["level"] =
+			json!(20);
+		assert_eq!(check(&base, &two, &cumulative, 10)["pass_all"], false);
+
+		for damage in ["missing size", "wrong image", "different loader"] {
+			let mut altered = one.clone();
+			match damage {
+				"missing size" => {
+					altered[1]["dispatch"]
+						.as_object_mut()
+						.unwrap()
+						.remove("relative_relocations");
+				}
+				"wrong image" => {
+					altered[0]["dispatch"]["relative_relocations"] =
+						two[0]["dispatch"]["relative_relocations"].clone()
+				}
+				_ => {
+					for r in &mut altered {
+						r["dispatch"]["host_inputs"]["libraries"][loader] = json!("changed");
+						r["dispatch"]["relative_relocations"]["loader_sha256"] = json!("changed");
+					}
+				}
+			}
+			assert_eq!(
+				check(&base, &altered, &policy, 5)["pass_all"],
+				false,
+				"{damage}"
+			);
+		}
+		let mut old_policy = policy.clone();
+		old_policy
+			.as_object_mut()
+			.unwrap()
+			.remove("relative_relocations");
+		let mut historical = base.clone();
+		for r in &mut historical {
+			r["dispatch"]
+				.as_object_mut()
+				.unwrap()
+				.remove("relative_relocations");
+		}
+		assert_eq!(
+			check(&historical, &historical, &old_policy, 5)["pass_all"],
+			true
+		);
+		assert_eq!(check(&historical, &one, &old_policy, 5)["pass_all"], false);
 	}
 
 	#[test]

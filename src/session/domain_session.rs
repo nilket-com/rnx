@@ -1919,6 +1919,20 @@ mod opaque_tests {
 		s.close().unwrap();
 	}
 	#[test]
+	fn readability_of_an_adapter_value_keeps_the_opaque_argument_refusal() {
+		let input = "{let v=rnx_test::dense();let a=v;let b=is_readable(v);let c=is_readable(a);drop(v);(b,c,is_readable(v),is_readable(a),is_readable(a))}";
+		let mut execution = session();
+		let result = execution.eval(input);
+		assert!(
+			matches!(&result, Err(Failure::Refused(message))
+				if message.contains("a host value passed to a script or unsupported host function")
+					&& message.contains("input 1, line 1, column 40")),
+			"{result:?}"
+		);
+		execution.close().unwrap();
+	}
+
+	#[test]
 	fn legacy_host_debug_is_an_address_label_and_execution_refuses_by_name() {
 		let mut old = Session::new(context()).unwrap();
 		let result = old.eval("format!(\"{:?}\",rnx_test::dense())").unwrap();
