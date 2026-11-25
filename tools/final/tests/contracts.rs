@@ -78,6 +78,8 @@ fn scratch() -> Scratch {
 /// passes its declared count, any other test one.
 #[derive(Default)]
 struct Suite {
+	// Assert the marker's state at every actual recipe callback, including discovery.
+	debug_boundary: Option<(PathBuf, usize)>,
 	optimized_output: Option<String>,
 	calls: Vec<Value>,
 }
@@ -90,6 +92,26 @@ impl Invoke for Suite {
 		log: &Path,
 		_: &[(String, String)],
 	) -> Result<String> {
+		if let Some((marker, last)) = &self.debug_boundary {
+			let index: usize = log
+				.file_name()
+				.unwrap()
+				.to_str()
+				.unwrap()
+				.split('-')
+				.next()
+				.unwrap()
+				.parse()
+				.unwrap();
+			assert_eq!(
+				std::fs::read(marker).unwrap(),
+				if index <= *last {
+					b"".as_slice()
+				} else {
+					b"released".as_slice()
+				}
+			);
+		}
 		self.calls.push(
 			json!({"command": command, "cwd": cwd, "log": log.file_name().unwrap().to_string_lossy()}),
 		);
@@ -1217,4 +1239,130 @@ fn a_case_without_its_differences_list_fails_and_the_rest_run() {
 	let receipt: Value =
 		serde_json::from_slice(&std::fs::read(bulk.join("missing/RESULT.json")).unwrap()).unwrap();
 	assert_eq!(receipt["status"], "FAIL");
+}
+
+#[test]
+fn all_writes_including_a_later_debug_recipe_precede_release() {
+	let s = scratch();
+	let root = root();
+	let commands = rnx_final::catalogue::recipes("rune-suite", &root).unwrap();
+	for last in [0, 3] {
+		let out = s.0.join(last.to_string());
+		std::fs::create_dir(&out).unwrap();
+		let marker = out.join("phase");
+		std::fs::File::create_new(&marker).unwrap();
+		let mut routes = serde_json::Map::new();
+		for (index, cmd) in commands.iter().enumerate() {
+			let group = if index == 0 || index == last {
+				"target/debug"
+			} else {
+				"target/engine-dev"
+			};
+			let key = rnx_final::pyjson::identity(&(cmd, false)).unwrap();
+			routes.insert(
+				key,
+				json!({"group":group,"target":out.join(group),"recipe":"test","mark":out.join("marks")}),
+			);
+		}
+		let path = out.join("routes.json");
+		std::fs::write(&path, serde_json::to_vec(&routes).unwrap()).unwrap();
+		let env = Environment::from([
+			("RNX_FINAL_CACHE_ROUTES".into(), path.display().to_string()),
+			(
+				"RNX_FINAL_CACHE_CHECKOUT".into(),
+				root.display().to_string(),
+			),
+			(
+				"RNX_FINAL_DEBUG_RELEASE".into(),
+				marker.display().to_string(),
+			),
+		]);
+		let mut trace = Suite {
+			debug_boundary: Some((marker, last)),
+			..Default::default()
+		};
+		stage::suite(
+			"rune-suite",
+			&out,
+			&root,
+			&|| unreachable!(),
+			&env,
+			&mut trace,
+		)
+		.unwrap();
+	}
+}
+
+/// Driven through the normal manifest-case entry point in the parent test.
+mod experimental_core {
+	mod tests {
+		mod gap_hunt {
+			#[test]
+			#[ignore = "invoked by final_gap_handoff in its private mount"]
+			fn handoff_fixture() {
+				use std::path::PathBuf;
+				let cwd = std::env::current_dir().unwrap();
+				let tmp = std::env::temp_dir();
+				assert_eq!(tmp, cwd.join("child-tmp"));
+				let fs = std::process::Command::new("/usr/bin/stat")
+					.args(["-f", "-c", "%T %S %b"])
+					.arg(&tmp)
+					.output()
+					.unwrap();
+				assert!(fs.status.success());
+				let text = String::from_utf8(fs.stdout).unwrap();
+				let fields: Vec<_> = text.split_whitespace().collect();
+				assert_eq!(fields[0], "tmpfs");
+				assert_eq!(
+					fields[1].parse::<u64>().unwrap() * fields[2].parse::<u64>().unwrap(),
+					128 << 20
+				);
+				std::fs::write(tmp.join("result"), b"child observation").unwrap();
+				let gap = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
+				assert_eq!(gap, cwd.join("gap-out"));
+				std::fs::create_dir(&gap).unwrap();
+				std::fs::copy(tmp.join("result"), gap.join("00000.stock.result")).unwrap();
+				let differences = PathBuf::from(std::env::var_os("RNX_CONTRACT_DIFFS").unwrap());
+				assert_eq!(differences, cwd.join("DIFFERENCES.json"));
+				std::fs::write(differences, br#"{"rows_checked":1,"differences":[]}"#).unwrap();
+				println!("\nCONTRACT ROWS 1");
+				assert!(!cwd.ends_with("failure"), "deliberate post-handoff failure");
+			}
+		}
+	}
+}
+
+#[test]
+fn final_gap_handoff() {
+	let s = scratch();
+	let binary = std::env::current_exe().unwrap();
+	let receipt = s.0.join("build.json");
+	atomic_json(
+		&receipt,
+		&json!({"binary_sha256": digest(&binary).unwrap()}),
+	)
+	.unwrap();
+	let live = contracts::Live {
+		env: Environment::from([("PATH".into(), "/usr/bin:/bin".into())]),
+	};
+	let env = Environment::from([
+		("RNX_FINAL".into(), "1".into()),
+		("TMPDIR".into(), s.0.display().to_string()),
+	]);
+	for (name, status) in [("success", "PASS"), ("failure", "FAIL")] {
+		let manifest = json!({"name":name, "selector":"experimental_core::tests::gap_hunt::handoff_fixture", "rows":1, "exact":true, "ignored":true, "timeout":60});
+		let case = s.0.join(name);
+		let row =
+			contracts::run_case(&manifest, &binary, &receipt, &root(), &s.0, &env, &live).unwrap();
+		assert_eq!(row["status"], status, "{row}");
+		assert_eq!(
+			std::fs::read(case.join("gap-out/00000.stock.result")).unwrap(),
+			b"child observation"
+		);
+		assert_eq!(
+			row["artifacts"]["DIFFERENCES.json"],
+			digest(&case.join("DIFFERENCES.json")).unwrap()
+		);
+		assert!(!case.join("child-tmp").exists());
+	}
 }

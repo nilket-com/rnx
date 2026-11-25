@@ -290,6 +290,14 @@ impl CachePlan {
 		Ok(())
 	}
 
+	pub fn suite_debug_target(&self) -> Option<&Path> {
+		self.routes
+			.get("rune-suite")?
+			.values()
+			.find(|route| route.is_root_debug())
+			.map(|route| route.target.as_path())
+	}
+
 	pub fn targets(&self, stage: &str) -> BTreeSet<String> {
 		self.routes
 			.get(stage)
@@ -639,6 +647,10 @@ pub fn lookup(env: &Environment, cwd: &Path, args: &[String]) -> Result<Option<R
 }
 
 impl Route {
+	pub fn is_root_debug(&self) -> bool {
+		self.group == Path::new("target/debug")
+	}
+
 	pub fn binary(&self, name: &str) -> Result<PathBuf> {
 		self.product(Some(name))
 	}

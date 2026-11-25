@@ -182,6 +182,12 @@ impl Fake {
 }
 
 impl Hooks for Fake {
+	fn suite_debug_target(&self, _: Option<&rnx_final::cache::CachePlan>) -> Option<PathBuf> {
+		self.plan
+			.iter()
+			.any(|(n, lanes)| *n == "rune-suite" && lanes.contains(&"fixture-debug"))
+			.then(|| "fixture-debug".into())
+	}
 	fn head(&self, _: &Path) -> Option<String> {
 		Some("c".into())
 	}
@@ -348,6 +354,16 @@ impl Hooks for Fake {
 			.copied()
 			.unwrap_or((0.3, 0));
 		let start = Instant::now();
+		if let Some(marker) = call.environment.get("RNX_FINAL_DEBUG_RELEASE") {
+			std::fs::write(marker, b"released").unwrap();
+			self.until("debug peer admitted while suite still active", |f| {
+				f.started.contains("debug-peer")
+			});
+		}
+		if call.name == "debug-peer" {
+			self.flow.lock().unwrap().started.insert(call.name.clone());
+			self.moved.notify_all();
+		}
 		if let Some((_, count, hold)) = self.borrow.filter(|(stage, _, _)| *stage == call.name) {
 			// Borrow tokens as a Cargo job does, and return them mid-stage.
 			let flags = &call.environment["MAKEFLAGS"];
@@ -1748,4 +1764,31 @@ fn check_scratch_admission(marker: Option<&str>) {
 		}
 	}
 	assert!(mock.span("generated-projects").is_none());
+}
+
+#[test]
+fn suite_release_wakes_only_the_debug_peer_before_completion() {
+	let fake = Arc::new(Fake::new(
+		vec![
+			("debug-peer", vec!["fixture-debug"]),
+			("engine-peer", vec!["fixture-engine"]),
+			("rune-suite", vec!["fixture-debug", "fixture-engine"]),
+		],
+		&[],
+	));
+	let (result, dir) = run(fake.clone(), 3);
+	assert_eq!(result["status"], "PASS", "{result}");
+	assert!(fake.flow.lock().unwrap().timeouts.is_empty());
+	let traces: Value =
+		serde_json::from_slice(&std::fs::read(dir.0.join("final/SCHEDULE.json")).unwrap()).unwrap();
+	let rows = traces["stages"].as_array().unwrap();
+	let suite = &rows[2];
+	let release = suite["debug_lane_released"].as_f64().unwrap();
+	let time = |i: usize, key: &str| rows[i][key].as_f64().unwrap();
+	assert!(
+		time(2, "started") <= release
+			&& release <= time(0, "started")
+			&& time(0, "started") < time(2, "ended")
+	);
+	assert!(time(1, "started") >= time(2, "ended"));
 }

@@ -27,6 +27,9 @@ pub struct StageTrace {
 	/// When its producers, lanes and alone checks were first seen to pass.
 	pub ready: Option<f64>,
 	pub waits: Vec<Wait>,
+	/// Controller observation after the last target/debug writer returned.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub debug_lane_released: Option<f64>,
 	pub started: Option<f64>,
 	pub ended: Option<f64>,
 }
@@ -78,6 +81,7 @@ impl Recorder {
 						state: "waiting".into(),
 						ready: None,
 						waits: vec![],
+						debug_lane_released: None,
 						started: None,
 						ended: None,
 					})
@@ -128,6 +132,10 @@ impl Recorder {
 		let trace = &mut self.schedule.stages[index];
 		trace.started = Some(at);
 		trace.state = "running".into();
+	}
+
+	pub fn release_debug(&mut self, index: usize, at: f64) {
+		self.schedule.stages[index].debug_lane_released = Some(at);
 	}
 
 	pub fn end(&mut self, index: usize, at: f64, passed: bool) {
@@ -219,6 +227,14 @@ pub fn validate(schedule: &Schedule, selected: &[String]) -> Result<()> {
 				s.waits.last().is_none_or(|w| w.at <= start),
 				"{}: waited after it started",
 				s.name
+			);
+		}
+		if let Some(at) = s.debug_lane_released {
+			ensure!(
+				s.name == "rune-suite"
+					&& time(at) && s.started.is_some_and(|t| t <= at)
+					&& s.ended.is_none_or(|t| at <= t),
+				"invalid debug lane release"
 			);
 		}
 		match (s.started, s.ended, s.state.as_str()) {

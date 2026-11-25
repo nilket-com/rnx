@@ -344,6 +344,24 @@ pub fn conflict(a: &Resources, b: &Resources) -> bool {
 			.any(|r| r.contains(FIRST) || r.contains(ALONE))
 }
 
+/// Selection and receipts keep catalogue order. Admission gives the mixed-profile
+/// Rune suite first use of its lanes after the commit and fetch barrier.
+pub fn admission_order(names: &[String]) -> Vec<usize> {
+	let mut order: Vec<_> = (0..names.len()).collect();
+	if let Some(i) = names.iter().position(|name| name == "rune-suite") {
+		let first = names[..i]
+			.iter()
+			.rposition(|name| {
+				name == "commit-discipline"
+					|| name.starts_with("fetch-")
+					|| ALONE_STAGES.contains(&name.as_str())
+			})
+			.map_or(0, |j| j + 1);
+		order[first..=i].rotate_right(1);
+	}
+	order
+}
+
 /// Its producers have passed and every earlier stage sharing a resource
 /// has finished; an ALONE stage also waits for quiet.
 pub fn ready(
@@ -377,6 +395,26 @@ pub fn gate(
 	producers: &[usize],
 	succeeded: &BTreeSet<usize>,
 ) -> Option<Gate> {
+	gate_after(
+		index,
+		0..index,
+		plan,
+		finished,
+		running,
+		producers,
+		succeeded,
+	)
+}
+
+pub fn gate_after(
+	index: usize,
+	mut earlier: impl Iterator<Item = usize>,
+	plan: &[Resources],
+	finished: &BTreeSet<usize>,
+	running: &BTreeSet<usize>,
+	producers: &[usize],
+	succeeded: &BTreeSet<usize>,
+) -> Option<Gate> {
 	if plan[index].contains(ALONE) && !running.is_empty() {
 		return Some(Gate::Alone);
 	}
@@ -388,7 +426,7 @@ pub fn gate(
 	if !waiting.is_empty() {
 		return Some(Gate::Producers(waiting));
 	}
-	(0..index)
+	earlier
 		.find(|j| !finished.contains(j) && conflict(&plan[index], &plan[*j]))
 		.map(Gate::Lanes)
 }

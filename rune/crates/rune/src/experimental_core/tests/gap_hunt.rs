@@ -635,7 +635,12 @@ fn launch(
 	id: &str,
 ) -> Run {
 	let result = scratch.join("result");
+	let access = scratch.join("pending-access.json");
 	let _ = fs::remove_file(&result);
+	// Scratch is reused across rows, including after a failed publication.
+	if access.try_exists().unwrap() {
+		fs::remove_file(&access).unwrap();
+	}
 	let mut child = Command::new(std::env::current_exe().unwrap())
 		.args(["--exact", CHILD, "--ignored", "--nocapture", "--quiet"])
 		.env("GAP_CASE", path)
@@ -643,10 +648,7 @@ fn launch(
 		.env("GAP_MODE", mode)
 		.env("GAP_ENGINE", engine)
 		.env("GAP_RESULT", &result)
-		.env(
-			"GAP_ACCESS_RESULT",
-			out.join(format!("{id}.{engine}.access.json")),
-		)
+		.env("GAP_ACCESS_RESULT", &access)
 		.stdin(Stdio::null())
 		.stdout(Stdio::piped())
 		.stderr(Stdio::piped())
@@ -678,6 +680,10 @@ fn launch(
 	};
 	let stdout = stdout.join().unwrap();
 	let stderr = stderr.join().unwrap();
+	if access.try_exists().unwrap() {
+		fs::copy(&access, out.join(format!("{id}.{engine}.access.json"))).unwrap();
+		fs::remove_file(&access).unwrap();
+	}
 	let complete = stopped.is_empty()
 		&& status.success()
 		&& result.is_file()
@@ -1018,6 +1024,41 @@ fn controls() {
 	);
 	assert!(!run.complete);
 	assert!(run.record.starts_with("child-gap\ttimeout\t"));
+	access_evidence_is_published_by_the_parent(&scratch.0, &path);
+}
+
+fn access_evidence_is_published_by_the_parent(scratch: &Path, input: &Path) {
+	let out = scratch.join("evidence");
+	fs::create_dir(&out).unwrap();
+	for engine in ["stock", "fresh"] {
+		let moved = "pub fn main() { let v=[1,2,3]; let a=v; drop(a); let r=0..2; v[r] }";
+		fs::write(input, moved).unwrap();
+		let evidence = out.join(format!("blocked.{engine}.access.json"));
+		fs::create_dir(&evidence).unwrap();
+		// Publication must fail, but the child must already have completed
+		// its observation despite the unusable evidence destination.
+		assert!(std::panic::catch_unwind(|| launch(
+			input, input, "main", engine, scratch, &out, "blocked"
+		))
+		.is_err());
+		let observation = fs::read_to_string(scratch.join("result")).unwrap();
+		assert!(observation.starts_with("error\t"), "{observation}");
+		let pending = fs::read(scratch.join("pending-access.json")).unwrap();
+		let diagnostic: serde_json::Value = serde_json::from_slice(&pending).unwrap();
+		assert_eq!(diagnostic["engine"], engine);
+
+		fs::write(input, "pub fn main() { 42 }").unwrap();
+		assert!(launch(input, input, "main", engine, scratch, &out, "plain").complete);
+		assert!(!out.join(format!("plain.{engine}.access.json")).exists());
+
+		fs::remove_dir(&evidence).unwrap();
+		fs::write(input, moved).unwrap();
+		assert!(launch(input, input, "main", engine, scratch, &out, "ok").complete);
+		assert_eq!(
+			fs::read(out.join(format!("ok.{engine}.access.json"))).unwrap(),
+			pending
+		);
+	}
 }
 
 fn test_items(file: &crate::ast::File, text: &str, prefix: &str, tests: &mut Vec<(String, usize)>) {

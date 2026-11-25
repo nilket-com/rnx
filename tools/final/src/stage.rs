@@ -13,6 +13,7 @@ use anyhow::{Context as _, Result, bail};
 use serde_json::{Map, Value, json};
 use std::collections::BTreeMap;
 use std::ffi::OsString;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -239,6 +240,22 @@ pub fn suite(
 		.into_iter()
 		.map(|(_, n, _)| n)
 		.collect();
+	// The controller may share this directory as soon as the last routed
+	// invocation has returned, including its cached-cargo marks and products.
+	let release = if let Some(marker) = env.get(crate::controller::DEBUG_RELEASE) {
+		anyhow::ensure!(stage == "rune-suite", "unexpected debug-lane writer");
+		let mut last = None;
+		for (index, command) in commands.iter().enumerate() {
+			let route =
+				crate::cache::lookup(env, root, command)?.context("missing suite cache route")?;
+			if route.is_root_debug() {
+				last = Some(index);
+			}
+		}
+		Some((last.context("missing root debug recipe")?, marker))
+	} else {
+		None
+	};
 	let mut rows = Vec::new();
 	for (i, command) in commands.iter().enumerate() {
 		let mut row = Map::new();
@@ -318,6 +335,14 @@ pub fn suite(
 			row.insert("baseline".into(), json!(baseline));
 		}
 		rows.push(Value::Object(row));
+		if let Some((last, marker)) = release
+			&& i == last
+		{
+			std::fs::OpenOptions::new()
+				.write(true)
+				.open(marker)?
+				.write_all(b"released")?;
+		}
 	}
 	Ok(rows)
 }
@@ -1590,6 +1615,8 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 					.context("record without baseline")?
 					.to_owned())
 			};
+			let mut child_env = env.clone();
+			child_env.remove(crate::controller::DEBUG_RELEASE);
 			let r = receipt(
 				&stage,
 				&out,
@@ -1600,15 +1627,19 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 						root,
 						&record,
 						&env,
-						&mut Live { env: env.clone() },
+						&mut Live {
+							env: child_env.clone(),
+						},
 					)
 				},
 				|| {
 					crate::contracts::run(
 						root,
 						&out,
-						&env,
-						&crate::contracts::Live { env: env.clone() },
+						&child_env,
+						&crate::contracts::Live {
+							env: child_env.clone(),
+						},
 					)
 				},
 			)?;

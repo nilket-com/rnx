@@ -409,6 +409,36 @@ fn differences_text(rows: &[Value]) -> String {
 	format!("[{}]", items.join(", "))
 }
 
+/// Give the timed gap children a private result handoff. Only this empty
+/// mountpoint is on disk. The mount and its contents die with the case's
+/// namespace, including when the supervisor drains a failed process group.
+fn run_gap_case(p: &dyn Process, mut call: Call) -> Result<i32> {
+	let mount = call.cwd.join("child-tmp");
+	std::fs::create_dir(&mount)?;
+	let path = mount.to_string_lossy().into_owned();
+	let mut wrapper = vec![
+		"/usr/bin/bwrap".into(),
+		"--dev-bind".into(),
+		"/".into(),
+		"/".into(),
+		"--size".into(),
+		crate::scheduler::STAGE_SCRATCH_BYTES.to_string(),
+		"--perms".into(),
+		"0700".into(),
+		"--tmpfs".into(),
+		path.clone(),
+		"--setenv".into(),
+		"TMPDIR".into(),
+		path,
+		"--".into(),
+	];
+	wrapper.append(&mut call.command);
+	call.command = wrapper;
+	let result = p.run(&call);
+	std::fs::remove_dir(&mount).with_context(|| format!("remove {}", mount.display()))?;
+	result
+}
+
 /// Run one manifest case; its row, a failure included. Only a case
 /// directory that cannot be created is an error.
 pub fn run_case(
@@ -530,7 +560,7 @@ pub fn run_case(
 			.and_then(|t| Duration::try_from_secs_f64(t).ok())
 			.filter(|t| !t.is_zero())
 			.ok_or_else(|| value_error("invalid manifest case"))?;
-		let code = p.run(&Call {
+		let call = Call {
 			command,
 			cwd,
 			env: Some(case_env),
@@ -538,7 +568,15 @@ pub fn run_case(
 			check: false,
 			stdout: d.join("stdout.log"),
 			stderr: Some(d.join("stderr.log")),
-		})?;
+		};
+		let code = if env.contains_key("RNX_FINAL")
+			&& !truthy(&c["sandbox"])
+			&& selector.starts_with("experimental_core::tests::gap_hunt::")
+		{
+			run_gap_case(p, call)
+		} else {
+			p.run(&call)
+		}?;
 		r.insert("exit".into(), json!(code));
 		let text = String::from_utf8_lossy(&std::fs::read(d.join("stdout.log"))?).into_owned();
 		let counts: Vec<(u64, u64)> = RESULT

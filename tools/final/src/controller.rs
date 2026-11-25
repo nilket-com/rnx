@@ -24,6 +24,7 @@ pub const DISK_FLOOR_BYTES: u64 = 20 * 1024 * 1024 * 1024;
 /// People wait on the complete final. Past an hour it fails, so a slow
 /// stage is fixed when it appears rather than after the loop has doubled.
 pub const WALL_BUDGET_SECONDS: f64 = 3600.0;
+pub(crate) const DEBUG_RELEASE: &str = "RNX_FINAL_DEBUG_RELEASE";
 const STAGE_TIMEOUT: Duration = Duration::from_secs(10800);
 
 pub fn wall_budget_error(scope: &str, seconds: f64) -> Option<String> {
@@ -40,6 +41,9 @@ pub fn wall_budget_error(scope: &str, seconds: f64) -> Option<String> {
 pub trait Hooks: Send + Sync {
 	fn cargo_caches(&self) -> bool {
 		false
+	}
+	fn suite_debug_target(&self, cache: Option<&crate::cache::CachePlan>) -> Option<PathBuf> {
+		cache?.suite_debug_target().map(Path::to_owned)
 	}
 	fn head(&self, root: &Path) -> Option<String> {
 		child::head(root)
@@ -772,6 +776,7 @@ fn stage_failure(
 }
 
 enum Event {
+	DebugReleased,
 	Done(usize, Result<child::Done>),
 	Signal(i32),
 	/// The jobserver fifo was written, or its watch overflowed: capacity
@@ -791,6 +796,34 @@ struct Watcher {
 }
 
 impl Watcher {
+	/// The suite writes the marker only after the routed invocation returns.
+	/// Overflow can wake inotify too, so check the file before notifying.
+	fn debug_release(path: &Path, sender: Notifier) -> Result<Self> {
+		use job_budget::fifo::{Notice, Watch};
+		std::fs::File::create_new(path)?;
+		let watch = Watch::new(path)?;
+		let stop = watch.stopper()?;
+		let path = path.to_owned();
+		let handle = std::thread::spawn(move || {
+			let wait = || -> Result<()> {
+				while watch.wait()? == Notice::Modified {
+					if std::fs::read(&path)? == b"released" {
+						sender.send(Event::DebugReleased);
+						break;
+					}
+				}
+				Ok(())
+			};
+			if let Err(error) = wait() {
+				sender.send(Event::WatchFailed(format!("debug lane release: {error:#}")));
+			}
+		});
+		Ok(Self {
+			stop,
+			handle: Some(handle),
+		})
+	}
+
 	fn start(
 		watch: job_budget::fifo::Watch,
 		sender: Notifier,
@@ -1043,7 +1076,7 @@ fn run_stages(
 			disk.insert(estimate.into(), json!(DISK_FLOOR_BYTES + estimates[site]));
 		}
 	}
-	let mut pending: Vec<usize> = (0..stages.len()).collect();
+
 	let mut running: BTreeMap<usize, (Tokens, Arc<Stopper>, std::thread::JoinHandle<()>)> =
 		BTreeMap::new();
 	let (mut finished, mut succeeded) = (BTreeSet::new(), BTreeSet::new());
@@ -1052,8 +1085,30 @@ fn run_stages(
 	let (sender, receiver) = events;
 	let mut environments: BTreeMap<String, BTreeMap<String, String>> = BTreeMap::new();
 	let names: Vec<String> = stages.iter().map(|(n, _)| n.clone()).collect();
+	let order = scheduler::admission_order(&names);
+	let mut pending = order.clone();
+	let mut held_lanes = plan.clone();
+	let suite_debug = names
+		.iter()
+		.position(|n| n == "rune-suite")
+		.zip(settings.hooks.suite_debug_target(cache.as_ref()));
+	let marker = temporaries.join("release-rune-suite-debug");
+	let _release_watch = suite_debug
+		.as_ref()
+		.map(|_| Watcher::debug_release(&marker, sender.clone()))
+		.transpose()?;
+
 	let recorder = std::cell::RefCell::new(crate::schedule::Recorder::new(&names));
 	let now = || settings.hooks.elapsed(settings.started);
+	let release_debug = |finished: &BTreeSet<usize>, held: &mut [Resources]| {
+		if let Some((i, path)) = &suite_debug
+			&& !finished.contains(i)
+			&& held[*i].remove(path.to_string_lossy().as_ref())
+		{
+			recorder.borrow_mut().release_debug(*i, now());
+		}
+	};
+
 	let mut complete = |owner: &Owners,
 	                    index: usize,
 	                    result: Result<child::Done>,
@@ -1133,6 +1188,7 @@ fn run_stages(
 			token_waiting = false;
 			if failed.is_none() {
 				let pass = pending.clone();
+				let mut revisit = false;
 				// The stages a refusal leaves unevaluated in this pass.
 				let queue_rest = |position: usize, by: usize| {
 					for &later in &pass[position + 1..] {
@@ -1169,6 +1225,10 @@ fn run_stages(
 							// Noted, its flag still set: earlier stages of this
 							// pass are rechecked only by the next pass.
 							Event::Tokens => tokens_noted = true,
+							Event::DebugReleased => {
+								release_debug(&finished, &mut held_lanes);
+								revisit = true;
+							}
 							Event::WatchFailed(error) => {
 								bail!(value_error(&format!("jobserver watch failed: {error}")))
 							}
@@ -1178,9 +1238,10 @@ fn run_stages(
 						break;
 					}
 					let running_set: BTreeSet<usize> = running.keys().copied().collect();
-					if let Some(gate) = scheduler::gate(
+					if let Some(gate) = scheduler::gate_after(
 						index,
-						&plan,
+						order.iter().copied().take_while(|i| *i != index),
+						&held_lanes,
 						&finished,
 						&running_set,
 						&needs[index],
@@ -1285,6 +1346,10 @@ fn run_stages(
 							return Err(error);
 						}
 					};
+					env.remove(DEBUG_RELEASE);
+					if suite_debug.as_ref().is_some_and(|(i, _)| *i == index) {
+						env.insert(DEBUG_RELEASE.into(), marker.display().to_string());
+					}
 					if let Some(cache) = cache.as_ref() {
 						cache.environment(&name, &mut env)?;
 					}
@@ -1313,6 +1378,9 @@ fn run_stages(
 						queue_rest(position, index);
 						break;
 					}
+				}
+				if revisit && failed.is_none() {
+					continue;
 				}
 			}
 			if running.is_empty() {
@@ -1370,6 +1438,7 @@ fn run_stages(
 			let by = match &event {
 				Some(Event::Done(index, _)) => Some(stages[*index].0.clone()),
 				Some(Event::Signal(_)) => Some("signal".to_string()),
+				Some(Event::DebugReleased) => Some("rune-suite".to_string()),
 				_ => None,
 			};
 			recorder.borrow_mut().controller(now(), "woken", by);
@@ -1389,6 +1458,7 @@ fn run_stages(
 						.hooks
 						.check_selection(selection_value, root, &settings.environment)?;
 				}
+				Some(Event::DebugReleased) => release_debug(&finished, &mut held_lanes),
 				Some(Event::Signal(signal)) => interrupted.store(signal, Ordering::SeqCst),
 				_ => {}
 			}
@@ -1410,7 +1480,9 @@ fn run_stages(
 					&mut finished,
 					&mut succeeded,
 				),
-				Ok(Event::Signal(_) | Event::Tokens | Event::WatchFailed(_)) => {}
+				Ok(
+					Event::Signal(_) | Event::Tokens | Event::DebugReleased | Event::WatchFailed(_),
+				) => {}
 				Err(_) => break,
 			}
 		}
