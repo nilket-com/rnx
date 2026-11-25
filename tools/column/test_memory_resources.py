@@ -7,6 +7,9 @@ import tempfile
 import unittest
 import uuid
 import importlib.util
+from unittest.mock import call, patch
+
+import memory_live
 
 from ir_resources import memory, fixed_budget, launch_budget, observed_budget
 
@@ -84,12 +87,46 @@ class Accounting(unittest.TestCase):
 		with self.assertRaises(memory.ResourceObservationError): memory.capacity(8,100,-1,10,20)
 		path = Path(__file__).resolve().parents[2]/'rune/tools/xtask/supplemental/admission.py'
 		# Supplemental admission imports the same implementation under its local module name.
-		from unittest.mock import patch
 		with patch.dict(sys.modules, {'memory_resources': memory}):
 			spec = importlib.util.spec_from_file_location('memory_admission_control', path)
 			admission = importlib.util.module_from_spec(spec); spec.loader.exec_module(admission)
 		with self.assertRaises(memory.InsufficientMemory) as caught: admission.admit(8,64*GIB,0,4*GIB)
 		self.assertEqual(caught.exception.numbers['per_worker_bytes'], 5*GIB)
+
+	def test_live_cache_provisions_only_until_the_kernel_sample_qualifies(self):
+		def reading(current, cached, **fields):
+			self.group('parent/child', high=5*GIB, limit=6*GIB, current=current,
+				file=cached, inactive_file=cached, **fields)
+			return self.observe()
+
+		# At the raw boundary, and with a shortage of clean file pages,
+		# respectively. Neither sample can establish the required contrast.
+		short = reading(GIB, GIB)
+		dirty = reading(2*GIB, 2*GIB, file_dirty=2*GIB)
+		ready = reading(2*GIB, 2*GIB)
+		for samples, budget, failure in (
+			([ready], 1, None),
+			([short, dirty, ready], 1, None),
+			([short, dirty, short], None, 'precondition unmet'),
+			([ready], 2, 'accounting did not admit exactly one'),
+		):
+			with self.subTest(samples=len(samples), budget=budget):
+				observations = []
+				with patch.object(memory_live, 'resources', side_effect=samples), \
+					patch.object(memory_live, 'append_extent') as append, \
+					patch.object(memory_live, 'fixed_budget', return_value=budget) as score:
+					if failure:
+						with self.assertRaisesRegex(ValueError, failure):
+							memory_live.check_clean_cache(None, observations)
+					else:
+						memory_live.check_clean_cache(None, observations)
+					expected = [2*GIB] + [GIB//2] * (len(samples)-1)
+					self.assertEqual(append.call_args_list, [call(None, n) for n in expected])
+					self.assertEqual([row['reading'] for row in observations], samples)
+					if budget is None:
+						score.assert_not_called()
+					else:
+						score.assert_called_once_with(ready)
 
 	def test_live_cache_and_anonymous_with_high_binding(self):
 		if not Path(f'/run/user/{os.getuid()}/bus').exists(): self.skipTest('user systemd bus unavailable; run memory_live.py in a limited unit')
@@ -104,8 +141,8 @@ class Accounting(unittest.TestCase):
 		done = subprocess.run(command,capture_output=True,text=True,timeout=240)
 		self.assertEqual(done.returncode,0,done.stderr + ((out/'RESULT.json').read_text() if (out/'RESULT.json').exists() else ''))
 		row = json.loads((out/'RESULT.json').read_text()); self.assertEqual(row['status'],'PASS')
-		self.assertEqual(row['observations'][1]['workers'],1)
-		self.assertEqual(row['observations'][2]['refusal']['workers'],0)
+		self.assertEqual(row['observations'][-2]['workers'],1)
+		self.assertEqual(row['observations'][-1]['refusal']['workers'],0)
 		self.assertEqual(row['release']['status'],'PASS'); self.assertFalse((out/'payload').exists())
 
 

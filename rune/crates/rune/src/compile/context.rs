@@ -1355,6 +1355,11 @@ impl Context {
 	}
 	/// Execution core (C17a): every stock provider of `m` is the certified std registration.
 	#[cfg(feature = "execution")]
+	pub(crate) fn result_callback(&self, callback: crate::function::variant::Callback) -> bool {
+		self.variant.callback(callback)
+	}
+
+	#[cfg(feature = "execution")]
 	pub(crate) fn variant_method(&self, m: crate::function::variant::Method) -> bool {
 		self.variant.ready(m)
 	}
@@ -1983,6 +1988,13 @@ impl Context {
 			ModuleAssociatedKind::Constant(..) => (false, None),
 		};
 		#[cfg(feature = "execution")]
+		let callback_touch = crate::function::variant::Callback::associated(base).filter(|&callback| {
+			let (plain, trait_hash) = plain();
+			let named = matches!(&assoc.name.kind, meta::AssociatedKind::Instance(_));
+			self.variant
+				.begin_callback(callback, named && plain && trait_hash.is_none())
+		});
+		#[cfg(feature = "execution")]
 		let variant_touch = match &assoc.name.kind {
 			meta::AssociatedKind::Instance(name) => {
 				crate::function::variant::Method::from_name(name).and_then(|m| {
@@ -2186,6 +2198,9 @@ impl Context {
 		{
 			if let Some((m, bit)) = pipeline_touch {
 				self.pipeline.installed(m, bit);
+			}
+			if let Some(callback) = callback_touch {
+				self.variant.installed_callback(callback);
 			}
 			if let Some((m, bit)) = variant_touch {
 				self.variant.installed(m, bit);

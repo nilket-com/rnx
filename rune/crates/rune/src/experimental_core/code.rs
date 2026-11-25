@@ -1448,6 +1448,7 @@ impl Builder {
 /// separately supplied Staging. The public Builder seal remains strict.
 #[derive(Default)]
 pub(crate) struct CompileTransaction {
+	pub(super) result_callbacks: super::lower::result_callbacks::Proofs,
 	builder: Builder,
 	staging: nominal::Staging,
 	checked_absent: Vec<crate::Hash>,

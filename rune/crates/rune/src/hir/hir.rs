@@ -239,6 +239,14 @@ impl<'hir> Exprs<'hir> {
 		self.exprs.iter()
 	}
 
+	/// A proof may decline a malformed reference without producing code for it.
+	#[cfg(feature = "execution")]
+	pub(crate) fn get_checked(&self, id: ExprId) -> Option<&Expr<'hir>> {
+		let expr = self.exprs.get(id.0 as usize);
+		debug_assert!(expr.is_some(), "invalid HIR expression reference: {id}");
+		expr
+	}
+
 	/// Get the expression associated with the given identifier.
 	///
 	/// Identifiers are only ever produced by [`Exprs::insert`] on the same

@@ -58,6 +58,7 @@ mod macro_certification;
 mod miri_fixtures;
 mod patterns_safety;
 mod predecode;
+mod result_callbacks;
 mod semantics;
 mod store_integrity;
 mod strict_conditions;

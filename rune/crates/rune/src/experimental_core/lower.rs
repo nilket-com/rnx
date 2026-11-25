@@ -16,6 +16,7 @@ mod missing_methods;
 mod number_methods;
 mod object_methods;
 mod patterns;
+pub(super) mod result_callbacks;
 mod self_receiver;
 mod static_methods;
 mod text_methods;
@@ -2744,6 +2745,19 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		out: u32,
 		span: Span,
 	) -> Result<()> {
+		if hash == name_hash {
+			if let Some(method) = crate::function::variant::Callback::from_name(hash) {
+				if let Some(ok) = self
+					.result_receiver(target)
+					.map_err(|_| result_callbacks::refusal(method, self.location(span)))?
+				{
+					if self.constants.method_script.closed(hash) {
+						return Err(result_callbacks::refusal(method, self.location(span)));
+					}
+					return self.result_callback(call, target, ok, method, out, span);
+				}
+			}
+		}
 		let before = (
 			self.function.code.len(),
 			self.function.args.len(),
@@ -2760,7 +2774,6 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		if error.refusal != Some(Refusal::Method)
 			|| error.location != Some(at)
 			|| hash != name_hash
-			|| self.proofs.disabled
 			|| before
 				!= (
 					self.function.code.len(),
@@ -2768,6 +2781,16 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 					self.next,
 					self.dirty.len(),
 				) {
+			return Err(error);
+		}
+		let error = if let Some(method) = crate::function::variant::Callback::from_name(hash)
+			.filter(|_| self.result_refusal_site(target))
+		{
+			result_callbacks::refusal(method, at)
+		} else {
+			error
+		};
+		if self.proofs.disabled {
 			return Err(error);
 		}
 		let Some(receiver) = self.proofs.expression(self.body_hash, target) else {

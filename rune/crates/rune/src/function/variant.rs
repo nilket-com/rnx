@@ -122,6 +122,43 @@ impl Method {
 	}
 }
 
+/// Result methods implemented entirely by lowering ordinary script instructions.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Callback {
+	Map,
+	AndThen,
+}
+
+impl Callback {
+	pub(crate) fn associated(hash: Hash) -> Option<Self> {
+		const MAP: Hash = crate::hash_in!(crate, ::std::result::Result.map);
+		const AND_THEN: Hash = crate::hash_in!(crate, ::std::result::Result.and_then);
+		match hash {
+			MAP => Some(Self::Map),
+			AND_THEN => Some(Self::AndThen),
+			_ => None,
+		}
+	}
+
+	pub(crate) fn from_name(hash: Hash) -> Option<Self> {
+		Self::associated(Hash::associated_function(
+			Result::<rt::Value, rt::Value>::HASH,
+			hash,
+		))
+	}
+
+	fn bit(self) -> u8 {
+		1 << self as u8
+	}
+
+	pub(crate) fn refusal(self) -> &'static str {
+		match self {
+			Self::Map => "Result::map",
+			Self::AndThen => "Result::and_then",
+		}
+	}
+}
+
 const fn family_bit(family: Family) -> u8 {
 	match family {
 		Family::Option => marker::OPTION,
@@ -134,12 +171,31 @@ const fn family_bit(family: Family) -> u8 {
 /// registration touched a provider receiver under the same name.
 #[derive(Default)]
 pub(crate) struct State {
+	callbacks: u8,
+	callbacks_closed: u8,
 	pending: u8,
 	certified: [u8; 6],
 	closed: u8,
 }
 
 impl State {
+	pub(crate) fn begin_callback(&mut self, callback: Callback, plain: bool) -> bool {
+		if plain && self.pending == marker::RESULT {
+			true
+		} else {
+			self.callbacks_closed |= callback.bit();
+			false
+		}
+	}
+
+	pub(crate) fn installed_callback(&mut self, callback: Callback) {
+		self.callbacks |= callback.bit();
+	}
+
+	pub(crate) fn callback(&self, callback: Callback) -> bool {
+		self.pending == 0 && self.callbacks & !self.callbacks_closed & callback.bit() != 0
+	}
+
 	pub(crate) fn begin_module(&mut self, marker: u8) -> u8 {
 		core::mem::replace(&mut self.pending, marker)
 	}

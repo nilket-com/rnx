@@ -80,6 +80,7 @@ pub(crate) mod provenance;
 mod receiver_domain;
 pub mod value;
 
+mod hir_walk;
 pub(crate) mod lower;
 
 pub mod frontend;

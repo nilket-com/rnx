@@ -1,4 +1,4 @@
-"""Limited-unit cache/anonymous control, with fixed phase reads and owned files."""
+"""Limited-unit cache/anonymous control, with bounded provisioning and owned files."""
 import argparse
 import mmap
 import os
@@ -12,6 +12,44 @@ from owned_build import OwnedBuild
 GIB = 1024**3
 
 
+def append_extent(stream, size):
+	block = bytes(8*1024**2)
+	for _ in range(size // len(block)):
+		stream.write(block)
+	stream.flush()
+	os.fsync(stream.fileno())
+
+
+def check_clean_cache(stream, observations):
+	written = 0
+	for extent in (2*GIB, GIB//2, GIB//2):
+		append_extent(stream, extent)
+		written += extent
+		cache = resources()
+		leaf = cache['groups'][0]
+		high = leaf['limits']['memory.high']
+		row = dict(phase='clean-cache', file_bytes=written, reading=cache)
+		observations.append(row)
+		if high is None or high['limit_bytes'] != 5*GIB:
+			raise ValueError('live fixture requires its own 5 GiB memory.high')
+		# Establish the contrast from kernel fields independently of the
+		# accounting result under test. Score this same sample once.
+		raw = high['limit_bytes'] - leaf['current_bytes']
+		f = leaf['fields']
+		clean = min(f['inactive_file'], f['file'] - f['shmem'])
+		clean -= f['file_dirty'] + f['file_writeback'] + f['file_mapped']
+		row.update(raw_headroom_bytes=raw, clean_inactive_bytes=clean)
+		if not raw < 4*GIB <= raw + clean:
+			continue
+		if (cache['binding_cgroup'], cache['binding_limit']) != (leaf['group'], 'memory.high'):
+			raise ValueError('own memory.high did not bind live control')
+		row['workers'] = fixed_budget(cache)
+		if row['workers'] != 1:
+			raise ValueError('clean-cache accounting did not admit exactly one worker')
+		return
+	raise ValueError('cache fixture precondition unmet after 3 GiB')
+
+
 def run(out):
 	out.mkdir(exist_ok=False)
 	result = dict(status='FAIL', observations=[])
@@ -20,17 +58,7 @@ def run(out):
 			owner.path.mkdir()
 			result['observations'].append(dict(phase='before', reading=resources()))
 			with (owner.path/'clean-file').open('xb') as stream:
-				block = bytes(8*1024**2)
-				for _ in range(2*GIB//len(block)): stream.write(block)
-				stream.flush(); os.fsync(stream.fileno())
-			del block
-			cache = resources()
-			raw = min([cache['mem_available_bytes']] + [limit['raw_headroom_bytes']
-				for group in cache['groups'] for limit in group['limits'].values() if limit is not None])
-			result['observations'].append(dict(phase='clean-cache', reading=cache, raw_headroom_bytes=raw,
-				workers=fixed_budget(cache)))
-			if raw >= 4*GIB: raise ValueError('cache fixture did not expose the raw-accounting refusal')
-			if cache['binding_limit'] != 'memory.high': raise ValueError('finite memory.high did not bind live control')
+				check_clean_cache(stream, result['observations'])
 			held = mmap.mmap(-1, 5*GIB//2, flags=mmap.MAP_PRIVATE|mmap.MAP_ANONYMOUS)
 			try:
 				held[::4096] = b'x'*(5*GIB//2//4096)
@@ -38,6 +66,10 @@ def run(out):
 				try: fixed_budget(anonymous)
 				except memory.InsufficientMemory as error:
 					result['observations'].append(dict(phase='anonymous-held', reading=anonymous, refusal=error.numbers))
+					if (error.numbers['binding_cgroup'], error.numbers['binding_limit']) != (
+						anonymous['groups'][0]['group'], 'memory.high'
+					):
+						raise ValueError('anonymous pressure did not refuse under own memory.high') from error
 				else: raise ValueError('real anonymous pressure did not refuse')
 			finally: held.close()
 			atomic_json(out/'OBSERVATIONS.json', result['observations'])

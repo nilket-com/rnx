@@ -354,6 +354,19 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 							self.q.context,
 						)
 						.map_err(|e| collector.compile_error(e, location.span))?;
+					collector
+						.prepare_closure_exits(
+							&exprs,
+							secondary_builds.iter().filter_map(|build| {
+								let SecondaryBuild::Closure(c) = &build.build else {
+									return None;
+								};
+								matches!(c.call, crate::runtime::Call::Immediate).then(|| {
+									(self.q.pool.item_type_hash(build.item_meta.item), c.hir.body)
+								})
+							}),
+						)
+						.map_err(|e| collector.compile_error(e, location.span))?;
 					for build in &secondary_builds {
 						if let SecondaryBuild::AsyncBlock(b) = &build.build {
 							if collector.allows_async_functions()
@@ -375,6 +388,7 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 
 						if let SecondaryBuild::Closure(c) = &build.build {
 							if matches!(c.call, crate::runtime::Call::Immediate) {
+								let closure_hash = self.q.pool.item_type_hash(build.item_meta.item);
 								let closure = hir::ItemFn {
 									span: c.hir.span,
 									args: c.hir.args,
@@ -389,7 +403,7 @@ impl<'arena> CompileBuildEntry<'_, 'arena> {
 								collector
 									.observe(
 										hash,
-										self.q.pool.item_type_hash(build.item_meta.item),
+										closure_hash,
 										None,
 										true,
 										&exprs,

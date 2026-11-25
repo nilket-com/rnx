@@ -1,0 +1,29 @@
+{
+  "rule": "ADR 0336: a fresh Result and literal map callback run against the live stock result.",
+  "rows": [
+    {
+      "index": 1022,
+      "legacy": {
+        "index": 1022,
+        "label": "receiver/result-map",
+        "source_sha256": "5714b7a6be1b484d69f2e0c2aff7a0763a2c10435a18cff8c3ff01428ab5fff9",
+        "stock_row_sha256": "2fa8446e49ff8bf6e10cde265962db4d85891eb01d1b8b9bf7b3a8eded474378",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 82,
+            "source": 0,
+            "start": 65
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 65, end: 82 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 65:82, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

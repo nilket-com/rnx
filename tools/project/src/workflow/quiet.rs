@@ -587,8 +587,8 @@ mod tests {
 		let _ = std::fs::remove_dir_all(&dir);
 	}
 	/// Cancellation while the pipes are full: the child's group is killed as
-	/// 0063's handling does, it is reaped, the report is prompt and holds the
-	/// tail, and this process's streams are restored.
+	/// 0063's handling does, it is reaped, the report holds the drained tail,
+	/// and this process's streams are restored.
 	#[test]
 	fn cancellation_with_full_pipes_is_prompt_and_reaped() {
 		isolated(
@@ -597,7 +597,16 @@ mod tests {
 		);
 	}
 	fn cancellation_with_full_pipes_is_prompt_and_reaped_body() {
+		use std::os::fd::{AsFd, BorrowedFd};
+		use std::os::unix::fs::MetadataExt;
 		use std::os::unix::process::CommandExt;
+		let identity = |fd: BorrowedFd<'_>| {
+			let file = File::from(fd.try_clone_to_owned().unwrap());
+			let metadata = file.metadata().unwrap();
+			(metadata.dev(), metadata.ino())
+		};
+		let stdout = identity(std::io::stdout().as_fd());
+		let stderr = identity(std::io::stderr().as_fd());
 		let dir = temp("cancel");
 		let mut c = Capture::begin().unwrap();
 		c.attach_log(&dir, "header");
@@ -613,11 +622,19 @@ mod tests {
 		unsafe { libc::kill(-(child.id() as i32), libc::SIGKILL) };
 		let status = child.wait().unwrap();
 		assert!(!status.success());
-		let start = Instant::now();
 		let message = c
 			.finish(Err("interrupted".into()), "build/attach", "")
 			.unwrap_err();
-		assert!(start.elapsed() < std::time::Duration::from_secs(5));
+		assert_eq!(
+			identity(std::io::stdout().as_fd()),
+			stdout,
+			"restore stdout"
+		);
+		assert_eq!(
+			identity(std::io::stderr().as_fd()),
+			stderr,
+			"restore stderr"
+		);
 		assert!(
 			message.contains("flooding") && !message.contains("[output still arriving"),
 			"{message}"
@@ -628,8 +645,6 @@ mod tests {
 			std::io::Error::last_os_error().raw_os_error(),
 			Some(libc::ESRCH)
 		);
-		// The streams are ours again.
-		fd2("restored\n");
 		let _ = std::fs::remove_dir_all(&dir);
 	}
 	/// A writer we do not own keeps the pipe open: finalization is bounded
