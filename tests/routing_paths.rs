@@ -386,3 +386,69 @@ fn default_native_request_matches_on_and_off_stays_explicit_even_under_perf_envi
 	}
 	fs::write(root.join("RESULT.json"), b"{\"status\":\"PASS\"}\n").unwrap();
 }
+
+#[test]
+fn match_receiver_runs_each_effect_once_on_its_selected_route() {
+	for (route, method, caller) in [
+		("execution", "m", "x.m()"),
+		("legacy refusal=Method", "capacity", "through(x)"),
+		("legacy refusal=Method", "capacity", "make().capacity()"),
+	] {
+		let root = scratch("match-receiver");
+		for (v, hit) in [(1, true), (2, false)] {
+			let pick = format!("match {v} {{1=>S{{}}}}");
+			let (helper, init) = match caller {
+				"through(x)" => ("fn through(x){x.capacity()}".to_owned(), pick),
+				"make().capacity()" => (format!("fn make(){{{pick}}}"), "0".to_owned()),
+				_ => (String::new(), pick),
+			};
+			let src = format!(
+				"struct S{{}} impl S{{fn {method}(self){{println!(\"body\");7}}}}\n{helper}\npub fn main(args){{println!(\"entry\");let x={init};dbg!({caller});}}"
+			);
+			fs::write(root.join("main.rn"), &src).unwrap();
+			for native in [false, true] {
+				let output = run(&root, &[], false, native, &["--debug-engine"], "match");
+				let stderr = String::from_utf8(output.stderr).unwrap();
+				let selected = stderr.lines().next().unwrap();
+				assert!(
+					selected.starts_with(&format!("rnx: engine={route}")),
+					"{stderr}"
+				);
+				assert_eq!(
+					output.status.code(),
+					Some(if hit { 0 } else { 1 }),
+					"{stderr}"
+				);
+				assert_eq!(
+					output.stdout,
+					if hit {
+						b"entry\nbody\n7\n".as_slice()
+					} else {
+						b"entry\n".as_slice()
+					}
+				);
+				if !hit {
+					let called = if caller == "through(x)" {
+						"x.capacity()"
+					} else {
+						caller
+					};
+					let (line, text) = src
+						.lines()
+						.enumerate()
+						.find(|(_, line)| line.contains(called))
+						.unwrap();
+					let column = text.find(called).unwrap() + 1;
+					assert!(
+						stderr.contains(&format!(
+							"line {}, column {column}: no method `{method}` on `std::tuple::Tuple`",
+							line + 1
+						)),
+						"{stderr}"
+					);
+				}
+			}
+		}
+		fs::remove_dir_all(root).unwrap();
+	}
+}

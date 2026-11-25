@@ -34,8 +34,6 @@ type Id = usize;
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Fact {
 	Unknown,
-	// A partial match with diverging arms can still fall through to unit.
-	UnitOnMiss,
 	Never,
 	Exact(Hash),
 }
@@ -53,7 +51,6 @@ enum Kind {
 	// The first edge is a provenance obligation; the second supplies the tag.
 	Projection,
 	ResultCallback,
-	PartialMatch,
 }
 
 struct Edge {
@@ -138,11 +135,6 @@ fn join(a: Fact, b: Fact) -> Fact {
 	match (a, b) {
 		(Fact::Never, b) => b,
 		(a, Fact::Never) => a,
-		(Fact::UnitOnMiss, Fact::Exact(RESULT)) | (Fact::Exact(RESULT), Fact::UnitOnMiss) => {
-			Fact::Unknown
-		}
-		// Preserve the established nominal proof rules outside the Result path.
-		(Fact::UnitOnMiss, b) | (b, Fact::UnitOnMiss) => b,
 		(Fact::Exact(a), Fact::Exact(b)) if a == b => Fact::Exact(a),
 		_ => Fact::Unknown,
 	}
@@ -760,18 +752,8 @@ impl Builder<'_, '_, '_> {
 				self.proofs.edge(joined, tail, false)?;
 				joined
 			}
-			E::Match(m) => {
-				// A miss returns unit. Only an unguarded catch-all rules it out.
-				let total = m.branches.iter().any(|arm| {
-					arm.condition.is_none()
-						&& (matches!(arm.pat.pat.kind, hir::PatKind::Ignore)
-							|| simple(&arm.pat.pat).is_some())
-				});
-				let joined = self.proofs.node(if total {
-					Kind::Join
-				} else {
-					Kind::PartialMatch
-				})?;
+			E::Match(m) if super::super::hir_walk::covers_input(m) => {
+				let joined = self.proofs.node(Kind::Join)?;
 				for branch in m.branches {
 					let value = self.term(branch.body, depth + 1)?;
 					self.proofs.edge(joined, value, false)?;
@@ -968,7 +950,7 @@ impl Proofs {
 					Kind::Never => Fact::Never,
 					Kind::Exact(hash) => Fact::Exact(hash),
 					Kind::End => match node.edges.first().map(|e| facts[e.node]) {
-						Some(fact @ (Fact::Never | Fact::UnitOnMiss)) => fact,
+						Some(Fact::Never) => Fact::Never,
 						_ => Fact::Unknown,
 					},
 					Kind::ResultCallback => {
@@ -983,19 +965,13 @@ impl Proofs {
 						}
 					}
 					Kind::Projection => node.edges.get(1).map_or(Fact::Unknown, |e| facts[e.node]),
-					Kind::Join | Kind::PartialMatch | Kind::Parameter(_) | Kind::Return => {
+					Kind::Join | Kind::Parameter(_) | Kind::Return => {
 						if node.edges.is_empty() {
 							Fact::Unknown
 						} else {
-							let fact = node
-								.edges
+							node.edges
 								.iter()
-								.fold(Fact::Never, |v, e| join(v, facts[e.node]));
-							match (node.kind, fact) {
-								(Kind::PartialMatch, Fact::Never) => Fact::UnitOnMiss,
-								(Kind::PartialMatch, Fact::Exact(RESULT)) => Fact::Unknown,
-								_ => fact,
-							}
+								.fold(Fact::Never, |v, e| join(v, facts[e.node]))
 						}
 					}
 				};

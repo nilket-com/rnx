@@ -2,6 +2,18 @@
 use super::error::Result;
 use crate::{alloc::Vec, hir};
 
+/// Only an unguarded wildcard or plain binding proves that no unit-valued
+/// fallthrough reaches the consumer of this match.
+pub(super) fn covers_input(m: &hir::ExprMatch<'_>) -> bool {
+	m.branches.iter().any(|arm| {
+		arm.condition.is_none()
+			&& matches!(
+				arm.pat.pat.kind,
+				hir::PatKind::Ignore | hir::PatKind::Path(hir::PatPathKind::Ident { .. })
+			)
+	})
+}
+
 pub(super) fn block(b: &hir::Block<'_>, pending: &mut Vec<hir::ExprId>) -> Result<()> {
 	for s in b.statements {
 		match s {

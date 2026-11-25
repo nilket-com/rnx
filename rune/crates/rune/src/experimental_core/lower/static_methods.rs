@@ -64,7 +64,7 @@ impl Lower<'_, '_> {
 					.all(|branch| self.block_type(&branch.block, depth) == Some(hash))
 					.then_some(hash)
 			}
-			hir::ExprKind::Match(m) => {
+			hir::ExprKind::Match(m) if super::super::hir_walk::covers_input(m) => {
 				let (first, rest) = m.branches.split_first()?;
 				let hash = self.receiver_type(first.body, depth + 1)?;
 				rest.iter()

@@ -54,6 +54,7 @@ mod gap_hunt;
 mod io_policy;
 mod lowering_shape;
 mod macro_certification;
+mod match_receivers;
 #[cfg(feature = "std")]
 mod miri_fixtures;
 mod patterns_safety;
