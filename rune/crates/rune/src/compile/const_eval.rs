@@ -134,7 +134,35 @@ pub(crate) fn eval_stream(
 		));
 	}
 	let location = cx.item_meta.location;
+	with_stream_expr(cx, stream, span, |q, exprs, expr| {
+		eval(q, location, expr, Entry::Expr(exprs, expr), Vec::new())
+	})
+}
 
+#[cfg(feature = "execution")]
+pub(crate) fn format_template(
+	cx: &mut MacroContext<'_, '_, '_>,
+	stream: &TokenStream,
+	span: Span,
+) -> compile::Result<crate::alloc::String> {
+	let source = cx.item_meta.location.source_id;
+	with_stream_expr(cx, stream, span, |q, exprs, expr| {
+		hir::const_check::validate(q.inner, exprs, hir::const_check::Root::Expr(expr))?;
+		let value = crate::experimental_core::constants::eval(source, q.inner, exprs, expr)?;
+		let crate::runtime::ConstNodeKind::String(text) = value.kind() else {
+			return Err(compile::Error::msg(span, "expected a string template"));
+		};
+		Ok(crate::alloc::String::try_from(text.as_ref())?)
+	})
+}
+
+fn with_stream_expr<T>(
+	cx: &mut MacroContext<'_, '_, '_>,
+	stream: &TokenStream,
+	span: Span,
+	f: impl FnOnce(&mut Query<'_, '_>, &hir::Exprs<'_>, &hir::Expr<'_>) -> compile::Result<T>,
+) -> compile::Result<T> {
+	let location = cx.item_meta.location;
 	let tree = crate::grammar::token_stream(stream)
 		.max_nesting(cx.idx.q.options.max_depth)
 		.root()?;
@@ -197,14 +225,7 @@ pub(crate) fn eval_stream(
 		(hir, hir_cx.take_exprs())
 	};
 
-	let mut q = cx.idx.q.borrow();
-	eval(
-		&mut q,
-		location,
-		&hir,
-		Entry::Expr(&exprs, &hir),
-		Vec::new(),
-	)
+	f(&mut cx.idx.q.borrow(), &exprs, &hir)
 }
 
 /// Evaluate a constant, returning the value it produced.

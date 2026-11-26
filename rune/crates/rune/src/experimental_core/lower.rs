@@ -1448,6 +1448,37 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		self.constant_into(&constant, out, span)
 	}
 
+	#[cold]
+	#[inline(never)]
+	fn constant_call(
+		&mut self,
+		id: crate::compile::ItemId,
+		call: &hir::ExprCall<'_>,
+		out: u32,
+		span: Span,
+	) -> Result<()> {
+		hir::const_check::validate_body_call(
+			self.constants,
+			self.exprs,
+			call.args,
+			id,
+			&self.variables,
+		)
+		.map_err(|_| self.refused(span, Refusal::ConstCall))?;
+		let expr = hir::Expr {
+			span,
+			kind: hir::ExprKind::Call(call),
+		};
+		let value = super::constants::eval_body_call(
+			crate::SourceId::new(self.source),
+			self.constants,
+			self.exprs,
+			&expr,
+		)
+		.map_err(|_| self.refused(span, Refusal::ConstCall))?;
+		self.constant_into(&value, out, span)
+	}
+
 	fn constant_into(
 		&mut self,
 		constant: &crate::runtime::ConstValue,
@@ -2607,7 +2638,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 
 		let hash = match call.call {
 			hir::Call::Meta { hash } => hash,
-			hir::Call::ConstFn { .. } => return Err(self.refused(span, Refusal::ConstCall)),
+			hir::Call::ConstFn { id } => return self.constant_call(id, call, out, span),
 			// These arms already returned above; retain an explicit disposition
 			// so additions to Call cannot silently inherit a fallback.
 			hir::Call::Var { .. } | hir::Call::Expr { .. } | hir::Call::Associated { .. } => {

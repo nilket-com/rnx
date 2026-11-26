@@ -131,6 +131,7 @@ struct Budget {
 	target_base: usize,
 	body_base: usize,
 	calls: usize,
+	separate_arguments: bool,
 	source: Option<crate::SourceId>,
 	nodes: usize,
 	bytes: usize,
@@ -146,6 +147,25 @@ pub(crate) fn eval(
 	exprs: &hir::Exprs<'_>,
 	expr: &hir::Expr<'_>,
 ) -> crate::compile::Result<ConstValueBuf> {
+	eval_root(source, inner, exprs, expr, false)
+}
+
+pub(super) fn eval_body_call(
+	source: crate::SourceId,
+	inner: &QueryInner<'_>,
+	exprs: &hir::Exprs<'_>,
+	expr: &hir::Expr<'_>,
+) -> crate::compile::Result<ConstValueBuf> {
+	eval_root(source, inner, exprs, expr, true)
+}
+
+fn eval_root(
+	source: crate::SourceId,
+	inner: &QueryInner<'_>,
+	exprs: &hir::Exprs<'_>,
+	expr: &hir::Expr<'_>,
+	separate_arguments: bool,
+) -> crate::compile::Result<ConstValueBuf> {
 	evaluate(
 		inner,
 		exprs,
@@ -153,6 +173,7 @@ pub(crate) fn eval(
 		0,
 		&mut Budget {
 			source: Some(source),
+			separate_arguments,
 			..Budget::default()
 		},
 		&mut Vec::new(),
@@ -740,7 +761,7 @@ fn evaluate_return(
 
 	match expr.kind {
 		E::Return(value) => {
-			if budget.calls == 0 {
+			if budget.calls == 0 && !budget.separate_arguments {
 				refuse!(span, "constant return outside function");
 			}
 			let value = match value {
@@ -982,6 +1003,7 @@ fn prepare_const_call(
 ) -> crate::compile::Result<Flow<Vec<(hir::Variable, ConstValueBuf)>>> {
 	let span = expr.span;
 
+	let separate_arguments = depth == 0 && budget.separate_arguments;
 	let mut next = |id| evaluate(inner, exprs, exprs.get(id), depth + 1, budget, locals);
 	let E::Call(call) = expr.kind else {
 		unreachable!()
@@ -1003,7 +1025,14 @@ fn prepare_const_call(
 	}
 	let mut values = Vec::new();
 	for id in call.args {
-		checked!(span, values.try_push(constant_value!(next(*id))));
+		let value = match next(*id)? {
+			Flow::Value(v) => v,
+			Flow::Return(v) if separate_arguments => v,
+			Flow::Return(v) => return Ok(Flow::Return(v)),
+			Flow::Break(id, v) => return Ok(Flow::Break(id, v)),
+			Flow::Continue(id) => return Ok(Flow::Continue(id)),
+		};
+		checked!(span, values.try_push(value));
 	}
 	let mut frame = Vec::new();
 	for (param, value) in function.hir.args.iter().zip(values) {

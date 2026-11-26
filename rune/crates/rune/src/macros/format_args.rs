@@ -107,13 +107,18 @@ impl FormatArgs {
 		let literal = if cx.idx.q.inner.collecting {
 			let mut parser =
 				crate::parse::Parser::from_token_stream(&self.format, self.format_span);
-			let literal = parser.parse_all::<ast::LitStr>().map_err(|_| {
-				compile::Error::msg(
-					self.format_span,
-					"execution core: format string must be a literal",
-				)
-			})?;
-			Some(String::try_from(cx.resolve(literal)?.as_ref())?)
+			Some(match parser.parse_all::<ast::LitStr>() {
+				Ok(literal) => String::try_from(cx.resolve(literal)?.as_ref())?,
+				Err(_) => {
+					crate::compile::const_eval::format_template(cx, &self.format, self.format_span)
+						.map_err(|_| {
+							compile::Error::msg(
+								self.format_span,
+								"execution core: format string must be a literal",
+							)
+						})?
+				}
+			})
 		} else {
 			None
 		};

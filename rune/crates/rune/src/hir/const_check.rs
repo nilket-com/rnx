@@ -18,19 +18,51 @@ pub(crate) fn validate(
 ) -> Result<()> {
 	let mut calls = Calls::default();
 	Walker::new(exprs, &mut calls).body(root, &[])?;
-	while let Some(id) = calls.pending.pop() {
-		let Some(f) = inner.constant_function(id) else {
-			continue;
-		};
-		Walker::new(&f.exprs, &mut calls).body(Root::Block(&f.hir.body), f.hir.args)?;
+	calls.finish(inner)
+}
+
+/// Each argument in a runtime body is a separate constant entry. A return in
+/// one argument cannot make the following argument or the callee unreachable.
+pub(crate) fn validate_body_call(
+	inner: &QueryInner<'_>,
+	exprs: &hir::Exprs<'_>,
+	args: &[hir::ExprId],
+	callee: ItemId,
+	runtime_locals: &[(hir::Variable, u32)],
+) -> Result<()> {
+	let mut calls = Calls::default();
+	calls.enqueue(callee)?;
+	for &id in args {
+		let mut walker = Walker::new(exprs, &mut calls);
+		walker.runtime_locals = runtime_locals;
+		walker.body(Root::Expr(walker.get(id)?), &[])?;
 	}
-	Ok(())
+	calls.finish(inner)
 }
 
 #[derive(Default)]
 struct Calls {
 	seen: HashSet<ItemId>,
 	pending: Vec<ItemId>,
+}
+
+impl Calls {
+	fn enqueue(&mut self, id: ItemId) -> Result<()> {
+		if self.seen.try_insert(id)? {
+			self.pending.try_push(id)?;
+		}
+		Ok(())
+	}
+
+	fn finish(&mut self, inner: &QueryInner<'_>) -> Result<()> {
+		while let Some(id) = self.pending.pop() {
+			let Some(f) = inner.constant_function(id) else {
+				continue;
+			};
+			Walker::new(&f.exprs, self).body(Root::Block(&f.hir.body), f.hir.args)?;
+		}
+		Ok(())
+	}
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -75,6 +107,7 @@ enum Task<'h> {
 struct Walker<'a, 'h> {
 	exprs: &'h hir::Exprs<'h>,
 	calls: &'a mut Calls,
+	runtime_locals: &'a [(hir::Variable, u32)],
 	work: Vec<Task<'h>>,
 	targets: Vec<(Option<&'h str>, Target)>,
 	falls: bool,
@@ -86,6 +119,7 @@ impl<'a, 'h> Walker<'a, 'h> {
 		Self {
 			exprs,
 			calls,
+			runtime_locals: &[],
 			work: Vec::new(),
 			targets: Vec::new(),
 			falls: true,
@@ -185,6 +219,13 @@ impl<'a, 'h> Walker<'a, 'h> {
 			.map(|(_, kind)| *kind)
 	}
 
+	fn check_variable(&self, name: hir::Variable, span: Span) -> Result<()> {
+		if self.runtime_locals.iter().any(|(outer, _)| *outer == name) {
+			return Err(Error::msg(span, "runtime variable in constant argument"));
+		}
+		Ok(())
+	}
+
 	fn assign(
 		&mut self,
 		lhs: hir::ExprId,
@@ -193,7 +234,11 @@ impl<'a, 'h> Walker<'a, 'h> {
 		compound: bool,
 	) -> Result<()> {
 		match self.get(lhs)?.kind {
-			E::Variable(_) | E::Static(_) => self.expr(rhs)?,
+			E::Variable(name) => {
+				self.check_variable(name, span)?;
+				self.expr(rhs)?;
+			}
+			E::Static(_) => self.expr(rhs)?,
 			E::Index(i) => self.operands(&[i.target, i.index, rhs])?,
 			E::FieldAccess(f) => {
 				if compound {
@@ -277,14 +322,11 @@ impl<'a, 'h> Walker<'a, 'h> {
 			E::Call(c) => {
 				self.operands(c.args)?;
 				match c.call {
-					hir::Call::ConstFn { id } => {
-						if self.calls.seen.try_insert(id)? {
-							self.calls.pending.try_push(id)?;
-						}
-					}
+					hir::Call::ConstFn { id } => self.calls.enqueue(id)?,
 					hir::Call::Expr { expr } => self.expr(expr)?,
 					hir::Call::Associated { target, .. } => self.expr(target)?,
-					hir::Call::Var { .. } | hir::Call::Meta { .. } => {}
+					hir::Call::Var { name } => self.check_variable(name, e.span)?,
+					hir::Call::Meta { .. } => {}
 				}
 			}
 			E::Return(arg) => self.leave(arg)?,
@@ -325,15 +367,18 @@ impl<'a, 'h> Walker<'a, 'h> {
 				self.work.try_push(Task::SelectArms(s, self.selects))?;
 				self.operands(s.exprs)?;
 			}
-			E::Variable(_)
-			| E::Type(_)
-			| E::Fn(_)
-			| E::Lit(_)
-			| E::Static(_)
-			| E::Const(_)
-			| E::Yield(None)
-			| E::AsyncBlock(_)
-			| E::CallClosure(_) => {}
+			E::Variable(v) => self.check_variable(v, e.span)?,
+			E::AsyncBlock(b) => {
+				for &v in b.captures {
+					self.check_variable(v, e.span)?;
+				}
+			}
+			E::CallClosure(c) => {
+				for &v in c.captures {
+					self.check_variable(v, e.span)?;
+				}
+			}
+			E::Type(_) | E::Fn(_) | E::Lit(_) | E::Static(_) | E::Const(_) | E::Yield(None) => {}
 		}
 		Ok(())
 	}

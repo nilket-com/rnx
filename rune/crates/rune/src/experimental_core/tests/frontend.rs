@@ -546,11 +546,15 @@ fn a_custom_macro_at_the_builtin_path_is_not_trusted() {
 	miri,
 	ignore = "Miri: builds a std-module Context and compiles Rune source (minutes per build); native CI runs it; opt in with --ignored"
 )]
-fn trusted_format_expansion_refuses_nonliteral_and_dynamic_precision() {
+fn trusted_format_expansion_checks_constant_strings_and_precision() {
+	assert_eq!(
+		run(r#"const F="{}"; pub fn main(){format!(F,42).len()}"#, &[]),
+		Value::U64(2)
+	);
 	let context = Context::with_default_modules().unwrap();
 	for (text, message) in [
 		(
-			"const F=\"{}\"; pub fn main() { format!(F,42) }",
+			"const F=42; pub fn main() { format!(F,42) }",
 			"format string must be a literal",
 		),
 		(

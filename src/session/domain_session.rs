@@ -942,7 +942,7 @@ mod tests {
 	#[test]
 	fn constant_deferred_forms_are_not_async() {
 		for (source, construct) in [
-			("const fn f(x){x+1} f(2)", "constant expression"),
+			("const fn f(x){x+1} let n=2; f(n)", "constant expression"),
 			("const A=b\"ab\";A", "byte-string constants"),
 		] {
 			let mut s = DomainSession::new(context(), DEFAULT_CEILING).unwrap();
@@ -957,6 +957,11 @@ mod tests {
 	#[test]
 	fn constant_functions_values_and_independent_materialization() {
 		for (source, expected) in [
+			("const fn f(x){x+1} f(2)", "3"),
+			(
+				"const fn list(){[2]} fn fresh(){list()} let a=fresh();a.push(3);(a,fresh())",
+				"([2, 3], [2])",
+			),
 			(
 				"const fn f(){Some([1])} const A=f();let x=A;let y=x.0;y.push(2);(x,A)",
 				"(Some([1, 2]), Some([1]))",

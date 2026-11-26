@@ -681,3 +681,120 @@ fn returning_constant_match_guard_preserves_running_programs() {
 	}
 	fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn const_calls_in_file_bodies_use_fresh_values_and_preserve_diagnostics() {
+	let root = scratch("const-call");
+	for (source, route, success) in [
+		(
+			r#"const fn list(n) { [n] }
+			const N = 2;
+			fn make() { list(N + 1) }
+			pub fn main(args) { let a = make(); a.push(9); dbg!((a, make(), list(3))); }"#,
+			"execution",
+			true,
+		),
+		(
+			r#"const fn add(a,b) {a+b} pub fn main(args) {
+				let local=42;
+				println!("{}",add({return 2; local},{return 3;}));
+			}"#,
+			"execution",
+			true,
+		),
+		(
+			r#"const fn add(a,b){a+b} pub fn main(args) {
+				let local=42;
+				println!("{}",add({return 2;},if false {local} else {3}));
+			}"#,
+			"legacy refusal=ConstCall",
+			false,
+		),
+		(
+			r#"const fn bad(){if false {1=2;}7} pub fn main(args){println!("{}",bad());}"#,
+			"legacy refusal=ConstCall",
+			false,
+		),
+		(
+			r#"const fn noisy() { std::io::println("compiling"); 7 }
+			pub fn main(args) { if false { noisy(); } println!("running"); }"#,
+			"legacy refusal=ConstCall",
+			true,
+		),
+		(
+			r#"const fn id(x){x} pub fn main(args){let n=true; id(false && n)}"#,
+			"legacy refusal=ConstCall",
+			false,
+		),
+		(
+			r#"const fn bad(n){n+1} pub fn main(args){if false {bad(9223372036854775807);} }"#,
+			"legacy refusal=ConstCall",
+			false,
+		),
+	] {
+		fs::write(root.join("main.rn"), source).unwrap();
+		verify_outcome(&root, &[], &format!("rnx: engine={route}"), success);
+	}
+	fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn constant_format_templates_preserve_errors_and_compile_time_output() {
+	let root = scratch("const-template");
+	for (source, route, success) in [
+		(
+			r#"const T = "{{{v:04}}}"; pub fn main(args) {
+			print!(const { "{"+"}" }, 1);
+			println!(T, v=2);
+			assert!(true,T,v=3); assert_eq!(1,1,T,v=4); assert_ne!(1,2,T,v=5);
+			if false {panic!(T,v=6);} dbg!(format!(T,v=7));
+		}"#,
+			"execution",
+			true,
+		),
+		(
+			r#"const T = "{}"; pub fn main(args) { println!(T); }"#,
+			"legacy refusal=FrontendDiagnostic",
+			false,
+		),
+		(
+			r#"pub fn main(args){println!(const {std::io::println("compiling"); "{}"}, 7)}"#,
+			"legacy refusal=FrontendDiagnostic",
+			true,
+		),
+	] {
+		fs::write(root.join("main.rn"), source).unwrap();
+		verify_outcome(&root, &[], &format!("rnx: engine={route}"), success);
+	}
+	fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn returning_constant_guards_select_the_matched_body_at_each_root() {
+	let root = scratch("constant-guard-roots");
+	let defs = r#"const fn text(x) {
+		match x {0 if {return "early";} => {std::io::println("guard-effect"); "left"}, _ => "right"}
+	}"#;
+	for (items, body) in [
+		("", r#"println!("{}", text(1));"#),
+		("", r#"println!(text(1));"#),
+		("const T=text(1);", r#"println!(T);"#),
+		(
+			"const T=text(1); const fn id(x){x}",
+			r#"id(3); println!("{}", T);"#,
+		),
+	] {
+		fs::write(
+			root.join("main.rn"),
+			format!("{defs}{items}pub fn main(args){{{body}}}"),
+		)
+		.unwrap();
+		for native in [false, true] {
+			let out = run(&root, &[], false, native, &["--debug-engine"], "guard");
+			assert!(out.status.success(), "{out:?}");
+			assert!(out.stderr.starts_with(b"rnx: engine=execution"), "{out:?}");
+			assert_eq!(out.stdout, b"right\n");
+		}
+	}
+	fs::remove_dir_all(root).unwrap();
+}
