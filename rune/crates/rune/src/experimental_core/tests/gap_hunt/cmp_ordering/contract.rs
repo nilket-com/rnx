@@ -96,7 +96,7 @@ fn run_contract(engine: &str) {
 		serde_json::from_str(include_str!("../../cmp_ordering_p1_counts.json")).unwrap();
 	let mut stale_admissions: Json = serde_json::from_str(C9_STALE_REFUSAL_ADMISSIONS).unwrap();
 	assert_eq!(stale_admissions["schema"], 1);
-	assert_eq!(stale_admissions["rows"].as_array().unwrap().len(), 2);
+	assert_eq!(stale_admissions["rows"].as_array().unwrap().len(), 3);
 	let c13: Json = serde_json::from_str(include_str!("c13_admissions.json")).unwrap();
 	assert_eq!(c13["schema"], 1);
 	assert_eq!(c13["rows"].as_array().unwrap().len(), 3);

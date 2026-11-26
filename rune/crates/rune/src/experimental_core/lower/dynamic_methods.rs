@@ -58,11 +58,7 @@ impl Lower<'_, '_> {
 				name,
 				&mut |item, native| {
 					let target = match native {
-						Some((intrinsic, arity)) => Resolve::NativeMethod {
-							hash: item,
-							intrinsic,
-							arity,
-						},
+						Some(body) => Resolve::NativeMethod { hash: item, body },
 						None => Resolve::Script(item),
 					};
 					resolve(target, at)

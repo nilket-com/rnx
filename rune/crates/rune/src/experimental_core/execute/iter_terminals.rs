@@ -41,6 +41,10 @@ impl Executor {
 				let n = store.adapter_count(a)?;
 				Value::U64(u64::try_from(n).map_err(|_| invalid())?)
 			}
+			Intrinsic::ReadCursor => {
+				store.read_cursor(a)?;
+				Value::Unit
+			}
 			Intrinsic::Range => store.range_iterator(a, b)?,
 			Intrinsic::Seed(target) => store.number_element(a, target)?,
 			Intrinsic::Sum => store.number_fold(a, b, false)?,

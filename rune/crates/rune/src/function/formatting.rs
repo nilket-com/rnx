@@ -52,6 +52,11 @@ pub(crate) struct Certificate {
 	keys: HashSet<Hash>,
 }
 impl Certificate {
+	/// Whether this effective handler key was touched outside std installation.
+	pub(crate) fn modified(&self, key: Hash) -> bool {
+		self.keys.contains(&key)
+	}
+
 	/// Equivalent independently built Contexts share the same authority.
 	pub(crate) fn equivalent(&self, other: &Self) -> bool {
 		self.keys == other.keys

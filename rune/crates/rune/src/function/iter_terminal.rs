@@ -271,12 +271,14 @@ pub(crate) enum Intrinsic {
 	/// A `chain` argument or `flat_map` result as an iterator, converted as
 	/// stock's `protocol_into_iter`.
 	IntoIter,
+	/// The shared receiver access made by a collection's initial size hint.
+	ReadCursor,
 }
 
 impl Intrinsic {
 	const FIRST_ID: u32 = crate::experimental_core::code::FIRST_INTRINSIC_ID + 0xd0;
 
-	pub(crate) const ALL: [Self; 15] = [
+	pub(crate) const ALL: [Self; 16] = [
 		Self::AdapterCount,
 		Self::Range,
 		Self::Seed(Number::I64),
@@ -292,6 +294,7 @@ impl Intrinsic {
 		Self::RevLast,
 		Self::RevAt,
 		Self::IntoIter,
+		Self::ReadCursor,
 	];
 
 	const fn index(self) -> u32 {
@@ -309,6 +312,7 @@ impl Intrinsic {
 			Self::RevLast => 12,
 			Self::RevAt => 13,
 			Self::IntoIter => 14,
+			Self::ReadCursor => 15,
 		}
 	}
 
@@ -331,7 +335,8 @@ impl Intrinsic {
 			| Self::OptionSome
 			| Self::RevEmpty
 			| Self::RevLast
-			| Self::IntoIter => 1,
+			| Self::IntoIter
+			| Self::ReadCursor => 1,
 			_ => 2,
 		}
 	}
@@ -630,7 +635,10 @@ mod tests {
 			assert_eq!(intrinsic.index() as usize, i);
 			assert_eq!(Intrinsic::from_id(intrinsic.id()), Some(intrinsic));
 		}
-		assert_eq!(Intrinsic::from_id(Intrinsic::FIRST_ID + 15), None);
+		assert_eq!(
+			Intrinsic::from_id(Intrinsic::FIRST_ID + Intrinsic::ALL.len() as u32),
+			None
+		);
 		for c in Closure::ALL {
 			assert_eq!(c.hash(), Hash::ident(c.name()));
 			assert_eq!(Closure::from_hash(c.hash()), Some(c));

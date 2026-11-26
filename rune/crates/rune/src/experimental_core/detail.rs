@@ -48,6 +48,7 @@ pub enum TypeName {
 #[allow(missing_docs)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BinarySymbol {
+	Cmp,
 	Add,
 	Sub,
 	Mul,
@@ -618,6 +619,7 @@ impl BinarySymbol {
 impl fmt::Display for BinarySymbol {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.write_str(match self {
+			Self::Cmp => "CMP",
 			Self::Add => "+",
 			Self::Sub => "-",
 			Self::Mul => "*",

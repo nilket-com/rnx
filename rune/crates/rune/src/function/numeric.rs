@@ -265,9 +265,10 @@ pub(crate) enum Call {
 	F64Powf,
 	I64Abs,
 	MethodCmp,
+	ProtocolCmp,
 }
 impl Call {
-	pub(crate) const ALL: [Self; 8] = [
+	pub(crate) const ALL: [Self; 9] = [
 		Self::MethodAbs,
 		Self::MethodRound,
 		Self::MethodPowf,
@@ -276,6 +277,7 @@ impl Call {
 		Self::F64Powf,
 		Self::I64Abs,
 		Self::MethodCmp,
+		Self::ProtocolCmp,
 	];
 	pub(crate) const fn id(self) -> u32 {
 		crate::experimental_core::code::FIRST_INTRINSIC_ID + 0x80 + self as u32
@@ -305,7 +307,7 @@ impl Call {
 			Self::MethodAbs | Self::F64Abs | Self::I64Abs => Method::Abs,
 			Self::MethodRound | Self::F64Round => Method::Round,
 			Self::MethodPowf | Self::F64Powf => Method::Powf,
-			Self::MethodCmp => Method::Cmp,
+			Self::MethodCmp | Self::ProtocolCmp => Method::Cmp,
 		}
 	}
 	pub(crate) fn is_method(self) -> bool {

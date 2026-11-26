@@ -1,0 +1,29 @@
+{
+  "rule": "ADR 0345 compares the complete admitted observation with live stock.",
+  "rows": [
+    {
+      "index": 40,
+      "legacy": {
+        "index": 40,
+        "label": "cmp/sort",
+        "source_sha256": "ada804bf46aa23465e141ebb65726641a76d2880f3ccc6ed1f6838abb8718767",
+        "stock_row_sha256": "01316e11f3f02d1f2aefe75ea020f3223fd5d17aba6d8faaca1b375b42d1c29a",
+        "fresh": {
+          "location": {
+            "end": 144,
+            "source": 0,
+            "start": 136
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 136, end: 144 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 136:144, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

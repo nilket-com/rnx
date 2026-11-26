@@ -52,6 +52,7 @@ fn source(call: Call) -> &'static str {
 		Call::F64Round => "pub fn main(){ ::std::f64::round(1.5) }",
 		Call::F64Powf => "pub fn main(){ ::std::f64::powf(2.0,3.0) }",
 		Call::I64Abs => "pub fn main(){ ::std::i64::abs(-3) }",
+		Call::ProtocolCmp => "pub fn main(){let v=[1,2];v.sort()}",
 		Call::MethodCmp => "pub fn main(){ (1).cmp(2) }",
 	}
 }

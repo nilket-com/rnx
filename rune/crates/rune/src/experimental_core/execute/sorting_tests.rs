@@ -483,3 +483,47 @@ fn cold_primary_resolution_handles_surviving_and_popped_helpers() {
 	assert_eq!(root.location, None);
 	assert!(executor.is_idle());
 }
+
+#[test]
+fn failed_default_sort_preserves_each_element_and_releases_receiver() {
+	use crate::experimental_core::{lower, value::Type};
+	let mut builder = Builder::default();
+	builder
+		.push(lower::sorting::merge_function(Some(1)).unwrap())
+		.unwrap();
+	builder
+		.push(
+			lower::native_method_function(crate::function::numeric::Call::ProtocolCmp.id(), 2)
+				.unwrap(),
+		)
+		.unwrap();
+	let code = builder.finish().unwrap();
+	let mut store = Store::new(Default::default()).unwrap();
+	let items = [
+		store.list(Type::Vec, &[Value::I64(2)]).unwrap(),
+		store.list(Type::Vec, &[Value::I64(1)]).unwrap(),
+		Value::I64(3),
+	];
+	let parent = store.list(Type::Vec, &items).unwrap();
+	let before = (store.live_entries(), store.payload_bytes());
+	let mut exec = Executor::new().unwrap();
+	let failure = exec
+		.invoke_args_for_test(&code, &mut store, 0, Args::Values(&[parent]), 100000)
+		.unwrap_err();
+	assert_eq!(failure.error.kind, ErrorKind::Type);
+	assert!(exec.is_idle() && failure.cleanup_error.is_none());
+	assert_eq!(store.len(parent).unwrap(), items.len());
+	let mut seen = [false; 3];
+	for i in 0..items.len() {
+		let item = store.get(parent, i).unwrap();
+		let index = items.iter().position(|original| *original == item).unwrap();
+		assert!(!core::mem::replace(&mut seen[index], true));
+		store.release(item).unwrap();
+	}
+	assert_eq!((store.live_entries(), store.payload_bytes()), before);
+	store.release(parent).unwrap();
+	for item in items {
+		store.release(item).unwrap();
+	}
+	assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+}

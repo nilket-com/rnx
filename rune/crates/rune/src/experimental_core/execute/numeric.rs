@@ -43,6 +43,10 @@ impl Executor {
 			return Err(invalid());
 		}
 		let receiver = get(0)?;
+		if call == Call::ProtocolCmp {
+			let order = store.protocol_cmp(receiver, get(1)?)?;
+			return self.put(store, destination, Value::Ordering(order));
+		}
 		if call == Call::MethodCmp {
 			let rhs = get(1)?;
 			let value = store.method_cmp(receiver, rhs)?;

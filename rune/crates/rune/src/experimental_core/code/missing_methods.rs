@@ -11,6 +11,14 @@ pub(super) struct MethodEntry {
 	native: Option<crate::runtime::FunctionHandler>,
 }
 
+#[derive(Clone, Copy)]
+pub(crate) enum NativeBody {
+	Intrinsic(u32, u32),
+	Sort,
+}
+
+pub(crate) const VEC_SORT: Hash = crate::hash_in!(crate, ::std::vec::Vec.sort);
+
 /// A native provider the core already implements, with its receiver included.
 /// Other providers keep the whole dynamic site refused before execution.
 fn native_method(
@@ -18,43 +26,50 @@ fn native_method(
 	receiver: Hash,
 	name: Hash,
 	script_provider: bool,
-) -> Option<(u32, u32)> {
+	nominals: impl Iterator<Item = Hash>,
+) -> Option<NativeBody> {
 	use crate::function::{number, object, text, variant};
 	use crate::TypeHash;
+	if receiver == crate::runtime::Vec::HASH
+		&& Hash::associated_function(receiver, name) == VEC_SORT
+		&& context.default_sort(nominals)
+	{
+		return Some(NativeBody::Sort);
+	}
 	if name == crate::function::clone::RESIZE_NAME
 		&& receiver == crate::function::clone::Provider::Vec.receiver()
 		&& context.vec_resize()
 	{
-		return Some((super::VEC_RESIZE, 3));
+		return Some(NativeBody::Intrinsic(super::VEC_RESIZE, 3));
 	}
 
 	if receiver == crate::alloc::String::HASH && !script_provider {
 		if let Some(op) = crate::function::string_builder::Operation::method(name) {
 			if op.single_provider_name() && context.string_builder(op) {
-				return Some((op.id(), op.arity()));
+				return Some(NativeBody::Intrinsic(op.id(), op.arity()));
 			}
 		}
 	}
 	if let Some(method) = variant::Method::from_hash(name) {
 		if method.provider(receiver).is_some() && context.variant_method(method) {
-			return Some((method.id(), method.arity()));
+			return Some(NativeBody::Intrinsic(method.id(), method.arity()));
 		}
 	}
 	if let Some(method) = object::Method::for_receiver(name, receiver) {
 		if method.provider(receiver).is_some() && context.object_method(method) {
-			return Some((method.id(), method.arity()));
+			return Some(NativeBody::Intrinsic(method.id(), method.arity()));
 		}
 	}
 	if let Some(method) = text::Method::from_hash(name) {
 		if receiver == crate::alloc::String::HASH && context.text_method(method) {
-			return Some((method.id(), method.arity()));
+			return Some(NativeBody::Intrinsic(method.id(), method.arity()));
 		}
 	}
 	if let Some(method) = number::Method::from_hash(name) {
 		if method.instance() && context.number_method(method) {
 			let receiver = number::Receiver::from_hash(receiver)?;
 			let pair = number::Pair::new(method, receiver)?;
-			return Some((pair.id(), method.arity()));
+			return Some(NativeBody::Intrinsic(pair.id(), method.arity()));
 		}
 	}
 	None
@@ -572,6 +587,7 @@ impl CompileTransaction {
 						receiver,
 						name,
 						query.method_script.closed(name),
+						query.items.keys().map(|id| pool.item_type_hash(*id)),
 					)
 					.is_some()
 				})
@@ -588,7 +604,7 @@ impl CompileTransaction {
 		query: &crate::query::QueryInner<'_>,
 		pool: &crate::compile::Pool,
 		name: Hash,
-		resolve: &mut dyn FnMut(Hash, Option<(u32, u32)>) -> Result<u32>,
+		resolve: &mut dyn FnMut(Hash, Option<NativeBody>) -> Result<u32>,
 	) -> Result<()> {
 		if self.checked_dynamic.contains(&name) {
 			return Ok(());
@@ -611,9 +627,14 @@ impl CompileTransaction {
 			}
 			let hash = Hash::associated_function(receiver, name);
 			if let Some(handler) = context.lookup_function(hash) {
-				let native =
-					native_method(context, receiver, name, query.method_script.closed(name))
-						.ok_or_else(|| Error::refused(Refusal::Method))?;
+				let native = native_method(
+					context,
+					receiver,
+					name,
+					query.method_script.closed(name),
+					query.items.keys().map(|id| pool.item_type_hash(*id)),
+				)
+				.ok_or_else(|| Error::refused(Refusal::Method))?;
 				let id = resolve(hash, Some(native))?;
 				self.builder
 					.record_method(hash, id, Some(handler.clone()))?;

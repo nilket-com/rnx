@@ -167,6 +167,15 @@ impl Store {
 		self.set_key(object, indexing::RecordKey::Dynamic(key), value)
 	}
 
+	/// A held cursor may already have been moved through another alias.
+	/// Vec, Tuple and Object collection consult the stock size hint before NEXT.
+	pub(crate) fn read_cursor(&self, value: Value) -> Result<()> {
+		let Value::Heap(h) = value else {
+			return Err(err(ErrorKind::InvalidCode));
+		};
+		self.payload(h).map(|_| ())
+	}
+
 	/// The collected Vec's elements as a new Tuple, in order.
 	#[cold]
 	#[inline(never)]

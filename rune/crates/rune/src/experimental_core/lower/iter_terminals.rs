@@ -15,6 +15,8 @@ const DEPTH: usize = 128;
 /// The innermost expression of a chain.
 #[derive(Clone, Copy)]
 enum Source {
+	/// A stored cursor whose initializer and assignments prove its origin.
+	Held(hir::ExprId),
 	/// `receiver.iter()`, lowered as the certified `iter` call.
 	Iter(hir::ExprId),
 	/// A `std::iter::range(start, end)` call.
@@ -87,6 +89,18 @@ pub(super) enum End {
 	Next,
 	/// A C17e consumer that takes a function value.
 	Closure(Closure),
+}
+
+impl End {
+	fn from_hash(hash: Hash) -> Option<Self> {
+		match (Terminal::from_hash(hash), Closure::from_hash(hash)) {
+			(Some(Terminal::Skip | Terminal::Take), _) => None,
+			(Some(t), _) => Some(Self::Terminal(t)),
+			(_, Some(c)) if !c.adapter() => Some(Self::Closure(c)),
+			_ if hash == Name::Next.hash() => Some(Self::Next),
+			_ => None,
+		}
+	}
 }
 
 /// An adapter's state after setup, in slots.
@@ -289,13 +303,7 @@ impl<'hir> Lower<'_, 'hir> {
 		let hir::Call::Associated { target, hash, .. } = call.call else {
 			return None;
 		};
-		let end = match (Terminal::from_hash(hash), Closure::from_hash(hash)) {
-			(Some(Terminal::Skip | Terminal::Take), _) => return None,
-			(Some(terminal), _) => End::Terminal(terminal),
-			(None, Some(closure)) if !closure.adapter() => End::Closure(closure),
-			_ if hash == Name::Next.hash() => End::Next,
-			_ => return None,
-		};
+		let end = End::from_hash(hash)?;
 		let direct = match end {
 			// The C12 small form keeps `any` on a bare source, except where it
 			// refuses a text source (`chars()`, or a `split` with adapters) and
@@ -315,7 +323,30 @@ impl<'hir> Lower<'_, 'hir> {
 				.is_some_and(|c| !matches!(c.source, Source::Text(_)) || c.closures()),
 			End::Closure(_) => self.chain(target).is_some(),
 		};
-		direct.then_some((end, target))
+		if direct {
+			return Some((end, target));
+		}
+		if !matches!(
+			self.exprs.get(target).kind,
+			hir::ExprKind::Variable(_) | hir::ExprKind::Group(_)
+		) {
+			return None;
+		}
+		// The small-form and text lowerings keep the sites they already own.
+		// Held chars need the closure loop for any, just as direct chars do.
+		let eligible = match end {
+			End::Next => false,
+			End::Closure(Closure::Any) => self
+				.pipeline_shape(target, 0)
+				.is_some_and(|s| s.as_slice() == [2]),
+			End::Terminal(_) => !self.pipeline_is_origin(target),
+			End::Closure(_) => true,
+		};
+		let mut fuel = DEPTH;
+		if eligible && self.held_source(target, matches!(end, End::Closure(_)), &mut fuel) {
+			return Some((end, target));
+		}
+		None
 	}
 
 	/// Whether `id` is a value that can never be a function, so `any` takes
@@ -492,7 +523,7 @@ impl<'hir> Lower<'_, 'hir> {
 		use hir::ExprKind as E;
 		let id = match source {
 			Source::Range(_) => return !counted,
-			Source::Text(_) => return false,
+			Source::Text(_) | Source::Held(_) => return false,
 			Source::Iter(id) => id,
 		};
 		let E::Call(c) = self.exprs.get(id).kind else {
@@ -523,7 +554,7 @@ impl<'hir> Lower<'_, 'hir> {
 	/// Evaluates the source, then each adapter's operands in source order.
 	fn chain_setup(&mut self, chain: &Chain, span: Span) -> Result<Setup> {
 		let node = match chain.source {
-			Source::Iter(id) | Source::Text(id) => self.expr(id)?,
+			Source::Iter(id) | Source::Text(id) | Source::Held(id) => self.expr(id)?,
 			Source::Range(id) => {
 				let expr = *self.exprs.get(id);
 				let hir::ExprKind::Call(call) = expr.kind else {
@@ -1216,6 +1247,10 @@ impl<'hir> Lower<'_, 'hir> {
 		out: u32,
 		span: Span,
 	) -> Result<()> {
+		let chain = self.chain(target).unwrap_or_else(|| Chain {
+			source: Source::Held(target),
+			adapters: Vec::new(),
+		});
 		let arity = match end {
 			End::Terminal(terminal) => terminal.arity(),
 			End::Next => 1,
@@ -1224,9 +1259,6 @@ impl<'hir> Lower<'_, 'hir> {
 		if call.args.len() + 1 != arity {
 			return Err(self.refused(span, Refusal::Arity));
 		}
-		let chain = self
-			.chain(target)
-			.ok_or_else(|| self.refused(span, Refusal::Method))?;
 		self.chain_proof(&chain, end, span)?;
 		let mark = self.next;
 		let setup = self.chain_setup(&chain, span)?;
@@ -1281,9 +1313,14 @@ impl<'hir> Lower<'_, 'hir> {
 					Ok(())
 				})?;
 			}
-			End::Terminal(Terminal::Collect(collection)) => {
-				self.collect(&setup, collection, element, out, span)?
-			}
+			End::Terminal(Terminal::Collect(collection)) => self.collect(
+				&setup,
+				collection,
+				matches!(chain.source, Source::Held(_)),
+				element,
+				out,
+				span,
+			)?,
 			End::Terminal(Terminal::Sum(number)) => {
 				self.fold(&setup, number, Intrinsic::Sum, element, out, span)?
 			}
@@ -1296,6 +1333,59 @@ impl<'hir> Lower<'_, 'hir> {
 			End::Closure(closure) => self.consume(call, &setup, closure, element, out, span)?,
 		}
 		self.pop_to(mark, span)
+	}
+
+	/// Follow the same local initializer/assignment evidence used for direct
+	/// receiver proofs. The terminal consumes the binding, never its initializer.
+	/// A field, capture or argument without that evidence keeps its original route.
+	fn held_source(&self, id: hir::ExprId, closure: bool, fuel: &mut usize) -> bool {
+		use hir::ExprKind as E;
+		let Some(next) = fuel.checked_sub(1) else {
+			return false;
+		};
+		*fuel = next;
+		let Some(expr) = self.exprs.get_checked(id) else {
+			return false;
+		};
+		match expr.kind {
+			E::Group(inner) => self.held_source(inner, closure, fuel),
+			E::Variable(v) => {
+				self.text_init(v)
+					.is_some_and(|init| self.held_source(init, closure, fuel))
+					&& self.exprs.expressions().all(|e| {
+						let (mut lhs, rhs) = match e.kind {
+							E::Assign(a) => (a.lhs, Some(a.rhs)),
+							E::Binary(b) if b.op.is_assign() => (b.lhs, None),
+							_ => return true,
+						};
+						loop {
+							match self.exprs.get_checked(lhs).map(|e| e.kind) {
+								Some(E::Group(inner)) => lhs = inner,
+								Some(E::Variable(x)) if v == x => {
+									return rhs
+										.is_some_and(|id| self.held_source(id, closure, fuel))
+								}
+								Some(_) => return true,
+								None => return false,
+							}
+						}
+					})
+			}
+			E::Call(call) => match call.call {
+				hir::Call::Meta { hash } => hash == RANGE && call.args.len() == 2,
+				hir::Call::Associated { target, hash, .. }
+					if self.opaque.and_then(|p| p.exact(target)).is_none()
+						&& !self.constants.method_script.closed(hash) =>
+				{
+					if hash == Name::Iter.hash() {
+						return self.context.iter_method(Name::Iter) && call.args.is_empty();
+					}
+					closure && self.pipeline_shape(id, 0).is_some_and(|s| s.len() == 1)
+				}
+				_ => false,
+			},
+			_ => false,
+		}
 	}
 
 	/// `fold`, `reduce`, `find`, `any` and `all`: their arguments evaluate
@@ -1439,10 +1529,14 @@ impl<'hir> Lower<'_, 'hir> {
 		&mut self,
 		setup: &Setup,
 		collection: Collection,
+		held: bool,
 		element: u32,
 		out: u32,
 		span: Span,
 	) -> Result<()> {
+		if held && collection != Collection::String {
+			self.intrinsic(Intrinsic::ReadCursor, &[setup.node], setup.condition, span)?;
+		}
 		let (args_start, args_len) = self.function.arguments(&[])?;
 		match collection {
 			Collection::Vec | Collection::Tuple => {
@@ -1496,7 +1590,37 @@ impl<'hir> Lower<'_, 'hir> {
 				};
 				let unit = self.slot()?;
 				self.chain_loop(setup, element, span, &mut |cx| {
-					cx.intrinsic(step, &[out, element], unit, span)
+					if held && collection == Collection::String {
+						// Stock pushes char fragments into the growing String. Use
+						// that allocation policy for the newly admitted cursor.
+						let condition = setup.condition;
+						cx.emit(
+							Op::Is {
+								out: condition,
+								value: element,
+								tag: Type::Char,
+								negate: false,
+							},
+							span,
+						)?;
+						let branch = cx.branch(condition, span)?;
+						let yes = cx.pc();
+						cx.emit(
+							Op::Push {
+								value: out,
+								new: element,
+							},
+							span,
+						)?;
+						let jump = cx.emit(Op::Jump { target: 0 }, span)?;
+						let no = cx.pc();
+						cx.intrinsic(step, &[out, element], unit, span)?;
+						cx.function
+							.patch(branch, Op::Branch { condition, yes, no })?;
+						cx.function.patch(jump, Op::Jump { target: cx.pc() })
+					} else {
+						cx.intrinsic(step, &[out, element], unit, span)
+					}
 				})?;
 			}
 		}

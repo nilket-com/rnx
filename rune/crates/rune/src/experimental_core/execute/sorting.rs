@@ -58,7 +58,16 @@ impl Executor {
 		let result = match id {
 			SORT_BEGIN => {
 				// Stock resolves mutable receiver then &Function before checking len.
-				store.sort_receiver(value).map_err(sort_argument_access)?;
+				store.sort_receiver(value).map_err(|e| {
+					if function.parameters == 1 && e.detail == Detail::WriteBorrowed {
+						e.with_detail(Detail::SharedArgument {
+							arg: 0,
+							readers: store.shared_readers(value).unwrap_or(0),
+						})
+					} else {
+						sort_argument_access(e)
+					}
+				})?;
 				match get(1)? {
 					Value::Function { code: owner, id }
 						if owner == code.id() && code.function(id).is_some() => {}

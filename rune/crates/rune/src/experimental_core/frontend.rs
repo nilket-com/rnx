@@ -670,19 +670,31 @@ impl Collector {
 						}
 						return Err(Error::refused(refusal).at(at));
 					}
-					super::lower::Resolve::NativeMethod {
-						hash,
-						intrinsic,
-						arity,
-					} => {
+					super::lower::Resolve::NativeMethod { hash, body } => {
 						if let Some(&id) = native_helpers.get(&hash) {
 							return Ok(id);
 						}
 						if entries.len() >= 65_536 {
 							return Err(Error::refused(Refusal::CodeLimit).at(at));
 						}
+						let function = match body {
+							super::code::NativeBody::Intrinsic(intrinsic, arity) => {
+								super::lower::native_method_function(intrinsic, arity)?
+							}
+							super::code::NativeBody::Sort => {
+								if entries.len() >= 65_535 {
+									return Err(Error::refused(Refusal::CodeLimit).at(at));
+								}
+								let cmp = entries.len() as u32;
+								let comparator = super::lower::native_method_function(
+									crate::function::numeric::Call::ProtocolCmp.id(),
+									2,
+								)?;
+								entries.try_push((Hash::EMPTY, Some(comparator), None))?;
+								super::lower::sorting::merge_function(Some(cmp))?
+							}
+						};
 						let id = entries.len() as u32;
-						let function = super::lower::native_method_function(intrinsic, arity)?;
 						// Synthetic adapters are not script entry points. Real script
 						// methods remain addressable by their original item hashes.
 						entries.try_push((Hash::EMPTY, Some(function), None))?;
@@ -1233,3 +1245,6 @@ mod collection_get_tests;
 
 #[cfg(test)]
 mod string_builder_tests;
+
+#[cfg(test)]
+mod vector_sort_and_held;

@@ -195,7 +195,7 @@ impl Store {
 	/// Iterative DFS: a non-equal child decides every enclosing comparison.
 	/// Continuations retain only borrowed views; errors leave roots/edges untouched.
 	pub(crate) fn compare(&self, op: Binary, a: Value, b: Value) -> Result<Value> {
-		let result = self.compare_order(op, a, b, false)?;
+		let result = self.compare_order::<false>(op, a, b, false)?;
 		arithmetic::compare(
 			op,
 			result == Some(Ordering::Equal),
@@ -207,11 +207,108 @@ impl Store {
 	/// Associated cmp uses the stock tuple/sequence relation, including unit
 	/// as an empty tuple. Binary operators retain their own stricter behavior.
 	pub(super) fn method_compare_order(&self, a: Value, b: Value) -> Result<Ordering> {
-		self.compare_order(Binary::Lt, a, b, true)?
+		self.compare_order::<false>(Binary::Lt, a, b, true)?
 			.ok_or_else(|| Error::new(ErrorKind::Type, "Method"))
 	}
 
-	fn compare_order(
+	/// Vec::sort uses Value::cmp recursively, including for the leaves of a
+	/// nested sequence. Its inline integer types must match exactly.
+	#[cold]
+	#[inline(never)]
+	pub(crate) fn protocol_cmp(&self, a: Value, b: Value) -> Result<Ordering> {
+		self.compare_order::<true>(Binary::Lt, a, b, true)?
+			.ok_or_else(|| error(ErrorKind::InvalidCode))
+	}
+
+	// Stock selects CMP from the type before it borrows a native receiver.
+	// Failed dispatch can therefore name a moved or exclusively held value.
+	fn protocol_type(&self, item: Item<'_>) -> Result<TypeName> {
+		match item {
+			Item::Value(value) => self
+				.diagnostic_type(value)
+				.ok_or_else(|| error(ErrorKind::InvalidCode)),
+			_ => self.item_type(item),
+		}
+	}
+
+	fn protocol_borrow(&self, item: Item<'_>, arg: Option<u8>) -> Result<()> {
+		if let Item::Value(Value::Heap(handle)) = item {
+			self.payload(handle).map_err(|e| match (arg, e.detail) {
+				(Some(arg), Detail::ReadExclusive) => e.with_detail(Detail::ExclusiveArgument {
+					arg,
+					access: super::super::error::MovedAccess::Read,
+				}),
+				_ => e,
+			})?;
+		}
+		Ok(())
+	}
+
+	/// Inline values have same-type implementations. Heap sequences that implement
+	/// CMP resume the borrowed structural walk; other receivers have no provider.
+	fn protocol_leaf(
+		&self,
+		a: Item<'_>,
+		b: Item<'_>,
+		lhs: TypeName,
+		rhs: TypeName,
+	) -> Result<Option<Ordering>> {
+		use Item::Value as V;
+		if matches!((lhs, rhs), (TypeName::Struct(_), TypeName::Struct(_))) {
+			// Dynamic::borrow_ref on both operands precedes the nominal hash check.
+			self.protocol_borrow(a, None)?;
+			self.protocol_borrow(b, None)?;
+		}
+		let order =
+			match (a, b) {
+				(V(Value::Unit), V(Value::Unit)) => Ordering::Equal,
+				(V(Value::Bool(x)), V(Value::Bool(y))) => x.cmp(&y),
+				(V(Value::Char(x)), V(Value::Char(y))) => x.cmp(&y),
+				(V(Value::I64(x)), V(Value::I64(y))) => x.cmp(&y),
+				(V(Value::U64(x)), V(Value::U64(y))) => x.cmp(&y),
+				(V(Value::Ordering(x)), V(Value::Ordering(y))) => x.cmp(&y),
+				(V(Value::Type(x)), V(Value::Type(y))) => type_hash(x)?.cmp(&type_hash(y)?),
+				(V(Value::F64(x)), V(Value::F64(y))) => x.partial_cmp(&y).ok_or_else(|| {
+					error(ErrorKind::IllegalFloatComparison).with_detail(Detail::FloatComparison {
+						lhs_bits: x.to_bits(),
+						rhs_bits: y.to_bits(),
+					})
+				})?,
+				_ if matches!(
+					lhs,
+					TypeName::String
+						| TypeName::Tuple | TypeName::Vec
+						| TypeName::Result | TypeName::Option
+						| TypeName::Range | TypeName::RangeFrom
+						| TypeName::RangeFull
+						| TypeName::RangeTo
+						| TypeName::RangeToInclusive
+						| TypeName::RangeInclusive
+				) =>
+				{
+					self.protocol_borrow(a, Some(0))?;
+					if lhs != rhs && !(lhs == TypeName::Tuple && rhs == TypeName::Unit) {
+						return Err(error(ErrorKind::Type).with_detail(Detail::ExpectedType {
+							expected: lhs,
+							found: rhs,
+						}));
+					}
+					self.protocol_borrow(b, Some(1))?;
+					return Ok(None);
+				}
+				_ if matches!(lhs, TypeName::Struct(_)) && lhs == rhs => return Ok(None),
+				_ => {
+					return Err(error(ErrorKind::Type).with_detail(Detail::Binary {
+						op: BinarySymbol::Cmp,
+						lhs,
+						rhs,
+					}))
+				}
+			};
+		Ok(Some(order))
+	}
+
+	fn compare_order<const TOTAL: bool>(
 		&self,
 		op: Binary,
 		a: Value,
@@ -255,12 +352,22 @@ impl Store {
 				Task::Pair(a, b, depth) => {
 					// Associated cmp's receiver occupies one level outside the stock
 					// value walk; binary comparisons count the root within it.
-					if depth > if method { 65 } else { 64 } {
+					if depth > if method && !TOTAL { 65 } else { 64 } {
 						return Err(error(ErrorKind::ValueDepth).with_detail(Detail::ValueDepth));
 					}
-					// Validate handles before producing type diagnostics, without changing ownership.
-					let lhs = self.item_type(a)?;
-					let rhs = self.item_type(b)?;
+					let (lhs, rhs) = if TOTAL {
+						(self.protocol_type(a)?, self.protocol_type(b)?)
+					} else {
+						(self.item_type(a)?, self.item_type(b)?)
+					};
+					if TOTAL {
+						if let Some(order) = self.protocol_leaf(a, b, lhs, rhs)? {
+							if order != Ordering::Equal {
+								return Ok(Some(order));
+							}
+							continue;
+						}
+					}
 					let variant_order =
 						if let (TypeName::Struct(a), TypeName::Struct(b)) = (lhs, rhs) {
 							let a_info = super::super::nominal::variant_info(a);

@@ -104,8 +104,12 @@ impl Assembler {
 #[cold]
 #[inline(never)]
 pub(in crate::experimental_core) fn function(_at: Location) -> Result<Function> {
+	merge_function(None)
+}
+
+pub(in crate::experimental_core) fn merge_function(comparator: Option<u32>) -> Result<Function> {
 	let mut a = Assembler {
-		f: Function::new(25, 2)?,
+		f: Function::new(25, if comparator.is_some() { 1 } else { 2 })?,
 		at: super::super::code::TRANSPARENT_SORT_LOCATION,
 		labels: Vec::new(),
 		fixes: Vec::new(),
@@ -113,6 +117,12 @@ pub(in crate::experimental_core) fn function(_at: Location) -> Result<Function> 
 	a.labels.try_resize(16, u32::MAX)?;
 	// Labels: outer0, finish1, runs2, swap3, merge4, right5, left6,
 	// copied7, run-done8, mid-clamp9, end-clamp10, ordering-ok11.
+	if let Some(id) = comparator {
+		a.emit(Op::Literal {
+			out: 1,
+			value: Value::Function { code: 0, id },
+		})?;
+	}
 	a.call(2, SORT_BEGIN, &[0, 1])?;
 	a.call(3, SORT_LEN, &[2])?;
 	a.lit(4, 1)?;

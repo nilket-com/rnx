@@ -123,8 +123,8 @@ fn method_policy(r: &Receiver, name: &str, parameters: &[Hash], inline: bool) ->
 	}
 	if iterator(r) && !inline {
 		let text = in_names(&r.name, "::std::string::Chars ::std::string::Split");
-		let materialized = in_names(name, "next iter len clone")
-			|| (name == "any" && r.name != "::std::string::Chars")
+		let materialized = in_names(name, "next iter len clone any all find fold reduce")
+			|| (!text && in_names(name, "count sum product collect"))
 			|| (text && in_names(name, "count skip take collect"));
 		if !materialized {
 			return refuse;
@@ -187,7 +187,7 @@ fn method_policy(r: &Receiver, name: &str, parameters: &[Hash], inline: bool) ->
 			name,
 			"capacity chars clear clone cmp contains ends_with get is_empty len push push_str replace reserve reserve_exact shrink_to_fit split starts_with trim",
 		),
-		"::std::vec::Vec" => in_names(name, "clone cmp get is_empty iter len push resize sort_by"),
+		"::std::vec::Vec" => in_names(name, "clone cmp get is_empty iter len push resize sort sort_by"),
 		"::std::tuple::Tuple" => in_names(name, "clone cmp get is_empty iter len"),
 		"::std::object::Object" => in_names(
 			name,

@@ -81,7 +81,7 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 		use numeric::Call::*;
 		return Some(match effect {
 			MethodAbs | MethodRound | MethodPowf | F64Abs | F64Round | F64Powf | I64Abs
-			| MethodCmp => false,
+			| MethodCmp | ProtocolCmp => false,
 		});
 	}
 	if let Some(effect) = variant::Method::from_id(id) {
@@ -114,7 +114,8 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 			| RevEmpty
 			| RevLast
 			| RevAt
-			| IntoIter => false,
+			| IntoIter
+			| ReadCursor => false,
 		});
 	}
 	if crate::function::string_builder::Operation::from_id(id).is_some() {

@@ -11,6 +11,7 @@ mod call_arity;
 mod escape;
 mod missing_methods;
 use missing_methods::MethodEntry;
+pub(crate) use missing_methods::{NativeBody, VEC_SORT};
 
 const MAX_CODE_BYTES: usize = 16 << 20;
 pub const MAX_GAP: usize = 256;
@@ -963,6 +964,10 @@ const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
 	CertifiedIntrinsic {
 		id: crate::function::numeric::Call::I64Abs.id(),
 		arity: 1,
+	},
+	CertifiedIntrinsic {
+		id: crate::function::numeric::Call::ProtocolCmp.id(),
+		arity: 2,
 	},
 	CertifiedIntrinsic {
 		id: METHOD_CMP,
@@ -3476,7 +3481,7 @@ mod intrinsic_partition_tests {
 		// C18b3c adds two Vec constructors and C17f adds resize.
 		// C17c numeric intrinsics live outside this table.
 		// 0337 adds Readable, CheckCallback and CheckReturn.
-		assert_eq!(CERTIFIED_INTRINSICS.len(), 70);
+		assert_eq!(CERTIFIED_INTRINSICS.len(), 71);
 		assert!(certified_intrinsic(CERTIFIED_INTRINSICS, DEBUG_LINES).is_none());
 		let debug = call_certificate(DEBUG_LINES).unwrap();
 		for arity in [0, 1, 2, u32::MAX] {

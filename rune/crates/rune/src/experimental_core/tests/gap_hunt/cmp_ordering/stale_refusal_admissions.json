@@ -1,7 +1,28 @@
 {
   "schema": 1,
-  "note": "C11/C12 fresh capabilities admit these source-pinned C9 closure cases; immutable cmp_ordering_stock.tsv and legacy disposition refusals remain archived.",
+  "note": "The admitted cases compare with live stock. Source, legacy refusal and streams remain bound to the frozen C9 cases.",
   "rows": [
+    {
+      "index": 184,
+      "label": "refusal/sort",
+      "source_hex": "70756220666e206d61696e28297b6c657420613d5b322c315d3b612e736f727428293b617d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "f33cc34a1bddac62f629eeb79f314f9df64c9c046f09923c4eb9ebf771eb7fec",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Method",
+        "refusal": "Method",
+        "invoked": false,
+        "source": 0,
+        "start": 26,
+        "end": 34,
+        "span_hex": "612e736f72742829"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": ""
+    },
     {
       "index": 185,
       "label": "refusal/sort-by",

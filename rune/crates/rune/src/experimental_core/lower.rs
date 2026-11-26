@@ -49,8 +49,7 @@ pub(crate) enum Resolve {
 	},
 	NativeMethod {
 		hash: Hash,
-		intrinsic: u32,
-		arity: u32,
+		body: super::code::NativeBody,
 	},
 	Sort,
 	Any,
@@ -2987,6 +2986,11 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			.find(|name| hash == name.hash())
 		{
 			return self.call_iterator_method(call, target, name, out, span);
+		}
+		if Hash::associated_function(crate::hash_in!(crate, ::std::vec::Vec), hash)
+			== super::code::VEC_SORT
+		{
+			return self.call_dynamic_method(call, target, hash, out, span);
 		}
 		if hash == Hash::ident("sort_by") {
 			return self.call_sort_by(call, target, out, span);

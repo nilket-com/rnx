@@ -1362,6 +1362,22 @@ impl Context {
 				.contains_key(&Hash::type_hash(crate::item!(::std::string::String::from)))
 	}
 	#[cfg(feature = "execution")]
+	pub(crate) fn default_sort(&self, nominals: impl Iterator<Item = Hash>) -> bool {
+		if !self.has_default_modules {
+			return false;
+		}
+		let Some(cert) = self.format_snapshot() else {
+			return true;
+		};
+		!cert.modified(crate::experimental_core::code::VEC_SORT)
+			&& self
+				.types()
+				.chain(crate::function::methods::RECEIVERS.iter().copied())
+				.chain(nominals)
+				.all(|ty| !cert.modified(Hash::associated_function(ty, &Protocol::CMP)))
+	}
+
+	#[cfg(feature = "execution")]
 	pub(crate) fn sort_by(&self) -> bool {
 		self.sort_by && !self.sort_by_closed
 	}

@@ -26,7 +26,7 @@ fn default_modules_certify_every_terminal_and_range() {
 }
 
 #[test]
-fn only_direct_chains_are_admitted() {
+fn direct_chains_and_proved_cursors_are_admitted() {
 	let context = Context::with_default_modules().unwrap();
 	for source in [
 		"pub fn main(){[1,2,3].iter().skip(1).take(1).count()}",
@@ -38,16 +38,15 @@ fn only_direct_chains_are_admitted() {
 		"pub fn main(){(std::iter::range(0,3)).take(2).sum::<u64>()}",
 		"pub fn main(){[1,2].iter().skip(1).next()}",
 		"pub fn main(){let n=0;for x in [1,2].iter().take(1){n+=x;}n}",
-		// A stored range reaches only the existing for and next paths.
+		"pub fn main(){let it=[1].iter();it.count()}",
+		"pub fn main(){let it=std::iter::range(0,3);it.sum::<i64>()}",
 		"pub fn main(){let it=std::iter::range(0,3);let n=0;for x in it{n+=x;}(n,it.next())}",
 	] {
 		assert!(compile(source, &context).is_ok(), "{source}");
 	}
 	for source in [
-		"pub fn main(){let it=[1].iter();it.count()}",
 		"pub fn main(){let it=[1].iter().skip(1);it.count()}",
 		"pub fn main(){let it=[1].iter().skip(1);for x in it{}}",
-		"pub fn main(){let it=std::iter::range(0,3);it.sum::<i64>()}",
 		"fn f(it){it.count()} pub fn main(){f([1].iter())}",
 		"fn f(){[1].iter().skip(1)} pub fn main(){f().count()}",
 		"pub fn main(){[1].iter().skip(1)}",
