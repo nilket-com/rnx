@@ -29,6 +29,7 @@ fn policy() -> Value {
 	let mut p: Value =
 		serde_json::from_str(&std::fs::read_to_string(root().join(fr::POLICY)).unwrap()).unwrap();
 	p["schema"] = json!(1);
+	p.as_object_mut().unwrap().remove("source_transitions");
 	p.as_object_mut().unwrap().remove("native_setup");
 	p.as_object_mut().unwrap().remove("installed_setup");
 	p.as_object_mut().unwrap().remove("meter");
@@ -702,6 +703,32 @@ fn approval_and_source_answer_as_the_published_python() {
 			outcome(fr::source_condition(&repo, baseline, candidate, p, &guard)),
 		));
 	}
+	// A changed canonical item needs one exact declaration. The candidate
+	// receipt carries the same hashes an independent reviewer can recompute.
+	use sha2::{Digest as _, Sha256};
+	let hash = |text: &str| rnx_final::pyjson::hex(&Sha256::digest(text.as_bytes()));
+	let entry = json!({"selector":items[0],"baseline":b,"adr":"plans/adr/9001_anchor.md",
+		"old_sha256":hash("fn alpha() { 1 }"),"new_sha256":hash("fn alpha() { 10 }")});
+	let mut declared = p2.clone();
+	declared["source_transitions"] = json!([entry]);
+	let check = |candidate: &str, p: &Value| fr::source_condition(&repo, &b, candidate, p, &guard);
+	let report = check(&d, &declared).unwrap();
+	assert_eq!(report["items"][0]["transition"], entry);
+	assert!(report["items"][1].get("transition").is_none());
+	assert!(check(&d, &p2).is_err());
+	assert!(check(&c, &declared).is_err());
+	for (key, wrong) in [
+		("old_sha256", hash("another old item")),
+		("new_sha256", hash("another new item")),
+		("baseline", c.clone()),
+		("adr", "plans/adr/absent.md".into()),
+	] {
+		let mut p = declared.clone();
+		p["source_transitions"][0][key] = json!(wrong);
+		assert!(check(&d, &p).is_err(), "{key}");
+	}
+	// The next unchanged comparison can inherit a previous declaration.
+	assert!(fr::source_condition(&repo, &d, &d, &declared, &guard).is_ok());
 	let mut text = serde_json::to_string(&cases).unwrap();
 	let mut names = vec![
 		(x, "<X>"),

@@ -126,8 +126,11 @@ pub fn validate_policy(policy: &Value) -> Result<()> {
 	if let Some(rule) = policy.get("relative_relocations") {
 		anyhow::ensure!(
 			meter.is_some()
-				&& identity(rule)?
-					== "d1936c1ce3a08e25e05cb91732022dc0ba3d59ad750a94bd15abda290b11c3b0",
+				&& matches!(
+					identity(rule)?.as_str(),
+					"d1936c1ce3a08e25e05cb91732022dc0ba3d59ad750a94bd15abda290b11c3b0"
+						| "8d55bf9c3619a65eb0713938e89ce6ede725591c32f74814ea946ae8b8e7f33b"
+				),
 			"unreviewed relocation calibration"
 		);
 	}
@@ -302,9 +305,50 @@ pub fn anchor_approval(root: &Path, baseline: &str, candidate: &str, policy: &Va
 	Ok(())
 }
 
-/// Every fixed-source item's canonical text, from `guard`, unchanged
-/// between baseline and candidate; the policy itself unchanged in its
-/// inventory and limits, or at the reviewed bootstrap.
+/// A declaration can explain a change to exactly one inventoried item in one
+/// comparison. Declarations inherited from an older baseline are inert.
+fn declared_source_transitions<'a>(
+	policy: &'a Value,
+	baseline: &str,
+) -> Result<BTreeMap<String, &'a Value>> {
+	let mut active = BTreeMap::new();
+	let Some(entries) = policy.get("source_transitions") else {
+		return Ok(active);
+	};
+	let entries = entries
+		.as_array()
+		.context("source transitions must be a list")?;
+	let inventory = policy["inventory"]
+		.as_array()
+		.context("source inventory must be a list")?;
+	let hex = |value: &Value, len| {
+		value.as_str().is_some_and(|s| {
+			s.len() == len
+				&& s.bytes()
+					.all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+		})
+	};
+	for entry in entries {
+		let adr = Path::new(entry["adr"].as_str().unwrap_or_default());
+		anyhow::ensure!(
+			inventory.contains(&entry["selector"])
+				&& hex(&entry["baseline"], 40)
+				&& hex(&entry["old_sha256"], 64)
+				&& hex(&entry["new_sha256"], 64)
+				&& adr.parent() == Some(Path::new("plans/adr"))
+				&& adr.extension().is_some_and(|e| e == "md"),
+			"invalid fixed-source transition"
+		);
+		if entry["baseline"] == baseline {
+			let previous = active.insert(identity(&entry["selector"])?, entry);
+			anyhow::ensure!(previous.is_none(), "duplicate fixed-source transition");
+		}
+	}
+	Ok(active)
+}
+
+/// Compare canonical item text and record each explicitly declared transition.
+/// The inventoried items and numerical limits are bound to the baseline.
 pub fn source_condition(
 	root: &Path,
 	baseline: &str,
@@ -315,6 +359,11 @@ pub fn source_condition(
 	validate_policy(policy)?;
 	match baseline_policy(root, baseline)? {
 		Some(old) => {
+			if old["relative_relocations"]["version"] == 2
+				&& policy["relative_relocations"]["version"] != 2
+			{
+				bail!(value_error("loader setup policy downgrade"));
+			}
 			if old.get("relative_relocations").is_some()
 				&& policy.get("relative_relocations").is_none()
 			{
@@ -351,6 +400,7 @@ pub fn source_condition(
 		)),
 		None => {}
 	}
+	let transitions = declared_source_transitions(policy, baseline)?;
 	let temp =
 		std::env::temp_dir().join(format!("fixed-source-{}", crate::receipt::invocation_id()));
 	std::fs::create_dir(&temp)?;
@@ -394,14 +444,31 @@ pub fn source_condition(
 				}
 				values.push(String::from_utf8(output.stdout)?.trim().to_owned());
 			}
+			let hash = |text: &str| crate::pyjson::hex(&Sha256::digest(text.as_bytes()));
+			let new_hash = hash(&values[1]);
+			let mut row = json!({"selector":item,"sha256":new_hash,"canonical":values[1]});
+			let declared = transitions.get(&identity(item)?);
 			if values[0] != values[1] {
+				let old_hash = hash(&values[0]);
+				let Some(entry) =
+					declared.filter(|e| e["old_sha256"] == old_hash && e["new_sha256"] == new_hash)
+				else {
+					bail!(value_error(&format!(
+						"fixed source changed: {}:{}",
+						field("file"),
+						field("name")
+					)));
+				};
+				let adr = entry["adr"].as_str().context("transition ADR")?;
+				git(root, &["cat-file", "-e", &format!("{candidate}:{adr}")])?;
+				row["transition"] = (*entry).clone();
+			} else if declared.is_some() {
 				bail!(value_error(&format!(
-					"fixed source changed: {}:{}",
-					field("file"),
+					"stale transition for unchanged item: {}",
 					field("name")
 				)));
 			}
-			rows.push(json!({"selector": item, "sha256": crate::pyjson::hex(&Sha256::digest(values[0].as_bytes())), "canonical": values[0]}));
+			rows.push(row);
 		}
 		Ok(rows)
 	})();

@@ -1,14 +1,11 @@
 {
   "schema": 2,
+  "source_transitions": [],
   "meter": {"version":1,"hash_keys":[0,0],"epoch_ns":1000000000000,"tick_ns":1000},
   "relative_relocations": {
-    "version": 1,
+    "version": 2,
     "loader": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
-    "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40",
-    "symbol": "_dl_relocate_object_no_relro",
-    "unit_Ir": 12,
-    "max_added": 4,
-    "on_loader_change": "ordinary rule only until recalibrated"
+    "sha256": "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40"
   },
   "installed_setup": {
     "outer_reference": {

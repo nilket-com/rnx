@@ -134,3 +134,6 @@ test_required_stages.Coverage.test_documentation_does_not_gain_quality_stages	to
 test_required_stages.Coverage.test_graph_selection_is_closed_under_quality_and_removed_owner	tools/final/tests/required.rs::graph_selection_is_closed_under_quality_and_a_removed_owner	removed: ADR 0284 deleted the Python final controller; the Rust test is the control
 test_required_stages.Coverage.test_new_quality_commands_are_canonical_and_formats_precede_compilation	tools/final/tests/required.rs::new_quality_commands_are_canonical_and_formats_precede_compilation	removed: ADR 0284 deleted the Python final controller; the Rust test is the control
 test_final_output.RoutingAssignment.test_final_requires_assigned_root	stays: final_evidence.assigned_root is how stage programs read their owned roots
+
+# Rust-only source transition controls (ADR 0346): tools/final/tests/fixed_route.rs::approval_and_source_answer_as_the_published_python checks both hashes, the baseline, missing and stale entries, and the receipt.
+# ADR 0346 loader scoring: tools/final/src/fixed_route_phases.rs::loader_and_remaining_setup_have_independent_limits checks both limits, masking and incomplete profile evidence.

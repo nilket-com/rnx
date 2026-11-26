@@ -81,6 +81,16 @@ class Controls(unittest.TestCase):
 			self.assertTrue(comparison({"case": [a]}, {"case": [profile(10, 25)]})["exact_partitions_match"])
 			self.assertFalse(comparison({"case": [a]}, {"case": [profile(11, 20)]})["exact_partitions_match"])
 
+		from ir_accounting import loader_instructions
+		path = "/lib/ld-linux-x86-64.so.2"
+		counts = {"dynamic_functions": {
+			path + "::strcmp": 11, path + "::relocate": 29,
+			"/other/ld-linux-x86-64.so.2::relocate": 100,
+			"/lib/libc.so.6::strcmp": 15,
+		}}
+		self.assertEqual(loader_instructions(counts, path), 40)
+		self.assertIsNone(loader_instructions(counts, "/absent/ld-linux-x86-64.so.2"))
+
 	def test_system_band_boundaries(self):
 		from ir_accounting import system_band
 		self.assertTrue(system_band(4096, 4096)["passes"])

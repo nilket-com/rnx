@@ -181,15 +181,16 @@ def installed_dispatch(build, mode, directory, valgrind):
  # Record the outer ELF's loader work. A different loader keeps the ordinary rule.
  rule=json.loads((root/'tools/column/fixed_route_policy.json').read_text()).get('relative_relocations')
  if mode=='on' and rule and reference['libraries'].get(rule['loader'])==rule['sha256']:
-  symbol=rule['loader']+'::'+rule['symbol']
-  if symbol in counts['dynamic_functions'] and observed['dynamic_functions'].get(symbol,0)==0:
+  loader=rule['loader']
+  outer_ir=ir_accounting.loader_instructions(counts,loader)
+  if outer_ir is not None:
    table=subprocess.check_output(['/usr/bin/readelf','-Wr',build['installed_binary']],text=True)
    ordinary=sum(len(fields)>=3 and fields[2]=='R_X86_64_RELATIVE' for fields in map(str.split,table.splitlines()))
    if sha(build['installed_binary'])!=desc['installed']['sha256']:
     raise ValueError('installed image changed during relocation measurement')
    mapping['relative_relocations']={'version':rule['version'],'artifacts':desc,'count':ordinary,
-    'loader_sha256':rule['sha256'],'symbol':symbol,'self_Ir':counts['dynamic_functions'][symbol],
-    'profile_sha256':mapping['profile_sha256'],'launch_sha256':launch_hash}
+    'loader_sha256':rule['sha256'],'outer_Ir':outer_ir,'query_Ir':ir_accounting.loader_instructions(observed,loader) or 0,
+    'query_sha256':mapping['query_sha256'],'profile_sha256':mapping['profile_sha256'],'launch_sha256':launch_hash}
  receipt=dict(status='PASS',mode=mode,artifacts=desc,launch=context,route=expected,**mapping)
  proof=directory/'DISPATCH.json'
  atomic_json(proof,receipt)

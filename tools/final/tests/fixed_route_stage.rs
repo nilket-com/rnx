@@ -20,7 +20,8 @@ fn root() -> PathBuf {
 
 // ADRs 0316 and 0324 update the capture-script hashes and their derived keys
 // under the original schema-1 recipe in both witnesses. ADR 0338 updates
-// the paired builder digest for its verified baseline input.
+// the paired builder digest for its verified baseline input. ADR 0346
+// updates the loader accounting and capture hashes and their derived keys.
 fn witness(name: &str) -> Value {
 	let path = root().join("tools/final/tests/witness").join(name);
 	let value: Value = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
@@ -650,6 +651,7 @@ fn legacy_policy() -> Value {
 	)
 	.unwrap();
 	policy["schema"] = json!(1);
+	policy.as_object_mut().unwrap().remove("source_transitions");
 	policy.as_object_mut().unwrap().remove("native_setup");
 	policy.as_object_mut().unwrap().remove("installed_setup");
 	policy.as_object_mut().unwrap().remove("meter");

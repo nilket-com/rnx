@@ -62,6 +62,12 @@ def account(path, binary, engine=None, *, system_window=False):
 		"rnx_functions": rnx, "dynamic_functions": dynamic, "other_functions": other}
 
 
+def loader_instructions(accounting, loader):
+	"""Self costs for the exact loader object; an absent object has no observation."""
+	costs = [cost for symbol, cost in accounting["dynamic_functions"].items() if symbol.startswith(loader + "::")]
+	return sum(costs) if costs else None
+
+
 def comparison(left, right):
 	if set(left) != set(right):
 		raise ValueError("comparison cases differ")
