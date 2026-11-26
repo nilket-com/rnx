@@ -1808,7 +1808,7 @@ mod function_tests {
 			("{let #{a}=#{a:2,b:3};a}", "pattern did not match"),
 			("match 7{Ok(x)=>x,_=>0}", "constant Result patterns"),
 			("match 7{b\"a\"=>1,_=>0}", "constant byte-string patterns"),
-			("match 7{1.5=>1,_=>0}", "constant floating-point patterns"),
+			("match 7{1.5=>1,_=>0}", "UnsupportedPatternExpr"),
 			("match 7{_ if 3=>1}", "Expected type"),
 		] {
 			let src = rust_alloc::format!("const A={body};pub fn main(){{A}}");
@@ -1977,7 +1977,7 @@ mod function_tests {
 	#[test]
 	fn constant_loop_refusals() {
 		for (body, expected) in [
-			("for x in [1]{break 7}", "Can only break with a value"),
+			("for x in [1]{break 7}", "BreakUnsupportedValue"),
 			(
 				"{let a=[1,2];let b=a;b[0]=7;a}",
 				"constant assignment to a part",

@@ -7,6 +7,8 @@ pub(crate) use self::arena::Arena;
 mod hir;
 pub(crate) use self::hir::*;
 
+#[cfg(feature = "execution")]
+pub(crate) mod const_check;
 pub(crate) mod lowering2;
 
 pub(crate) mod scopes;

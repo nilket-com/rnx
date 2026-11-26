@@ -241,6 +241,9 @@ fn a_timeout_stops_the_stage_and_drains_child_and_grandchild() {
 	.unwrap();
 	wait_for(&pidfile);
 	let grandchild = process(read_pid(&pidfile));
+	let record = read_record(&guarded.record).unwrap();
+	let child = record.stage.value().expect("stage recorded before release");
+	assert!(guardian::alive(child));
 	let outcome = guarded.wait(Some(Duration::from_millis(300))).unwrap();
 	assert!(
 		outcome.stopped.as_deref().unwrap().contains("timed out"),
@@ -248,6 +251,7 @@ fn a_timeout_stops_the_stage_and_drains_child_and_grandchild() {
 		outcome.stopped
 	);
 	assert_eq!(outcome.status, 128 + libc::SIGTERM);
+	assert!(gone(child));
 	assert!(gone(&grandchild));
 }
 

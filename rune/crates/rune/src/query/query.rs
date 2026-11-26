@@ -1137,6 +1137,12 @@ impl<'a, 'arena> Query<'a, 'arena> {
 	) -> compile::Result<ConstValueBuf> {
 		#[cfg(feature = "execution")]
 		if self.inner.collecting {
+			use hir::const_check::{validate, Root};
+			match entry {
+				Entry::Expr(exprs, expr) => validate(self.inner, exprs, Root::Expr(expr))?,
+				Entry::Block(exprs, block) => validate(self.inner, exprs, Root::Block(block))?,
+				Entry::Call(_) => {}
+			}
 			return match entry {
 				Entry::Expr(exprs, expr) => crate::experimental_core::constants::eval(
 					location.source_id,

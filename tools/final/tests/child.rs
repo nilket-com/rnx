@@ -425,20 +425,11 @@ fn walk(path: &Path) -> Vec<PathBuf> {
 }
 
 #[test]
-fn a_timeout_drains_child_and_grandchild() {
+fn a_timed_out_child_gets_a_timeout_receipt() {
 	let f = Fixture::new();
-	let pids = f.out.join("pids");
-	let grandchild = format!(
-		"import os,signal;open({:?},'a').write(str(os.getpid())+'\\n');signal.pause()",
-		pids.to_string_lossy()
-	);
-	let code = format!(
-		"import os,subprocess,sys,signal;open({:?},'a').write(str(os.getpid())+'\\n');subprocess.Popen([sys.executable,'-c',{grandchild:?}]);signal.pause()",
-		pids.to_string_lossy()
-	);
-	// A test_ script is a registered leaf, as the Python control's patch made it.
+	// Group draining is checked after both processes are ready in guardian.rs.
 	let script = f.root.join("test_timeout.py");
-	std::fs::write(&script, code).unwrap();
+	std::fs::write(&script, "import signal\nsignal.pause()\n").unwrap();
 	let done = f
 		.run(
 			&["python3".into(), script.to_string_lossy().into_owned()],
@@ -453,18 +444,6 @@ fn a_timeout_drains_child_and_grandchild() {
 		(row["status"].clone(), row["error_type"].clone()),
 		(json!("FAIL"), json!("TimeoutExpired"))
 	);
-	let ids: Vec<i32> = std::fs::read_to_string(&pids)
-		.unwrap()
-		.lines()
-		.map(|l| l.parse().unwrap())
-		.collect();
-	assert_eq!(ids.len(), 2);
-	for pid in ids {
-		assert!(
-			rnx_final::guardian::start_ticks(pid).is_none(),
-			"{pid} survived the timeout"
-		);
-	}
 }
 
 #[test]
@@ -526,53 +505,64 @@ fn a_stage_writing_tracked_source_fails_its_neighbor() {
 			.unwrap()
 			.success()
 	);
-	// Ignored test scripts: registered leaf children of this checkout.
+	// Opening the FIFO pairs the two leaves after both source snapshots.
+	// The neighbor can finish its read only after the writer changes the file.
+	assert!(
+		std::process::Command::new("mkfifo")
+			.arg(f.out.join("handoff"))
+			.status()
+			.unwrap()
+			.success()
+	);
 	std::fs::write(
 		f.out.join("test_neighbor.py"),
-		"import time; time.sleep(1.5)",
+		r#"with open('runs/handoff', 'rb') as pipe:
+    if pipe.read(1) != b'!':
+        raise RuntimeError('writer closed the handoff before the write')
+"#,
 	)
 	.unwrap();
 	std::fs::write(
 		f.out.join("test_writer.py"),
-		"open('tracked.txt','w').write('changed')",
+		r#"from pathlib import Path
+with open('runs/handoff', 'wb') as pipe:
+    Path('tracked.txt').write_text('changed')
+    pipe.write(b'!')
+"#,
 	)
 	.unwrap();
-	let neighbor = std::thread::scope(|scope| {
-		let neighbor = scope.spawn(|| {
-			f.run(
-				&[
-					"python3".into(),
-					f.out
-						.join("test_neighbor.py")
-						.to_string_lossy()
-						.into_owned(),
-				],
-				"neighbor",
-				&f.env(),
-				Some(Duration::from_secs(60)),
-			)
-			.unwrap()
-		});
-		std::thread::sleep(Duration::from_millis(500));
+	let run_leaf = |name: &str| {
 		f.run(
 			&[
 				"python3".into(),
-				f.out.join("test_writer.py").to_string_lossy().into_owned(),
+				f.out
+					.join(format!("test_{name}.py"))
+					.to_string_lossy()
+					.into_owned(),
 			],
-			"writer",
+			name,
 			&f.env(),
 			Some(Duration::from_secs(60)),
 		)
-		.unwrap();
-		neighbor.join().unwrap()
+		.unwrap()
+	};
+	let (neighbor, writer) = std::thread::scope(|scope| {
+		let neighbor = scope.spawn(|| run_leaf("neighbor"));
+		let writer = run_leaf("writer");
+		(neighbor.join().unwrap(), writer)
 	});
-	assert_eq!(neighbor.returncode, 1);
-	assert!(
-		receipt(&neighbor)["error"]
-			.as_str()
-			.unwrap()
-			.contains("source changed during child")
-	);
+	for (name, done) in [("neighbor", neighbor), ("writer", writer)] {
+		let row = receipt(&done);
+		assert_eq!(row["process_exit"], 0, "{name}: {row}");
+		assert_eq!(done.returncode, 1, "{name}: {row}");
+		assert!(
+			row["error"]
+				.as_str()
+				.unwrap()
+				.contains("source changed during child"),
+			"{name}: {row}"
+		);
+	}
 }
 
 #[test]
@@ -622,11 +612,14 @@ fn a_lock_free_status_leaves_the_index_alone() {
 		.unwrap();
 	file.set_modified(std::time::SystemTime::UNIX_EPOCH + Duration::from_secs(1))
 		.unwrap();
-	file.set_modified(std::time::SystemTime::now()).unwrap();
+	// Give the index a known old stamp so a rewrite is visible immediately.
+	std::fs::File::open(f.root.join(".git/index"))
+		.unwrap()
+		.set_modified(std::time::SystemTime::UNIX_EPOCH + Duration::from_secs(2))
+		.unwrap();
 	let before = stamp();
 	git(&["status", "--porcelain"], false);
 	assert_eq!(stamp(), before, "a lock-free status rewrote the index");
-	std::thread::sleep(Duration::from_millis(20));
 	git(&["status", "--porcelain"], true);
 	assert_ne!(stamp(), before, "the hazard: a default status rewrites it");
 }

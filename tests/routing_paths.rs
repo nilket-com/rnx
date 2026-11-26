@@ -647,3 +647,37 @@ fn script_method_results_select_the_actual_returning_body() {
 	}
 	fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn returning_constant_match_guard_preserves_running_programs() {
+	let root = scratch("constant-match-guard");
+	for (input, wildcard, expected) in [
+		(0, "9", Some("7")),
+		(1, "9", Some("9")),
+		(0, "{1=2;9}", Some("7")),
+		(1, "{1=2;9}", None),
+	] {
+		let source = format!(
+			"const fn f(x){{match x {{0 if {{return 7;}}=>5,_=>{wildcard}}}}} const V=f({input});pub fn main(args){{println!(\"{{}}\",V);}}"
+		);
+		fs::write(root.join("main.rn"), source).unwrap();
+		for native in [false, true] {
+			let reference = run(&root, &[], true, native, &["--debug-engine"], "stock");
+			assert!(reference.status.success(), "{reference:?}");
+			let out = run(&root, &[], false, native, &["--debug-engine"], "auto");
+			assert!(out.status.success(), "{out:?}");
+			let route = String::from_utf8(out.stderr).unwrap();
+			if let Some(value) = expected {
+				assert!(route.starts_with("rnx: engine=execution"), "{route}");
+				assert_eq!(out.stdout, format!("{value}\n").as_bytes());
+			} else {
+				assert!(
+					route.starts_with("rnx: engine=legacy refusal=FrontendDiagnostic"),
+					"{route}"
+				);
+				assert_eq!(out.stdout, reference.stdout);
+			}
+		}
+	}
+	fs::remove_dir_all(root).unwrap();
+}
