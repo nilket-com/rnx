@@ -547,3 +547,40 @@ fn loop_binders_control_flow_failures_and_reuse() {
 	assert_eq!(rows, 24);
 	println!("C16b loop Miri rows {rows}");
 }
+
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "range metadata requires default modules; native control"
+)]
+fn range_patterns_check_identity_before_reading_and_retain_endpoints() {
+	let context = Context::with_default_modules().unwrap();
+	let src = r#"
+		use std::ops::Range;
+		struct S { start, end }
+		fn probe(x) { match x { Range { start, end } => 1, _ => 0 } }
+		pub fn main() {
+			let r = [1]..[2];
+			let a = match r {
+				Range { start: a, end: [99] } => [],
+				Range { start: a, .. } => a, _ => []
+			};
+			a.push(3);
+			(r.start.len() + r.end.len()) as i64
+				+ probe(#{start: 0, end: 1}) * 10
+				+ probe(S {start: 0, end: 1}) * 100
+		}
+	"#;
+	let mut sources = Sources::new();
+	sources.insert(Source::memory(src).unwrap()).unwrap();
+	let program = frontend::compile(&mut sources, &context, &mut Diagnostics::new(), 1).unwrap();
+	let main = program.function(Hash::type_hash(["main"])).unwrap();
+	let mut executor = Executor::new().unwrap();
+	let mut store = Store::new(Limits::default()).unwrap();
+	let result = executor
+		.invoke(&program, &mut store, main, &[], 10_000)
+		.unwrap();
+	assert_eq!(store.root_scalar(&result).unwrap(), Some(Scalar::I64(3)));
+	store.root_release(result).unwrap();
+	idle(&executor, &store);
+}

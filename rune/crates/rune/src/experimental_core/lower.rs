@@ -1588,17 +1588,8 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				.metatype(span)
 				.map(|nominal| Some(Type::Struct(nominal)));
 		}
-		for (range, tag) in [
-			(rt::Range::HASH, Type::Range),
-			(rt::RangeFrom::HASH, Type::RangeFrom),
-			(rt::RangeFull::HASH, Type::RangeFull),
-			(rt::RangeInclusive::HASH, Type::RangeInclusive),
-			(rt::RangeTo::HASH, Type::RangeTo),
-			(rt::RangeToInclusive::HASH, Type::RangeToInclusive),
-		] {
-			if hash == range {
-				return Ok(Some(tag));
-			}
+		if let Some(tag) = range_type_tag(hash) {
+			return Ok(Some(tag));
 		}
 		let Some(shape) = self.constants.variant_shape(hash) else {
 			return Ok(None);
@@ -3214,6 +3205,20 @@ pub(crate) fn binary_op(op: BinOp) -> Option<Binary> {
 		BinOp::BitXor(..) | BinOp::BitXorAssign(..) => Binary::BitXor,
 		BinOp::Shl(..) | BinOp::ShlAssign(..) => Binary::Shl,
 		BinOp::Shr(..) | BinOp::ShrAssign(..) => Binary::Shr,
+		_ => return None,
+	})
+}
+
+fn range_type_tag(hash: Hash) -> Option<Type> {
+	use crate::runtime as rt;
+	use crate::TypeHash;
+	Some(match hash {
+		rt::Range::HASH => Type::Range,
+		rt::RangeFrom::HASH => Type::RangeFrom,
+		rt::RangeFull::HASH => Type::RangeFull,
+		rt::RangeInclusive::HASH => Type::RangeInclusive,
+		rt::RangeTo::HASH => Type::RangeTo,
+		rt::RangeToInclusive::HASH => Type::RangeToInclusive,
 		_ => return None,
 	})
 }

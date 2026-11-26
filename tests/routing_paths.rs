@@ -452,3 +452,149 @@ fn match_receiver_runs_each_effect_once_on_its_selected_route() {
 		fs::remove_dir_all(root).unwrap();
 	}
 }
+
+#[test]
+fn range_patterns_match_through_the_file_entry() {
+	let root = scratch("range-patterns");
+	let source = r#"
+		use std::ops::{Range, RangeInclusive, RangeFull, RangeFrom, RangeTo, RangeToInclusive};
+		struct Wrapper { value }
+		fn bounds(Range { start, end }) { start + end }
+		fn endpoint(n) { println!("{}", n); n }
+		fn produced() { 3..8 }
+		pub fn main(args) {
+			assert_eq!(match 2..5 { _ => 7 }, 7);
+			assert_eq!(match 2..5 { r => r.start }, 2);
+			let first = |Range {start,..}| start;
+			assert_eq!(first(2..5), 2);
+			let sum=0;
+			for Range {start,..} in [2..5, 3..7] { sum+=start; }
+			assert_eq!(sum, 5);
+			assert_eq!(match endpoint(2)..endpoint(5) {
+				Range { start: 3, .. } => 0,
+				std::ops::Range { start: a, end: b } if a < b => a+b, _ => 0
+			}, 7);
+			assert_eq!(match 2.. { RangeFrom {start} => start, _ => 0 }, 2);
+			assert_eq!(match 2.. { RangeFrom {..} => 1, _ => 0 }, 1);
+			assert_eq!(match .. { RangeFull => 1, _ => 0 }, 1);
+			assert_eq!(match .. { RangeFull {..} => 1, _ => 0 }, 1);
+			assert_eq!(match 2..=5 { RangeInclusive {start,end} => start+end, _ => 0 }, 7);
+			assert_eq!(match 2..=5 { RangeInclusive {end,..} => end, _ => 0 }, 5);
+			assert_eq!(match ..5 { RangeTo {end} => end, _ => 0 }, 5);
+			assert_eq!(match ..5 { RangeTo {..} => 1, _ => 0 }, 1);
+			assert_eq!(match ..=5 { RangeToInclusive {end} => end, _ => 0 }, 5);
+			assert_eq!(match ..=5 { RangeToInclusive {..} => 1, _ => 0 }, 1);
+			assert_eq!(match 2.. { Range {..} => 0, _ => 1 }, 1);
+			assert_eq!(match .. { RangeFrom {..} => 0, _ => 1 }, 1);
+			assert_eq!(match 2..=5 { RangeFull => 0, _ => 1 }, 1);
+			assert_eq!(match ..5 { RangeInclusive {..} => 0, _ => 1 }, 1);
+			assert_eq!(match ..=5 { RangeTo {..} => 0, _ => 1 }, 1);
+			assert_eq!(match 2..5 { RangeToInclusive {..} => 0, _ => 1 }, 1);
+			for x in [(), 5, [1,2], #{start:1,end:2}] {
+				assert_eq!(match x { Range {start,..} => start, _ => 9 }, 9);
+			}
+			let p = Wrapper { value: Some([(("start", 7)..5,)]) };
+			assert_eq!(match p.value {
+				Some([(Range { start: ("start", n), .. },)]) => n, _ => 0
+			}, 7);
+			let Range {start, end} = produced();
+			assert_eq!(start+end, 11);
+			assert_eq!(bounds(produced()), 11);
+			let r=produced(); let hits=0;
+			if let Range {..} = r { hits+=1; }
+			if let RangeFull = r { hits+=10; }
+			while let RangeFull = r { hits+=100; break; }
+			while let Range {..} = r { hits+=1; break; }
+			assert_eq!(hits, 2);
+		}
+	"#;
+	fs::write(root.join("main.rn"), source).unwrap();
+	for native in [false, true] {
+		let output = run(&root, &[], false, native, &["--debug-engine"], "ranges");
+		let stderr = String::from_utf8(output.stderr).unwrap();
+		assert!(output.status.success(), "{stderr}");
+		assert!(stderr.starts_with("rnx: engine=execution "), "{stderr}");
+		assert_eq!(output.stdout, b"2\n5\n");
+	}
+	fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn range_patterns_keep_misses_and_diagnostics_at_the_source() {
+	let root = scratch("range-pattern-errors");
+	let cases = [
+		(
+			"pub fn main(args){let f=|std::ops::Range{start,..}|start;f(1..)}",
+			"std::ops::Range",
+			"Panicked: pattern did not match",
+			"execution",
+		),
+		(
+			"pub fn main(args){for std::ops::Range{start,..} in [2..] {println!(\"wrong\");}}",
+			"std::ops::Range",
+			"Panicked: pattern did not match",
+			"execution",
+		),
+		(
+			"pub fn main(args){let std::ops::Range{start,..}=1..=2;start}",
+			"std::ops::Range",
+			"Panicked: pattern did not match",
+			"execution",
+		),
+		(
+			"fn f(std::ops::Range{start,..}){start} pub fn main(args){f(1..)}",
+			"std::ops::Range",
+			"Panicked: pattern did not match",
+			"execution",
+		),
+		(
+			"struct S{} impl S{fn m(self){println!(\"wrong\");7}} pub fn main(args){let x=match .. {std::ops::Range{..}=>S{}};x.m()}",
+			"x.m()",
+			"no method `m` on `std::tuple::Tuple`",
+			"execution",
+		),
+		(
+			"pub fn main(args){match 1..2 {std::ops::Range{begin,..}=>begin}}",
+			"std::ops::Range",
+			"Field `begin` is not a field in `::std::ops::Range`",
+			"legacy refusal=FrontendDiagnostic",
+		),
+		(
+			"pub fn main(args){match 1..2 {std::ops::Range{start}=>start}}",
+			"std::ops::Range",
+			"Non-exhaustive pattern for `::std::ops::Range`",
+			"legacy refusal=FrontendDiagnostic",
+		),
+		(
+			"pub fn main(args){match 1..2 {std::ops::Range(a,b)=>a}}",
+			"std::ops::Range",
+			"Expected type that can be used in a tuple pattern",
+			"legacy refusal=FrontendDiagnostic",
+		),
+		(
+			"pub fn main(args){match .. {std::ops::RangeFull{start,..}=>start}}",
+			"std::ops::RangeFull",
+			"Expected type that can be used in a struct pattern",
+			"legacy refusal=FrontendDiagnostic",
+		),
+	];
+	for (source, at, diagnostic, route) in cases {
+		fs::write(root.join("main.rn"), source).unwrap();
+		let column = source.find(at).unwrap() + 1;
+		for native in [false, true] {
+			let output = run(&root, &[], false, native, &["--debug-engine"], "error");
+			let stderr = String::from_utf8(output.stderr).unwrap();
+			assert_eq!(output.status.code(), Some(1), "{stderr}");
+			assert!(output.stdout.is_empty());
+			assert!(
+				stderr.starts_with(&format!("rnx: engine={route}")),
+				"{stderr}"
+			);
+			assert!(
+				stderr.contains(&format!("line 1, column {column}: {diagnostic}")),
+				"{stderr}"
+			);
+		}
+	}
+	fs::remove_dir_all(root).unwrap();
+}

@@ -63,6 +63,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			| E::Lit(_)
 			| E::Call(_)
 			| E::Await(_)
+			| E::Range(_)
 			| E::Object(_)
 			| E::Tuple(_)
 			| E::Vec(_)
@@ -346,6 +347,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 						)?;
 						self.pattern_require(condition, true, misses, span)?;
 						return Ok(());
+					}
+					if let Some(tag) = range_type_tag(hash) {
+						return self.pattern_is(value, tag, misses, span);
 					}
 					let _shape = self
 						.constants
