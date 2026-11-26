@@ -2,7 +2,7 @@
   "base": "23bfe0e3",
   "rows": [
     {
-      "after_admitted": false,
+      "after_admitted": true,
       "before": {
         "admitted": false,
         "location": [

@@ -763,7 +763,7 @@ fn proven_receiver_exclusions_stock_is_frozen() {
 }
 
 #[test]
-fn proven_receiver_exclusions_keep_m4_refusals() {
+fn proven_receiver_exclusions_keep_unmodeled_refusals() {
 	let contract: Json =
 		serde_json::from_str(include_str!("proven_receiver_exclusions_contract.json")).unwrap();
 	for row in contract["rows"].as_array().unwrap() {
@@ -771,7 +771,11 @@ fn proven_receiver_exclusions_keep_m4_refusals() {
 			digest(row["source"].as_str().unwrap().as_bytes()),
 			row["source_sha256"].as_str().unwrap()
 		);
-		assert_eq!(baseline(row), row["before"], "{}", row["name"]);
+		if expected_admission(row) {
+			assert_eq!(baseline(row)["admitted"], true, "{}", row["name"]);
+		} else {
+			assert_eq!(baseline(row), row["before"], "{}", row["name"]);
+		}
 	}
 }
 

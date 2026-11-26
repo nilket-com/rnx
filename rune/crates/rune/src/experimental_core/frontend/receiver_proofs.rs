@@ -51,6 +51,15 @@ enum Kind {
 	// The first edge is a provenance obligation; the second supplies the tag.
 	Projection,
 	ResultCallback,
+	MethodResult(Hash),
+	MethodArm(Hash),
+}
+
+#[derive(Clone, Copy)]
+enum Waiting {
+	Inputs(usize),
+	Arm(Id),
+	Done,
 }
 
 struct Edge {
@@ -76,6 +85,7 @@ struct Call {
 	target: Hash,
 	arguments: Vec<Id>,
 	captures_only: bool,
+	result_arm: Option<Id>,
 }
 
 #[derive(Clone, Copy)]
@@ -125,6 +135,78 @@ pub(crate) struct Proofs {
 	pub(crate) sites: Vec<Site>,
 	pub(crate) failure_after: Option<usize>,
 	fields: fields::Fields,
+}
+
+// All graph ids are internal. A broken invariant disables this proof in a
+// release build; debug builds identify the programming error at its source.
+fn graph_slot<T>(values: &[T], id: Id) -> Result<&T> {
+	debug_assert!(id < values.len());
+	values.get(id).ok_or_else(limit)
+}
+
+fn graph_slot_mut<T>(values: &mut [T], id: Id) -> Result<&mut T> {
+	debug_assert!(id < values.len());
+	values.get_mut(id).ok_or_else(limit)
+}
+
+/// The first dependency is the receiver; each subsequent arm belongs to
+/// one nominal type and points at the arity-checked script body's returns.
+fn method_arm(node: &Node, nodes: &[Node], facts: &[Fact]) -> Result<Option<(Hash, Id)>> {
+	let (target, arms) = node.edges.split_first().ok_or_else(limit)?;
+	let Fact::Exact(receiver) = *graph_slot(facts, target.node)? else {
+		return Ok(None);
+	};
+	for edge in arms {
+		if matches!(graph_slot(nodes, edge.node)?.kind, Kind::MethodArm(hash) if hash == receiver) {
+			return Ok(Some((receiver, edge.node)));
+		}
+	}
+	Ok(None)
+}
+
+impl Node {
+	fn input(&self, index: usize, facts: &[Fact]) -> Result<Fact> {
+		match self.edges.get(index) {
+			Some(edge) => graph_slot(facts, edge.node).copied(),
+			None => Ok(Fact::Unknown),
+		}
+	}
+
+	fn fact(&self, nodes: &[Node], facts: &[Fact]) -> Result<Fact> {
+		Ok(match self.kind {
+			Kind::Unknown | Kind::Call(_) => Fact::Unknown,
+			Kind::Never => Fact::Never,
+			Kind::Exact(hash) => Fact::Exact(hash),
+			Kind::End if self.input(0, facts)? == Fact::Never => Fact::Never,
+			Kind::End => Fact::Unknown,
+			Kind::ResultCallback if self.input(0, facts)? == Fact::Exact(RESULT) => {
+				Fact::Exact(RESULT)
+			}
+			Kind::ResultCallback => Fact::Unknown,
+			Kind::MethodResult(name)
+				if Callback::from_name(name).is_some()
+					&& self.input(0, facts)? == Fact::Exact(RESULT) =>
+			{
+				Fact::Exact(RESULT)
+			}
+			Kind::MethodResult(_) => match method_arm(self, nodes, facts)? {
+				Some((_, arm)) => *graph_slot(facts, arm)?,
+				None => Fact::Unknown,
+			},
+			Kind::MethodArm(_) => self.input(0, facts)?,
+			Kind::Projection => self.input(1, facts)?,
+			Kind::Join | Kind::Parameter(_) | Kind::Return if self.edges.is_empty() => {
+				Fact::Unknown
+			}
+			Kind::Join | Kind::Parameter(_) | Kind::Return => {
+				let mut value = Fact::Never;
+				for edge in &self.edges {
+					value = join(value, *graph_slot(facts, edge.node)?);
+				}
+				value
+			}
+		})
+	}
 }
 
 fn limit() -> Error {
@@ -416,8 +498,12 @@ impl Proofs {
 			if call.arguments.len() != expected {
 				continue;
 			}
+			let returns = body.returns;
 			let mut parameters = Vec::new();
 			parameters.try_extend_from_slice(&body.parameters)?;
+			if let Some(arm) = call.result_arm {
+				self.edge(arm, returns, false)?;
+			}
 			for (parameter, argument) in parameters.into_iter().zip(call.arguments) {
 				let forward = matches!(self.nodes[argument].kind, Kind::Parameter(_));
 				self.edge(parameter, argument, forward)?;
@@ -770,7 +856,7 @@ impl Builder<'_, '_, '_> {
 	fn calls(&mut self) -> Result<()> {
 		for i in 0..self.pending.len() {
 			let id = self.pending[i];
-			self.term(id, 0)?;
+			let result = self.term(id, 0)?;
 			match self.exprs.get(id).kind {
 				hir::ExprKind::Call(call) => {
 					let mut arguments = Vec::new();
@@ -785,6 +871,7 @@ impl Builder<'_, '_, '_> {
 								target: hash,
 								arguments,
 								captures_only: false,
+								result_arm: None,
 							})?
 						}
 						hir::Call::Associated {
@@ -792,6 +879,13 @@ impl Builder<'_, '_, '_> {
 							name_hash,
 							target,
 						} if hash == name_hash && self.query.method_script.closed(hash) => {
+							let actual = self.term(target, 0)?;
+							let node = graph_slot_mut(&mut self.proofs.nodes, result)?;
+							let callback = matches!(node.kind, Kind::ResultCallback);
+							node.kind = Kind::MethodResult(hash);
+							if !callback {
+								self.proofs.edge(result, actual, false)?;
+							}
 							for method in self.proofs.methods(self.query, self.pool, hash)? {
 								if self.context.lookup_function(method.associated).is_some()
 									|| self.context.lookup_function(method.item).is_some()
@@ -803,7 +897,6 @@ impl Builder<'_, '_, '_> {
 								inputs.try_push(seed)?;
 								// This seed proves only the dispatch tag. Preserve the actual
 								// target separately for field contents, including captures.
-								let actual = self.term(target, 0)?;
 								if self
 									.proofs
 									.fields
@@ -813,10 +906,13 @@ impl Builder<'_, '_, '_> {
 									self.proofs.fields.disabled = true;
 								}
 								inputs.try_extend_from_slice(&arguments)?;
+								let arm = self.proofs.node(Kind::MethodArm(method.receiver))?;
+								self.proofs.edge(result, arm, false)?;
 								self.proofs.calls.try_push(Call {
 									target: method.item,
 									arguments: inputs,
 									captures_only: false,
+									result_arm: Some(arm),
 								})?;
 							}
 						}
@@ -836,6 +932,7 @@ impl Builder<'_, '_, '_> {
 						target: closure.hash,
 						arguments,
 						captures_only: true,
+						result_arm: None,
 					})?;
 				}
 				_ => (),
@@ -864,7 +961,7 @@ impl Proofs {
 		reverse.try_resize_with(count, Vec::<Id>::new)?;
 		for (i, node) in self.nodes.iter().enumerate() {
 			for edge in &node.edges {
-				reverse[edge.node].try_push(i)?;
+				graph_slot_mut(&mut reverse, edge.node)?.try_push(i)?;
 			}
 		}
 		let mut seen = Vec::new();
@@ -915,6 +1012,7 @@ impl Proofs {
 		}
 		let mut facts = Vec::new();
 		facts.try_resize_with(count, || Fact::Unknown)?;
+		let mut waiting = Vec::new();
 		for (group, members) in groups.iter().enumerate().rev() {
 			let cyclic = members.len() > 1
 				|| self.nodes[members[0]]
@@ -922,6 +1020,25 @@ impl Proofs {
 					.iter()
 					.any(|e| e.node == members[0]);
 			if cyclic {
+				let mut has_method = false;
+				for &id in members {
+					if matches!(graph_slot(&self.nodes, id)?.kind, Kind::MethodResult(_)) {
+						has_method = true;
+						break;
+					}
+				}
+				if has_method {
+					waiting.try_resize_with(count, || Waiting::Done)?;
+					self.solve_method_group(
+						group,
+						members,
+						&component,
+						&reverse,
+						&mut waiting,
+						&mut facts,
+					)?;
+					continue;
+				}
 				let mut value = Fact::Never;
 				let mut seeded = false;
 				let mut allowed = true;
@@ -945,39 +1062,80 @@ impl Proofs {
 			} else {
 				let id = members[0];
 				let node = &self.nodes[id];
-				facts[id] = match node.kind {
-					Kind::Unknown | Kind::Call(_) => Fact::Unknown,
-					Kind::Never => Fact::Never,
-					Kind::Exact(hash) => Fact::Exact(hash),
-					Kind::End => match node.edges.first().map(|e| facts[e.node]) {
-						Some(Fact::Never) => Fact::Never,
-						_ => Fact::Unknown,
-					},
-					Kind::ResultCallback => {
-						if node
-							.edges
-							.first()
-							.is_some_and(|e| facts[e.node] == Fact::Exact(RESULT))
-						{
-							Fact::Exact(RESULT)
-						} else {
-							Fact::Unknown
-						}
-					}
-					Kind::Projection => node.edges.get(1).map_or(Fact::Unknown, |e| facts[e.node]),
-					Kind::Join | Kind::Parameter(_) | Kind::Return => {
-						if node.edges.is_empty() {
-							Fact::Unknown
-						} else {
-							node.edges
-								.iter()
-								.fold(Fact::Never, |v, e| join(v, facts[e.node]))
-						}
-					}
-				};
+				*graph_slot_mut(&mut facts, id)? = node.fact(&self.nodes, &facts)?;
 			}
 		}
 		Ok(facts)
+	}
+
+	/// The dependency graph includes one arm per candidate receiver. Those arms
+	/// can create a component even when the selected calls do not recurse.
+	/// Settle the receiver first, then wait only for the selected return. Nodes
+	/// left waiting on a genuine cycle keep their original Unknown fact.
+	fn solve_method_group(
+		&self,
+		group: usize,
+		members: &[Id],
+		component: &[usize],
+		reverse: &[Vec<Id>],
+		waiting: &mut [Waiting],
+		facts: &mut [Fact],
+	) -> Result<()> {
+		let mut ready = Vec::new();
+		for &id in members {
+			let node = graph_slot(&self.nodes, id)?;
+			let inputs = if matches!(node.kind, Kind::MethodResult(_)) {
+				node.edges.get(..1).unwrap_or_default()
+			} else {
+				&node.edges[..]
+			};
+			let mut count = 0;
+			for edge in inputs {
+				count += usize::from(*graph_slot(component, edge.node)? == group);
+			}
+			*graph_slot_mut(waiting, id)? = Waiting::Inputs(count);
+			if count == 0 {
+				ready.try_push(id)?;
+			}
+		}
+		while let Some(id) = ready.pop() {
+			let node = graph_slot(&self.nodes, id)?;
+			if matches!(node.kind, Kind::MethodResult(_)) {
+				if let Some((_, arm)) = method_arm(node, &self.nodes, facts)? {
+					if *graph_slot(component, arm)? == group
+						&& !matches!(graph_slot(waiting, arm)?, Waiting::Done)
+					{
+						*graph_slot_mut(waiting, id)? = Waiting::Arm(arm);
+						continue;
+					}
+				}
+			}
+			*graph_slot_mut(facts, id)? = node.fact(&self.nodes, facts)?;
+			*graph_slot_mut(waiting, id)? = Waiting::Done;
+			for &parent in graph_slot(reverse, id)? {
+				if *graph_slot(component, parent)? != group {
+					continue;
+				}
+				match graph_slot_mut(waiting, parent)? {
+					Waiting::Arm(arm) if *arm == id => ready.try_push(parent)?,
+					Waiting::Inputs(count) => {
+						let node = graph_slot(&self.nodes, parent)?;
+						if matches!(node.kind, Kind::MethodResult(_))
+							&& node.edges.first().is_some_and(|edge| edge.node != id)
+						{
+							continue;
+						}
+						debug_assert!(*count > 0);
+						*count = count.checked_sub(1).ok_or_else(limit)?;
+						if *count == 0 {
+							ready.try_push(parent)?;
+						}
+					}
+					_ => (),
+				}
+			}
+		}
+		Ok(())
 	}
 
 	pub(crate) fn resolve(
@@ -1110,7 +1268,9 @@ impl Proofs {
 						continue;
 					}
 					used[node] = true;
-					if let Kind::Parameter(body) = nodes[node].kind {
+					let proof_node = graph_slot(nodes, node)
+						.map_err(|_| Error::refused(Refusal::Method).at(site.at))?;
+					if let Kind::Parameter(body) = proof_node.kind {
 						let id = entries
 							.iter()
 							.position(|(hash, _, _)| *hash == body)
@@ -1121,7 +1281,31 @@ impl Proofs {
 							ineligible.try_push(id)?;
 						}
 					}
-					for edge in &nodes[node].edges {
+					if let Kind::MethodResult(name) = proof_node.kind {
+						if let Some((receiver, arm)) = method_arm(proof_node, nodes, facts)
+							.map_err(|_| Error::refused(Refusal::Method).at(site.at))?
+						{
+							let method = self
+								.method_cache
+								.get(&name)
+								.and_then(|methods| {
+									methods.iter().find(|method| method.receiver == receiver)
+								})
+								.ok_or_else(|| Error::refused(Refusal::Method).at(site.at))?;
+							transaction
+								.static_method(context, method.associated)
+								.map_err(|e| e.at(site.at))?;
+							transaction
+								.static_method(context, method.item)
+								.map_err(|e| e.at(site.at))?;
+							work.try_push(arm)?;
+						}
+						if let Some(target) = proof_node.edges.first() {
+							work.try_push(target.node)?;
+						}
+						continue;
+					}
+					for edge in &proof_node.edges {
 						work.try_push(edge.node)?;
 					}
 				}

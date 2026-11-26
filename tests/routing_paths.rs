@@ -598,3 +598,52 @@ fn range_patterns_keep_misses_and_diagnostics_at_the_source() {
 	}
 	fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn script_method_results_select_the_actual_returning_body() {
+	let root = scratch("method-results");
+	let defs = r#"
+		struct A; struct B; struct X; struct Y;
+		impl A {
+			fn new(){ A }
+			fn make(self){ println!("make A"); X }
+			fn iter(self){ println!("iter"); self.make() }
+			fn produce(self){ X }
+			fn maybe(self,n){ match n {1=>X} }
+			fn recurse(self,n){ if n == 0 { X } else { self.recurse(n-1) } }
+			fn left(self,n){ if n == 0 { X } else { self.right(n-1) } }
+			fn right(self,n){ self.left(n) }
+		}
+		impl B { fn make(self){ println!("make B"); Y } fn produce(self){ A.produce() } }
+		impl X { fn next(self){ println!("next X"); 3 } fn len(self){ println!("len"); 17 } fn push(self){ println!("push"); 19 } }
+		impl Y { fn next(self){ println!("next Y"); 9 } }
+	"#;
+	for (body, route, success) in [
+		(
+			"dbg!((A.make().next(), B.make().next()));",
+			"execution",
+			true,
+		),
+		("dbg!(B.produce().next());", "execution", true),
+		("dbg!(A::new().iter().push());", "execution", true),
+		("dbg!(A.maybe(1).next());", "legacy refusal=Method", true),
+		(
+			"let receiver = if args.len() == 0 { A } else { B }; dbg!(receiver.make().next());",
+			"legacy refusal=Method",
+			true,
+		),
+		("A.make(1).next();", "legacy refusal=Method", false),
+		("dbg!(A.recurse(2).len());", "legacy refusal=Method", true),
+		("dbg!(A.left(2).len());", "legacy refusal=Method", true),
+		("dbg!(A.maybe(2).next());", "legacy refusal=Method", false),
+		("dbg!(A.maybe(2).len());", "legacy refusal=Method", true),
+	] {
+		fs::write(
+			root.join("main.rn"),
+			format!("{defs} pub fn main(args){{{body}}}"),
+		)
+		.unwrap();
+		verify_outcome(&root, &[], &format!("rnx: engine={route}"), success);
+	}
+	fs::remove_dir_all(root).unwrap();
+}
