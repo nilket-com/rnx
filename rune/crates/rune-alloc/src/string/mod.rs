@@ -908,6 +908,24 @@ where
 		self.vec.capacity()
 	}
 
+	/// Capacity a successful amortized reservation would request. Allows a
+	/// caller with a byte budget to check the allocation before making it.
+	#[doc(hidden)]
+	pub fn capacity_after_reserve(&self, additional: usize) -> Result<usize, Error> {
+		let required = self
+			.len()
+			.checked_add(additional)
+			.ok_or(Error::CapacityOverflow)?;
+		if required <= self.capacity() {
+			return Ok(self.capacity());
+		}
+		let cap = crate::raw_vec::RawVec::<u8, A>::amortized_capacity(self.capacity(), required);
+		if cap > isize::MAX as usize {
+			return Err(Error::CapacityOverflow);
+		}
+		Ok(cap)
+	}
+
 	/// Tries to reserve capacity for at least `additional` bytes more than the
 	/// current length. The allocator may reserve more space to speculatively
 	/// avoid frequent allocations. After calling `try_reserve`, capacity will be

@@ -431,6 +431,8 @@ pub struct Context {
 	#[cfg(feature = "execution")]
 	string_from: bool,
 	#[cfg(feature = "execution")]
+	string_builders: u8,
+	#[cfg(feature = "execution")]
 	vec_constructors: u8,
 	#[cfg(feature = "execution")]
 	vec_resize: bool,
@@ -961,6 +963,18 @@ impl Context {
 					};
 				}
 			}
+			#[cfg(feature = "execution")]
+			if module.text
+				&& assoc.container == crate::hash_in!(crate, ::std::string::String)
+				&& assoc.name.function_parameters == Hash::EMPTY
+				&& matches!(&assoc.kind, ModuleAssociatedKind::Function(f) if f.trait_hash.is_none())
+			{
+				if let meta::AssociatedKind::Instance(name) = &assoc.name.kind {
+					if let Some(op) = crate::function::string_builder::Operation::from_name(name) {
+						self.string_builders |= op.bit();
+					}
+				}
+			}
 			// String::from is registered as a named type item even with `free`.
 			// install_associated inserts its static item hash and associated hash
 			// before returning; a conflict on either leaves it uncertified.
@@ -1325,6 +1339,19 @@ impl Context {
 			crate::hash_in!(crate, ::std::vec::Vec::new)
 		};
 		self.vec_constructors & bit != 0 && self.functions.contains_key(&hash)
+	}
+
+	#[cfg(all(test, feature = "execution"))]
+	pub(crate) fn omit_string_builder(
+		&mut self,
+		operation: crate::function::string_builder::Operation,
+	) {
+		self.string_builders &= !operation.bit();
+	}
+
+	#[cfg(feature = "execution")]
+	pub(crate) fn string_builder(&self, op: crate::function::string_builder::Operation) -> bool {
+		self.string_builders & op.bit() != 0
 	}
 
 	#[cfg(feature = "execution")]

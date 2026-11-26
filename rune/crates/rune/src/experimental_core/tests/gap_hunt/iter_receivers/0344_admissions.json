@@ -1,0 +1,31 @@
+{
+  "rule": "ADR 0344: admitted String operations match the live stock result.",
+  "rows": [
+    {
+      "index": 32,
+      "legacy": {
+        "index": 32,
+        "label": "object/key-copy",
+        "source_sha256": "89774dfcf42551123e98a95ab9fcf5031d51bf21acf5fab67a8b8ab06c4c5998",
+        "stock_canonical_sha256": "5455787fa177db048b2f7060f21395958fa9fa6178e6803ecc6bc0ca0db056b9",
+        "stock_fix_both": false,
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 113,
+            "source": 0,
+            "start": 98
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 98, end: 113 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 98:113, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact",
+        "stock_fix_both": false
+      }
+    }
+  ]
+}

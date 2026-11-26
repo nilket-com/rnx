@@ -22,14 +22,7 @@ impl Store {
 		let Value::Heap(parent) = receiver else {
 			return Err(err(ErrorKind::InvalidCode));
 		};
-		let new_len = self.vec_capacity_argument(length).map_err(|mut error| {
-			match &mut error.detail {
-				Detail::NumericArgumentNumber { arg, .. }
-				| Detail::NumericArgumentCoerce { arg, .. } => *arg = 1,
-				_ => {}
-			}
-			error
-		})?;
+		let new_len = self.usize_argument(length, 1)?;
 		let len = self.len(receiver)?;
 		if new_len < len {
 			let mut values = self.resize_hold(parent);

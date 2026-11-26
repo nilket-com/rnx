@@ -92,22 +92,7 @@ fn default_store_matches_stock_beyond_both_historical_limits() {
 			.insert(crate::Source::memory(row["source"].as_str().unwrap()).unwrap())
 			.unwrap();
 		let mut diagnostics = Diagnostics::new();
-		let compiled = super::compile(&mut sources, &context, &mut diagnostics, 22);
-		let controls: Json =
-			serde_json::from_str(include_str!("store_budget_refusals.json")).unwrap();
-		if let Some(control) = controls["rows"]
-			.as_array()
-			.unwrap()
-			.iter()
-			.find(|c| c["name"] == row["name"] && c["source_sha256"] == row["source_sha256"])
-		{
-			let error = compiled.err().unwrap();
-			assert_eq!(std::format!("{:?}", error.refusal), "Some(Method)");
-			let at = error.location.unwrap();
-			assert_eq!(json!([at.start, at.end]), control["span"]);
-			continue;
-		}
-		let program = compiled.unwrap();
+		let program = super::compile(&mut sources, &context, &mut diagnostics, 22).unwrap();
 		let mut store = Store::new(Limits::default()).unwrap();
 		let mut executor = Executor::new().unwrap();
 		let result = executor

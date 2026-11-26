@@ -341,6 +341,8 @@ pub(crate) mod object;
 #[cfg(feature = "execution")]
 pub(crate) mod pipeline;
 #[cfg(feature = "execution")]
+pub(crate) mod string_builder;
+#[cfg(feature = "execution")]
 pub(crate) mod text;
 #[cfg(feature = "execution")]
 pub(crate) mod variant;

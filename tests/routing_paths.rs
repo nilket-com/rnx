@@ -798,3 +798,42 @@ fn returning_constant_guards_select_the_matched_body_at_each_root() {
 	}
 	fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn string_builder_aliases_copies_and_access_errors_in_files() {
+	let root = scratch("string-builder");
+	let shared = r#"
+		fn append(s) { s.push_str("x"); }
+		fn identity(s) { s }
+		pub fn main(args) {
+			let s = String::from("a"); let alias = s;
+			alias.push_str("x"); let field = #{ v: s }; field.v.push_str("x");
+			let v = [s]; v[0].push_str("x"); let f = || s.push_str("x"); f();
+			append(s); identity(s).push_str("x"); println!("{}", s);
+			let m = #{}; m[s] = 7;
+			let a = s.clone(); let b = String::from(s); let c = s + "";
+			let d = format!("{}",s); let e = `${s}`;
+			for t in [a,b,c,d,e] { t.push_str("z"); println!("{}", t); }
+			s.clear(); println!("{} {}", s.len(), m["axxxxxx"]);
+		}"#;
+	fs::write(root.join("main.rn"), shared).unwrap();
+	verify_outcome(&root, &[], "rnx: engine=execution", true);
+	for body in [
+		r#"let s="ab";let it=s.chars();s.push_str(s);it.next()"#,
+		r#"let s="ab";let it=s.chars();s.clear();it.next()"#,
+		r#"let s="ab";let it=s.chars();s.reserve_exact(8);it.next()"#,
+		r#""a".push("x")"#,
+		r#""a".push_str('x')"#,
+		r#""a".push_str(3)"#,
+		r#"String::with_capacity(-1)"#,
+		r#"String::with_capacity(1.5)"#,
+		r#"fail(3)"#,
+		r#"fail([])"#,
+		r#"fail(())"#,
+	] {
+		let source = format!("fn fail(x){{x.push_str(\"z\")}} pub fn main(args){{{body}}}");
+		fs::write(root.join("main.rn"), source).unwrap();
+		verify_outcome(&root, &[], "rnx: engine=execution", false);
+	}
+	fs::remove_dir_all(root).unwrap();
+}

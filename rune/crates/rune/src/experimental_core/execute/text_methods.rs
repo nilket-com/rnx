@@ -21,11 +21,7 @@ impl Executor {
 		if id >= 0x8000_0070 {
 			return self.pipeline_call(store, f, base, out, id, start, len);
 		}
-		let m = crate::function::text::Method::ALL
-			.into_iter()
-			.find(|m| m.id() == id)
-			.ok_or_else(invalid)?;
-		if len != m.arity() || out >= f.slots {
+		if out >= f.slots || len > 3 {
 			return Err(invalid());
 		}
 		let end = start.checked_add(len).ok_or_else(invalid)?;
@@ -43,7 +39,19 @@ impl Executor {
 				.get(base.checked_add(slot as usize).ok_or_else(invalid)?)
 				.ok_or_else(invalid)?;
 		}
-		let result = store.text_method(m, &values[..len as usize])?;
+		let args = &values[..len as usize];
+		let result = if let Some(op) = crate::function::string_builder::Operation::from_id(id) {
+			if len != op.arity() {
+				return Err(invalid());
+			}
+			store.string_builder(op, values[0], values[1])?
+		} else {
+			let method = crate::function::text::Method::ALL
+				.into_iter()
+				.find(|m| m.id() == id && m.arity() == len)
+				.ok_or_else(invalid)?;
+			store.text_method(method, args)?
+		};
 		self.put(
 			store,
 			base.checked_add(out as usize).ok_or_else(invalid)?,

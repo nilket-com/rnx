@@ -1,0 +1,53 @@
+{
+  "rule": "ADR 0344: admitted String operations match the live stock result.",
+  "rows": [
+    {
+      "index": 9,
+      "legacy": {
+        "index": 9,
+        "label": "get/alias-string",
+        "source_sha256": "cd02dd816f7a84488593a4e6a1dcd6b3b0acab7d2e57e03e2c7b64efa7639509",
+        "stock_row_sha256": "33e0b9f5606ae1297c5c68a1893ae526d5d63efc62ca003c25681bde6f9f6f6e",
+        "fresh": {
+          "location": {
+            "end": 120,
+            "source": 0,
+            "start": 105
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 105, end: 120 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 105:120, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 63,
+      "legacy": {
+        "index": 63,
+        "label": "insert/key-mutated-after",
+        "source_sha256": "24f41964b2b5aca76ceb778d359c331ef5c4c6eca568d107ef55ad47f3a723de",
+        "stock_row_sha256": "016d0df988b29e33e4af742dbb711e143aec9016367f7067ec895b22f377bd97",
+        "fresh": {
+          "location": {
+            "end": 113,
+            "source": 0,
+            "start": 98
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 98, end: 113 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 98:113, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

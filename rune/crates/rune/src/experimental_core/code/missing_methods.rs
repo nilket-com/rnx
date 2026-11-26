@@ -13,7 +13,12 @@ pub(super) struct MethodEntry {
 
 /// A native provider the core already implements, with its receiver included.
 /// Other providers keep the whole dynamic site refused before execution.
-fn native_method(context: &Context, receiver: Hash, name: Hash) -> Option<(u32, u32)> {
+fn native_method(
+	context: &Context,
+	receiver: Hash,
+	name: Hash,
+	script_provider: bool,
+) -> Option<(u32, u32)> {
 	use crate::function::{number, object, text, variant};
 	use crate::TypeHash;
 	if name == crate::function::clone::RESIZE_NAME
@@ -23,6 +28,13 @@ fn native_method(context: &Context, receiver: Hash, name: Hash) -> Option<(u32, 
 		return Some((super::VEC_RESIZE, 3));
 	}
 
+	if receiver == crate::alloc::String::HASH && !script_provider {
+		if let Some(op) = crate::function::string_builder::Operation::method(name) {
+			if op.single_provider_name() && context.string_builder(op) {
+				return Some((op.id(), op.arity()));
+			}
+		}
+	}
 	if let Some(method) = variant::Method::from_hash(name) {
 		if method.provider(receiver).is_some() && context.variant_method(method) {
 			return Some((method.id(), method.arity()));
@@ -555,7 +567,13 @@ impl CompileTransaction {
 					super::super::receiver_domain::unreachable(receiver)
 						|| context
 							.lookup_function(Hash::associated_function(receiver, name))
-							.is_none() || native_method(context, receiver, name).is_some()
+							.is_none() || native_method(
+						context,
+						receiver,
+						name,
+						query.method_script.closed(name),
+					)
+					.is_some()
 				})
 	}
 
@@ -593,8 +611,9 @@ impl CompileTransaction {
 			}
 			let hash = Hash::associated_function(receiver, name);
 			if let Some(handler) = context.lookup_function(hash) {
-				let native = native_method(context, receiver, name)
-					.ok_or_else(|| Error::refused(Refusal::Method))?;
+				let native =
+					native_method(context, receiver, name, query.method_script.closed(name))
+						.ok_or_else(|| Error::refused(Refusal::Method))?;
 				let id = resolve(hash, Some(native))?;
 				self.builder
 					.record_method(hash, id, Some(handler.clone()))?;

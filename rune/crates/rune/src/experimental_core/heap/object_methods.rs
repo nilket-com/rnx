@@ -59,8 +59,8 @@ impl Store {
 		result.map_err(|e| argument_access(e, arg, readers))
 	}
 
-	/// The key argument: a `String`, type-checked before its access.
-	fn key_argument(&mut self, key: Value, access: MovedAccess) -> Result<()> {
+	/// The first explicit string argument, type-checked before its access.
+	pub(super) fn string_argument(&mut self, key: Value, access: MovedAccess) -> Result<()> {
 		if self.tag(key).ok() != Some(Type::String) {
 			let found = self
 				.diagnostic_type(key)
@@ -128,7 +128,7 @@ impl Store {
 			}
 			Method::ContainsKey | Method::Get => {
 				self.argument(receiver, 0, MovedAccess::Read)?;
-				self.key_argument(args[1], MovedAccess::Read)?;
+				self.string_argument(args[1], MovedAccess::Read)?;
 				let index = self.key_index(receiver, args[1])?;
 				if method == Method::ContainsKey {
 					return Ok(Value::Bool(index.is_some()));
@@ -143,7 +143,7 @@ impl Store {
 			}
 			Method::Remove => {
 				self.argument(receiver, 0, MovedAccess::Write)?;
-				self.key_argument(args[1], MovedAccess::Read)?;
+				self.string_argument(args[1], MovedAccess::Read)?;
 				match self.key_index(receiver, args[1])? {
 					Some(i) => self.remove_field(receiver, i),
 					None => self.variant(Type::Option, false, None),
@@ -151,7 +151,7 @@ impl Store {
 			}
 			Method::Insert => {
 				self.argument(receiver, 0, MovedAccess::Write)?;
-				self.key_argument(args[1], MovedAccess::Read)?;
+				self.string_argument(args[1], MovedAccess::Read)?;
 				self.insert_field(receiver, args[1], args[2])
 			}
 		}

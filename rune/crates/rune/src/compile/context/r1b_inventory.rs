@@ -185,7 +185,7 @@ fn method_policy(r: &Receiver, name: &str, parameters: &[Hash], inline: bool) ->
 		"::std::char" => name == "to_i64",
 		"::std::string::String" => in_names(
 			name,
-			"chars clone cmp contains ends_with get is_empty len push replace split starts_with trim",
+			"capacity chars clear clone cmp contains ends_with get is_empty len push push_str replace reserve reserve_exact shrink_to_fit split starts_with trim",
 		),
 		"::std::vec::Vec" => in_names(name, "clone cmp get is_empty iter len push resize sort_by"),
 		"::std::tuple::Tuple" => in_names(name, "clone cmp get is_empty iter len"),
@@ -443,6 +443,27 @@ fn registry_verdicts_are_live_and_every_metadata_row_is_accounted_for() {
 				} else {
 					let args = arguments(&context, signature, Some(&r), name);
 					let g = generic(&context, parameter_types);
+					if r.name == "::std::string::String"
+						&& matches!(kind, AssociatedKind::Instance(_))
+						&& parameter_types.is_empty()
+					{
+						// Associated constructors also retain the instance-spelling
+						// refusal witnesses generated below.
+						if in_names(name, "new with_capacity") {
+							let args = arguments(&context, signature, None, name);
+							forms.push((
+								format!("pub fn main(){{{}::{name}({})}}", r.name, args.join(",")),
+								Verdict::Admit,
+							));
+						}
+						// Vec and VecDeque also supply these names in the default context.
+						if in_names(name, "capacity clear reserve") {
+							forms.push((
+								format!("pub fn main(x){{x.{name}({})}}", args.join(",")),
+								Verdict::Refuse(Refusal::Method),
+							));
+						}
+					}
 					for inline in [false, true] {
 						let target = if inline {
 							format!("({})", r.source)

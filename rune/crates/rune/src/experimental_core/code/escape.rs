@@ -117,6 +117,9 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 			| IntoIter => false,
 		});
 	}
+	if crate::function::string_builder::Operation::from_id(id).is_some() {
+		return Some(false);
+	}
 	match id {
 		CLOSURE_CREATE => Some(true),
 		// INSTANCE_METHOD can synthesize an own-code token only from Code.methods;

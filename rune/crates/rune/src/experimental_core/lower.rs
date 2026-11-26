@@ -19,6 +19,7 @@ mod patterns;
 pub(super) mod result_callbacks;
 mod self_receiver;
 mod static_methods;
+mod string_builder;
 mod text_methods;
 mod text_pipeline;
 mod variant_methods;
@@ -2649,6 +2650,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		if let Some(with_capacity) = vec_constructors::constructor(hash) {
 			return self.call_vec_constructor(call, with_capacity, out, span);
 		}
+		if let Some(op) = crate::function::string_builder::Operation::constructor(hash) {
+			return self.call_string_builder(call, None, op, out, span);
+		}
 		if hash == crate::function::pipeline::IS_READABLE
 			|| crate::function::pipeline::any_kind(hash).is_some()
 		{
@@ -2949,6 +2953,19 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 		}
 		if hash == name_hash && hash == crate::function::clone::RESIZE_NAME {
 			return self.call_vec_resize(call, target, out, span);
+		}
+		if hash == name_hash {
+			if let Some(op) = crate::function::string_builder::Operation::method(hash) {
+				if self.proven_string(target, &mut 128) {
+					return self.call_string_builder(call, Some(target), op, out, span);
+				}
+				if op.single_provider_name()
+					&& self.context.string_builder(op)
+					&& !self.constants.method_script.closed(hash)
+				{
+					return self.call_dynamic_method(call, target, hash, out, span);
+				}
+			}
 		}
 		if let Some(method) = crate::function::text::Method::from_hash(hash) {
 			return self.call_text_method(call, target, method, out, span);

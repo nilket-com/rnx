@@ -321,10 +321,7 @@ where
 		// Nothing we can really do about these checks, sadly.
 		let required_cap = len.checked_add(additional).ok_or(Error::CapacityOverflow)?;
 
-		// This guarantees exponential growth. The doubling cannot overflow
-		// because `cap <= isize::MAX` and the type of `cap` is `usize`.
-		let cap = cmp::max(self.cap * 2, required_cap);
-		let cap = cmp::max(Self::MIN_NON_ZERO_CAP, cap);
+		let cap = Self::amortized_capacity(self.cap, required_cap);
 
 		let new_layout = Layout::array::<T>(cap);
 
@@ -332,6 +329,12 @@ where
 		let ptr = finish_grow(new_layout, self.current_memory(), &self.alloc)?;
 		self.set_ptr_and_cap(ptr, cap);
 		Ok(())
+	}
+
+	/// Called on growth only. A valid allocation has capacity at most isize::MAX.
+	#[inline]
+	pub(crate) fn amortized_capacity(current: usize, required: usize) -> usize {
+		cmp::max(Self::MIN_NON_ZERO_CAP, cmp::max(current * 2, required))
 	}
 
 	// The constraints on this method are much the same as those on

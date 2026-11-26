@@ -1,0 +1,53 @@
+{
+  "rule": "ADR 0344: admitted String operations match the live stock result.",
+  "rows": [
+    {
+      "index": 987,
+      "legacy": {
+        "index": 987,
+        "label": "alias/object-pair-key-copy",
+        "source_sha256": "4e1561cba73e8e2a9ff81dfd772ec81935190c77fa2c7fa1de693538af6fde18",
+        "stock_row_sha256": "3fe8a8a17d5ca2365f0658460a82cdf453654d588adac9e2e776205a542fa834",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 139,
+            "source": 0,
+            "start": 121
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 121, end: 139 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 121:139, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 996,
+      "legacy": {
+        "index": 996,
+        "label": "alias/string-push-in-map",
+        "source_sha256": "6136737574db8311a2ad1e74a261c2571fa742a24ad7babe9dff953ef5654905",
+        "stock_row_sha256": "dc9236893237f50c524b52eb66d8ec7d262a802f0c293fe1715af48c4c57efd5",
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 114,
+            "source": 0,
+            "start": 99
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 99, end: 114 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 98:117, kind: Custom { error: \"Method\" } }) })]"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

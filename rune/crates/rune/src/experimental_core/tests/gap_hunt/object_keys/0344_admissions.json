@@ -1,0 +1,101 @@
+{
+  "rule": "ADR 0344: admitted String operations match the live stock result.",
+  "rows": [
+    {
+      "index": 2,
+      "legacy": {
+        "index": 2,
+        "label": "let/push-after",
+        "source_sha256": "d7bbd190e5a725de99ccfe9b88bd33ef1207d52cf5ed7afa0f7db7c8018c66c9",
+        "stock_canonical_sha256": "dc1d9232f8ca74fdbfc62c0966fbf28c389a33076b3706daa2125e88765af532",
+        "fresh": {
+          "location": {
+            "end": 129,
+            "source": 0,
+            "start": 114
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 114, end: 129 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 114:129, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 3,
+      "legacy": {
+        "index": 3,
+        "label": "let/push-before",
+        "source_sha256": "6a693cadbb2905fc88ed3808f0a6a8525495bb083e19b6659de77ae267a80cf3",
+        "stock_canonical_sha256": "1a58242529f8531d3abcf91e86c4f74ea10e8801ebd0cd849c52d23054a188fe",
+        "fresh": {
+          "location": {
+            "end": 87,
+            "source": 0,
+            "start": 72
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 72, end: 87 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 72:87, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 4,
+      "legacy": {
+        "index": 4,
+        "label": "let/contains-after-push",
+        "source_sha256": "e66b2921f4fcfead5bd8cb384e5d404a54cb04a00804e2fd342abdb264d8ee4c",
+        "stock_canonical_sha256": "9e4746c93aa4861cf6987e8a266306749fc0d960d5c7f042e1c4c48d306cae7b",
+        "fresh": {
+          "location": {
+            "end": 128,
+            "source": 0,
+            "start": 113
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 113, end: 128 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 113:128, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 20,
+      "legacy": {
+        "index": 20,
+        "label": "source/push-source-key",
+        "source_sha256": "4fd06056796aaf66b1a57e17304f701f454bd965df326ac7b154cbe588c779b3",
+        "stock_canonical_sha256": "af2853f6d78f32b7947179bfa0c681425d55a73810169584459805622f59bb74",
+        "fresh": {
+          "location": {
+            "end": 133,
+            "source": 0,
+            "start": 113
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 113, end: 133 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 113:133, kind: Custom { error: \"Method\" } }) })]",
+        "classification": "Inherited-refusal"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

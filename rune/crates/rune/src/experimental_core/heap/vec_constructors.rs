@@ -4,20 +4,24 @@ use super::*;
 
 impl Store {
 	pub(crate) fn vec_capacity_argument(&self, value: Value) -> Result<usize> {
+		self.usize_argument(value, 0)
+	}
+
+	pub(super) fn usize_argument(&self, value: Value, arg: u8) -> Result<usize> {
 		let int = IntValue::of(value).ok_or_else(|| {
 			let Some(found) = self.diagnostic_type(value) else {
 				return err(ErrorKind::InvalidCode);
 			};
 			err(ErrorKind::Type).with_detail(Detail::NumericArgumentNumber {
 				cause: HostCause::ExpectedNumber,
-				arg: 0,
+				arg,
 				found,
 			})
 		})?;
 		usize::try_from(int.wide()).map_err(|_| {
 			err(ErrorKind::IntegerCoercion).with_detail(Detail::NumericArgumentCoerce {
 				cause: HostCause::IntegerCoercion,
-				arg: 0,
+				arg,
 				value: int,
 				to: IntTarget::Usize,
 			})

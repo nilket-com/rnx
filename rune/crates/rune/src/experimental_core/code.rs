@@ -1221,6 +1221,12 @@ fn certified_intrinsic(table: &[CertifiedIntrinsic], id: u32) -> Option<Certifie
 		.iter()
 		.find(|entry| entry.id == id)
 		.copied()
+		.or_else(|| {
+			crate::function::string_builder::Operation::from_id(id).map(|op| CertifiedIntrinsic {
+				id,
+				arity: op.arity(),
+			})
+		})
 		.or_else(|| number_intrinsic(id))
 		.or_else(|| terminal_intrinsic(id))
 }

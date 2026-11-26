@@ -33,6 +33,7 @@ mod opaque;
 #[cfg(test)]
 mod opaque_tests;
 mod owned_output;
+mod string_builder;
 mod vec_constructors;
 mod vec_resize;
 pub use formatting::FormatLimits;
@@ -1228,53 +1229,6 @@ impl Store {
 			})
 	}
 
-	pub(crate) fn append_string(&mut self, target: Value, rhs: Value) -> Result<()> {
-		let Value::Heap(h) = target else {
-			return Err(err(ErrorKind::Type));
-		};
-
-		let (len, cap) = match self.mutable(h)? {
-			Payload::String(s) => (s.len(), s.capacity()),
-			_ => return Err(err(ErrorKind::Type)),
-		};
-
-		let suffix = self.text(rhs)?;
-		let new_len = len
-			.checked_add(suffix.len())
-			.ok_or_else(|| err(ErrorKind::Overflow))?;
-		if new_len.saturating_sub(cap) > self.limits.bytes.saturating_sub(self.bytes) {
-			return Err(err(ErrorKind::StoreCapacity));
-		}
-
-		if new_len > cap {
-			// Grow off-store. An allocator may round capacity up: account the
-			// returned capacity before publishing, rather than a guessed delta.
-			let mut replacement = String::try_with_capacity(new_len)?;
-			replacement.try_push_str(self.text(target)?)?;
-			replacement.try_push_str(self.text(rhs)?)?;
-			let charged_bytes = replacement.capacity();
-			let bytes = self.replacement_bytes(h, charged_bytes)?;
-			let entry = self.entry_mut(h)?;
-			debug_assert_eq!(entry.tag()?, Type::String);
-			entry.payload = Some(Payload::String(replacement));
-			entry.set_charged_bytes(charged_bytes);
-			self.bytes = bytes;
-			return Ok(());
-		}
-
-		// Bounded temporary is necessary when rhs aliases target. No borrowed
-		// script reference crosses mutation; the store contains only owned buffers.
-		let copy = String::try_from(suffix)?;
-		match self.mutable(h)? {
-			Payload::String(s) => {
-				s.try_push_str(&copy)?;
-			}
-			_ => unreachable!(),
-		}
-
-		Ok(())
-	}
-
 	fn replacement_bytes(&self, h: Handle, charged_bytes: usize) -> Result<usize> {
 		let bytes = self
 			.bytes
@@ -1422,49 +1376,6 @@ impl Store {
 		self.edges = edges;
 		self.assert_work();
 		self.release(old)
-	}
-
-	fn push_char(&mut self, value: Value, new: Value) -> Result<()> {
-		let Value::Heap(h) = value else {
-			return Err(err(ErrorKind::InvalidCode));
-		};
-		let (len, cap) = match self.mutable(h)? {
-			Payload::String(text) => (text.len(), text.capacity()),
-			_ => return Err(err(ErrorKind::InvalidCode)),
-		};
-		let Value::Char(ch) = new else {
-			return Err(
-				err(ErrorKind::Type).with_detail(super::error::Detail::ExpectedChar {
-					found: self
-						.diagnostic_type(new)
-						.ok_or_else(|| err(ErrorKind::InvalidCode))?,
-				}),
-			);
-		};
-		let needed = len
-			.checked_add(ch.len_utf8())
-			.ok_or_else(|| err(ErrorKind::StoreCapacity))?;
-		if needed.saturating_sub(cap) > self.limits.bytes.saturating_sub(self.bytes) {
-			return Err(err(ErrorKind::StoreCapacity));
-		}
-		if needed > cap {
-			let mut text = String::try_with_capacity(needed)?;
-			text.try_push_str(self.text(value)?)?;
-			text.try_push(ch)?;
-			let charge = text.capacity();
-			let bytes = self.replacement_bytes(h, charge)?;
-			let entry = self.entry_mut(h)?;
-			debug_assert_eq!(entry.tag()?, Type::String);
-			entry.payload = Some(Payload::String(text));
-			entry.set_charged_bytes(charge);
-			self.bytes = bytes;
-		} else {
-			let Payload::String(text) = self.mutable(h)? else {
-				return Err(err(ErrorKind::InvalidCode));
-			};
-			text.try_push(ch)?;
-		}
-		Ok(())
 	}
 
 	pub(crate) fn push(&mut self, value: Value, new: Value) -> Result<()> {

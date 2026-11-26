@@ -1230,3 +1230,6 @@ mod frame_budget_tests;
 
 #[cfg(test)]
 mod collection_get_tests;
+
+#[cfg(test)]
+mod string_builder_tests;
