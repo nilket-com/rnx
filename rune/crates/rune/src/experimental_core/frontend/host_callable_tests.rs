@@ -131,3 +131,117 @@ fn iterator_callback_conversion_reports_the_native_argument_index() {
 		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
 	}
 }
+
+#[test]
+fn qualified_reduction_over_an_open_cursor_obeys_the_work_budget() {
+	use crate::experimental_core::{
+		error::ErrorKind,
+		execute::Executor,
+		heap::{Limits, Store},
+	};
+	const FUEL: usize = 256;
+	let context = Context::with_default_modules().unwrap();
+	for body in [
+		"std::object::Iter::sum::<i64>((0..).iter())",
+		"let f=std::object::Iter::sum::<i64>; f((0..).iter())",
+	] {
+		let mut sources = Sources::new();
+		sources
+			.insert(crate::Source::memory(std::format!("pub fn main(){{{body}}}")).unwrap())
+			.unwrap();
+		let mut vm = crate::prepare(&mut sources)
+			.with_context(&context)
+			.build_vm()
+			.unwrap();
+		let error = crate::runtime::budget::with(FUEL, || vm.call(["main"], ()))
+			.call()
+			.unwrap_err();
+		assert!(error.is_budget_exhausted());
+		let program = super::compile(&mut sources, &context, &mut Diagnostics::new(), 30).unwrap();
+		for native in [false, true] {
+			let mut store = Store::new(Limits::default()).unwrap();
+			let mut executor = Executor::new().unwrap();
+			executor.set_native_enabled(native);
+			let failure = executor
+				.invoke(
+					&program,
+					&mut store,
+					program.function(Hash::type_hash(["main"])).unwrap(),
+					&[],
+					FUEL,
+				)
+				.unwrap_err();
+			assert_eq!(failure.error.kind, ErrorKind::FuelExhausted);
+			assert!(executor.is_idle());
+			assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+		}
+	}
+}
+
+#[test]
+fn reduction_failure_consumes_the_failing_item_and_leaves_the_tail() {
+	use crate::experimental_core::{
+		execute::Executor,
+		heap::{Limits, Store},
+		value::Value,
+	};
+	use std::string::ToString;
+
+	let context = Context::with_default_modules().unwrap();
+	for (items, path) in [
+		("[1, false, 37]", "std::object::Iter::sum::<i64>"),
+		(
+			"[9223372036854775807, 2, 37]",
+			"std::object::Iter::product::<i64>",
+		),
+		("[-1, 37]", "std::object::Iter::product::<u64>"),
+	] {
+		for body in [
+			std::format!("{path}(it)"),
+			std::format!("let f={path}; f(it)"),
+		] {
+			let mut sources = Sources::new();
+			let source = std::format!(
+				"pub fn make(){{{items}.iter()}} pub fn consume(it){{{body}}} pub fn tail(it){{std::slice::Iter::next(it).unwrap()}}"
+			);
+			sources
+				.insert(crate::Source::memory(source).unwrap())
+				.unwrap();
+			let mut vm = crate::prepare(&mut sources)
+				.with_context(&context)
+				.build_vm()
+				.unwrap();
+			let cursor = vm.call(["make"], ()).unwrap();
+			let error = vm.call(["consume"], (cursor.clone(),)).unwrap_err();
+			let tail = vm
+				.call(["tail"], (cursor,))
+				.unwrap()
+				.as_integer::<i64>()
+				.unwrap();
+			assert_eq!(tail, 37);
+			let program =
+				super::compile(&mut sources, &context, &mut Diagnostics::new(), 30).unwrap();
+			let id = |name: &str| program.function(Hash::type_hash([name])).unwrap();
+			for native in [false, true] {
+				let mut store = Store::new(Limits::default()).unwrap();
+				let mut executor = Executor::new().unwrap();
+				executor.set_native_enabled(native);
+				let cursor = executor
+					.invoke(&program, &mut store, id("make"), &[], 1000)
+					.unwrap();
+				let failure = executor
+					.invoke(&program, &mut store, id("consume"), &[&cursor], 1000)
+					.unwrap_err();
+				assert_eq!(failure.message(&program).to_string(), error.to_string());
+				let result = executor
+					.invoke(&program, &mut store, id("tail"), &[&cursor], 1000)
+					.unwrap();
+				assert!(matches!(store.import(&result).unwrap(), Value::I64(n) if n == tail));
+				store.root_release(result).unwrap();
+				store.root_release(cursor).unwrap();
+				assert!(executor.is_idle());
+				assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
+			}
+		}
+	}
+}

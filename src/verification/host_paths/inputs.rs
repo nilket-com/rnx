@@ -63,6 +63,12 @@ pub(super) fn kinds() -> Result<BTreeMap<String, &'static str>> {
 		("Closure", "{let n=1;|x|x+n}"),
 		("HostFunction", "std::io::print"),
 		("EmptyVecIter", "[].iter()"),
+		("FloatVecIter", "[1.25, 2.0].iter()"),
+		("AdvancedVecIter", "{let it=[1,2,3].iter(); it.next(); it}"),
+		("ExhaustedVecIter", "{let it=[1].iter(); it.next(); it}"),
+		("MixedIntegerVecIter", "[2,3u64].iter()"),
+		("BadSecondVecIter", "[1,true,3].iter()"),
+		("OverflowVecIter", "[9223372036854775807,2,1].iter()"),
 		("Future", "time::sleep(0)"),
 	] {
 		assert!(kinds.insert(name.into(), expr).is_none());

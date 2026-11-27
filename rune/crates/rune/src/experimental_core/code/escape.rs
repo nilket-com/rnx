@@ -115,7 +115,10 @@ fn intrinsic_may_escape(id: u32) -> Option<bool> {
 			| RevLast
 			| RevAt
 			| IntoIter
-			| ReadCursor => false,
+			| ReadCursor
+			| RequireNext
+			| CloneI64
+			| CloneU64 => false,
 		});
 	}
 	if crate::function::string_builder::Operation::from_id(id).is_some() {

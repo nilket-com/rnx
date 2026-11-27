@@ -558,12 +558,12 @@ impl<'hir> Lower<'_, 'hir> {
 				E::Group(inner) => at = inner,
 				E::Vec(_) | E::Tuple(_) => return true,
 				E::Range(hir::ExprRange::Range { .. } | hir::ExprRange::RangeInclusive { .. }) => {
-					return !counted
+					return !counted;
 				}
 				E::Call(c) => {
 					return !counted
 						&& matches!(c.call, hir::Call::Meta { hash }
-						if hash == Hash::type_hash(crate::item!(::std::option::Option::Some)))
+						if hash == Hash::type_hash(crate::item!(::std::option::Option::Some)));
 				}
 				_ => return false,
 			}
@@ -1296,7 +1296,12 @@ impl<'hir> Lower<'_, 'hir> {
 	/// Lower the same consumer over the incoming materialized cursor in slot zero.
 	/// Scratch and locations belong to the generated function. Caller locals and
 	/// any held borrow on the receiver are preserved.
-	pub(super) fn make_terminal_body(&mut self, end: End, span: Span) -> Result<Function> {
+	pub(super) fn make_terminal_body(
+		&mut self,
+		end: End,
+		protocol_next: bool,
+		span: Span,
+	) -> Result<Function> {
 		let arity = match end {
 			End::Terminal(t) => {
 				self.transaction.iter_terminal(self.context, t)?;
@@ -1310,6 +1315,9 @@ impl<'hir> Lower<'_, 'hir> {
 		};
 		let mut cx = self.callable_frame(arity as u32)?;
 		let out = cx.slot()?;
+		if protocol_next {
+			cx.intrinsic(Intrinsic::RequireNext, &[0], out, span)?;
+		}
 		let mut setup = Setup {
 			node: 0,
 			layers: Vec::new(),
@@ -1446,7 +1454,7 @@ impl<'hir> Lower<'_, 'hir> {
 								Some(E::Group(inner)) => lhs = inner,
 								Some(E::Variable(x)) if v == x => {
 									return rhs
-										.is_some_and(|id| self.held_source(id, closure, fuel))
+										.is_some_and(|id| self.held_source(id, closure, fuel));
 								}
 								Some(_) => return true,
 								None => return false,

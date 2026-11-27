@@ -440,12 +440,17 @@ impl Lower<'_, '_> {
 						.map(iter_terminals::End::Closure)
 				});
 			if let Some(end) = end {
-				let body = self.make_terminal_body(end, span)?;
+				let next =
+					matches!(
+						end,
+						iter_terminals::End::Terminal(Terminal::Sum(_) | Terminal::Product(_))
+					) && crate::function::iter_terminal::iterator_provider(self.context, hash);
+				let body = self.make_terminal_body(end, next, span)?;
 				return Ok(Some((
 					Body::Generated(
 						crate::alloc::Box::try_new(body).map_err(crate::alloc::Error::from)?,
 					),
-					Some(ty),
+					(!next).then_some(ty),
 				)));
 			}
 		}
@@ -506,6 +511,17 @@ impl Lower<'_, '_> {
 			}
 			(TypeName::Vec | TypeName::String, "push") if self.context.has_default_modules() => {
 				Body::Operation(Op::Push { value: 0, new: 1 }, 2)
+			}
+			(TypeName::I64 | TypeName::U64, "clone")
+				if crate::function::clone::integer_alias(self.context, owner, hash) =>
+			{
+				use crate::function::iter_terminal::Intrinsic as I;
+				let conversion = if ty == TypeName::I64 {
+					I::CloneI64
+				} else {
+					I::CloneU64
+				};
+				return Ok(Some((Body::Intrinsic(conversion.id(), 1), None)));
 			}
 			(TypeName::I64 | TypeName::U64 | TypeName::F64, "clone")
 				if self.context.has_default_modules() =>

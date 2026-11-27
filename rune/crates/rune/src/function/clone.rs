@@ -52,6 +52,22 @@ impl Provider {
 	}
 }
 
+/// The std integer module registers its checked CLONE and its inherent pow
+/// together. The existing pow certificate witnesses successful installation
+/// of that module. The named alias must be that exact protocol handler.
+pub(crate) fn integer_alias(context: &crate::Context, owner: Hash, alias: Hash) -> bool {
+	use super::number::{Method, Pair, Receiver};
+	let Some(receiver @ (Receiver::I64 | Receiver::U64)) = Receiver::from_hash(owner) else {
+		return false;
+	};
+	let protocol = Hash::associated_function(owner, rt::Protocol::CLONE.hash);
+	Pair::new(Method::Pow, receiver).is_some_and(|p| context.number_pair(p))
+		&& context
+			.lookup_function(protocol)
+			.zip(context.lookup_function(alias))
+			.is_some_and(|(original, named)| original.same_allocation(named))
+}
+
 pub(crate) const RESIZE: Hash = crate::hash_in!(crate, ::std::vec::Vec.resize);
 pub(crate) const RESIZE_NAME: Hash =
 	Hash::new(RESIZE.into_inner() ^ Provider::Vec.receiver().into_inner() ^ 0x5ea7_7ffb_cdf5_f302);
@@ -138,5 +154,23 @@ mod absence_tests {
 		let mut incomplete = crate::function::methods::Instances::default();
 		incomplete.mark_incomplete();
 		assert!(!p.unit_absent(&incomplete));
+	}
+}
+
+#[cfg(test)]
+mod integer_alias_tests {
+	use super::*;
+	use crate::TypeHash;
+
+	#[test]
+	fn only_the_installed_integer_protocol_alias_gets_the_conversion() {
+		let context = crate::Context::with_default_modules().unwrap();
+		for owner in [i64::HASH, u64::HASH] {
+			let named = Hash::associated_function(owner, Hash::ident("clone"));
+			assert!(integer_alias(&context, owner, named));
+			let other = Hash::associated_function(owner, Hash::ident("pow"));
+			assert!(!integer_alias(&context, owner, other));
+			assert!(!integer_alias(&crate::Context::new(), owner, named));
+		}
 	}
 }

@@ -41,6 +41,16 @@ impl Executor {
 				let n = store.adapter_count(a)?;
 				Value::U64(u64::try_from(n).map_err(|_| invalid())?)
 			}
+			Intrinsic::CloneI64 => {
+				store.integer_clone(a, crate::function::iter_terminal::Number::I64)?
+			}
+			Intrinsic::CloneU64 => {
+				store.integer_clone(a, crate::function::iter_terminal::Number::U64)?
+			}
+			Intrinsic::RequireNext => {
+				store.require_next(a)?;
+				Value::Unit
+			}
 			Intrinsic::ReadCursor => {
 				store.read_cursor(a)?;
 				Value::Unit

@@ -196,6 +196,10 @@ pub enum Detail {
 	MissingIntoIter {
 		found: TypeName,
 	},
+	/// A reduction tried NEXT on a value without the protocol.
+	MissingNext {
+		found: TypeName,
+	},
 	StringOperand {
 		found: TypeName,
 	},
@@ -798,6 +802,7 @@ impl fmt::Display for Message<'_> {
 			} => messages::expected_type(f, expected, found),
 			NumericArgumentNumber { found, .. } => messages::expected_number(f, found),
 			NumericArgumentCoerce { value, to, .. } => messages::coerce(f, value, to),
+			MissingNext { found } => write!(f, "Missing protocol function `NEXT` for `{found}`"),
 			MissingIntoIter { found } => {
 				write!(f, "Missing protocol function `INTO_ITER` for `{found}`")
 			}

@@ -26,16 +26,14 @@ impl Probe {
 	fn fuel(&self, args: &[String]) -> usize {
 		let method = self.path.rsplit_once(">::").map(|(_, s)| s).unwrap_or("");
 		let method = method.split("::<").next().unwrap();
-		if self.path.contains("::RangeFromIter::<")
+		let consumes_open_range = self.path.contains("::RangeFromIter::<")
 			&& matches!(
 				method,
-				"count"
-					| "sum" | "product"
-					| "collect" | "reduce"
-					| "fold" | "last"
-					| "for_each" | "min"
-					| "max"
-			) && args.first().is_some_and(|s| s.contains("..).iter()"))
+				"count" | "collect" | "reduce" | "fold" | "last" | "for_each" | "min" | "max"
+			);
+		let reduction = self.path.contains("::sum::<") || self.path.contains("::product::<");
+		if (consumes_open_range || reduction)
+			&& args.first().is_some_and(|s| s.contains("..).iter()"))
 		{
 			2048
 		} else {
@@ -246,43 +244,10 @@ fn compare_all(root: &Path, receipt: &Path) -> Result<()> {
 			}
 		}
 	}
-	let mut expected = BTreeSet::new();
-	let mut groups = BTreeMap::new();
-	for (group, table) in [
-		("original", include_str!("host_paths/deferred.tsv")),
-		(
-			"empty_iterator",
-			include_str!("host_paths/empty-iterators.tsv"),
-		),
-	] {
-		let previous = expected.len();
-		let mut pins = table.lines();
-		if pins.next() != Some("handler\tpath\targument\tinput kinds") {
-			return Err("invalid deferred host path header".into());
-		}
-		for line in pins {
-			let mut fields = line.rsplitn(2, '\t');
-			let kinds = fields.next().ok_or("missing deferred inputs")?;
-			let path = fields.next().ok_or("missing deferred path")?;
-			if kinds.is_empty() {
-				return Err("empty deferred inputs".into());
-			}
-			for kind in kinds.split_whitespace() {
-				for mode in ["off", "on"] {
-					if !expected.insert(format!("{path}\t{kind}\t{mode}")) {
-						return Err(format!("duplicate deferred host case: {line}").into());
-					}
-				}
-			}
-		}
-		groups.insert(group, (expected.len() - previous) / 2);
-	}
-	let unexpected: Vec<_> = failing.difference(&expected).collect();
-	let repaired: Vec<_> = expected.difference(&failing).collect();
-	let pass = unexpected.is_empty() && repaired.is_empty();
+	let pass = failing.is_empty();
 	write_new(
 		receipt,
-		&json!({"status":if pass {"PASS"} else {"FAIL"}, "registry":rows.len(),"admitted":admitted,"positions":positions,"probed_positions":probed_positions,"identities":qualified,"kinds":kinds.keys().collect::<Vec<_>>(),"compared":compared,"refused":refused,"routes":routes,"pinned":expected.len()/2,"groups":groups,"unexpected":unexpected,"repaired":repaired,"elapsed_seconds":started.elapsed().as_secs_f64()}),
+		&json!({"status":if pass {"PASS"} else {"FAIL"}, "registry":rows.len(),"admitted":admitted,"positions":positions,"probed_positions":probed_positions,"identities":qualified,"kinds":kinds.keys().collect::<Vec<_>>(),"compared":compared,"refused":refused,"routes":routes,"pinned":0,"unexpected":failing,"elapsed_seconds":started.elapsed().as_secs_f64()}),
 	)?;
 	if !pass {
 		return Err(format!("host path sweep differs: {}", receipt.display()).into());

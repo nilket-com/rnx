@@ -63,7 +63,7 @@ impl Store {
 				Payload::VectorIterator(iter) => {
 					return Ok(self
 						.len(Value::Heap(iter.handle))?
-						.saturating_sub(iter.index))
+						.saturating_sub(iter.index));
 				}
 				Payload::RangeIterator { next, end } => (Value::I64(*next), Value::I64(*end)),
 				Payload::ValueRangeIterator { next, end } => (*next, *end),
@@ -178,6 +178,40 @@ impl Store {
 		converted.ok_or_else(|| {
 			err(ErrorKind::IntegerCoercion).with_detail(Detail::Coerce { value: int, to })
 		})
+	}
+
+	/// Clone's conversion is on argument zero. The same conversion inside a
+	/// reduction describes an element and has no argument index.
+	pub(crate) fn integer_clone(&self, value: Value, target: Number) -> Result<Value> {
+		self.number_element(value, target).map_err(|mut error| {
+			error.detail = match error.detail {
+				Detail::ExpectedNumber { found } => Detail::NumericArgumentNumber {
+					cause: HostCause::ExpectedNumber,
+					arg: 0,
+					found,
+				},
+				Detail::Coerce { value, to } => Detail::NumericArgumentCoerce {
+					cause: HostCause::IntegerCoercion,
+					arg: 0,
+					value,
+					to,
+				},
+				other => other,
+			};
+			error
+		})
+	}
+
+	pub(crate) fn require_next(&mut self, value: Value) -> Result<()> {
+		if let Value::Heap(h) = value {
+			if self.entry(h)?.tag()? == Type::Iterator {
+				self.mutable(h)?;
+				return Ok(());
+			}
+		}
+		Err(err(ErrorKind::Type).with_detail(Detail::MissingNext {
+			found: self.terminal_type(value)?,
+		}))
 	}
 
 	/// One `sum` (or `product`) step in the accumulator's type, which the

@@ -890,3 +890,167 @@ fn rejected_host_string_returns_the_host_error_before_any_write() {
 	);
 	assert!(!root.join("never").exists());
 }
+
+#[test]
+fn qualified_clone_and_reduction_follow_the_selected_handler() {
+	const SUM: &str = "std::object::Iter::sum::<i64>";
+	const PRODUCT: &str = "std::object::Iter::product::<u64>";
+	const FLOAT_SUM: &str = "std::object::Iter::sum::<f64>";
+	const ARG: &str = "{dbg!(7); it}";
+
+	fn compare(
+		name: &str,
+		path: &str,
+		setup: &str,
+		args: &str,
+		after: &str,
+		success: bool,
+		route: &str,
+	) {
+		for stored in [false, true] {
+			let root = scratch(name);
+			let (binding, callee) = if stored {
+				(format!("let f={path};"), "f")
+			} else {
+				(String::new(), path)
+			};
+			let source = format!(
+				"pub fn main(args){{\n{setup}\n{binding}\nlet v={callee}({args});\n{after}\n}}"
+			);
+			fs::write(root.join("main.rn"), source).unwrap();
+			verify_outcome(&root, &[], route, success);
+		}
+	}
+	const DIRECT: &str = "rnx: engine=execution";
+	for (name, path, receiver, tag) in [
+		("signed", "i64::clone", "1u64", "i64"),
+		("unsigned", "u64::clone", "3", "u64"),
+		("mixed", SUM, "[2,3u64].iter()", "i64"),
+		(
+			"float",
+			"std::object::Iter::product::<f64>",
+			"[1.25,2.0].iter()",
+			"f64",
+		),
+		("empty-sum", FLOAT_SUM, "[].iter()", "f64"),
+		("empty-product", PRODUCT, "[].iter()", "u64"),
+		(
+			"same-owner",
+			"std::slice::Iter::sum::<i64>",
+			"[2,3].iter()",
+			"i64",
+		),
+		(
+			"same-cross",
+			"std::slice::Iter::sum::<i64>",
+			"[2u64,3u64].iter()",
+			"i64",
+		),
+		(
+			"same-empty",
+			"std::slice::Iter::sum::<f64>",
+			"[].iter()",
+			"f64",
+		),
+		(
+			"mixed-reverse",
+			"std::slice::Iter::product::<u64>",
+			"[2,3u64].iter()",
+			"u64",
+		),
+	] {
+		compare(
+			name,
+			path,
+			"",
+			&format!("{{dbg!(7); {receiver}}}"),
+			&format!("dbg!(v); dbg!(v is {tag});"),
+			true,
+			DIRECT,
+		);
+	}
+	for (name, path, receiver) in [
+		("negative", "u64::clone", "-1"),
+		("too-large", "i64::clone", "18446744073709551615u64"),
+		("float-int", FLOAT_SUM, "[1].iter()"),
+		("plain-bad", SUM, "[1,\"bad\",3].iter()"),
+		("plain-over", SUM, "[9223372036854775807,1,99].iter()"),
+		("no-next", SUM, "[1,2]"),
+		("nominal-vector", "Vec::len", "true"),
+		("nominal-float", "f64::clone", "1"),
+	] {
+		compare(
+			name,
+			path,
+			"",
+			&format!("{{dbg!(7); {receiver}}}"),
+			"dbg!(v);",
+			false,
+			DIRECT,
+		);
+	}
+	compare(
+		"wrong-arity",
+		SUM,
+		"",
+		"{dbg!(7); [1].iter()}, {dbg!(8); false}",
+		"dbg!(v);",
+		false,
+		DIRECT,
+	);
+	compare(
+		"dropped",
+		SUM,
+		"let it=[1].iter(); std::mem::drop(it);",
+		ARG,
+		"dbg!(v);",
+		false,
+		DIRECT,
+	);
+	compare(
+		"partial",
+		SUM,
+		"let it=[1,2,3].iter(); dbg!(it.next());",
+		ARG,
+		"dbg!(v);",
+		true,
+		DIRECT,
+	);
+	compare(
+		"spent",
+		"std::object::Iter::product::<i64>",
+		"let it=[1].iter(); dbg!(it.next());",
+		ARG,
+		"dbg!(v);",
+		true,
+		DIRECT,
+	);
+	compare(
+		"alias-after",
+		SUM,
+		"let it=[1,2].iter(); let alias=it;",
+		ARG,
+		"dbg!(v); dbg!(alias.next());",
+		true,
+		DIRECT,
+	);
+
+	// A mapped cursor held in a local still uses fallback. Its output makes
+	// the last item consumed before the error observable from the CLI.
+	for (name, path, items) in [
+		("bad-item", SUM, "[1,\"bad\",3]"),
+		("overflow", SUM, "[9223372036854775807,1,99]"),
+		("bad-first", PRODUCT, "[-1,2]"),
+	] {
+		let setup = format!("let it={items}.iter().map(|x| {{dbg!(x); x}});");
+		compare(
+			name,
+			path,
+			&setup,
+			ARG,
+			"dbg!(v);",
+			false,
+			"rnx: engine=legacy refusal=Method",
+		);
+	}
+}

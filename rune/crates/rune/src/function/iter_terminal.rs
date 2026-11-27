@@ -273,12 +273,17 @@ pub(crate) enum Intrinsic {
 	IntoIter,
 	/// The shared receiver access made by a collection's initial size hint.
 	ReadCursor,
+	/// Validate the actual receiver of a protocol reduction before the first pull.
+	RequireNext,
+	/// Checked conversion at the integer clone handler's argument boundary.
+	CloneI64,
+	CloneU64,
 }
 
 impl Intrinsic {
 	const FIRST_ID: u32 = crate::experimental_core::code::FIRST_INTRINSIC_ID + 0xd0;
 
-	pub(crate) const ALL: [Self; 16] = [
+	pub(crate) const ALL: [Self; 19] = [
 		Self::AdapterCount,
 		Self::Range,
 		Self::Seed(Number::I64),
@@ -295,6 +300,9 @@ impl Intrinsic {
 		Self::RevAt,
 		Self::IntoIter,
 		Self::ReadCursor,
+		Self::RequireNext,
+		Self::CloneI64,
+		Self::CloneU64,
 	];
 
 	const fn index(self) -> u32 {
@@ -313,6 +321,9 @@ impl Intrinsic {
 			Self::RevAt => 13,
 			Self::IntoIter => 14,
 			Self::ReadCursor => 15,
+			Self::RequireNext => 16,
+			Self::CloneI64 => 17,
+			Self::CloneU64 => 18,
 		}
 	}
 
@@ -336,7 +347,10 @@ impl Intrinsic {
 			| Self::RevEmpty
 			| Self::RevLast
 			| Self::IntoIter
-			| Self::ReadCursor => 1,
+			| Self::ReadCursor
+			| Self::RequireNext
+			| Self::CloneI64
+			| Self::CloneU64 => 1,
 			_ => 2,
 		}
 	}
@@ -366,6 +380,12 @@ pub(crate) fn provided(context: &crate::Context, terminal: Terminal) -> bool {
 /// defines the builtin Iterator trait, and the item hash is insert-once.
 pub(crate) fn range_provided(context: &crate::Context) -> bool {
 	settled(context) && context.lookup_function(RANGE).is_some()
+}
+
+/// Only the installed builtin Iterator trait supplies a reduction that pulls
+/// from its argument by NEXT. Check the selected specialization on demand.
+pub(crate) fn iterator_provider(context: &crate::Context, hash: Hash) -> bool {
+	settled(context) && trait_provided(context, hash, ITERATOR)
 }
 
 fn settled(context: &crate::Context) -> bool {
