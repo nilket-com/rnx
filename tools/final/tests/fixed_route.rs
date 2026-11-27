@@ -1399,3 +1399,120 @@ fn a_cached_pair_retains_both_files_and_misses_on_either_digest_change() {
 	std::fs::write(stored["engine_binary"].as_str().unwrap(), "wrong").unwrap();
 	assert_eq!(cache.lookup(&key).unwrap(), (None, "verification failed"));
 }
+
+#[test]
+fn reused_anchor_accepts_declaration_and_band_changes_and_refuses_measurement_changes() {
+	let policy: Value =
+		serde_json::from_slice(&std::fs::read(root().join(fr::POLICY)).unwrap()).unwrap();
+	let meas_sha = identity(&fr::measurement_policy(&policy).unwrap()).unwrap();
+	let full_sha = identity(&policy).unwrap();
+	let cand = json!("candidate");
+	let base_recipe = json!({
+		"cpu": ["cpu"],
+		"environment": {},
+		"run_environment": {},
+		"valgrind": "v",
+		"fixtures": {},
+		"policy": {
+			"schema": policy["schema"],
+			"launch_sha256": policy["native_setup"]["launch_sha256"],
+			"outer_host_inputs": policy["installed_setup"]["outer_reference"]["host_inputs"],
+			"meter": policy["meter"],
+			"per_record_per_mille": policy["per_record_per_mille"],
+			"cumulative_per_mille": policy["cumulative_per_mille"]
+		},
+		"tooling": {},
+		"build_environment": "old"
+	});
+	let sha = "a".repeat(64);
+	let paths = json!({
+		"binary": "/bin/rnx",
+		"vectors": "/tmp/v",
+		"cwd": "/tmp",
+		"valgrind_root": "/tmp/vg",
+		"role": "baseline",
+		"launch_sha256": policy["native_setup"]["launch_sha256"]
+	});
+	let key = rnx_final::fixed_route_stage::contextual_key(&sha, &base_recipe, &paths).unwrap();
+	let make_receipt = |rev: &Value, p_sha: &str, m_sha: &str, rec: &Value| {
+		let mut rows = base_rows(&policy);
+		for r in &mut rows {
+			r["binary_sha256"] = json!(sha);
+		}
+		json!({
+			"status": "PASS",
+			"revision": rev,
+			"recipe": rec,
+			"policy_sha256": p_sha,
+			"measurement_policy_sha256": m_sha,
+			"binary_sha256": sha,
+			"capture_paths": paths,
+			"capture_key": key,
+			"records": rows
+		})
+	};
+	let mut anchor = make_receipt(&policy["anchor"], &full_sha, &meas_sha, &base_recipe);
+	let mut next_policy = policy.clone();
+	next_policy["source_transitions"] = json!([]);
+	let mut extra_item = next_policy["inventory"][0].clone();
+	extra_item["name"] = json!("extra_tracked_item");
+	next_policy["inventory"]
+		.as_array_mut()
+		.unwrap()
+		.push(extra_item);
+	next_policy["anchor_transition"]["plan"] = json!("b".repeat(40));
+	let next_full_sha = identity(&next_policy).unwrap();
+	assert_ne!(next_full_sha, full_sha);
+	assert_eq!(
+		identity(&fr::measurement_policy(&next_policy).unwrap()).unwrap(),
+		meas_sha
+	);
+	let base = make_receipt(&cand, &next_full_sha, &meas_sha, &base_recipe);
+	let candidate = make_receipt(&cand, &next_full_sha, &meas_sha, &base_recipe);
+	// Without reuse_proof, a mismatched full policy_sha256 is refused.
+	let err = fr::score(&base, &candidate, Some(&anchor), &next_policy).unwrap_err();
+	assert!(err.to_string().contains("stale policy"), "{err}");
+	anchor["reuse_proof"] = json!({
+		"current_recipe": base_recipe,
+		"binary_sha256": sha,
+		"current_build": {"sha256": sha}
+	});
+	// With reuse_proof and matching measurement_policy_sha256, policy validation
+	// passes (scoring proceeds to the synthetic row observer check) while anchor
+	// keeps recording the earlier full policy_sha256.
+	assert_eq!(anchor["policy_sha256"], json!(full_sha));
+	let err = fr::score(&base, &candidate, Some(&anchor), &next_policy).unwrap_err();
+	assert!(
+		err.to_string().contains("guest input observer"),
+		"expected to pass policy/reuse checks; got: {err}"
+	);
+
+	// On a schema-1 policy (where base_rows are complete), score() returns Ok.
+	let mut s1_policy = policy.clone();
+	s1_policy["schema"] = json!(1);
+	for k in [
+		"meter",
+		"native_setup",
+		"installed_setup",
+		"relative_relocations",
+	] {
+		s1_policy.as_object_mut().unwrap().remove(k);
+	}
+	let s1_full = identity(&s1_policy).unwrap();
+	let s1_meas = identity(&fr::measurement_policy(&s1_policy).unwrap()).unwrap();
+	let mut s1_next = s1_policy.clone();
+	s1_next["source_transitions"] = json!([]);
+	s1_next["anchor_transition"]["plan"] = json!("b".repeat(40));
+	let s1_next_full = identity(&s1_next).unwrap();
+	assert_ne!(s1_next_full, s1_full);
+	let mut s1_anchor = make_receipt(&s1_policy["anchor"], &s1_full, &s1_meas, &base_recipe);
+	s1_anchor["reuse_proof"] = anchor["reuse_proof"].clone();
+	let s1_base = make_receipt(&cand, &s1_next_full, &s1_meas, &base_recipe);
+	let s1_cand = make_receipt(&cand, &s1_next_full, &s1_meas, &base_recipe);
+	fr::score(&s1_base, &s1_cand, Some(&s1_anchor), &s1_next).unwrap();
+
+	// Mutating a measurement field (meter) must refuse reuse even with reuse_proof.
+	let mut bad_policy = next_policy.clone();
+	bad_policy["meter"]["tick_ns"] = json!(999);
+	assert!(fr::score(&base, &candidate, Some(&anchor), &bad_policy).is_err());
+}

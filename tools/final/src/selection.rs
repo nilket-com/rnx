@@ -536,8 +536,12 @@ pub fn native_manifest(root: &Path) -> Result<Value> {
 	for c in &cases {
 		let name = c["name"].as_str().unwrap_or_default();
 		let timeout_bad = c["timeout"].as_f64().is_none_or(|t| t <= 0.0);
+		let weight_bad = c
+			.get("weight")
+			.is_some_and(|w| w.as_u64().is_none_or(|n| n == 0));
 		if !crate::failure::truthy(&c["selector"])
 			|| timeout_bad
+			|| weight_bad
 			|| name.is_empty()
 			|| name == "."
 			|| name == ".."

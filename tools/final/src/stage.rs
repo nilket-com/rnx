@@ -1633,13 +1633,17 @@ pub fn main(arguments: &[OsString], root: &Path) -> Result<i32> {
 					)
 				},
 				|| {
-					crate::contracts::run(
+					let manifest = crate::selection::native_manifest(root)?;
+					let (target, disable_incremental) =
+						crate::contracts::suite_reuse_target(root, &manifest, &child_env)?;
+					crate::contracts::run_with_target(
 						root,
 						&out,
 						&child_env,
 						&crate::contracts::Live {
 							env: child_env.clone(),
 						},
+						Some((&target, disable_incremental)),
 					)
 				},
 			)?;

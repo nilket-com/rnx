@@ -609,6 +609,51 @@ pub fn compare(left: &Value, right: &Value, policy: &Value, limit: i128) -> Resu
 	Ok(rows)
 }
 
+/// The subset of the gate policy that affects built images or captured counts.
+///
+/// Retained (each affects built images or measured instruction counts):
+/// - `schema`: split-image build layout and capture/verification schema.
+/// - `anchor`: source revision built and captured as the anchor.
+/// - `kernels`, `modes`, `sizes`: which programs, engine modes, and sizes run.
+/// - `meter`: frozen guest/host meter inputs (`version`, `hash_keys`, `epoch_ns`, `tick_ns`).
+/// - `native_setup`: canonical launch argv/env (`launch_sha256`), setup kernels, and freeze inputs.
+/// - `installed_setup`: installed binary launch/outer host inputs and measured image descriptors.
+/// - `relative_relocations`: pinned loader/relocation metadata affecting built image layout.
+/// - Any unrecognized future key is retained fail-closed until explicitly classified.
+///
+/// Excluded (declare or score only; never affect built images or captured counts):
+/// - `source_transitions`: per-record declared source changes (checked against full policy).
+/// - `inventory`: tracked source items (checked against full policy).
+/// - `anchor_transition`: historical anchor transition metadata.
+/// - `per_record_per_mille`, `cumulative_per_mille`: scoring bands (checked against full policy).
+pub fn measurement_policy(policy: &Value) -> Result<Value> {
+	let Some(object) = policy.as_object() else {
+		bail!(value_error("policy is not a mapping"));
+	};
+	let mut out = object.clone();
+	for key in [
+		"source_transitions",
+		"inventory",
+		"anchor_transition",
+		"per_record_per_mille",
+		"cumulative_per_mille",
+	] {
+		out.remove(key);
+	}
+	Ok(Value::Object(out))
+}
+
+/// Strip scoring-only band fields from a recipe's embedded policy subset so
+/// changing a band does not invalidate build or capture reuse.
+pub fn reuse_recipe(current: &Value) -> Result<Value> {
+	let mut out = current.clone();
+	if let Some(policy) = out.get_mut("policy").and_then(Value::as_object_mut) {
+		policy.remove("per_record_per_mille");
+		policy.remove("cumulative_per_mille");
+	}
+	Ok(out)
+}
+
 /// What determines counts once the rebuilt bytes match.
 pub fn measurement_recipe(current: &Value) -> Result<Value> {
 	let mut out = Map::new();
@@ -620,7 +665,15 @@ pub fn measurement_recipe(current: &Value) -> Result<Value> {
 		"fixtures",
 		"policy",
 	] {
-		out.insert(k.into(), at(current, k)?.clone());
+		let mut value = at(current, k)?.clone();
+		if k == "policy"
+			&& value.get("schema") == Some(&json!(2))
+			&& let Some(policy) = value.as_object_mut()
+		{
+			policy.remove("per_record_per_mille");
+			policy.remove("cumulative_per_mille");
+		}
+		out.insert(k.into(), value);
 	}
 	let tooling: Map<String, Value> = at(current, "tooling")?
 		.as_object()
@@ -674,6 +727,7 @@ pub fn score(
 		);
 	}
 	let policy_sha = identity(policy)?;
+	let measurement_policy_sha = identity(&measurement_policy(policy)?)?;
 	for (i, receipt) in [baseline, candidate, anchor].into_iter().enumerate() {
 		if *at(receipt, "status")? != json!("PASS") {
 			bail!(value_error("failed capture"));
@@ -715,7 +769,12 @@ pub fn score(
 			);
 		}
 		if *at(receipt, "policy_sha256")? != json!(policy_sha) {
-			bail!(value_error("stale policy"));
+			let reused_anchor = i == 2
+				&& receipt.get("reuse_proof").is_some()
+				&& receipt.get("measurement_policy_sha256") == Some(&json!(measurement_policy_sha));
+			if !reused_anchor {
+				bail!(value_error("stale policy"));
+			}
 		}
 		if let Some(desc) = receipt["capture_paths"].get("measured") {
 			for row in receipt["records"].as_array().context("missing records")? {

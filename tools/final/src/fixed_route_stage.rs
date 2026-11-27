@@ -940,6 +940,8 @@ pub fn capture_receipts(
 			receipt["publication_commit"] = publication.clone();
 		}
 		if split {
+			receipt["measurement_policy_sha256"] =
+				json!(identity(&fr::measurement_policy(policy)?)?);
 			receipt["capture_paths"] = paths;
 			if let Some(path) = binary.get("installed_binary") {
 				receipt["installed_binary"] = path.clone();

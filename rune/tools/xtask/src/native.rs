@@ -58,6 +58,8 @@ struct Case {
 	exclusive: bool,
 	empty_stderr: bool,
 	timeout: u64,
+	#[serde(default)]
+	weight: Option<u64>,
 	env: BTreeMap<String, String>,
 }
 
@@ -68,6 +70,11 @@ pub fn manifest() -> Result<Manifest> {
 	for c in &m.cases {
 		ensure!(names.insert(&c.name), "duplicate case {}", c.name);
 		ensure!(!c.selector.is_empty(), "empty selector");
+		ensure!(
+			c.weight.is_none_or(|w| w > 0),
+			"non-positive weight for {}",
+			c.name
+		);
 	}
 	Ok(m)
 }

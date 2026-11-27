@@ -1079,6 +1079,15 @@
       "max_bytes": 56530,
       "reason": "Build, dependency, policy or executable manifest."
     },
+    "rune/tools/xtask/manifests/native.json": {
+      "class": "source-configuration",
+      "consumer": {
+        "expression": "include_str!(\"../manifests/native.json\")",
+        "path": "rune/tools/xtask/src/native.rs"
+      },
+      "max_bytes": 16947,
+      "reason": "Native contract manifest and ADR 0351 case dispatch weights read by xtask, rune-suite and final-controls."
+    },
     "servers/http-postgres/dependency-graph.json": {
       "class": "reviewed-retention",
       "max_bytes": 323847,

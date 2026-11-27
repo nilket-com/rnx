@@ -45,7 +45,11 @@ pub fn save(dir: &Path, build: &Value, recipe: &Value, policy: &Value) -> Result
 	atomic_json(
 		&dir.join("BUILD.json"),
 		&json!({
-			"source":build["source_commit"], "recipe":identity(recipe)?, "policy":identity(policy)?, "build":row
+			"source": build["source_commit"],
+			"recipe": identity(&crate::fixed_route::reuse_recipe(recipe)?)?,
+			"policy": identity(&crate::fixed_route::measurement_policy(policy)?)?,
+			"full_policy": identity(policy)?,
+			"build": row
 		}),
 	)
 }
@@ -120,7 +124,8 @@ pub fn load(
 		);
 	}
 	ensure!(
-		source["recipe"] == identity(recipe)? && source["policy"] == identity(policy)?,
+		source["recipe"] == identity(&crate::fixed_route::reuse_recipe(recipe)?)?
+			&& source["policy"] == identity(&crate::fixed_route::measurement_policy(policy)?)?,
 		"gate recipe changed"
 	);
 	let mut row = source["build"].clone();
@@ -264,8 +269,23 @@ mod tests {
 		let binary = area.join("binary");
 		fs::write(&binary, b"tested runner").unwrap();
 		let sha = digest(&binary).unwrap();
-		let recipe = json!({"toolchain":"pinned","build":"release"});
-		let policy = json!({"limit":5});
+		let recipe = json!({"toolchain":"pinned","build":"release","policy":{"schema":2,"per_record_per_mille":5,"cumulative_per_mille":10}});
+		let policy = json!({
+			"schema": 2,
+			"anchor": "a".repeat(40),
+			"kernels": ["fib"],
+			"modes": ["on", "off"],
+			"sizes": [1, 5],
+			"meter": {"version": 1, "hash_keys": [1, 2], "epoch_ns": 0, "tick_ns": 1},
+			"native_setup": {"launch_sha256": "1".repeat(64)},
+			"installed_setup": {"launch_sha256": "2".repeat(64), "outer_reference": {"host_inputs": "3".repeat(64)}},
+			"relative_relocations": {"version": 1, "loader": "ld", "sha256": "4".repeat(64)},
+			"source_transitions": [],
+			"inventory": ["item_a"],
+			"anchor_transition": {"old": "0".repeat(40), "new": "a".repeat(40)},
+			"per_record_per_mille": 5,
+			"cumulative_per_mille": 10
+		});
 		let revision = "tested";
 		let row = json!({"source_commit":revision,"sha256":sha,"binary":binary,
 			"measured":{"version":1,"target":"x86_64-unknown-linux-gnu","runner":{"path":"/run/rnx-route/rnx","sha256":sha}}});
@@ -289,12 +309,131 @@ mod tests {
 		assert!(
 			lookup(
 				revision,
-				&json!({"toolchain":"changed","build":"release"}),
+				&json!({"toolchain":"changed","build":"release","policy":{"schema":2,"per_record_per_mille":5,"cumulative_per_mille":10}}),
 				&policy
 			)
 			.is_err()
 		);
-		assert!(lookup(revision, &recipe, &json!({"limit":6})).is_err());
+
+		// Control 1 accepting witnesses: each declaration/scoring-only field
+		// may change without invalidating reuse, while the planted-back full
+		// policy identity rejects every one of them.
+		let full_policy_before = identity(&policy).unwrap();
+		let accepting: Vec<(&str, Value, Value)> = vec![
+			("source_transitions", recipe.clone(), {
+				let mut p = policy.clone();
+				p["source_transitions"] =
+					json!([{"selector": "invoke_args", "from": "1", "to": "2"}]);
+				p
+			}),
+			("inventory", recipe.clone(), {
+				let mut p = policy.clone();
+				p["inventory"] = json!(["item_a", "item_b"]);
+				p
+			}),
+			("anchor_transition", recipe.clone(), {
+				let mut p = policy.clone();
+				p["anchor_transition"]["plan"] = json!("b".repeat(40));
+				p
+			}),
+			(
+				"per_record_per_mille",
+				{
+					let mut r = recipe.clone();
+					r["policy"]["per_record_per_mille"] = json!(6);
+					r
+				},
+				{
+					let mut p = policy.clone();
+					p["per_record_per_mille"] = json!(6);
+					p
+				},
+			),
+			(
+				"cumulative_per_mille",
+				{
+					let mut r = recipe.clone();
+					r["policy"]["cumulative_per_mille"] = json!(11);
+					r
+				},
+				{
+					let mut p = policy.clone();
+					p["cumulative_per_mille"] = json!(11);
+					p
+				},
+			),
+		];
+		for (label, next_recipe, next_policy) in &accepting {
+			assert_eq!(
+				lookup(revision, next_recipe, next_policy)
+					.unwrap_or_else(|e| panic!("accepting witness {label} failed: {e}"))["build_source_commit"],
+				revision,
+				"accepting witness {label}"
+			);
+			// Planted-back old identity (full policy digest) fails every accepting witness.
+			assert_ne!(
+				identity(next_policy).unwrap(),
+				full_policy_before,
+				"old full-policy identity must reject {label}"
+			);
+		}
+
+		// Control 1 refusing witnesses: every field that affects built images
+		// or capture counts must refuse reuse.
+		let refusing: Vec<(&str, Value)> = vec![
+			("schema", {
+				let mut p = policy.clone();
+				p["schema"] = json!(3);
+				p
+			}),
+			("anchor", {
+				let mut p = policy.clone();
+				p["anchor"] = json!("b".repeat(40));
+				p
+			}),
+			("kernels", {
+				let mut p = policy.clone();
+				p["kernels"] = json!(["fib", "permute"]);
+				p
+			}),
+			("modes", {
+				let mut p = policy.clone();
+				p["modes"] = json!(["on"]);
+				p
+			}),
+			("sizes", {
+				let mut p = policy.clone();
+				p["sizes"] = json!([1, 10]);
+				p
+			}),
+			("meter", {
+				let mut p = policy.clone();
+				p["meter"]["tick_ns"] = json!(2);
+				p
+			}),
+			("native_setup", {
+				let mut p = policy.clone();
+				p["native_setup"]["launch_sha256"] = json!("9".repeat(64));
+				p
+			}),
+			("installed_setup", {
+				let mut p = policy.clone();
+				p["installed_setup"]["launch_sha256"] = json!("8".repeat(64));
+				p
+			}),
+			("relative_relocations", {
+				let mut p = policy.clone();
+				p["relative_relocations"]["sha256"] = json!("7".repeat(64));
+				p
+			}),
+		];
+		for (label, mutated) in &refusing {
+			assert!(
+				lookup(revision, &recipe, mutated).is_err(),
+				"refusing witness {label} must fail reuse"
+			);
+		}
+
 		index(&area, "other", &out).unwrap();
 		assert!(lookup("other", &recipe, &policy).is_err());
 		fs::write(retained.join("runner"), b"changed runner").unwrap();

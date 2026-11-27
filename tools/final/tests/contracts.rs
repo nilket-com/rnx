@@ -1293,6 +1293,194 @@ fn all_writes_including_a_later_debug_recipe_precede_release() {
 	}
 }
 
+#[test]
+fn run_cases_dispatches_by_weight_descending_and_preserves_manifest_result_order() {
+	let cases = vec![
+		json!({"name": "short_a", "weight": 2}),
+		json!({"name": "default_weight"}),
+		json!({"name": "exclusive_first", "exclusive": true, "weight": 5}),
+		json!({"name": "tie_first", "weight": 10}),
+		json!({"name": "longest", "weight": 361}),
+		json!({"name": "tie_second", "weight": 10}),
+	];
+	let shared_names: Vec<&str> = contracts::shared_dispatch_order(&cases)
+		.into_iter()
+		.map(|i| cases[i]["name"].as_str().unwrap())
+		.collect();
+	assert_eq!(
+		shared_names,
+		vec![
+			"longest",
+			"tie_first",
+			"tie_second",
+			"short_a",
+			"default_weight",
+		]
+	);
+
+	let started = Mutex::new(Vec::new());
+	let env = Environment::new();
+	let rows = contracts::run_cases(
+		&cases,
+		&|c| {
+			let name = c["name"].as_str().unwrap().to_owned();
+			started.lock().unwrap().push(name.clone());
+			Ok(json!({"name": name, "status": "PASS"}))
+		},
+		&env,
+	)
+	.unwrap();
+	let started = started.into_inner().unwrap();
+	assert_eq!(started[0], "exclusive_first");
+	assert_eq!(started.len(), cases.len());
+	let result_names: Vec<&str> = rows.iter().map(|r| r["name"].as_str().unwrap()).collect();
+	assert_eq!(
+		result_names,
+		vec![
+			"short_a",
+			"default_weight",
+			"exclusive_first",
+			"tie_first",
+			"longest",
+			"tie_second",
+		]
+	);
+}
+
+fn tempfile_dir(prefix: &str) -> PathBuf {
+	let dir =
+		std::env::temp_dir().join(format!("{prefix}-{}", rnx_final::receipt::invocation_id()));
+	std::fs::create_dir(&dir).unwrap();
+	dir
+}
+
+#[test]
+fn build_with_target_reuses_suite_target_and_rejects_mismatched_features() {
+	let dir = tempfile_dir("contracts-reuse-target");
+	let bulk = dir.join("bulk");
+	let shared_target = dir.join("engine-dev-target");
+	std::fs::create_dir_all(&bulk).unwrap();
+	std::fs::create_dir_all(&shared_target).unwrap();
+	let m = rnx_final::selection::native_manifest(&root()).unwrap();
+	let expected_features: Vec<String> = m["libraries"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.find(|l| {
+			let f = l["features"].as_str().unwrap_or_default();
+			f.contains("execution") && f.contains("serde") && l.get("selector").is_none()
+		})
+		.unwrap()["features"]
+		.as_str()
+		.unwrap()
+		.split(',')
+		.map(str::to_owned)
+		.collect();
+
+	struct ReuseMock {
+		features: Vec<String>,
+		dwarf: String,
+		calls: Mutex<Vec<(Vec<String>, Option<Environment>)>>,
+	}
+	impl Process for ReuseMock {
+		fn run(&self, call: &Call) -> Result<i32> {
+			self.calls
+				.lock()
+				.unwrap()
+				.push((call.command.clone(), call.env.clone()));
+			let text = if call.command[0] == "cargo" {
+				let target = PathBuf::from(&call.env.as_ref().unwrap()["CARGO_TARGET_DIR"]);
+				let exe = target.join("rune-test-bin");
+				std::fs::write(&exe, b"reused binary").unwrap();
+				json!({
+					"reason": "compiler-artifact",
+					"target": {"name": "rune"},
+					"profile": {"test": true},
+					"features": self.features,
+					"fresh": true,
+					"executable": exe,
+				})
+				.to_string()
+			} else {
+				self.dwarf.clone()
+			};
+			std::fs::write(&call.stdout, text)?;
+			Ok(0)
+		}
+	}
+
+	let r = std::fs::canonicalize(root()).unwrap();
+	let dwarf = format!(
+		"Compilation Unit @ offset 0x0:\n  DW_AT_name : rune/crates/rune/src/lib.rs\n  DW_AT_comp_dir : {}\n",
+		r.display()
+	);
+	let env = Environment::new();
+
+	// 1. Matching features succeed, reuse shared_target, set CARGO_INCREMENTAL=0,
+	//    and never create bulk/build-target.
+	let ok_proc = ReuseMock {
+		features: expected_features.clone(),
+		dwarf: dwarf.clone(),
+		calls: Mutex::new(Vec::new()),
+	};
+	let (bin, receipt) =
+		contracts::build_with_target(&r, &bulk, &m, &env, &ok_proc, Some((&shared_target, true)))
+			.unwrap();
+	assert!(bin.is_file());
+	assert!(!bulk.join("build-target").exists());
+	assert!(!bulk.join("build-target-OWNER.json").exists());
+	let rec: Value = serde_json::from_slice(&std::fs::read(&receipt).unwrap()).unwrap();
+	for key in [
+		"status",
+		"expected_repo",
+		"binary_sha256",
+		"source",
+		"candidate",
+		"command",
+		"units",
+		"dwarf_sha256",
+	] {
+		assert!(rec.get(key).is_some(), "missing BINARY.json key {key}");
+	}
+	let calls = ok_proc.calls.into_inner().unwrap();
+	let cargo_env = calls[0].1.as_ref().unwrap();
+	assert_eq!(
+		cargo_env["CARGO_TARGET_DIR"],
+		shared_target.to_string_lossy()
+	);
+	assert_eq!(
+		cargo_env["CARGO_BUILD_BUILD_DIR"],
+		shared_target.to_string_lossy()
+	);
+	assert_eq!(cargo_env["CARGO_INCREMENTAL"], "0");
+
+	// 2. A binary built with other features (e.g. native-code from another
+	//    manifest library recipe) fails the check.
+	let bad_bulk = dir.join("bad-bulk");
+	std::fs::create_dir_all(&bad_bulk).unwrap();
+	let mut wrong_features = expected_features;
+	wrong_features.push("native-code".into());
+	let bad_proc = ReuseMock {
+		features: wrong_features,
+		dwarf,
+		calls: Mutex::new(Vec::new()),
+	};
+	let err = contracts::build_with_target(
+		&r,
+		&bad_bulk,
+		&m,
+		&env,
+		&bad_proc,
+		Some((&shared_target, true)),
+	)
+	.unwrap_err();
+	assert!(
+		format!("{err:#}").contains("features differ"),
+		"unexpected error: {err:#}"
+	);
+	let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// Driven through the normal manifest-case entry point in the parent test.
 mod experimental_core {
 	mod tests {

@@ -20,7 +20,7 @@ pub struct Route {
 	group: PathBuf,
 	recipe: String,
 	#[serde(default)]
-	disable_incremental: bool,
+	pub disable_incremental: bool,
 	products: PathBuf,
 }
 type Routes = BTreeMap<String, Route>;

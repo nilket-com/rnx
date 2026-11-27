@@ -296,15 +296,38 @@ pub fn compilation_units(
 	Ok(units)
 }
 
-/// Build the one Rune test binary, copy it out of its owned target, and
-/// release the target before any case runs; the binary and its receipt.
-pub fn build(
-	root: &Path,
-	bulk: &Path,
-	m: &Value,
-	env: &Environment,
-	p: &dyn Process,
-) -> Result<(PathBuf, PathBuf)> {
+/// The target directory of the `engine-dev` check that `rune-suite` just ran
+/// in the same process, paired with whether incremental compilation was disabled.
+pub fn suite_reuse_target(root: &Path, m: &Value, env: &Environment) -> Result<(PathBuf, bool)> {
+	let features = contract_features(m)?;
+	let lookup_cmd: Vec<String> = [
+		"cargo",
+		"+1.98.1",
+		"test",
+		"--locked",
+		"-p",
+		"rune",
+		"--profile",
+		"engine-dev",
+		"--lib",
+		"--features",
+		features.as_str(),
+	]
+	.iter()
+	.map(|s| s.to_string())
+	.collect();
+	if let Some(route) = crate::build_targets::lookup(env, root, &lookup_cmd)? {
+		return Ok((route.target, route.disable_incremental));
+	}
+	let target = env
+		.get("CARGO_TARGET_DIR")
+		.filter(|s| !s.is_empty())
+		.map(PathBuf::from)
+		.unwrap_or_else(|| root.join("target"));
+	Ok((target, false))
+}
+
+fn contract_features(m: &Value) -> Result<String> {
 	let features: Vec<&str> = m["libraries"]
 		.as_array()
 		.into_iter()
@@ -324,12 +347,70 @@ pub fn build(
 			"native contracts require one declared execution-serde library recipe"
 		));
 	}
-	let mut owner = Owned::new(bulk, "build-target")?;
+	Ok(features[0].to_owned())
+}
+
+fn feature_set(csv: &str) -> std::collections::BTreeSet<String> {
+	csv.split(',')
+		.map(str::trim)
+		.filter(|s| !s.is_empty())
+		.map(ToOwned::to_owned)
+		.collect()
+}
+
+/// Build the one Rune test binary, copy it out of its owned target, and
+/// release the target before any case runs; the binary and its receipt.
+pub fn build(
+	root: &Path,
+	bulk: &Path,
+	m: &Value,
+	env: &Environment,
+	p: &dyn Process,
+) -> Result<(PathBuf, PathBuf)> {
+	build_with_target(root, bulk, m, env, p, None)
+}
+
+/// Like [`build`], optionally reusing the `engine-dev` target directory the
+/// suite's check just filled in the same run (avoiding a second cold compile).
+pub fn build_with_target(
+	root: &Path,
+	bulk: &Path,
+	m: &Value,
+	env: &Environment,
+	p: &dyn Process,
+	reuse_target: Option<(&Path, bool)>,
+) -> Result<(PathBuf, PathBuf)> {
+	let features = contract_features(m)?;
+	let expected_features = feature_set(&features);
+	let forbidden_features: std::collections::BTreeSet<String> = m["libraries"]
+		.as_array()
+		.into_iter()
+		.flatten()
+		.flat_map(|l| feature_set(l["features"].as_str().unwrap_or_default()))
+		.filter(|f| !expected_features.contains(f))
+		.collect();
+	let mut owner = match reuse_target {
+		Some(_) => None,
+		None => Some(Owned::new(bulk, "build-target")?),
+	};
 	let built = (|| -> Result<(PathBuf, PathBuf)> {
 		let mut cargo_env = env.clone();
+		let target_dir = match reuse_target {
+			Some((dir, disable_incremental)) => {
+				cargo_env.insert(
+					"CARGO_BUILD_BUILD_DIR".into(),
+					dir.to_string_lossy().into_owned(),
+				);
+				if disable_incremental {
+					cargo_env.insert("CARGO_INCREMENTAL".into(), "0".into());
+				}
+				dir.to_path_buf()
+			}
+			None => owner.as_ref().expect("owned target").path().to_path_buf(),
+		};
 		cargo_env.insert(
 			"CARGO_TARGET_DIR".into(),
-			owner.path().to_string_lossy().into_owned(),
+			target_dir.to_string_lossy().into_owned(),
 		);
 		cargo_env.insert("CARGO_BUILD_JOBS".into(), build_jobs(env)?.to_string());
 		let command: Vec<String> = [
@@ -343,7 +424,7 @@ pub fn build(
 			"engine-dev",
 			"--lib",
 			"--features",
-			features[0],
+			features.as_str(),
 			"--no-run",
 			"--message-format=json",
 		]
@@ -367,6 +448,25 @@ pub fn build(
 				&& truthy(&r["profile"]["test"])
 				&& truthy(&r["executable"])
 			{
+				if let Some(actual) = r.get("features") {
+					let actual_set: std::collections::BTreeSet<String> = actual
+						.as_array()
+						.ok_or_else(|| value_error("invalid compiler-artifact features"))?
+						.iter()
+						.map(|v| {
+							v.as_str()
+								.map(ToOwned::to_owned)
+								.ok_or_else(|| value_error("invalid compiler-artifact feature"))
+						})
+						.collect::<Result<_>>()?;
+					if !expected_features.is_subset(&actual_set)
+						|| !forbidden_features.is_disjoint(&actual_set)
+					{
+						bail!(value_error(
+							"Rune test binary features differ from manifest"
+						));
+					}
+				}
 				found.push(PathBuf::from(r["executable"].as_str().unwrap_or_default()));
 			}
 		}
@@ -383,11 +483,16 @@ pub fn build(
 				"source": child::source(root)?, "candidate": child::head(root), "command": command, "units": units,
 				"dwarf_sha256": digest(&bulk.join("dwarf.log"))?}),
 		)?;
-		owner.keep(&[&binary, &receipt]);
+		if let Some(owner) = owner.as_mut() {
+			owner.keep(&[&binary, &receipt]);
+		}
 		Ok((binary, receipt))
 	})();
-	// The build has ended (its process group drained), so its target goes now.
-	let released = owner.release(built.as_ref().err(), env);
+	// The owned build target (when used) has ended, so release it now.
+	let released = match owner {
+		Some(owner) => owner.release(built.as_ref().err(), env).map(|_| ()),
+		None => Ok(()),
+	};
 	let built = built?;
 	released?;
 	Ok(built)
@@ -664,6 +769,20 @@ pub fn run_case(
 	Ok(r)
 }
 
+/// Shared (non-exclusive) case indices ordered longest-first by committed
+/// manifest `weight` (default 1), breaking ties in manifest order.
+pub fn shared_dispatch_order(cases: &[Value]) -> Vec<usize> {
+	let mut shared: Vec<usize> = (0..cases.len())
+		.filter(|i| !truthy(&cases[*i]["exclusive"]))
+		.collect();
+	shared.sort_by(|&a, &b| {
+		let wa = cases[a].get("weight").and_then(Value::as_u64).unwrap_or(1);
+		let wb = cases[b].get("weight").and_then(Value::as_u64).unwrap_or(1);
+		wb.cmp(&wa).then_with(|| a.cmp(&b))
+	});
+	shared
+}
+
 /// Run every case, in the manifest's order: each exclusive one alone,
 /// holding every jobserver token its stage does not; then the rest
 /// concurrently, at most the case width, each on one of the stage's own
@@ -693,9 +812,7 @@ pub fn run_cases(
 			permit.release()?;
 		}
 	}
-	let shared: Vec<usize> = (0..cases.len())
-		.filter(|i| !truthy(&cases[*i]["exclusive"]))
-		.collect();
+	let shared = shared_dispatch_order(cases);
 	if !shared.is_empty() {
 		let width = case_width(env)?.min(shared.len());
 		let slots = match &client {
@@ -740,6 +857,18 @@ pub fn run_cases(
 /// Build the binary, run every case and hold them to the manifest;
 /// `CONTRACTS.json` in `out`, and its value.
 pub fn run(root: &Path, out: &Path, env: &Environment, p: &dyn Process) -> Result<Value> {
+	run_with_target(root, out, env, p, None)
+}
+
+/// Like [`run`], reusing an `engine-dev` target directory populated earlier in
+/// the same `rune-suite` run when `reuse_target` is `Some`.
+pub fn run_with_target(
+	root: &Path,
+	out: &Path,
+	env: &Environment,
+	p: &dyn Process,
+	reuse_target: Option<(&Path, bool)>,
+) -> Result<Value> {
 	let root = std::fs::canonicalize(root)?;
 	let bulk = crate::producer::assigned_root(
 		"RNX_FINAL_CONTRACT_ROOT",
@@ -767,7 +896,7 @@ pub fn run(root: &Path, out: &Path, env: &Environment, p: &dyn Process) -> Resul
 			));
 		}
 	}
-	let (binary, receipt) = build(&root, &bulk, &m, env, p)?;
+	let (binary, receipt) = build_with_target(&root, &bulk, &m, env, p, reuse_target)?;
 	let cases: Vec<Value> = m["cases"].as_array().cloned().unwrap_or_default();
 	let rows = run_cases(
 		&cases,
