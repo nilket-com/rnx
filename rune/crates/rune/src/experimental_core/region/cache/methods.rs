@@ -239,6 +239,8 @@ pub(crate) struct MethodProgram {
 	pub(super) lookup: StdVec<u32>,
 }
 pub(crate) enum Entry<'a> {
+	#[cfg(test)]
+	ResumeAtHeader(usize),
 	Scalar(&'a RecursiveReady),
 	Method(&'a MethodReady),
 }
@@ -274,6 +276,14 @@ impl Entry<'_> {
 		room: Room,
 	) -> Outcome {
 		match self {
+			#[cfg(test)]
+			Self::ResumeAtHeader(pc) => Outcome::Complete {
+				pc: *pc,
+				fuel,
+				calls: 0,
+				peak: 0,
+				work: 0,
+			},
 			Self::Scalar(r) => r.enter(window, store, canceled, fuel, room),
 			Self::Method(r) => r.enter(code, window, store, canceled, fuel, room),
 		}

@@ -1476,7 +1476,9 @@ impl Executor {
 									} => {
 										pc = next;
 										fuel = left;
-										resume_pc = next;
+										if !table.is_empty() {
+											resume_pc = next;
+										}
 									}
 									_ => {
 										replay_root = Some(self.frames.len());
@@ -1535,13 +1537,15 @@ impl Executor {
 						target_arch = "x86_64",
 						target_os = "linux"
 					))]
-					if NATIVE && instruction.charged {
+					// The table is fixed for this frame. With no headers, no exit PC
+					// can be looked up again, so leave the resume marker alone.
+					if NATIVE && !table.is_empty() && instruction.charged {
 						let resumed = core::mem::replace(&mut resume_pc, usize::MAX) == source_pc;
 						#[cfg(test)]
 						let armed = cancel_hook_armed_for_test();
 						#[cfg(not(test))]
 						let armed = false;
-						if !resumed && !armed && !table.is_empty() {
+						if !resumed && !armed {
 							if let Some(ready) = regions.and_then(|r| r.header(table, source_pc)) {
 								let end = frame.base + function.slots as usize;
 								let room = region_room(
@@ -3233,6 +3237,37 @@ fn cancel_tick_for_test() -> bool {
 		}
 		None => false,
 	})
+}
+
+#[cfg(all(
+	test,
+	feature = "native-code",
+	target_arch = "x86_64",
+	target_os = "linux"
+))]
+impl Executor {
+	pub(crate) fn invoke_with_frame_entry_for_test(
+		&mut self,
+		code: &Code,
+		store: &mut Store,
+		args: &[&Root],
+		fuel: usize,
+		entries: &impl super::region::cache::methods::EntryProgram,
+	) -> Root {
+		let guard = super::region::cache::checkout_for_test(code).expect("loaded header");
+		let regions = guard.program().regions();
+		assert_eq!(regions.function(0).first().unwrap().0, 0);
+		self.invoke_args::<true, false, true, false, _>(
+			code,
+			store,
+			0,
+			Args::Roots(args),
+			fuel,
+			Some(regions),
+			Some(entries),
+		)
+		.expect("frame-entry control completes")
+	}
 }
 
 #[cfg(test)]

@@ -733,6 +733,59 @@ fn child_invalid_exit() {
 	println!("P2INVALID\tinjected 1: fallback equal, region Poisoned, entries 0 afterwards, invalid_exits=1 (stderr line above)");
 }
 
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "Miri: executes generated machine code in a child process"
+)]
+fn p2_frame_entry_resuming_at_header_skips_it_once() {
+	run_child("child_frame_entry_resume");
+}
+
+#[test]
+#[ignore = "P2 native worker: run by its parent test in a child process"]
+fn child_frame_entry_resume() {
+	use cache::methods::{Entry, EntryProgram};
+	struct AtHeader;
+	impl EntryProgram for AtHeader {
+		const METHODS: bool = false;
+		fn entry(&self, function: u32) -> Option<Entry<'_>> {
+			assert_eq!(function, 0);
+			Some(Entry::ResumeAtHeader(0))
+		}
+	}
+
+	require_child();
+	execution();
+	let code = header_at_pc0();
+	assert_eq!(cache::prepare(&code).unwrap().loaded, 1);
+	// Inject only the activation exit. With zero trips, the interpreter
+	// must run the resumed header itself. A later backedge can enter it.
+	for (limit, expected_entries) in [(0, 0), (3, 1)] {
+		let mut s = store();
+		let n = s.root_i64(limit);
+		let i = s.root_i64(0);
+		let before = totals(&code);
+		let mut executor = Executor::new().unwrap();
+		let result = executor.invoke_with_frame_entry_for_test(
+			&code,
+			&mut s,
+			&[&n, &i],
+			BIG_FUEL,
+			&AtHeader,
+		);
+		assert_eq!(
+			s.root_scalar(&result).unwrap(),
+			Some(crate::experimental_core::value::Scalar::I64(limit))
+		);
+		assert_eq!(minus(totals(&code), before).entries, expected_entries);
+		assert!(executor.is_idle());
+		s.root_release(result).unwrap();
+		s.root_release(i).unwrap();
+		s.root_release(n).unwrap();
+	}
+}
+
 // --------------------------------------------------- 7. pending cancel at header pc 0
 
 /// `fn(a, i) { while i < a { i += 1 } i }` with the header at pc 0.
@@ -766,6 +819,31 @@ fn on(executor: &mut Executor, code: &Code, args: &[i64]) -> (String, bool, usiz
 		),
 	};
 	(text, executor.is_idle(), s.live_entries())
+}
+
+#[test]
+#[cfg_attr(
+	miri,
+	ignore = "Miri: executes generated machine code in a child process"
+)]
+fn p2_fuel_exit_at_header_is_consumed_once() {
+	run_child("child_fuel_exit_resume");
+}
+
+#[test]
+#[ignore = "P2 native worker: run by its parent test in a child process"]
+fn child_fuel_exit_resume() {
+	require_child();
+	execution();
+	let code = header_at_pc0();
+	assert_eq!(cache::prepare(&code).unwrap().loaded, 1);
+	assert_eq!(counters(&code)[0].header, 0);
+	let args = [Arg::I(5), Arg::I(0)];
+	let reference = plain(&code, 0, &args, 1);
+	let before = totals(&code);
+	assert_eq!(native(&code, 0, &args, 1), reference);
+	let delta = minus(totals(&code), before);
+	assert_eq!((delta.entries, delta.exits[1]), (1, 1));
 }
 
 #[test]

@@ -6,6 +6,18 @@
         "file": "rune/crates/rune/src/experimental_core/execute.rs",
         "kind": "method",
         "receiver": "Executor",
+        "name": "invoke_args"
+      },
+      "baseline": "2df16832574d8011a5c8360a2ea56754d91623b1",
+      "old_sha256": "3ef5a2a221119e57ea9a6d47da116e85aa3fcdfa51a5b08d13b14f4228f9275e",
+      "new_sha256": "13cf89b0acc8d22d1a36d94025193ae9e0a65060865c4224912a0b375c1f8a36",
+      "adr": "plans/adr/0348_dispatch_cost_holds_under_unrelated_edits.md"
+    },
+    {
+      "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute.rs",
+        "kind": "method",
+        "receiver": "Executor",
         "name": "fixed_intrinsic"
       },
       "baseline": "e621f95870393feac95a4035b6ddafc2797b1e5f",
