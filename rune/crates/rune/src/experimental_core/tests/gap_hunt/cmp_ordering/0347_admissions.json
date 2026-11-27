@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "rows": [
+    {
+      "index": 205,
+      "label": "refusal/direct-provider-cmp",
+      "source_hex": "70756220666e206d61696e28297b7374643a3a6936343a3a636d7028312c32297d0a70756220666e2063395f726575736528297b377d",
+      "source_sha256": "3293bd8fb91313b9a7004c9616e87ad088cf88e514efc585e3c11d0f2393c3c4",
+      "legacy_policy": "Refused-surface",
+      "legacy_fresh_refusal": {
+        "status": "refused",
+        "kind": "Unsupported",
+        "operation": "Native",
+        "refusal": "Native",
+        "invoked": false,
+        "source": 0,
+        "start": 14,
+        "end": 32,
+        "span_hex": "7374643a3a6936343a3a636d7028312c3229"
+      },
+      "disposition": "Exact",
+      "stdout_hex": "0a72756e6e696e67203120746573740a",
+      "stderr_hex": ""
+    }
+  ]
+}

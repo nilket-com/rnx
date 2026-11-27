@@ -65,10 +65,7 @@ fn direct_chains_and_proved_cursors_are_admitted() {
 	] {
 		assert_eq!(refusal(source, &context), Some(Refusal::Arity), "{source}");
 	}
-	assert_eq!(
-		refusal("pub fn main(){let f=std::iter::range;f(0,1)}", &context),
-		Some(Refusal::Native)
-	);
+	assert!(compile("pub fn main(){let f=std::iter::range;f(0,1)}", &context).is_ok());
 	// A script `next` closes the adapter `next` and `for` certificate (C14b).
 	assert_eq!(
 		refusal(

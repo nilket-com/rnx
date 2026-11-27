@@ -33,7 +33,7 @@ fn default_modules_certify_every_adapter_and_consumer() {
 }
 
 #[test]
-fn only_direct_chains_with_known_function_values_are_admitted() {
+fn direct_chains_accept_stored_callbacks_and_check_known_arities() {
 	let context = Context::with_default_modules().unwrap();
 	for source in [
 		"pub fn main(){[1,2,3].iter().map(|x|x*2).filter(|x|x>2).count()}",
@@ -48,6 +48,10 @@ fn only_direct_chains_with_known_function_values_are_admitted() {
 		"pub fn main(){\"a b\".split(\" \").map(|s|s+s).collect::<Vec>()}",
 		"pub fn main(){let n=0;for (i,x) in [5].iter().enumerate(){n+=x;}n}",
 		"struct T(a) pub fn main(){[1].iter().map(T).count()}",
+		// The callback can be supplied by the caller or selected at run time.
+		"fn h(f){[1].iter().map(f).count()} pub fn main(){h(|x|x)}",
+		"pub fn main(){let f=|x|x;f=|x|x+1;[1].iter().map(f).count()}",
+		"pub fn main(){let o=#{f:|x|x};[1].iter().map(o.f).count()}",
 	] {
 		assert!(compile(source, &context).is_ok(), "{source}");
 	}
@@ -56,10 +60,6 @@ fn only_direct_chains_with_known_function_values_are_admitted() {
 		"pub fn main(){let it=[1].iter().map(|x|x);it.count()}",
 		"fn f(it){it.count()} pub fn main(){f([1].iter().map(|x|x))}",
 		"pub fn main(){[1].iter().chain([2].iter()).count()}",
-		// Function values whose parameter count is not known before they run.
-		"fn h(f){[1].iter().map(f).count()} pub fn main(){h(|x|x)}",
-		"pub fn main(){let f=|x|x;f=|x|x+1;[1].iter().map(f).count()}",
-		"pub fn main(){let o=#{f:|x|x};[1].iter().map(o.f).count()}",
 		"pub fn main(){[1].iter().map(5).count()}",
 		// `rev` outside its admitted shapes.
 		"pub fn main(x){x.iter().map(|y|y).rev().count()}",
@@ -84,12 +84,12 @@ fn only_direct_chains_with_known_function_values_are_admitted() {
 	] {
 		assert_eq!(refusal(source, &context), Some(Refusal::Arity), "{source}");
 	}
-	// `any` on a bare source stays the C12 small form, which takes any value.
-	assert!(compile("pub fn main(f){[1].iter().any(f)}", &context).is_ok());
-	assert_eq!(
-		refusal("pub fn main(f){[1].iter().skip(0).any(f)}", &context),
-		Some(Refusal::Method)
-	);
+	for source in [
+		"pub fn main(f){[1].iter().any(f)}",
+		"pub fn main(f){[1].iter().skip(0).any(f)}",
+	] {
+		assert!(compile(source, &context).is_ok(), "{source}");
+	}
 }
 
 /// A rival registration at a C17e provider hash either fails or leaves the

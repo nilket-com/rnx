@@ -1,0 +1,855 @@
+{
+  "rule": "ADR 0347 compares newly callable host paths with live stock and binds the prior disposition.",
+  "rows": [
+    {
+      "index": 5,
+      "legacy": {
+        "stock_canonical_sha256": "4abd7febf6e733a3990823e6113232824e6bdfcb01e1ae125c1498840190de74",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:137, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 5,
+        "source_sha256": "87a16a6cf17ad4845354db6ca8a16bf9d654314a8ff35c1ff7bb89b290da792f",
+        "label": "surface/some"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 6,
+      "legacy": {
+        "stock_canonical_sha256": "16034c91130f25fcf1d9397625448252ba883cb34360e498c46ed175d16d0594",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:135, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 6,
+        "source_sha256": "4d59ff9590d159205838a923c181b69b238990b3cf75d0fd3d7ca6d015acf817",
+        "label": "surface/ok"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 7,
+      "legacy": {
+        "stock_canonical_sha256": "6b5f96677d2c607cf152fc6c07170f845604cd70798c4376464b8918912fd66a",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 136,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 136 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 136,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 136 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:136, kind: HostNotEnrolled { item: ::std::result::Result::Err } }) })]",
+        "index": 7,
+        "source_sha256": "88713b388c96260e77ea11086a29991919f843b5675dcab5638973941fa1fddf",
+        "label": "surface/err"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 37,
+      "legacy": {
+        "stock_canonical_sha256": "d76ceb7e04696549fbb5024fd73aedfa320f7fd15757e997650c32a829e29d3d",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:137, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 37,
+        "source_sha256": "42cc1e11ff51172ee9915619c6ab521b1b4d119bf9023d9e5ce93e4070b25497",
+        "label": "alias/Some"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 38,
+      "legacy": {
+        "stock_canonical_sha256": "4abd7febf6e733a3990823e6113232824e6bdfcb01e1ae125c1498840190de74",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 154,
+            "source": 0,
+            "start": 150
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 150, end: 154 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 154,
+            "source": 0,
+            "start": 150
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 150, end: 154 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 150:154, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 38,
+        "source_sha256": "21636f7d5b89d2ad33906a06aca0bc2a9662b78c0c3ea28d7f00baf74a1cba8f",
+        "label": "callback/Some"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 39,
+      "legacy": {
+        "stock_canonical_sha256": "4abd7febf6e733a3990823e6113232824e6bdfcb01e1ae125c1498840190de74",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 127,
+            "source": 0,
+            "start": 123
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 123, end: 127 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 127,
+            "source": 0,
+            "start": 123
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 123, end: 127 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 123:127, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 39,
+        "source_sha256": "81120e3a408e4fae3b653c00a9a30afcb88010ce56697db4eacc7c81b6e85798",
+        "label": "returned/Some"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 40,
+      "legacy": {
+        "stock_canonical_sha256": "4abd7febf6e733a3990823e6113232824e6bdfcb01e1ae125c1498840190de74",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 139,
+            "source": 0,
+            "start": 135
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 135, end: 139 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 139,
+            "source": 0,
+            "start": 135
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 135, end: 139 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 135:139, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 40,
+        "source_sha256": "2300e11f8eb0a3ef375d75785b601a2e5a176cdc7f62350c5b30ffc19773e63b",
+        "label": "vector/Some"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 41,
+      "legacy": {
+        "stock_canonical_sha256": "4abd7febf6e733a3990823e6113232824e6bdfcb01e1ae125c1498840190de74",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:137, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 41,
+        "source_sha256": "e3ee3647fa7b562342542a8a05d5fbb0aa6c64905aae910ed6c4bbc04781e5f3",
+        "label": "capture/Some"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 42,
+      "legacy": {
+        "stock_canonical_sha256": "75cc314bb52abbb072dda4988cab6bd9c349b77834b82e66e4475863a1a12ca4",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:135, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 42,
+        "source_sha256": "4d6570c258c6efc607e4ff0d4e8408477a23d8c39f89d87237052f4b6aab0d27",
+        "label": "alias/Ok"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 43,
+      "legacy": {
+        "stock_canonical_sha256": "16034c91130f25fcf1d9397625448252ba883cb34360e498c46ed175d16d0594",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 152,
+            "source": 0,
+            "start": 150
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 150, end: 152 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 152,
+            "source": 0,
+            "start": 150
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 150, end: 152 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 150:152, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 43,
+        "source_sha256": "3c744103e262982be68982cf7a74afacec778bc729ff0189c3f0058c2f1a0e43",
+        "label": "callback/Ok"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 44,
+      "legacy": {
+        "stock_canonical_sha256": "16034c91130f25fcf1d9397625448252ba883cb34360e498c46ed175d16d0594",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 125,
+            "source": 0,
+            "start": 123
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 123, end: 125 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 125,
+            "source": 0,
+            "start": 123
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 123, end: 125 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 123:125, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 44,
+        "source_sha256": "c15b45eef8992a444295265ee20f9ad84c7a08e563f36a945235163ee9e82f8e",
+        "label": "returned/Ok"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 45,
+      "legacy": {
+        "stock_canonical_sha256": "16034c91130f25fcf1d9397625448252ba883cb34360e498c46ed175d16d0594",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 135
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 135, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 135
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 135, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 135:137, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 45,
+        "source_sha256": "5a89beda6fcc1815954831fc14553c7257cd98539e80f58db38d0e2c2966a814",
+        "label": "vector/Ok"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 46,
+      "legacy": {
+        "stock_canonical_sha256": "16034c91130f25fcf1d9397625448252ba883cb34360e498c46ed175d16d0594",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:135, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 46,
+        "source_sha256": "48e3aa2b336932531e8b7719791e26db4d261198a716f41cc564d4e71939a869",
+        "label": "capture/Ok"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 47,
+      "legacy": {
+        "stock_canonical_sha256": "983a5d87425de5d6e0d86975bc1a68235cb79f4842746106e46696d408543db4",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 136,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 136 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 136,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 136 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:136, kind: HostNotEnrolled { item: ::std::result::Result::Err } }) })]",
+        "index": 47,
+        "source_sha256": "f7c7cbe678475f97bc0f44cb083945b03416b61db60f221cbeab27605e605198",
+        "label": "alias/Err"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 48,
+      "legacy": {
+        "stock_canonical_sha256": "6b5f96677d2c607cf152fc6c07170f845604cd70798c4376464b8918912fd66a",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 153,
+            "source": 0,
+            "start": 150
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 150, end: 153 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 153,
+            "source": 0,
+            "start": 150
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 150, end: 153 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 150:153, kind: HostNotEnrolled { item: ::std::result::Result::Err } }) })]",
+        "index": 48,
+        "source_sha256": "f1e0a12f0221088d38d7d7025b8fc700bf3b071d64fd3e98b67c27ef7c654c17",
+        "label": "callback/Err"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 49,
+      "legacy": {
+        "stock_canonical_sha256": "6b5f96677d2c607cf152fc6c07170f845604cd70798c4376464b8918912fd66a",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 126,
+            "source": 0,
+            "start": 123
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 123, end: 126 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 126,
+            "source": 0,
+            "start": 123
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 123, end: 126 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 123:126, kind: HostNotEnrolled { item: ::std::result::Result::Err } }) })]",
+        "index": 49,
+        "source_sha256": "5e9f126618fd92895b6395c7e1505c9c968e160dc38c485e2a603e153b86e932",
+        "label": "returned/Err"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 50,
+      "legacy": {
+        "stock_canonical_sha256": "6b5f96677d2c607cf152fc6c07170f845604cd70798c4376464b8918912fd66a",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 138,
+            "source": 0,
+            "start": 135
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 135, end: 138 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 138,
+            "source": 0,
+            "start": 135
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 135, end: 138 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 135:138, kind: HostNotEnrolled { item: ::std::result::Result::Err } }) })]",
+        "index": 50,
+        "source_sha256": "ee47607f874d48a95ce191b9bca92e0de7f9d1699271a8ac44176ce8408ec6d1",
+        "label": "vector/Err"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 51,
+      "legacy": {
+        "stock_canonical_sha256": "6b5f96677d2c607cf152fc6c07170f845604cd70798c4376464b8918912fd66a",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 136,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 136 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 136,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 136 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:136, kind: HostNotEnrolled { item: ::std::result::Result::Err } }) })]",
+        "index": 51,
+        "source_sha256": "330fe636e5e7c37137d5a5963379f0551b54b6875f968e7106fc6018dabdb63d",
+        "label": "capture/Err"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 77,
+      "legacy": {
+        "stock_canonical_sha256": "e0388f9f35b83ce61d4c52d4797e338ed2708dc933effd4475e03253ab300639",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:137, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 77,
+        "source_sha256": "32f42f9c5aba6462e48c71422cfabc3b8fbe5be06d29ee2baa3deae2158f2061",
+        "label": "arity/Some/0"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 78,
+      "legacy": {
+        "stock_canonical_sha256": "6df912dc1425860e40c6c7570e3ea37555e33214fbcf156007f3bfc55c8fd06e",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:137, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 78,
+        "source_sha256": "b1ef52d1cc924db2757f36c2bdba4a3f8085a42ac95be3a4b87abaa95c3d326b",
+        "label": "arity/Some/2"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 79,
+      "legacy": {
+        "stock_canonical_sha256": "680e0084a6777347f5eb6a62eb6aa6c93423ab90762e782387a56601cbc34595",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 137,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 137 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:137, kind: HostNotEnrolled { item: ::std::option::Option::Some } }) })]",
+        "index": 79,
+        "source_sha256": "638866bdcdf68f8c4b6344b6ad4794babfbcf0fa34744fd08ee9bc12ef955994",
+        "label": "arity/Some/3"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 80,
+      "legacy": {
+        "stock_canonical_sha256": "2c7b02d51bb473c5d90cf252171423ed190a7ff6b1848eaf5167e75cf3cb192e",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:135, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 80,
+        "source_sha256": "ecd078ef2114c64da045c16416cb241b413abb1dc9f4e73353e48e4a58fc1374",
+        "label": "arity/Ok/0"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 81,
+      "legacy": {
+        "stock_canonical_sha256": "0160a08510e801ed67601fb7b01f0355b84f1ba4f21bd7aa996ae923e2138f8e",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:135, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 81,
+        "source_sha256": "3c628228836a78acafdafa2d2f4819d758675ee0cafcac162bdd2f3ea69cddd9",
+        "label": "arity/Ok/2"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 82,
+      "legacy": {
+        "stock_canonical_sha256": "33f6d27c4fbb8dc08b60ce0fa4003c3020a529505702b7348f4c276c820d0807",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 135,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 135 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:135, kind: HostNotEnrolled { item: ::std::result::Result::Ok } }) })]",
+        "index": 82,
+        "source_sha256": "55cb1f7406b324334f7fbc4e9fb0219d29b6be7eae84a05159d078821898ba01",
+        "label": "arity/Ok/3"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 85,
+      "legacy": {
+        "stock_canonical_sha256": "45a2a4c747b8bbcc8e2ea9ff599a746649253be3c2f51b13640f3faa431a7cdf",
+        "classification": "Inherited-refusal",
+        "before": {
+          "location": {
+            "end": 146,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 146 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "fresh": {
+          "location": {
+            "end": 146,
+            "source": 0,
+            "start": 133
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 133, end: 146 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "before_diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 133:146, kind: HostNotEnrolled { item: ::std::i64::abs } }) })]",
+        "index": 85,
+        "source_sha256": "b790045be7834f5fb071e62e89114e08ffdceaa7f2921d5f269f76dab5790355",
+        "label": "control/native"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

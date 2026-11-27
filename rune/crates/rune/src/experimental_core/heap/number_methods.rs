@@ -90,6 +90,31 @@ impl Store {
 		)
 	}
 
+	pub(crate) fn qualified_cmp(&self, tag: Type, lhs: Value, rhs: Value) -> Result<Value> {
+		let operand = match tag {
+			Type::I64 => Operand::I64,
+			Type::U64 => Operand::U64,
+			Type::F64 => Operand::F64,
+			Type::String => {
+				if self.diagnostic_type(lhs) != Some(TypeName::String) {
+					return Err(err(ErrorKind::Type).with_detail(Detail::ExpectedType {
+						expected: TypeName::String,
+						found: self.number_type(lhs)?,
+					}));
+				}
+				return self.method_cmp(lhs, rhs);
+			}
+			_ => return Err(err(ErrorKind::InvalidCode)),
+		};
+		let receiver = match self.number_operand(lhs, operand, 0)? {
+			Number::I64(n) => Value::I64(n),
+			Number::U64(n) => Value::U64(n),
+			Number::F64(n) => Value::F64(n),
+			_ => return Err(err(ErrorKind::InvalidCode)),
+		};
+		self.method_cmp(receiver, rhs)
+	}
+
 	fn number_option(&mut self, value: Option<Value>) -> Result<Value> {
 		self.variant(Type::Option, value.is_some(), value)
 	}

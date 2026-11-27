@@ -32,6 +32,22 @@ impl Lower<'_, '_> {
 		false
 	}
 
+	pub(super) fn own_callback(&mut self, slot: u32, arg: u8, span: Span) -> Result<u32> {
+		let out = self.slot()?;
+		let index = self.field_index(usize::from(arg), span)?;
+		let (args_start, args_len) = self.function.arguments(&[slot, index])?;
+		self.emit(
+			Op::Call {
+				out,
+				function: super::super::code::OWN_CALLBACK,
+				args_start,
+				args_len,
+			},
+			span,
+		)?;
+		Ok(out)
+	}
+
 	fn callback_check(
 		&mut self,
 		check: Operation,
@@ -66,6 +82,7 @@ impl Lower<'_, '_> {
 		};
 		let success = self.slot()?;
 		self.callback_check(Operation::CheckCallback, values, success, span)?;
+		let function = self.own_callback(function, 1, span)?;
 		let index = self.field_index(0, span)?;
 		let payload = self.slot()?;
 		self.emit(

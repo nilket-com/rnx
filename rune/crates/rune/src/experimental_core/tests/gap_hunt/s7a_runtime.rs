@@ -27,6 +27,11 @@ fn legacy_typed(kind: &crate::runtime::VmErrorKind) -> Json {
 fn typed(error: &crate::experimental_core::error::Error) -> Json {
 	use crate::experimental_core::error::{Detail, ErrorKind, MovedAccess};
 	match error.detail {
+		Detail::NumericArgumentType {
+			expected, found, ..
+		} if error.kind == ErrorKind::Type => {
+			json!({"tag":"ExpectedType","expected":expected.builtin_hash().unwrap().to_string(),"actual":found.builtin_hash().unwrap().to_string()})
+		}
 		Detail::NoDisplay { found } if error.kind == ErrorKind::Type => {
 			json!({"tag":"MissingProtocolFunction","protocol":crate::runtime::Protocol::DISPLAY_FMT.hash.to_string(),"instance":found.builtin_hash().unwrap().to_string()})
 		}
@@ -186,6 +191,9 @@ fn observe(source: &str, mode: &str) -> (Json, Json) {
 						_ => "UNMAPPED",
 					};
 					let chain = match failure.error.detail {
+						Detail::NumericArgumentType { arg, .. } => vec![
+							json!({"kind":format!("BadArgument {{ arg: {arg} }}"),"display":format!("Bad argument #{arg}")}),
+						],
 						Detail::FormatArgumentMoved { arg, .. } => vec![
 							json!({"kind":"execution formatter argument","display":format!("Bad argument #{arg}")}),
 						],

@@ -1,6 +1,31 @@
 {
   "schema": 2,
-  "source_transitions": [],
+  "source_transitions": [
+    {
+      "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute.rs",
+        "kind": "method",
+        "receiver": "Executor",
+        "name": "fixed_intrinsic"
+      },
+      "baseline": "e621f95870393feac95a4035b6ddafc2797b1e5f",
+      "old_sha256": "64265c3f78592d39ac5503da5aab17d8d88fa0dc8fea42bb48ea710b17c777ec",
+      "new_sha256": "ea656353f127000eff91976b84199a502804e4f0e2b57bf7c112cb4de6f8196f",
+      "adr": "plans/adr/0347_host_functions_run_by_path_and_as_values.md"
+    },
+    {
+      "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute.rs",
+        "kind": "method",
+        "receiver": "Executor",
+        "name": "call_closure"
+      },
+      "baseline": "e621f95870393feac95a4035b6ddafc2797b1e5f",
+      "old_sha256": "d69ef975d0029dbb5535604fc267ff0d2084262acb5a610f593f663b5e9d4c4f",
+      "new_sha256": "37ee734a2d9e06720751c802d07c3bf40c3a10b42490de55c5f31cceecdcd14f",
+      "adr": "plans/adr/0347_host_functions_run_by_path_and_as_values.md"
+    }
+  ],
   "meter": {"version":1,"hash_keys":[0,0],"epoch_ns":1000000000000,"tick_ns":1000},
   "relative_relocations": {
     "version": 2,

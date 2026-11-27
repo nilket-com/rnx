@@ -1,0 +1,40 @@
+{
+  "rule": "ADR 0347 compares newly callable host paths with live stock and binds the prior disposition.",
+  "rows": [
+    {
+      "index": 558,
+      "legacy": {
+        "stock_row_sha256": "66b0aa07c7f27eb702301e0d10d842fc6773457cca427601ab796853e67db4bb",
+        "fresh": {
+          "location": {
+            "end": 86,
+            "source": 0,
+            "start": 70
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 70, end: 86 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 70:86, kind: HostNotEnrolled { item: ::std::iter::range } }) })]",
+        "classification": "Inherited-refusal",
+        "index": 558,
+        "source_sha256": "5eef3149eeca2ef9ba508d6f7033b39fc9d71ffebab26643048b3a30773cf8c9",
+        "label": "compile/range-fn-value"
+      },
+      "admitted": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 101,
+            "source": 0,
+            "start": 87
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 87, end: 101 }), operation: \"Method\", refusal: Some(Method), detail: None }",
+          "refusal": "Method",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 87:101, kind: Custom { error: \"Method\" } }) })]"
+      }
+    }
+  ]
+}

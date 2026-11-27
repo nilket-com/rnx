@@ -670,6 +670,15 @@ impl Collector {
 						}
 						return Err(Error::refused(refusal).at(at));
 					}
+					super::lower::Resolve::HostCallable(body) => {
+						if entries.len() >= 65_536 {
+							return Err(Error::refused(Refusal::CodeLimit).at(at));
+						}
+						let function = body.function()?;
+						let id = entries.len() as u32;
+						entries.try_push((Hash::EMPTY, Some(function), None))?;
+						return Ok(id);
+					}
 					super::lower::Resolve::NativeMethod { hash, body } => {
 						if let Some(&id) = native_helpers.get(&hash) {
 							return Ok(id);
@@ -719,6 +728,7 @@ impl Collector {
 							| super::lower::Resolve::AsyncBlockValue { .. }
 							| super::lower::Resolve::RetainedAsyncMove { .. }
 							| super::lower::Resolve::NativeMethod { .. }
+							| super::lower::Resolve::HostCallable { .. }
 							| super::lower::Resolve::Constructor { .. } => unreachable!(),
 						};
 						if let Some(id) = *cache {
@@ -737,6 +747,7 @@ impl Collector {
 							| super::lower::Resolve::AsyncBlockValue { .. }
 							| super::lower::Resolve::RetainedAsyncMove { .. }
 							| super::lower::Resolve::NativeMethod { .. }
+							| super::lower::Resolve::HostCallable { .. }
 							| super::lower::Resolve::Constructor { .. } => unreachable!(),
 						};
 						entries.try_push((Hash::EMPTY, Some(function), None))?;
@@ -823,6 +834,9 @@ impl Collector {
 			"unresolved receiver site at sealing"
 		);
 		let mut entry_ineligible = self.proof_entries;
+		for &id in self.transaction.callable_ids.values() {
+			entry_ineligible.try_push(id)?;
+		}
 		// A guessed adapter ID cannot bypass its call site's fill proof.
 		if let Some(&id) = self.native_helpers.get(&crate::function::clone::RESIZE) {
 			entry_ineligible.try_push(id)?;
@@ -1248,3 +1262,6 @@ mod string_builder_tests;
 
 #[cfg(test)]
 mod vector_sort_and_held;
+
+#[cfg(test)]
+mod host_callable_tests;

@@ -132,7 +132,7 @@
 			"name": "0185-s7-step0-sort-direct-unit",
 			"source": "pub fn main(){std::vec::Vec::sort_by((),|a,b|a.cmp(b));0}\n",
 			"source_sha256": "962a48a21a9fc4f44e5f6ac05b62fa17c91c34f399601c6e3b97dcca7c0e922a",
-			"policy": "Compile-refused Native"
+			"policy": "Stock-exact"
 		},
 		{
 			"name": "0185-s7-step0-format-moved",

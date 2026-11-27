@@ -247,6 +247,10 @@ crate::declare_dyn_fn! {
 
 #[cfg(feature = "execution")]
 impl FunctionHandler {
+	pub(crate) fn debug_identity(&self) -> usize {
+		self.ptr.as_ptr() as usize
+	}
+
 	pub(crate) fn same_allocation(&self, other: &Self) -> bool {
 		self.ptr == other.ptr && core::ptr::eq(self.vtable, other.vtable)
 	}

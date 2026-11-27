@@ -101,6 +101,7 @@ fn verify_case(
 	let rule = &super::object_order::admitted(include_str!("0336_admissions.json"), rule);
 	let rule = &super::object_order::admitted(include_str!("0337_method_refusals.json"), rule);
 	let rule = &super::object_order::admitted(include_str!("0344_admissions.json"), rule);
+	let rule = &super::object_order::admitted(include_str!("0347_admissions.json"), rule);
 	assert_eq!(rule["index"], index);
 	assert_eq!(rule["label"], case["label"]);
 	assert_eq!(rule["source_sha256"], case["source_sha256"]);
@@ -194,6 +195,9 @@ fn verify_case(
 			// Stock moves a function value passed to an adapter or consumer, so a
 			// later use fails; new function values are copies.
 			assert_eq!(case["row_class"], "function-move");
+			if let Some(pinned) = rule.get("stock_outcome") {
+				assert_eq!(&s["outcome"], pinned);
+			}
 			crate::experimental_core::tests::gap_hunt::compare_runtime_policy(
 				&execution,
 				&expected,

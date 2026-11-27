@@ -97,6 +97,9 @@ impl Lower<'_, '_> {
 		}
 		let count = usize::from(target.is_some()) + call.args.len();
 		if count != op.arity() as usize {
+			if target.is_none() {
+				return self.host_count_error(call, out, span);
+			}
 			return Err(self.refused(span, Refusal::Arity));
 		}
 		let mut ids = Vec::try_with_capacity(count)?;

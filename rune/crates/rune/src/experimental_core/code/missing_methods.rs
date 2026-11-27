@@ -211,7 +211,7 @@ impl Code {
 		runtime: Option<&crate::runtime::RuntimeContext>,
 	) -> Result<()> {
 		if let Some(runtime) = runtime {
-			for hash in &self.absent {
+			for hash in self.absent.iter() {
 				if runtime.function(hash).is_some() {
 					return Err(invalid());
 				}

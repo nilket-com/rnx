@@ -122,7 +122,7 @@ fn cold_and_ordinary_preflight_keep_the_same_validation_order() {
 	let code = include_str!("../code.rs");
 	let validator = code.split("fn validate_hosts(").nth(1).unwrap();
 	let original_loop = validator
-		.split("for binding in &self.hosts {")
+		.split("for binding in self.hosts.iter() {")
 		.nth(1)
 		.unwrap();
 	let original_loop = original_loop

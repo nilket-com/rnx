@@ -27,7 +27,9 @@ impl Store {
 				Ok(None)
 			}
 			Value::Heap(handle) => {
-				if let Some(Payload::Closure { code, .. }) = &self.entry(handle)?.payload {
+				if let Some(Payload::Closure { code, .. } | Payload::HostFunction { code, .. }) =
+					&self.entry(handle)?.payload
+				{
 					missing.remove(code);
 				}
 				Ok(Some(handle))

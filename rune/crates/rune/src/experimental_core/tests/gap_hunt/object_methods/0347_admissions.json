@@ -1,0 +1,120 @@
+{
+  "rule": "ADR 0347 compares newly callable host paths with live stock and binds the prior disposition.",
+  "rows": [
+    {
+      "index": 174,
+      "legacy": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 87,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 87 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:87, kind: HostNotEnrolled { item: ::std::object::Object::get } }) })]",
+        "index": 174,
+        "source_sha256": "4d082e97e50d219f8d908afd39005730d1bab0112749bc96ee7ce1a657739b11",
+        "label": "compile/path-get"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 175,
+      "legacy": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 98,
+            "source": 0,
+            "start": 75
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 75, end: 98 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 75:98, kind: HostNotEnrolled { item: ::std::object::Object::insert } }) })]",
+        "index": 175,
+        "source_sha256": "7cce968fe3c176c0d167157f4e360cd061be11a8548fc015a39a2c8de94adc6c",
+        "label": "compile/path-insert"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 176,
+      "legacy": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 109,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 109 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:109, kind: HostNotEnrolled { item: ::std::object::Object::contains_key } }) })]",
+        "index": 176,
+        "source_sha256": "bafe5e00d31e29f6ce281bc01b68c690c597446548ceb97a0ccf162bfecd35ed",
+        "label": "compile/path-full"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 177,
+      "legacy": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 84,
+            "source": 0,
+            "start": 64
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 64, end: 84 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 64:84, kind: HostNotEnrolled { item: ::std::object::Object::get } }) })]",
+        "index": 177,
+        "source_sha256": "d4dcbc69195e470808091fd123f972c6d6c049bacbdf8fd0e0ae1b9bd7ad0259",
+        "label": "compile/path-wrong-type"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    },
+    {
+      "index": 178,
+      "legacy": {
+        "classification": "Inherited-refusal",
+        "fresh": {
+          "location": {
+            "end": 81,
+            "source": 0,
+            "start": 70
+          },
+          "raw": "Error { kind: Unsupported, location: Some(Location { source: 0, revision: 16, start: 70, end: 81 }), operation: \"Native\", refusal: Some(Native), detail: None }",
+          "refusal": "Native",
+          "status": "refused"
+        },
+        "diagnostics": "[Fatal(FatalDiagnostic { source_id: 0, kind: CompileError(Error { span: 70:81, kind: HostNotEnrolled { item: ::std::object::Object::get } }) })]",
+        "index": 178,
+        "source_sha256": "aef6dfbc26cf36155dd8583d5d0bc430e527dab172e51626085ef7a74f14384c",
+        "label": "compile/fn-value-path"
+      },
+      "admitted": {
+        "classification": "Exact"
+      }
+    }
+  ]
+}

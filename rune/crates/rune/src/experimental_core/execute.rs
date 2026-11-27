@@ -1120,6 +1120,74 @@ impl Executor {
 		let invalid = || error(ErrorKind::InvalidCode);
 
 		let certificate = code.intrinsic(id).ok_or_else(invalid)?;
+		if id == super::code::OWN_CALLBACK {
+			let end = args_start.checked_add(args_len).ok_or_else(invalid)?;
+			let [value, index] = function
+				.args
+				.get(args_start as usize..end as usize)
+				.ok_or_else(invalid)?
+			else {
+				return Err(invalid());
+			};
+			let read = |slot: u32| {
+				self.slots
+					.get(base.checked_add(slot as usize).ok_or_else(invalid)?)
+					.copied()
+					.ok_or_else(invalid)
+			};
+			let Value::I64(arg @ (1 | 2)) = read(*index)? else {
+				return Err(invalid());
+			};
+			let value = store.own_callback(read(*value)?, arg as u8)?;
+			return self.put(
+				store,
+				base.checked_add(out as usize).ok_or_else(invalid)?,
+				value,
+			);
+		}
+		if id == super::code::QUALIFIED_CMP {
+			if args_len != 3 {
+				return Err(invalid());
+			}
+			let end = args_start.checked_add(3).ok_or_else(invalid)?;
+			let indices = function
+				.args
+				.get(args_start as usize..end as usize)
+				.ok_or_else(invalid)?;
+			let read = |i: usize| {
+				self.slots
+					.get(base.checked_add(indices[i] as usize).ok_or_else(invalid)?)
+					.copied()
+					.ok_or_else(invalid)
+			};
+			let Value::Type(tag) = read(2)? else {
+				return Err(invalid());
+			};
+			let result = store.qualified_cmp(tag, read(0)?, read(1)?)?;
+			return self.put(
+				store,
+				base.checked_add(out as usize).ok_or_else(invalid)?,
+				result,
+			);
+		}
+		if id == super::code::HOST_FUNCTION_CREATE {
+			if args_len != 1 {
+				return Err(invalid());
+			}
+			let slot = *function.args.get(args_start as usize).ok_or_else(invalid)?;
+			let index = base.checked_add(slot as usize).ok_or_else(invalid)?;
+			let Some(&Value::U64(id)) = self.slots.get(index) else {
+				return Err(invalid());
+			};
+			let id = u32::try_from(id).map_err(|_| invalid())?;
+			let descriptor = code.host_callable(id).ok_or_else(invalid)?;
+			let value = store.host_function(code.id(), id, descriptor)?;
+			return self.put(
+				store,
+				base.checked_add(out as usize).ok_or_else(invalid)?,
+				value,
+			);
+		}
 		if id == super::code::CLOSURE_CREATE {
 			if args_len != certificate.arity {
 				return Err(invalid());
@@ -2247,6 +2315,43 @@ impl Executor {
 		)
 	}
 
+	#[cold]
+	fn check_host_arguments(
+		&self,
+		store: &Store,
+		function: &super::code::Function,
+		base: usize,
+		start: u32,
+		len: u32,
+		expected: u32,
+		receiver: Option<TypeName>,
+	) -> Result<()> {
+		if len != expected {
+			return Err(error(ErrorKind::ArgumentCount).with_detail(Detail::Arity {
+				given: len,
+				expected,
+			}));
+		}
+		if let Some(expected) = receiver {
+			let invalid = || error(ErrorKind::InvalidCode);
+			let slot = *function.args.get(start as usize).ok_or_else(invalid)?;
+			let index = base.checked_add(slot as usize).ok_or_else(invalid)?;
+			let value = *self.slots.get(index).ok_or_else(invalid)?;
+			let found = store.diagnostic_type(value).ok_or_else(invalid)?;
+			if found != expected && !(found == TypeName::Unit && expected == TypeName::Tuple) {
+				return Err(
+					error(ErrorKind::Type).with_detail(Detail::NumericArgumentType {
+						cause: super::error::HostCause::ExpectedType,
+						arg: 0,
+						expected,
+						found,
+					}),
+				);
+			}
+		}
+		Ok(())
+	}
+
 	/// Validate and enter a capturing closure on the cold path. The ordinary
 	/// `CallValue` arm and its shared call setup retain their original shape.
 	#[cold]
@@ -2265,9 +2370,27 @@ impl Executor {
 		args_start: u32,
 		args_len: u32,
 	) -> core::result::Result<(), CallSetupFailure> {
-		let (owner, callee, captures) = store.closure_parts(closure)?;
+		let (owner, callee, captures, callable) = store.callable_parts(closure)?;
 		if owner != code.id() {
 			return Err(error(ErrorKind::Type).into());
+		}
+		if callable.is_some() {
+			// The descriptor carries no script captures. Use the same checked
+			// host call entry as sliced execution, with a single program owner.
+			return self.sliced_call_value(
+				code,
+				store,
+				function,
+				base,
+				frame_index,
+				pc,
+				source_pc,
+				out,
+				closure,
+				args_start,
+				args_len,
+				&mut None,
+			);
 		}
 		let target = code
 			.function(callee)

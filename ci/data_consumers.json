@@ -429,6 +429,15 @@
       "max_bytes": 57344,
       "reason": "ADR 0279 source-bound current rules for 25 function-value rows; the contract verifies the complete replaced disposition and full named HostNotEnrolled diagnostic. Historical observations remain unchanged."
     },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/contract.rs"
+      },
+      "reason": "The function_values contract verifies ADR 0347 changes against the previous disposition and live stock.",
+      "max_bytes": 34308
+    },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/function_values/cases.json": {
       "class": "live-fixture",
       "consumer": {
@@ -464,6 +473,15 @@
       },
       "max_bytes": 32516,
       "reason": "The iterator adapter contract checks the prior and current refusal diagnostics for each affected source."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/contract.rs"
+      },
+      "max_bytes": 46553,
+      "reason": "The iterator adapter contract compares newly admitted callbacks with live stock and checks the two inherited script function copy differences."
     },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_adapters/cases.json": {
       "class": "live-fixture",
@@ -509,6 +527,15 @@
       },
       "max_bytes": 30143,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_terminals/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_terminals/contract.rs"
+      },
+      "reason": "The iter_terminals contract verifies ADR 0347 changes against the previous disposition and live stock.",
+      "max_bytes": 1636
     },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/iter_terminals/cases.json": {
       "class": "live-fixture",
@@ -619,6 +646,15 @@
       "max_bytes": 34614,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
     },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/numeric_methods/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/numeric_methods/contract.rs"
+      },
+      "reason": "The numeric_methods contract verifies ADR 0347 changes against the previous disposition and live stock.",
+      "max_bytes": 4926
+    },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/numeric_methods/cases.json": {
       "class": "live-fixture",
       "consumer": {
@@ -663,6 +699,15 @@
       },
       "max_bytes": 47192,
       "reason": "ADR 0277 live Object-method admissions and inherited diagnostic overlay consumed by the complete 242-row contract."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/contract.rs"
+      },
+      "reason": "The object_methods contract verifies ADR 0347 changes against the previous disposition and live stock.",
+      "max_bytes": 4521
     },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/object_methods/cases.json": {
       "class": "live-fixture",
@@ -717,6 +762,15 @@
       },
       "max_bytes": 41464,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
+    },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/option_methods/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/option_methods/contract.rs"
+      },
+      "reason": "The option_methods contract verifies ADR 0347 changes against the previous disposition and live stock.",
+      "max_bytes": 4044
     },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/option_methods/cases.json": {
       "class": "live-fixture",
@@ -916,6 +970,15 @@
       "max_bytes": 19394,
       "reason": "Core regression/admission fixture; used through include_str or gap-hunt tooling/preservation manifests; no deletion of coverage."
     },
+    "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/0347_admissions.json": {
+      "class": "live-fixture",
+      "consumer": {
+        "expression": "include_str!(\"0347_admissions.json\")",
+        "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/contract.rs"
+      },
+      "reason": "The wrong_arity contract verifies ADR 0347 changes against the previous disposition and live stock.",
+      "max_bytes": 79147
+    },
     "rune/crates/rune/src/experimental_core/tests/gap_hunt/wrong_arity/c18b3c_admissions.json": {
       "class": "live-fixture",
       "consumer": {
@@ -1076,8 +1139,8 @@
         "expression": "(root/'tools/column/fixed_route_policy.json').read_text()",
         "path": "tools/column/fixed_route_vectors.py"
       },
-      "max_bytes": 16823,
-      "reason": "Fixed-route measurement policy, reviewed setup references and host input identities. The observer reads it for every installed dispatch."
+      "max_bytes": 17730,
+      "reason": "Fixed-route measurement policy, reviewed setup references, host input identities and the two ADR 0347 source transitions. The observer reads it for every installed dispatch."
     },
     "tools/final/CONTROLS.txt": {
       "class": "source-configuration",

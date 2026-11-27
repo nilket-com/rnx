@@ -46,6 +46,15 @@ impl Store {
 			return Ok(value);
 		}
 		let payload = match self.payload(h)? {
+			&Payload::HostFunction {
+				code,
+				function,
+				descriptor,
+			} => Payload::HostFunction {
+				code,
+				function,
+				descriptor,
+			},
 			Payload::String(text) => {
 				self.clone_room(start, scratch, text.len())?;
 				Payload::String(String::try_from(text.as_str())?)

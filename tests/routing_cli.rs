@@ -209,7 +209,12 @@ fn cases() -> Result<Vec<Case>> {
 	});
 	for (name, body, budget) in [
 		("admitted", "let a=[];a.push(a);a", 2_000_000),
-		("refused", "time::from_parts(#{})", 2_000_000),
+		("admitted-arity-error", "time::from_parts(#{})", 2_000_000),
+		(
+			"refused",
+			r#"println!("once");let _join=std::future::join;42"#,
+			2_000_000,
+		),
 		// E1's live edge oracle: legacy reaches Panic at remaining=0,
 		// execution reaches the same Panic with remaining work. The CLI
 		// differs only by legacy's exhausted-budget annotation.
@@ -424,6 +429,7 @@ fn compare(case: &Case, dir: &Path, cache: &Path, native: bool) -> Result<Value>
 		|| matches!(
 			case.id.as_str(),
 			"control-admitted"
+				| "control-admitted-arity-error"
 				| "control-moved-nominal-std"
 				| "control-terminal"
 				| "control-budget-loop"

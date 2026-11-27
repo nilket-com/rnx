@@ -322,6 +322,7 @@ fn fresh_error(
 		) => ("ExpectedType", arg),
 		(K::Host, Detail::HostExpectedType { arg, .. }) => ("ExpectedType", arg),
 		(K::Host, Detail::HostExpectedNumber { arg, .. }) => ("ExpectedNumber", arg),
+		(K::ArgumentCount, Detail::Arity { .. }) => ("BadArgumentCount", None),
 		(K::FuelExhausted, _) => ("FuelExhausted", None),
 		(K::StoreCapacity, _) => ("StoreCapacity", None),
 		(K::InvalidCode, _) => ("InvalidCode", None),
@@ -343,7 +344,9 @@ fn fresh_error(
 		other => panic!("unreviewed fresh error projection: {other:?}"),
 	};
 	let mut result = json!({"status":"error","class":class,"primary":primary,"arg":arg,"message":message,"site":site,"frames":[]});
-	if matches!(primary, "ExpectedType" | "ExpectedNumber") {
+	if let Detail::Arity { given, expected } = f.error.detail {
+		result["captures"] = json!({"actual":given.to_string(),"expected":expected.to_string()});
+	} else if matches!(primary, "ExpectedType" | "ExpectedNumber") {
 		let chain = arg
 			.map(|n| vec![format!("Bad argument #{n}")])
 			.unwrap_or_default();
@@ -420,15 +423,10 @@ fn fresh(
 				&output.with_extension("raw-refusal.json"),
 				&json!({"error":format!("{e:?}")}),
 			);
-			assert_eq!(
-				row["policy"], "Retained-arity",
-				"unrelated compilation refusal"
+			panic!(
+				"unexpected compile refusal for enrollment row {}: {e:?}",
+				row["id"]
 			);
-			assert_eq!(
-				e.refusal,
-				Some(rune::experimental_core::error::Refusal::Arity)
-			);
-			return json!({"outcome":{"status":"refused","primary":"Arity"},"extra":null,"wall_before":0,"wall_after":0,"balance":true,"observer_fuel":0,"helper_checks":null});
 		}
 	};
 	let main = program.function(Hash::type_hash(["main"])).unwrap();
@@ -1176,19 +1174,10 @@ mod controller {
 		)?;
 		let mut fresh = Vec::new();
 		let mut exact = 0;
-		let mut arity = 0;
 		let mut resource = 0;
 		for (row, old) in rows.iter().zip(&stock) {
 			let got = runner.invoke(row, "fresh", "fresh", None)?;
 			match row["policy"].as_str().unwrap() {
-				"Retained-arity" => {
-					assert_eq!(got["observation"]["outcome"]["status"], "refused");
-					assert_eq!(got["observation"]["outcome"]["primary"], "Arity");
-					assert_eq!(got["stderr_hex"], "");
-					assert_eq!(got["record"]["initial_tree"], got["record"]["final_tree"]);
-					assert_eq!(old["observation"]["outcome"]["primary"], "BadArgumentCount");
-					arity += 1;
-				}
 				"Retained-resource" => {
 					assert_eq!(old["observation"]["outcome"]["status"], "value");
 					assert_eq!(got["observation"]["outcome"]["status"], "error");
@@ -1213,7 +1202,7 @@ mod controller {
 			}
 			fresh.push(got);
 		}
-		assert_eq!((exact, arity, resource), (107, 2, 1));
+		assert_eq!((exact, resource), (109, 1));
 		let controlrows: Vec<_> = corpus.iter().filter(|r| r["policy"] == "Control").collect();
 		assert_eq!(controlrows.len(), 5);
 		let mut controls = Vec::new();
@@ -1346,7 +1335,7 @@ mod controller {
 			&out.join("FRESH.json"),
 			&json!({"status":"PASS","records":fresh,"runtime_controls":controls,"frontier":frontier,"classifier_subjects":classifier_results}),
 		)?;
-		let summary = json!({"status":"PASS","stock_rows":110,"execution_rows":110,"exact_rows":exact,"retained_arity":arity,"retained_resource":resource,"runtime_controls":5,"helper_checks":helpers,"projection_checks":projections,"frontier_budgets":67,"first_success_budget":66,"classifier_subject_rejects":2,"fixed_string_rejects":6,"invalid_chain_rejects":2,"seconds":started.elapsed().as_secs_f64(),"child_binary_sha256":runner.child_hash});
+		let summary = json!({"status":"PASS","stock_rows":110,"execution_rows":110,"exact_rows":exact,"retained_resource":resource,"runtime_controls":5,"helper_checks":helpers,"projection_checks":projections,"frontier_budgets":67,"first_success_budget":66,"classifier_subject_rejects":2,"fixed_string_rejects":6,"invalid_chain_rejects":2,"seconds":started.elapsed().as_secs_f64(),"child_binary_sha256":runner.child_hash});
 		write(&out.join("RESULT.json"), &summary)?;
 		Ok(summary)
 	}

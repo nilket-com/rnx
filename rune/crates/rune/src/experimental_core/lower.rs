@@ -11,6 +11,7 @@
 mod async_blocks;
 mod dynamic_methods;
 pub(super) use dynamic_methods::native_function as native_method_function;
+pub(super) mod host_callables;
 mod iter_terminals;
 mod missing_methods;
 mod number_methods;
@@ -25,7 +26,6 @@ mod text_pipeline;
 mod variant_methods;
 mod vec_constructors;
 mod vec_resize;
-#[derive(Clone, Copy)]
 pub(crate) enum Resolve {
 	Script(Hash),
 	AsyncHost {
@@ -47,6 +47,7 @@ pub(crate) enum Resolve {
 		tag: Type,
 		arity: u32,
 	},
+	HostCallable(host_callables::Body),
 	NativeMethod {
 		hash: Hash,
 		body: super::code::NativeBody,
@@ -835,7 +836,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 					return Err(self.refused(span, Refusal::Native));
 				}
 				if call.args.len() != 1 {
-					return Err(self.refused(span, Refusal::Arity));
+					let out = self.slot()?;
+					self.host_count_error(call, out, span)?;
+					return Ok(true);
 				}
 				let value = self.operand(call.args[0])?;
 				self.emit(Op::Panic { value }, span)?;
@@ -908,7 +911,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			return Err(self.refused(span, Refusal::Native));
 		}
 		if call.args.len() != 1 {
-			return Err(self.refused(span, Refusal::Arity));
+			return self.host_count_error(call, out, span);
 		}
 		let value = self.operand(call.args[0])?;
 		let (args_start, args_len) = self.function.arguments(&[value])?;
@@ -1729,7 +1732,12 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 					}
 					_ => Resolve::Script(hash),
 				},
-				None => Resolve::Script(hash),
+				None => {
+					if self.host_value(hash, out, span)? {
+						return Ok(());
+					}
+					Resolve::Script(hash)
+				}
 			},
 		};
 		let id = (self.resolve)(resolve, at)?;
@@ -2557,7 +2565,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			return Err(self.refused(span, Refusal::Native));
 		}
 		if call.args.len() != pair.method().arity() as usize {
-			return Err(self.refused(span, Refusal::Arity));
+			return self.host_count_error(call, out, span);
 		}
 		let args = self.operands(call.args)?;
 		let (args_start, args_len) = self.function.arguments(&args)?;
@@ -2670,7 +2678,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 				return Err(self.refused(span, Refusal::Native));
 			}
 			if call.args.len() != 1 {
-				return Err(self.refused(span, Refusal::Arity));
+				return self.host_count_error(call, out, span);
 			}
 			let value = self.operand(call.args[0])?;
 			self.emit(Op::StringFrom { out, value }, span)?;
@@ -2700,7 +2708,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			|| hash == Hash::type_hash(crate::item!(::std::mem::drop))
 		{
 			if call.args.len() != 1 {
-				return Err(self.refused(span, Refusal::Arity));
+				return self.host_count_error(call, out, span);
 			}
 
 			self.effect_call(call, span)?;
@@ -2710,7 +2718,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 
 		if hash == Hash::type_hash(crate::item!(::std::clone::clone)) {
 			if call.args.len() != 1 {
-				return Err(self.refused(span, Refusal::Arity));
+				return self.host_count_error(call, out, span);
 			}
 
 			let value = self.operand(call.args[0])?;
@@ -2727,7 +2735,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 
 		if let Some(binding) = self.context.host(hash) {
 			if call.args.len() != usize::from(binding.signature.arity) {
-				return Err(self.refused(span, Refusal::Arity));
+				return self.host_count_error(call, out, span);
 			}
 			let id = self
 				.transaction
@@ -2751,6 +2759,9 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			return self.call_number_path(call, pair, out, span);
 		}
 
+		if self.context.lookup_function(hash).is_some() && self.call_host_path(call, out, span)? {
+			return Ok(());
+		}
 		let at = self.location(span);
 		let function = (self.resolve)(Resolve::Script(hash), at).map_err(|e| e.at(at))?;
 		let args = self.operands(call.args)?;
@@ -3128,7 +3139,7 @@ impl<'a, 'hir> Lower<'a, 'hir> {
 			self.check_type_names(span)?;
 		}
 		if call.args.len() != 1 {
-			return Err(self.refused(span, Refusal::Arity));
+			return self.host_count_error(call, out, span);
 		}
 		let mut values = self.operands(call.args)?;
 		let function = if crate::function::pipeline::any_kind(hash) == Some(true) {

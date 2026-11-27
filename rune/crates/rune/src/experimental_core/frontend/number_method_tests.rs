@@ -55,10 +55,7 @@ fn shared_names_need_a_proven_receiver() {
 		refusal("pub fn main(){1.max()}", &context),
 		Some(Refusal::Arity)
 	);
-	assert_eq!(
-		refusal("pub fn main(){let f=f64::sqrt;f(1.0)}", &context),
-		Some(Refusal::Native)
-	);
+	assert!(compile("pub fn main(){let f=f64::sqrt;f(1.0)}", &context).is_ok());
 }
 
 #[test]

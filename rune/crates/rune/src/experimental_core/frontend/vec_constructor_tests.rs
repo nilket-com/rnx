@@ -56,13 +56,18 @@ fn vec_constructors_match_stock_and_release_every_reservation() {
 
 #[test]
 fn vec_constructor_errors_match_stock_messages() {
-	for (arg, kind) in [
-		("-1", ErrorKind::IntegerCoercion),
-		("true", ErrorKind::Type),
-		("1.0", ErrorKind::Type),
-		("9223372036854775807", ErrorKind::Allocation),
+	for (call, kind) in [
+		("Vec::with_capacity(-1)", ErrorKind::IntegerCoercion),
+		("Vec::with_capacity(true)", ErrorKind::Type),
+		("Vec::with_capacity(1.0)", ErrorKind::Type),
+		(
+			"Vec::with_capacity(9223372036854775807)",
+			ErrorKind::Allocation,
+		),
+		("Vec::new(1)", ErrorKind::ArgumentCount),
+		("Vec::with_capacity()", ErrorKind::ArgumentCount),
 	] {
-		let source = std::format!("pub fn main(){{Vec::with_capacity({arg})}}");
+		let source = std::format!("pub fn main(){{{call}}}");
 		let context = Context::with_default_modules().unwrap();
 		let mut sources = Sources::new();
 		sources
@@ -85,9 +90,9 @@ fn vec_constructor_errors_match_stock_messages() {
 				1000,
 			)
 			.unwrap_err();
-		assert_eq!(failure.error.kind, kind, "{arg}");
+		assert_eq!(failure.error.kind, kind, "{call}");
 		assert!(failure.error.refusal.is_none());
-		assert_eq!(failure.message(&program).to_string(), expected, "{arg}");
+		assert_eq!(failure.message(&program).to_string(), expected, "{call}");
 		assert_eq!((store.live_entries(), store.payload_bytes()), (0, 0));
 		assert!(executor.is_idle());
 	}
@@ -109,17 +114,12 @@ fn vec_constructor_custom_providers_are_not_certified() {
 }
 
 #[test]
-fn vec_capacity_and_bad_constructor_arity_stay_compile_time_refused() {
+fn vec_capacity_is_refused() {
 	let context = Context::with_default_modules().unwrap();
-	for source in [
-		"pub fn main(){Vec::new().capacity()}",
-		"pub fn main(){Vec::new(1)}",
-		"pub fn main(){Vec::with_capacity()}",
-	] {
-		let error = compile_source(source, &context).err().unwrap();
-		assert!(error.refusal.is_some());
-		assert!(error.location.is_some());
-	}
+	let error = compile_source("pub fn main(){Vec::new().capacity()}", &context)
+		.err()
+		.unwrap();
+	assert!(error.refusal.is_some() && error.location.is_some());
 }
 
 #[test]

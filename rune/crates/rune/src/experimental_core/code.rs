@@ -250,6 +250,14 @@ pub(crate) const TRANSPARENT_SORT_LOCATION: Location = Location {
 	end: 0,
 };
 
+/// Metadata for a callable host path. Its thunk is private to the compiled program.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct HostCallable {
+	pub(crate) identity: usize,
+	pub(crate) variadic_debug: bool,
+	pub(crate) receiver: Option<super::detail::TypeName>,
+}
+
 pub struct Function {
 	cached: Vec<CachedInstruction>,
 	pub(crate) locations: Vec<Location>,
@@ -850,6 +858,9 @@ pub(crate) const OBJECT_HAS_FIELD: u32 = FIRST_INTRINSIC_ID + 0x55;
 pub(crate) const ITER_METHOD: u32 = FIRST_INTRINSIC_ID + 0x56;
 pub(crate) const NEXT_METHOD: u32 = FIRST_INTRINSIC_ID + 0x57;
 pub(crate) const ANY_READY: u32 = FIRST_INTRINSIC_ID + 0x58;
+pub(crate) const OWN_CALLBACK: u32 = FIRST_INTRINSIC_ID + 0xfd;
+pub(crate) const QUALIFIED_CMP: u32 = FIRST_INTRINSIC_ID + 0xfe;
+pub(crate) const HOST_FUNCTION_CREATE: u32 = FIRST_INTRINSIC_ID + 0xff;
 pub(crate) const CLOSURE_CREATE: u32 = FIRST_INTRINSIC_ID + 0x59;
 pub(crate) const VEC_NEW: u32 = FIRST_INTRINSIC_ID + 0x5d;
 pub(crate) const VEC_WITH_CAPACITY: u32 = FIRST_INTRINSIC_ID + 0x5e;
@@ -913,6 +924,18 @@ const PIPELINE_TAKE_NEXT: u32 = FIRST_INTRINSIC_ID + 0x7a;
 const PIPELINE_APPEND: u32 = FIRST_INTRINSIC_ID + 0x7b;
 use crate::function::variant::Operation as VariantOp;
 const CERTIFIED_INTRINSICS: &[CertifiedIntrinsic] = &[
+	CertifiedIntrinsic {
+		id: OWN_CALLBACK,
+		arity: 2,
+	},
+	CertifiedIntrinsic {
+		id: QUALIFIED_CMP,
+		arity: 3,
+	},
+	CertifiedIntrinsic {
+		id: HOST_FUNCTION_CREATE,
+		arity: 1,
+	},
 	CertifiedIntrinsic {
 		id: VariantOp::Readable.id(),
 		arity: 1,
@@ -1258,14 +1281,16 @@ fn number_intrinsic(id: u32) -> Option<CertifiedIntrinsic> {
 	Some(CertifiedIntrinsic { id, arity })
 }
 
+/// Sealed host descriptors and absence proofs are immutable in length.
 pub struct Code {
+	callables: crate::alloc::Box<[(u32, HostCallable)]>,
 	/// Process-unique, never 0 (the lowerer's "unstamped" marker), never
 	/// reused: a function token names the program it indexes by this.
 	id: u32,
 	functions: Vec<Function>,
-	hosts: Vec<crate::function::host::HostBinding>,
+	hosts: crate::alloc::Box<[crate::function::host::HostBinding]>,
 	/// Associated hashes proven to have no native function, sorted.
-	absent: Vec<crate::Hash>,
+	absent: crate::alloc::Box<[crate::Hash]>,
 	/// Script instance functions by associated hash, sorted by hash.
 	methods: Vec<MethodEntry>,
 }
@@ -1280,6 +1305,7 @@ pub(crate) fn allocate_code_id(counter: &AtomicU32) -> Result<u32> {
 }
 
 pub struct Builder {
+	callables: Vec<(u32, HostCallable)>,
 	functions: Vec<Function>,
 	hosts: Vec<crate::function::host::HostBinding>,
 	absent: Vec<crate::Hash>,
@@ -1297,6 +1323,7 @@ fn invalid() -> Error {
 impl Default for Builder {
 	fn default() -> Self {
 		Self {
+			callables: Vec::new(),
 			functions: Vec::new(),
 			hosts: Vec::new(),
 			absent: Vec::new(),
@@ -1341,6 +1368,13 @@ impl Builder {
 			.hosts
 			.capacity()
 			.checked_mul(core::mem::size_of::<crate::function::host::HostBinding>())
+			.and_then(|n| {
+				n.checked_add(
+					self.callables
+						.capacity()
+						.checked_mul(core::mem::size_of::<(u32, HostCallable)>())?,
+				)
+			})
 			.ok_or_else(invalid)?;
 		let shared = host_bytes
 			.checked_add(
@@ -1458,10 +1492,11 @@ impl Builder {
 		}
 
 		Ok(Code {
+			callables: self.callables.try_into_boxed_slice()?,
 			id,
 			functions: self.functions,
-			hosts: self.hosts,
-			absent: self.absent,
+			hosts: self.hosts.try_into_boxed_slice()?,
+			absent: self.absent.try_into_boxed_slice()?,
 			methods: self.methods,
 		})
 	}
@@ -1472,6 +1507,7 @@ impl Builder {
 /// separately supplied Staging. The public Builder seal remains strict.
 #[derive(Default)]
 pub(crate) struct CompileTransaction {
+	pub(super) callable_ids: crate::hash::Map<u32>,
 	builder: Builder,
 	staging: nominal::Staging,
 	checked_absent: Vec<crate::Hash>,
@@ -1492,6 +1528,16 @@ pub(crate) struct CompileTransaction {
 }
 
 impl CompileTransaction {
+	pub(super) fn register_callable(
+		&mut self,
+		hash: crate::Hash,
+		id: u32,
+		descriptor: HostCallable,
+	) -> Result<()> {
+		self.builder.callables.try_push((id, descriptor))?;
+		self.callable_ids.try_insert(hash, id)?;
+		Ok(())
+	}
 	pub(crate) fn host(&mut self, binding: &crate::function::host::HostBinding) -> Result<u32> {
 		self.builder.host(binding)
 	}
@@ -1566,6 +1612,13 @@ impl CompileTransaction {
 }
 
 impl Code {
+	pub(super) fn host_callable(&self, id: u32) -> Option<HostCallable> {
+		let i = self
+			.callables
+			.binary_search_by_key(&id, |&(function, _)| function)
+			.ok()?;
+		Some(self.callables[i].1)
+	}
 	/// Encoded instructions reference these pools. Only the eager decoded cache
 	/// duplicates tags; native region caches are built later, during invocation.
 	/// After remapping type pools, finish descriptor-bound variant call selectors.
@@ -2140,7 +2193,7 @@ impl Code {
 		&self,
 		runtime: Option<&crate::runtime::RuntimeContext>,
 	) -> Result<()> {
-		for binding in &self.hosts {
+		for binding in self.hosts.iter() {
 			let actual = runtime
 				.and_then(|runtime| runtime.function(&binding.hash))
 				.ok_or_else(invalid)?;
@@ -2674,13 +2727,20 @@ impl Code {
 		let mut footprint = footprint(&self.functions)?;
 		let hosts = self
 			.hosts
-			.capacity()
+			.len()
 			.checked_mul(core::mem::size_of::<crate::function::host::HostBinding>())
+			.and_then(|n| {
+				n.checked_add(
+					self.callables
+						.len()
+						.checked_mul(core::mem::size_of::<(u32, HostCallable)>())?,
+				)
+			})
 			.ok_or_else(invalid)?;
 		let hosts = hosts
 			.checked_add(
 				self.absent
-					.capacity()
+					.len()
 					.checked_mul(core::mem::size_of::<crate::Hash>())
 					.ok_or_else(invalid)?,
 			)
@@ -3481,7 +3541,7 @@ mod intrinsic_partition_tests {
 		// C18b3c adds two Vec constructors and C17f adds resize.
 		// C17c numeric intrinsics live outside this table.
 		// 0337 adds Readable, CheckCallback and CheckReturn.
-		assert_eq!(CERTIFIED_INTRINSICS.len(), 71);
+		assert_eq!(CERTIFIED_INTRINSICS.len(), 74);
 		assert!(certified_intrinsic(CERTIFIED_INTRINSICS, DEBUG_LINES).is_none());
 		let debug = call_certificate(DEBUG_LINES).unwrap();
 		for arity in [0, 1, 2, u32::MAX] {

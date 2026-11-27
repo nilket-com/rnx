@@ -7,7 +7,7 @@ use crate::experimental_core::{
 };
 use std::string::{String, ToString};
 
-fn check(source: &str) {
+pub(super) fn check(source: &str) {
 	let context = Context::with_default_modules().unwrap();
 	let mut sources = Sources::new();
 	sources

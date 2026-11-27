@@ -77,6 +77,7 @@ impl Payload {
 		let small = |a, b, c| AdmissionChildren::Small([a, b, c].into_iter());
 		match self {
 			Self::Host { .. }
+			| Self::HostFunction { .. }
 			| Self::Moved(_)
 			| Self::String(_)
 			| Self::Range { .. }

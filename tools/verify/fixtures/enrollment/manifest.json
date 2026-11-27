@@ -2131,7 +2131,7 @@
       "source_sha256": "f66c0a3a53d4654c4ae1ea10bcf2aaccd5ff0e45c8f3dfe6ba89aa17e67a2ea7",
       "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdin_pipe": false,
-      "policy": "Retained-arity",
+      "policy": "Exact",
       "args": [],
       "fuel": 100000,
       "store_entries": 65536,
@@ -2152,7 +2152,7 @@
       "source_sha256": "d3a86ea84de18c7a9a78a9244ba6439c598bbff320fe424ba2e7601e083908e3",
       "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdin_pipe": false,
-      "policy": "Retained-arity",
+      "policy": "Exact",
       "args": [],
       "fuel": 100000,
       "store_entries": 65536,
@@ -2434,9 +2434,8 @@
     }
   ],
   "counts": {
-    "Exact": 104,
+    "Exact": 106,
     "Envelope": 1,
-    "Retained-arity": 2,
     "Fuel": 1,
     "Retained-resource": 1,
     "Control": 5,

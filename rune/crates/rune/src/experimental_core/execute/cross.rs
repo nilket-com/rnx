@@ -220,11 +220,11 @@ impl Executor {
 		len: u32,
 		cross: &mut Option<CrossState<'_>>,
 	) -> core::result::Result<(), CallSetupFailure> {
-		let (owner, id, captures) = match called {
-			Value::Function { code, id } => (code, id, None),
+		let (owner, id, captures, callable) = match called {
+			Value::Function { code, id } => (code, id, None, None),
 			Value::Heap(_) => {
-				let (owner, id, captures) = store.closure_parts(called)?;
-				(owner, id, Some(captures.len()))
+				let (owner, id, captures, callable) = store.callable_parts(called)?;
+				(owner, id, Some(captures.len()), callable)
 			}
 			_ => {
 				return Err(error(ErrorKind::Type)
@@ -247,6 +247,22 @@ impl Executor {
 		let target = callee
 			.function(id)
 			.ok_or_else(|| error(ErrorKind::InvalidCode))?;
+		if let Some(callable) = callable {
+			if callable.variadic_debug {
+				self.debug_lines(store, function, base, out, start, len)?;
+				self.commit_pc(frame_index, pc)?;
+				return Ok(());
+			}
+			self.check_host_arguments(
+				store,
+				function,
+				base,
+				start,
+				len,
+				target.parameters,
+				callable.receiver,
+			)?;
+		}
 		let capture_count =
 			u32::try_from(captures.unwrap_or(0)).map_err(|_| error(ErrorKind::InvalidCode))?;
 		let expected = target

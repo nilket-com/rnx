@@ -1188,7 +1188,7 @@ mod tests {
 		.unwrap();
 		for text in [
 			"a.push(2); let future=async {1};0",
-			"a.push(2); [1].iter().map(f).collect::<Vec>()",
+			"a.push(2); async {1}",
 			"mod M {}",
 		] {
 			let failure = s.eval(text).expect_err(text);
@@ -1206,6 +1206,16 @@ mod tests {
 			s.eval_rendered("a.len()", &crate::format::Limits::default())
 				.unwrap(),
 			Some("1".into())
+		);
+		let limits = crate::format::Limits::default();
+		assert_eq!(
+			s.eval_rendered("a.push(2); [1].iter().map(f).collect::<Vec>()", &limits)
+				.unwrap(),
+			Some("[2]".into())
+		);
+		assert_eq!(
+			s.eval_rendered("a.len()", &limits).unwrap(),
+			Some("2".into())
 		);
 	}
 	#[test]

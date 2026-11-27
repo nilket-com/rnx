@@ -3,6 +3,32 @@ use super::*;
 use crate::experimental_core::error::{Detail, MovedAccess};
 
 impl Store {
+	/// Host callbacks passed by value transfer their payload. Script functions and
+	/// closures keep their existing calling convention.
+	pub(crate) fn own_callback(&mut self, value: Value, arg: u8) -> Result<Value> {
+		use crate::experimental_core::error::{HostCause, TypeName};
+		let found = self
+			.diagnostic_type(value)
+			.ok_or_else(|| err(ErrorKind::InvalidCode))?;
+		if found != TypeName::Function {
+			return Err(
+				err(ErrorKind::Type).with_detail(Detail::NumericArgumentType {
+					cause: HostCause::ExpectedType,
+					arg,
+					expected: TypeName::Function,
+					found,
+				}),
+			);
+		}
+		self.argument(value, arg, MovedAccess::Take)?;
+		if let Value::Heap(h) = value {
+			if matches!(self.payload(h)?, Payload::HostFunction { .. }) {
+				return self.take_capture(value);
+			}
+		}
+		self.retain(value)?;
+		Ok(value)
+	}
 	#[cold]
 	#[inline(never)]
 	pub(crate) fn take_capture(&mut self, value: Value) -> Result<Value> {

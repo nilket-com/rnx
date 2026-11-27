@@ -110,7 +110,7 @@ fn description(store: &Store, value: Value, budget: &mut Budget) -> Result<Strin
 			Payload::Variant {
 				tag: Type::Result, ..
 			} => write!(text, "a result"),
-			Payload::Closure { .. } => write!(text, "a function"),
+			Payload::Closure { .. } | Payload::HostFunction { .. } => write!(text, "a function"),
 			p if matches!(p.tag(), Type::Struct(_)) => {
 				let Type::Struct(n) = p.tag() else {
 					unreachable!()

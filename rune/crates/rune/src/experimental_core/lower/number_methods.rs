@@ -234,7 +234,7 @@ impl Lower<'_, '_> {
 			return Err(self.refused(span, Refusal::Native));
 		}
 		if call.args.len() != pair.method().arity() as usize {
-			return Err(self.refused(span, Refusal::Arity));
+			return self.host_count_error(call, out, span);
 		}
 		self.number_call(call.args, pair.id(), out, span)
 	}

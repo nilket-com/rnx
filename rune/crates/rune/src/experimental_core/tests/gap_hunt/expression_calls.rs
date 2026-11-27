@@ -215,6 +215,12 @@ fn contract() {
 	let c17a: Json =
 		serde_json::from_str(include_str!("expression_calls/c17a_admissions.json")).unwrap();
 	assert_eq!(c17a.as_object().unwrap().len(), 1);
+	let callable: Json =
+		serde_json::from_str(include_str!("expression_calls/0347_admissions.json")).unwrap();
+	assert_eq!(
+		callable.as_object().unwrap().keys().collect::<Vec<_>>(),
+		["099"]
+	);
 	let cases = cases.as_array().unwrap();
 	assert_eq!(cases.len(), 100);
 	let out = PathBuf::from(std::env::var_os("GAP_OUT").unwrap());
@@ -258,9 +264,9 @@ fn contract() {
 				assert_eq!(policy["index"], i);
 				assert_eq!(policy["label"], case["label"]);
 				assert_eq!(policy["source_sha256"], case["source_sha256"]);
-				if let Some(rule) = c17a.get(format!("{i:03}")) {
-					// C17a admits `unwrap`; the frozen disposition still records the refusal.
-					assert_eq!(i, 13);
+				let key = format!("{i:03}");
+				if let Some(rule) = c17a.get(&key).or_else(|| callable.get(&key)) {
+					assert!(matches!(i, 13 | 99));
 					assert_eq!(rule["classification"], "Exact");
 					assert_eq!(rule["source_sha256"], case["source_sha256"]);
 					assert_eq!(policy["classification"], "Retain-refusal");

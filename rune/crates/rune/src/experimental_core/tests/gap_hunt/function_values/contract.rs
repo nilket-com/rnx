@@ -59,6 +59,7 @@ fn verify_case(
 		&dispositions["rows"][index],
 	);
 	let rule = &super::object_order::admitted(include_str!("0279_contract_updates.json"), rule);
+	let rule = &super::object_order::admitted(include_str!("0347_admissions.json"), rule);
 	assert_eq!(rule["index"], index);
 	assert_eq!(rule["label"], case["label"]);
 	assert_eq!(rule["source_sha256"], case["source_sha256"]);

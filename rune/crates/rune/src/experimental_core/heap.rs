@@ -177,6 +177,11 @@ enum Payload {
 		function: u32,
 		captures: Vec<Value>,
 	},
+	HostFunction {
+		code: u32,
+		function: u32,
+		descriptor: super::code::HostCallable,
+	},
 	SortGuard(Box<sorting::SortState>),
 	OtherRange(Box<ranges::RangeShape>),
 	OtherRangeIterator(Box<boxed_iterator::State>),
@@ -268,6 +273,9 @@ impl Payload {
 			Self::Object { .. } => return self.object_bytes(),
 			Self::Host { value, .. } => Some(value.bytes),
 			Self::Moved(_) => Some(0),
+			Self::HostFunction { .. } => {
+				Some(2 * size_of::<u32>() + size_of::<super::code::HostCallable>())
+			}
 			Self::SortGuard(state) => Some(state.bytes()?),
 			Self::OtherRange(_) => Some(size_of::<ranges::RangeShape>()),
 			// Split reserves its separately boxed state in its cold constructor.
@@ -300,7 +308,7 @@ impl Payload {
 	/// when admission retains them; dropping an unpublished payload owns none.
 	fn children(&self) -> Children<'_> {
 		match self {
-			Self::Host { .. } => Children::Empty,
+			Self::Host { .. } | Self::HostFunction { .. } => Children::Empty,
 			Self::OtherRangeIterator(state) => Children::One(state.source.map(Value::Heap)),
 			Self::Moved(_)
 			| Self::String(_)
@@ -343,7 +351,7 @@ impl Payload {
 			| Self::RangeIterator { .. }
 			| Self::ValueRangeIterator { .. } => Type::Iterator,
 			Self::List { tag, .. } | Self::Record { tag, .. } | Self::Host { tag, .. } => *tag,
-			Self::Closure { .. } => Type::Function,
+			Self::Closure { .. } | Self::HostFunction { .. } => Type::Function,
 		}
 	}
 }
@@ -634,6 +642,7 @@ impl Store {
 	fn payload_edges(payload: &Payload) -> usize {
 		match payload {
 			Payload::Host { .. }
+			| Payload::HostFunction { .. }
 			| Payload::Moved(_)
 			| Payload::String(_)
 			| Payload::Range { .. }
@@ -1030,7 +1039,29 @@ impl Store {
 		self.admit(payload)
 	}
 
+	/// Mint a function value after the caller validates the code-local target.
+	pub(super) fn host_function(
+		&mut self,
+		code: u32,
+		function: u32,
+		descriptor: super::code::HostCallable,
+	) -> Result<Value> {
+		self.admit(Payload::HostFunction {
+			code,
+			function,
+			descriptor,
+		})
+	}
+
 	pub(crate) fn closure_parts(&self, value: Value) -> Result<(u32, u32, &[Value])> {
+		let (owner, id, captures, _) = self.callable_parts(value)?;
+		Ok((owner, id, captures))
+	}
+	#[inline(always)]
+	pub(super) fn callable_parts(
+		&self,
+		value: Value,
+	) -> Result<(u32, u32, &[Value], Option<&super::code::HostCallable>)> {
 		let Value::Heap(handle) = value else {
 			return Err(err(ErrorKind::Type));
 		};
@@ -1039,7 +1070,12 @@ impl Store {
 				code,
 				function,
 				captures,
-			} => Ok((*code, *function, captures)),
+			} => Ok((*code, *function, captures, None)),
+			Payload::HostFunction {
+				code,
+				function,
+				descriptor,
+			} => Ok((*code, *function, &[], Some(descriptor))),
 			_ => Err(err(ErrorKind::Type)),
 		}
 	}

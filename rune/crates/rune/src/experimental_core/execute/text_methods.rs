@@ -121,7 +121,7 @@ impl Executor {
 
 impl Executor {
 	#[cold]
-	fn debug_lines(
+	pub(super) fn debug_lines(
 		&mut self,
 		store: &mut Store,
 		f: &super::super::code::Function,

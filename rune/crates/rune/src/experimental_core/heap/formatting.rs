@@ -955,6 +955,10 @@ impl Store {
 				sink.push(c.encode_utf8(&mut bytes))?;
 			}
 			Value::Heap(handle) => match self.payload(handle)? {
+				Payload::HostFunction { descriptor, .. } if debug => {
+					let identity = descriptor.identity;
+					sink.formatted(format_args!("native function (0x{identity:x})"))?;
+				}
 				Payload::Host { .. } => return Err(self.no_display(value)),
 				Payload::String(text) if debug => {
 					sink.formatted(format_args!("{:?}", text.as_str()))?

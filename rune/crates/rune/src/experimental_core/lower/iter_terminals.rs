@@ -473,25 +473,45 @@ impl<'hir> Lower<'_, 'hir> {
 		self.intrinsic(Intrinsic::Range, &args, out, span)
 	}
 
-	/// A function value operand whose parameter count is known before it
-	/// runs: a literal closure, a fn item, or a local bound once to one.
-	/// Each must take `passes` arguments, or the program is refused and stock
-	/// keeps the call's run-time behavior.
-	fn function_operand(&mut self, id: hir::ExprId, passes: u32, span: Span) -> Result<u32> {
+	/// Check a statically known script callback's arity before lowering. A callback
+	/// selected at run time uses the native argument conversion at the call site.
+	fn function_operand(
+		&mut self,
+		id: hir::ExprId,
+		passes: u32,
+		arg: u8,
+		span: Span,
+	) -> Result<u32> {
 		use hir::ExprKind as E;
 		let mut init = id;
 		if let E::Variable(v) = self.exprs.get(id).kind {
 			init = self
 				.text_init(v)
 				.filter(|_| self.text_writes(v, |_| false))
-				.ok_or_else(|| self.refused(span, Refusal::Method))?;
+				.unwrap_or(id);
 		}
 		let at = self.location(span);
 		let (hash, captures) = match self.exprs.get(init).kind {
 			E::Fn(hash) => (hash, 0),
 			E::CallClosure(closure) => (closure.hash, closure.captures.len()),
+			E::Variable(_)
+			| E::Call(_)
+			| E::Index(_)
+			| E::FieldAccess(_)
+			| E::If(_)
+			| E::Match(_)
+			| E::Block(_)
+			| E::Group(_)
+			| E::Try(_) => {
+				let slot = self.operand(id)?;
+				return self.own_callback(slot, arg, span);
+			}
 			_ => return Err(self.refused(span, Refusal::Method)),
 		};
+		if self.context.lookup_function(hash).is_some() {
+			let slot = self.operand(id)?;
+			return self.own_callback(slot, arg, span);
+		}
 		let constructor = self
 			.constants
 			.value_shape(hash)
@@ -594,20 +614,20 @@ impl<'hir> Lower<'_, 'hir> {
 					}
 				}
 				Step::Map(f) => Layer::Map {
-					function: self.function_operand(f, 1, at)?,
+					function: self.function_operand(f, 1, 1, at)?,
 					input: self.slot()?,
 				},
 				Step::Filter(f) => Layer::Filter {
-					function: self.function_operand(f, 1, at)?,
+					function: self.function_operand(f, 1, 1, at)?,
 					test: self.slot()?,
 				},
 				Step::FilterMap(f) => Layer::FilterMap {
-					function: self.function_operand(f, 1, at)?,
+					function: self.function_operand(f, 1, 1, at)?,
 					input: self.slot()?,
 					result: self.slot()?,
 				},
 				Step::FlatMap(f) => {
-					let function = self.function_operand(f, 1, at)?;
+					let function = self.function_operand(f, 1, 1, at)?;
 					let (input, result, inner) = (self.slot()?, self.slot()?, self.slot()?);
 					let active = self.literal(Value::Bool(false), at)?;
 					Layer::FlatMap {
@@ -1262,11 +1282,66 @@ impl<'hir> Lower<'_, 'hir> {
 		self.chain_proof(&chain, end, span)?;
 		let mark = self.next;
 		let setup = self.chain_setup(&chain, span)?;
+		self.terminal_body(
+			&setup,
+			end,
+			matches!(chain.source, Source::Held(_)),
+			Some(call),
+			out,
+			span,
+		)?;
+		self.pop_to(mark, span)
+	}
+
+	/// Lower the same consumer over the incoming materialized cursor in slot zero.
+	/// Scratch and locations belong to the generated function. Caller locals and
+	/// any held borrow on the receiver are preserved.
+	pub(super) fn make_terminal_body(&mut self, end: End, span: Span) -> Result<Function> {
+		let arity = match end {
+			End::Terminal(t) => {
+				self.transaction.iter_terminal(self.context, t)?;
+				t.arity()
+			}
+			End::Closure(c) => {
+				self.transaction.iter_closure(self.context, c)?;
+				c.arity()
+			}
+			End::Next => return Err(self.refused(span, Refusal::Method)),
+		};
+		let mut cx = self.callable_frame(arity as u32)?;
+		let out = cx.slot()?;
+		let mut setup = Setup {
+			node: 0,
+			layers: Vec::new(),
+			window: None,
+			zero: 0,
+			one: 0,
+			condition: 0,
+		};
+		cx.shared_slots(&mut setup, span)?;
+		cx.terminal_body(&setup, end, true, None, out, span)?;
+		cx.emit(Op::Return { value: out }, span)?;
+		cx.function.slots = cx.high;
+		cx.function
+			.locations
+			.fill(super::super::code::TRANSPARENT_SORT_LOCATION);
+		Ok(cx.function)
+	}
+
+	fn terminal_body(
+		&mut self,
+		setup: &Setup,
+		end: End,
+		held: bool,
+		call: Option<&hir::ExprCall<'_>>,
+		out: u32,
+		span: Span,
+	) -> Result<()> {
 		let element = self.slot()?;
 		match end {
 			End::Next => {
 				let mut exhausted = Vec::new();
-				self.chain_next(&setup, setup.layers.len(), element, &mut exhausted, span)?;
+				self.chain_next(setup, setup.layers.len(), element, &mut exhausted, span)?;
 				self.emit(
 					Op::Variant {
 						out,
@@ -1300,7 +1375,7 @@ impl<'hir> Lower<'_, 'hir> {
 					span,
 				)?;
 				let one = setup.one;
-				self.chain_loop(&setup, element, span, &mut |cx| {
+				self.chain_loop(setup, element, span, &mut |cx| {
 					cx.emit(
 						Op::Binary {
 							out,
@@ -1313,26 +1388,34 @@ impl<'hir> Lower<'_, 'hir> {
 					Ok(())
 				})?;
 			}
-			End::Terminal(Terminal::Collect(collection)) => self.collect(
-				&setup,
-				collection,
-				matches!(chain.source, Source::Held(_)),
-				element,
-				out,
-				span,
-			)?,
+			End::Terminal(Terminal::Collect(collection)) => {
+				self.collect(setup, collection, held, element, out, span)?
+			}
 			End::Terminal(Terminal::Sum(number)) => {
-				self.fold(&setup, number, Intrinsic::Sum, element, out, span)?
+				self.fold(setup, number, Intrinsic::Sum, element, out, span)?
 			}
 			End::Terminal(Terminal::Product(number)) => {
-				self.fold(&setup, number, Intrinsic::Product, element, out, span)?
+				self.fold(setup, number, Intrinsic::Product, element, out, span)?
 			}
 			End::Terminal(Terminal::Skip | Terminal::Take) => {
 				return Err(Error::new(ErrorKind::InvalidCode, "adapter terminal"));
 			}
-			End::Closure(closure) => self.consume(call, &setup, closure, element, out, span)?,
+			End::Closure(closure) => {
+				if let Some(call) = call {
+					self.consume(call, setup, closure, element, out, span)?;
+				} else {
+					let callback = if closure == Closure::Fold {
+						self.emit(Op::Copy { out, value: 1 }, span)?;
+						2
+					} else {
+						1
+					};
+					let callback = self.own_callback(u32::from(callback), callback, span)?;
+					self.consume_callback(setup, closure, element, out, callback, span)?;
+				}
+			}
 		}
-		self.pop_to(mark, span)
+		Ok(())
 	}
 
 	/// Follow the same local initializer/assignment evidence used for direct
@@ -1402,25 +1485,43 @@ impl<'hir> Lower<'_, 'hir> {
 		let passes = closure
 			.passes()
 			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "consumer"))?;
-		let mut args = call.args.iter().copied();
-		let mut next_arg = || {
-			args.next()
-				.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "consumer"))
-		};
+		let args = call.args;
+		if closure == Closure::Fold {
+			self.expr_into(
+				*args
+					.first()
+					.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "fold initializer"))?,
+				out,
+			)?;
+		}
+		let f = *args
+			.last()
+			.ok_or_else(|| Error::new(ErrorKind::InvalidCode, "consumer callback"))?;
+		let function = self.function_operand(
+			f,
+			passes,
+			if closure == Closure::Fold { 2 } else { 1 },
+			span,
+		)?;
+		self.consume_callback(setup, closure, element, out, function, span)
+	}
+
+	fn consume_callback(
+		&mut self,
+		setup: &Setup,
+		closure: Closure,
+		element: u32,
+		out: u32,
+		function: u32,
+		span: Span,
+	) -> Result<()> {
 		match closure {
-			Closure::Fold => {
-				let init = next_arg()?;
-				let f = next_arg()?;
-				self.expr_into(init, out)?;
-				let function = self.function_operand(f, passes, span)?;
-				self.chain_loop(setup, element, span, &mut |cx| {
-					cx.call_value(out, function, &[out, element], span)?;
-					cx.emit(Op::Release { value: element }, span)?;
-					Ok(())
-				})
-			}
+			Closure::Fold => self.chain_loop(setup, element, span, &mut |cx| {
+				cx.call_value(out, function, &[out, element], span)?;
+				cx.emit(Op::Release { value: element }, span)?;
+				Ok(())
+			}),
 			Closure::Reduce => {
-				let function = self.function_operand(next_arg()?, passes, span)?;
 				let acc = self.slot()?;
 				let mut empty = Vec::new();
 				self.chain_next(setup, setup.layers.len(), acc, &mut empty, span)?;
@@ -1454,7 +1555,6 @@ impl<'hir> Lower<'_, 'hir> {
 				self.function.patch(jump, Op::Jump { target: after })
 			}
 			Closure::Find | Closure::Any | Closure::All => {
-				let function = self.function_operand(next_arg()?, passes, span)?;
 				let test = self.slot()?;
 				let mut exhausted = Vec::new();
 				let start = self.pc();

@@ -37,7 +37,7 @@ impl Lower<'_, '_> {
 			return Err(self.refused(span, Refusal::Native));
 		}
 		if call.args.len() != usize::from(capacity) {
-			return Err(self.refused(span, Refusal::Arity));
+			return self.host_count_error(call, out, span);
 		}
 		let args = self.operands(call.args)?;
 		let (args_start, args_len) = self.function.arguments(&args)?;

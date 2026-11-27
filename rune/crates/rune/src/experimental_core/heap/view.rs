@@ -286,7 +286,7 @@ impl<'v, 's> ValueView<'v, 's> {
 					success,
 					..
 				} => ViewKind::Result { ok: *success },
-				Payload::Closure { .. } => ViewKind::Function,
+				Payload::Closure { .. } | Payload::HostFunction { .. } => ViewKind::Function,
 				payload => ViewKind::Opaque(payload.tag()),
 			},
 		})

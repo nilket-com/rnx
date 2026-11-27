@@ -151,10 +151,14 @@ const ROWS: &[Row] = &[
 		class: Class::Equal,
 	},
 	Row {
-		input: "a.push(2); [1].iter().map(f).collect::<Vec>()",
+		input: "a.push(2); async {1}",
 		class: Class::Policy {
-			execution: "refused: this method call is not available in an execution session; start `rnx repl` without --engine=execution (input 2, line 1, column 12)",
+			execution: "refused: async block futures as values are not available; await the block directly as async { ... }.await (input 2, line 1, column 12)",
 		},
+	},
+	Row {
+		input: "a.push(2); [1].iter().map(f).collect::<Vec>()",
+		class: Class::Equal,
 	},
 ];
 fn context() -> Context {

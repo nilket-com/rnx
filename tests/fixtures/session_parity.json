@@ -812,6 +812,10 @@
 				},
 				{
 					"existing_class": "Policy (historical fixture label, not a classification decision)",
+					"input": "a.push(2); async {1}"
+				},
+				{
+					"existing_class": "Equal",
 					"input": "a.push(2); [1].iter().map(f).collect::<Vec>()"
 				}
 			],

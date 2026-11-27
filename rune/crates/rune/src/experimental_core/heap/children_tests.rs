@@ -73,6 +73,7 @@ fn variant(payload: &Payload) -> &'static str {
 		Payload::Object { .. } => "Object",
 		Payload::List { .. } => "List",
 		Payload::Closure { .. } => "Closure",
+		Payload::HostFunction { .. } => "HostFunction",
 	}
 }
 
@@ -93,6 +94,15 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		Payload::Host {
 			tag: Type::Host(super::super::value::Nominal(0)),
 			value: Box::try_new(host_value::HostValue::inert(descriptor, 0)).unwrap()
+		},
+		Payload::HostFunction {
+			code: 1,
+			function: 2,
+			descriptor: crate::experimental_core::code::HostCallable {
+				identity: 3,
+				receiver: None,
+				variadic_debug: false
+			}
 		},
 		Payload::Moved(Type::Vec),
 		Payload::String(String::try_from("leaf").unwrap()),
@@ -237,7 +247,7 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		}
 		s.edges = 0;
 	}
-	assert_eq!(seen.len(), 16);
+	assert_eq!(seen.len(), 17);
 	assert_eq!(
 		(size_of::<Payload>(), size_of::<Entry>(), size_of::<Slot>()),
 		(40, 72, 80)
