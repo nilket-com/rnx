@@ -578,7 +578,7 @@ impl Lower<'_, '_> {
 				{
 					Body::Intrinsic(m.id(), m.arity())
 				} else if let Some(m) = object::Method::for_receiver(key, owner)
-					.filter(|m| self.context.object_method(*m))
+					.filter(|m| m.provider(owner).is_some() && self.context.object_method(*m))
 				{
 					Body::Intrinsic(m.id(), m.arity())
 				} else if let Some(m) = text::Method::from_hash(key).filter(|m| {

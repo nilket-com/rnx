@@ -32,6 +32,14 @@ struct HostPolicy {
 	input: &'static str,
 	output: &'static str,
 }
+#[cfg(feature = "cross-verification")]
+pub(crate) fn host_path_arguments() -> BTreeMap<&'static str, (&'static str, bool)> {
+	host_policy()
+		.into_iter()
+		.filter(|row| row.class != Class::HostValue)
+		.map(|row| (row.path, (row.args, row.class == Class::Awaited)))
+		.collect()
+}
 fn host_policy() -> Vec<HostPolicy> {
 	let mut rows = Vec::new();
 	let mut add = |paths: &'static str, args, class, input, output| {

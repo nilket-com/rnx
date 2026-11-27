@@ -3,6 +3,18 @@
   "source_transitions": [
     {
       "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute/host_bridge.rs",
+        "kind": "method",
+        "receiver": "Executor",
+        "name": "host_call"
+      },
+      "baseline": "66c8f732f3c36e73984b579dc3ad03640a9ea5e1",
+      "old_sha256": "bf36f1eebffa43f7694e596613b8f5f0d77086c31767421b1c6408de0b70c3a7",
+      "new_sha256": "80a14b5ad1d27ec082eb21518608672e15133667386095492d4cbeef561e44b8",
+      "adr": "plans/adr/0350_host_paths_that_run_on_the_old_core_run.md"
+    },
+    {
+      "selector": {
         "file": "rune/crates/rune/src/experimental_core/execute.rs",
         "kind": "method",
         "receiver": "Executor",

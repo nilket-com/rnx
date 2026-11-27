@@ -795,6 +795,7 @@ impl Context {
 									hash: item.hash,
 									handler: alternate.handler.clone(),
 									signature: alternate.enrollment.signature,
+									rejects_non_string: alternate.rejects_non_string,
 									certificate: alternate.enrollment.certificate,
 								},
 							},
@@ -807,6 +808,7 @@ impl Context {
 								hash: item.hash,
 								handler: function.handler.clone(),
 								signature: enrollment.signature,
+								rejects_non_string: false,
 								certificate: enrollment.certificate,
 							},
 						)?;
@@ -834,6 +836,7 @@ impl Context {
 									hash: key,
 									handler: alternate.handler.clone(),
 									signature: alternate.enrollment.signature,
+									rejects_non_string: alternate.rejects_non_string,
 									certificate: alternate.enrollment.certificate,
 								},
 							},
@@ -846,6 +849,7 @@ impl Context {
 								hash: key,
 								handler: function.handler.clone(),
 								signature: enrollment.signature,
+								rejects_non_string: false,
 								certificate: enrollment.certificate,
 							},
 						)?;
@@ -1217,6 +1221,7 @@ impl Context {
 				hash,
 				handler,
 				signature,
+				rejects_non_string: false,
 				certificate: None,
 			},
 		)?;
@@ -2653,3 +2658,6 @@ fn default_associated_functions_have_no_implicit_host_enrollment() {
 
 #[cfg(all(test, feature = "execution"))]
 mod awaiting_tests;
+
+#[cfg(feature = "host-path-controls")]
+mod host_path_controls;

@@ -1125,7 +1125,7 @@ fn run(
 				"[package]\nautolib = false\nautobins = false\nautotests = false\nautoexamples = false\nautobenches = false\n",
 				1,
 			)
-			.replacen("[features]\n", "[features]\ncross-verification = []\n", 1)
+			.replacen("[features]\n", "[features]\ncross-verification = [\"rune/host-path-controls\"]\n", 1)
 			+ "\n[[test]]\nname = \"rnx\"\npath = \"src/lib.rs\"\nharness = false\nrequired-features = [\"cross-verification\"]\n";
 		std::fs::write(&manifest, private)?;
 		std::fs::copy(rnx.join("Cargo.lock"), &lock)?;

@@ -23,6 +23,7 @@ emit = ["std", "anyhow", "codespan-reporting"]
 bench = []
 engine-image = ["execution"]
 image-effect-controls = ["execution"]
+host-path-controls = ["execution", "doc"]
 file-inventory-controls = ["file-provider-metadata"]
 file-provider-metadata = ["execution"]
 # Opt-in execution core (unstable API); never enabled by default.

@@ -278,6 +278,7 @@ impl Module {
 		};
 		let original = function.handler.clone();
 		function.alternate_host = Some(AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler: inactive.clone(),
 			enrollment: HostEnrollment {
@@ -441,6 +442,7 @@ impl Module {
 		let handler = opaque_result_handler(producer)?;
 		let mut data = FunctionData::from_raw(item, FunctionHandler::new(legacy)?);
 		data.alternate_host = Some(AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler,
 			enrollment: HostEnrollment {
@@ -583,6 +585,7 @@ impl Module {
 			});
 		};
 		function.alternate_host = Some(crate::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler,
 			enrollment: HostEnrollment {
@@ -731,6 +734,7 @@ impl Module {
 		};
 		let original = function.handler.clone();
 		function.alternate_host = Some(crate::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler: inactive.clone(),
 			enrollment: HostEnrollment {
@@ -818,6 +822,7 @@ impl Module {
 			});
 		};
 		function.alternate_host = Some(crate::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler,
 			enrollment: HostEnrollment {

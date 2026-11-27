@@ -5,6 +5,7 @@ mod census;
 mod census_execution;
 use crate::clock_properties as clock;
 mod enrollment;
+mod host_paths;
 mod journey;
 
 use serde_json::{Value, json};
@@ -73,6 +74,7 @@ fn controller(path: &str) -> Result<()> {
 		)?;
 		write_new(&output.join("R1B-INVENTORY.json"), &inventory)?;
 		results.insert("embedding_inventory".into(), inventory);
+		results.insert("host_paths".into(), host_paths::run(output)?);
 	}
 	binding::after(&request, &before)?;
 	write_new(
@@ -88,6 +90,12 @@ fn controller(path: &str) -> Result<()> {
 pub(crate) fn main() -> Result<()> {
 	let args: Vec<String> = std::env::args().skip(1).collect();
 	match args.as_slice() {
+		[mode, suite, work, receipt] if mode == "--child" && suite == "host-paths" => {
+			host_paths::sweep(Path::new(work), Path::new(receipt))
+		}
+		[mode, suite, source, engine, output] if mode == "--child" && suite == "host-path-exit" => {
+			host_paths::exit_child(source, engine, Path::new(output))
+		}
 		[mode, path] if mode == "--host-check" => {
 			let request = serde_json::from_slice(&fs::read(path)?)?;
 			binding::host_check(&request)

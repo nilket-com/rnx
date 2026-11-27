@@ -837,3 +837,56 @@ fn string_builder_aliases_copies_and_access_errors_in_files() {
 	}
 	fs::remove_dir_all(root).unwrap();
 }
+
+#[test]
+fn qualified_vec_operations_use_the_installed_vec_provider() {
+	for (name, source, expected) in [
+		(
+			"remove",
+			"let v=[10,20]; let r=Vec::remove(v,1); println!(\"{:?}/{:?}\",r,v)",
+			"20/[10]\n",
+		),
+		(
+			"insert",
+			"let v=[10,20]; let r=Vec::insert(v,0,9); println!(\"{:?}/{:?}\",r,v)",
+			"()/[9, 10, 20]\n",
+		),
+		(
+			"token",
+			"let f=Vec::insert; println!(\"{}\",std::is_readable(f))",
+			"true\n",
+		),
+	] {
+		let root = scratch(name);
+		fs::write(
+			root.join("main.rn"),
+			format!("pub fn main(args){{{source}}}"),
+		)
+		.unwrap();
+		verify(&root, &[], "rnx: engine=legacy refusal=Native");
+		assert_eq!(
+			fs::read_to_string(root.join("off-auto.stdout")).unwrap(),
+			expected
+		);
+	}
+}
+
+#[test]
+fn rejected_host_string_returns_the_host_error_before_any_write() {
+	let root = scratch("host-string");
+	fs::write(
+		root.join("main.rn"),
+		r#"pub fn main(args){
+		let r = fs::write("never", 1..=3);
+		let w = web::text(200, 1..=3);
+		println!("{:?}/{:?}",r,w)
+	}"#,
+	)
+	.unwrap();
+	verify(&root, &[], "rnx: engine=execution");
+	assert_eq!(
+		fs::read_to_string(root.join("off-auto.stdout")).unwrap(),
+		"Err(\"cannot write never: data must be String or Bytes\")/Err(\"web: expected String or Bytes\")\n"
+	);
+	assert!(!root.join("never").exists());
+}

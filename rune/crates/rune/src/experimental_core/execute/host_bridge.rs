@@ -593,6 +593,12 @@ impl Executor {
 				(0..at).any(|i| !prefix_conversion_succeeds(&scratch[i], signature.arguments[i]));
 			if !earlier {
 				scratch[at] = match state {
+					Input::Wrong(_) | Input::Function | Input::TypeValue
+						if binding.rejects_non_string && at + 1 == count as usize =>
+					{
+						// This adapter only distinguishes text from non-text.
+						stock::Value::unit()
+					}
 					Input::Wrong(tag) => witness(tag)?,
 					Input::Function => stock::Value::try_from(stock::Function::new(|| ())?)?,
 					Input::TypeValue => stock::Value::from(stock::Type::new(crate::Hash::EMPTY)),

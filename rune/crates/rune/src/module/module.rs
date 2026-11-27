@@ -337,6 +337,7 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {
@@ -420,6 +421,7 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			rejects_non_string: true,
 			await_only: false,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {
@@ -478,6 +480,7 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {
@@ -532,6 +535,7 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: false,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {
@@ -602,6 +606,7 @@ impl Module {
 			adapter.call(stack, addr, args, output)
 		})?;
 		data.alternate_host = Some(crate::function::host::AlternateHost {
+			rejects_non_string: false,
 			await_only: true,
 			handler,
 			enrollment: crate::function::host::HostEnrollment {

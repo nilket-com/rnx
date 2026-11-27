@@ -495,6 +495,8 @@ where
 /// Certificate retains the allocation of the installed handler, never a code-address token.
 #[derive(Clone)]
 pub(crate) struct HostBinding {
+	/// The sealed adapter accepts a payload-free rejection in its final slot.
+	pub(crate) rejects_non_string: bool,
 	pub(crate) hash: Hash,
 	pub(crate) handler: FunctionHandler,
 	pub(crate) signature: HostSignature,
@@ -513,6 +515,7 @@ const _: () = {
 impl HostBinding {
 	pub(crate) fn same(&self, other: &Self) -> bool {
 		self.hash == other.hash
+			&& self.rejects_non_string == other.rejects_non_string
 			&& self.signature == other.signature
 			&& self.certificate == other.certificate
 			&& self.handler.same_allocation(&other.handler)
@@ -629,6 +632,7 @@ where
 
 #[derive(Clone)]
 pub(crate) struct AlternateHost {
+	pub rejects_non_string: bool,
 	pub handler: FunctionHandler,
 	pub enrollment: HostEnrollment,
 	pub await_only: bool,
