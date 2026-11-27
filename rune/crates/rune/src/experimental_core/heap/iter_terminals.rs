@@ -5,8 +5,99 @@
 use super::super::error::{Detail, HostCause, IntTarget, IntValue, TypeName};
 use super::*;
 use crate::function::iter_terminal::Number;
+use crate::TypeHash;
 
 impl Store {
+	/// Called when the ordinary container length method does not apply.
+	#[cold]
+	pub(crate) fn iterator_method_len(&self, mut value: Value) -> Result<usize> {
+		use super::boxed_iterator::Kind;
+		if self.tag(value)? != Type::Iterator {
+			return Err(err(ErrorKind::Type));
+		}
+		loop {
+			let owner = self.terminal_type(value)?;
+			let hash = owner
+				.builtin_hash()
+				.ok_or_else(|| err(ErrorKind::InvalidCode))?;
+			let Value::Heap(h) = value else {
+				return Err(err(ErrorKind::InvalidCode));
+			};
+			if hash == crate::modules::iter::Skip::HASH || hash == crate::modules::iter::Take::HASH
+			{
+				let Payload::OtherRangeIterator(state) = self.payload(h)? else {
+					return Err(err(ErrorKind::InvalidCode));
+				};
+				match &state.kind {
+					Kind::Take(adapter) if adapter.remaining == 0 => return Ok(0),
+					Kind::Take(_) | Kind::Skip(_) => (),
+					_ => return Err(err(ErrorKind::InvalidCode)),
+				}
+				// Text adapters end at a leaf without LEN, or at an exhausted
+				// Take. Every enclosing skip/take maps zero to zero.
+				value = Value::Heap(state.source.ok_or_else(|| err(ErrorKind::InvalidCode))?);
+				let child = self.terminal_type(value)?;
+				if matches!(
+					child,
+					TypeName::Chars | TypeName::CharSplit | TypeName::StringSplit
+				) {
+					return Err(
+						err(ErrorKind::Type).with_detail(Detail::NoLenProtocol { found: child })
+					);
+				}
+				continue;
+			}
+			if ![
+				TypeName::RangeIter,
+				TypeName::UnsignedRangeIter,
+				TypeName::RangeInclusiveIter,
+				TypeName::UnsignedRangeInclusiveIter,
+				TypeName::ObjectIter,
+			]
+			.iter()
+			.any(|t| t.builtin_hash() == Some(hash))
+			{
+				return Err(err(ErrorKind::Type));
+			}
+			let (start, end) = match self.payload(h)? {
+				Payload::VectorIterator(iter) => {
+					return Ok(self
+						.len(Value::Heap(iter.handle))?
+						.saturating_sub(iter.index))
+				}
+				Payload::RangeIterator { next, end } => (Value::I64(*next), Value::I64(*end)),
+				Payload::ValueRangeIterator { next, end } => (*next, *end),
+				Payload::OtherRangeIterator(state) => match &state.kind {
+					Kind::Range(cursor) => (
+						cursor.next,
+						cursor.end.ok_or_else(|| err(ErrorKind::InvalidCode))?,
+					),
+					_ => return Err(err(ErrorKind::InvalidCode)),
+				},
+				_ => return Err(err(ErrorKind::InvalidCode)),
+			};
+			// Rune's stock range len uses checked subtraction for both
+			// half-open and inclusive ranges, including at exhaustion.
+			return match (start, end) {
+				(Value::I64(a), Value::I64(b)) => b
+					.checked_sub(a)
+					.and_then(|n| usize::try_from(n).ok())
+					.ok_or_else(|| {
+						err(ErrorKind::Panic)
+							.with_detail(Detail::SignedRangeLength { start: a, end: b })
+					}),
+				(Value::U64(a), Value::U64(b)) => b
+					.checked_sub(a)
+					.and_then(|n| usize::try_from(n).ok())
+					.ok_or_else(|| {
+						err(ErrorKind::Panic)
+							.with_detail(Detail::UnsignedRangeLength { start: a, end: b })
+					}),
+				_ => Err(err(ErrorKind::InvalidCode)),
+			};
+		}
+	}
+
 	fn terminal_type(&self, value: Value) -> Result<TypeName> {
 		self.diagnostic_type(value)
 			.ok_or_else(|| err(ErrorKind::InvalidCode))

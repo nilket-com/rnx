@@ -289,6 +289,12 @@ impl<'hir> Lower<'_, 'hir> {
 			)
 		};
 		self.pipeline_proof(m, span)?;
+		if matches!(m, Method::Skip | Method::Take) || shape.as_ref().is_some_and(|s| s.len() > 1) {
+			let hir::Call::Associated { hash, .. } = c.call else {
+				return Err(self.refused(span, Refusal::Method));
+			};
+			self.adapter_sites.try_push((target, Some(hash)))?;
+		}
 		if matches!(
 			m,
 			Method::Chars | Method::Unwrap | Method::Skip | Method::Take
@@ -424,6 +430,9 @@ impl<'hir> Lower<'_, 'hir> {
 		let shape = self
 			.pipeline_shape(for_.iter, 0)
 			.ok_or_else(|| self.refused(span, Refusal::Method))?;
+		if shape.len() > 1 {
+			self.adapter_sites.try_push((for_.iter, None))?;
+		}
 		self.pipeline_proof(Method::Next, span)?;
 		if let Some(out) = out {
 			self.unit_into(out, span)?;

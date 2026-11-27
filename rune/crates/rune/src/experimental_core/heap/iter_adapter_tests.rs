@@ -172,3 +172,43 @@ fn filter_map_results_and_into_iter_copy_stock_conversions() {
 	}
 	assert_eq!(s.live_entries(), 0);
 }
+
+#[test]
+fn held_option_clone_owns_an_independent_cursor_over_the_same_value() {
+	let mut s = Store::new(Limits::default()).unwrap();
+	let value = s.string("leaf").unwrap();
+	let option = s.variant(Type::Option, true, Some(value)).unwrap();
+	let original = s.iterator(option).unwrap();
+	let copy = s.clone_value(original).unwrap();
+	assert_ne!(copy, original);
+	for cursor in [copy, original] {
+		assert_eq!(s.iterator_next(cursor).unwrap(), Some(value));
+		s.release(value).unwrap();
+		assert_eq!(s.iterator_next(cursor).unwrap(), None);
+	}
+	for root in [copy, original, option, value] {
+		s.release(root).unwrap();
+	}
+	assert_eq!((s.live, s.bytes, s.edges), (0, 0, 0));
+}
+
+#[test]
+fn held_text_adapter_len_observes_an_exhausted_take_before_the_child_protocol() {
+	let mut s = Store::new(Limits::default()).unwrap();
+	let text = s.string("abc").unwrap();
+	let chars = s.pipeline_chars(text).unwrap();
+	let take = s.pipeline_adapter(chars, Value::U64(1), true).unwrap();
+	let skip = s.pipeline_adapter(take, Value::U64(2), false).unwrap();
+	assert_eq!(
+		s.iterator_method_len(skip).unwrap_err().detail,
+		Detail::NoLenProtocol {
+			found: TypeName::Chars
+		}
+	);
+	assert_eq!(s.pipeline_remaining(take, true).unwrap(), Value::Bool(true));
+	assert_eq!(s.iterator_method_len(skip).unwrap(), 0);
+	for root in [skip, take, chars, text] {
+		s.release(root).unwrap();
+	}
+	assert_eq!((s.live, s.bytes, s.edges), (0, 0, 0));
+}

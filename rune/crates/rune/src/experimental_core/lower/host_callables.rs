@@ -608,6 +608,7 @@ impl<'hir> Lower<'_, 'hir> {
 			dirty: Vec::new(),
 			format_specs: Vec::new(),
 			text_bindings: Vec::new(),
+			adapter_sites: Vec::new(),
 			loops: Vec::new(),
 			opaque: None,
 			self_binding: None,

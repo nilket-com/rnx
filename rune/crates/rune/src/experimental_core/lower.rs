@@ -8,6 +8,7 @@
 //! nothing for the others. Bare locals are read in place where the reference's
 //! `writes_nothing` rule allows; capturing move closures transfer payload ownership and track moved bindings.
 
+mod adapter_escape;
 mod async_blocks;
 mod dynamic_methods;
 pub(super) use dynamic_methods::native_function as native_method_function;
@@ -136,6 +137,7 @@ pub(crate) fn function(
 		moved_error,
 		invalid_break,
 		text_bindings: Vec::new(),
+		adapter_sites: Vec::new(),
 		loops: Vec::new(),
 		dirty: Vec::new(),
 		format_specs: Vec::new(),
@@ -183,6 +185,9 @@ pub(crate) fn function(
 		}
 	}
 	cx.block(&item.body, Mode::Return)?;
+	if !cx.adapter_sites.is_empty() {
+		cx.check_adapter_uses(item)?;
+	}
 	cx.function.slots = cx.high.max(1);
 	for (descriptor, words) in core::mem::take(&mut cx.format_specs) {
 		let (start, len) = cx.function.arguments(&words)?;
@@ -235,6 +240,8 @@ struct Lower<'a, 'hir> {
 	moved_error: &'a core::cell::Cell<Option<(Span, Span)>>,
 	invalid_break: &'a core::cell::Cell<Option<Location>>,
 	text_bindings: Vec<(hir::Variable, hir::ExprId)>,
+	/// Emitted text adapter operations by receiver edge. A for-loop has no method hash.
+	adapter_sites: Vec<(hir::ExprId, Option<Hash>)>,
 	loops: Vec<Loop>,
 	/// Per slot: may currently hold a heap handle that needs a Release.
 	dirty: Vec<bool>,

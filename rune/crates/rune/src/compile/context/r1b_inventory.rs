@@ -125,7 +125,7 @@ fn method_policy(r: &Receiver, name: &str, parameters: &[Hash], inline: bool) ->
 		let text = in_names(&r.name, "::std::string::Chars ::std::string::Split");
 		let materialized = in_names(name, "next iter len clone any all find fold reduce")
 			|| (!text && in_names(name, "count sum product collect"))
-			|| (text && in_names(name, "count skip take collect"));
+			|| (text && in_names(name, "count collect"));
 		if !materialized {
 			return refuse;
 		}
@@ -703,3 +703,5 @@ fn uncertain_calls_and_async_entries_refuse_before_host_effects() {
 		1
 	);
 }
+
+mod held_iterators;

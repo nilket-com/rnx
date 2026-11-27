@@ -1771,7 +1771,8 @@ impl Executor {
 											| super::value::Type::I64 | super::value::Type::U64
 											| super::value::Type::F64 | super::value::Type::Option
 											| super::value::Type::Result | super::value::Type::Function
-									) {
+									) && !store.option_iterator_receiver(value)?
+								{
 									return Err(error(ErrorKind::Type));
 								}
 								let v = store.clone_value(value)?;
@@ -2008,17 +2009,18 @@ impl Executor {
 							}
 
 							Op::Len { out, value } => {
-								if !matches!(
+								let len = if matches!(
 									store.tag(get(value)?)?,
 									super::value::Type::Vec
 										| super::value::Type::Tuple | super::value::Type::String
 										| super::value::Type::Object | super::value::Type::Unit
 								) {
-									return Err(error(ErrorKind::Type));
-								}
-
-								let n = u64::try_from(store.len(get(value)?)?)
-									.map_err(|_| error(ErrorKind::Overflow))?;
+									store.len(get(value)?)?
+								} else {
+									store.iterator_method_len(get(value)?)?
+								};
+								let n =
+									u64::try_from(len).map_err(|_| error(ErrorKind::Overflow))?;
 								self.put(store, frame.base + out as usize, Value::U64(n))?;
 							}
 							Op::Push { value, new } => {

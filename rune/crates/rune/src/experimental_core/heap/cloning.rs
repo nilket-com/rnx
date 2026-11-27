@@ -18,6 +18,12 @@ struct Frame {
 }
 
 impl Store {
+	pub(crate) fn option_iterator_receiver(&self, value: Value) -> Result<bool> {
+		Ok(self.tag(value)? == Type::Iterator
+			&& self.diagnostic_type(value).and_then(TypeName::builtin_hash)
+				== TypeName::OptionIter.builtin_hash())
+	}
+
 	fn clone_room(&self, start: usize, scratch: usize, extra: usize) -> Result<()> {
 		let used = self
 			.bytes
@@ -55,6 +61,7 @@ impl Store {
 				function,
 				descriptor,
 			},
+			Payload::OptionIterator { payload } => Payload::OptionIterator { payload: *payload },
 			Payload::String(text) => {
 				self.clone_room(start, scratch, text.len())?;
 				Payload::String(String::try_from(text.as_str())?)
@@ -123,7 +130,9 @@ impl Store {
 			}
 			_ => {
 				return Err(err(ErrorKind::Type).with_detail(Detail::NoCloneProtocol {
-					found: TypeName::from_type(self.entry(h)?.tag()?),
+					found: self
+						.diagnostic_type(value)
+						.ok_or_else(|| err(ErrorKind::InvalidCode))?,
 				}));
 			}
 		};

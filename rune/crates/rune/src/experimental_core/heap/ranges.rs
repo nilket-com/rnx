@@ -489,14 +489,18 @@ impl Store {
 
 	#[cold]
 	pub(super) fn other_range_next(&mut self, handle: Handle) -> Result<Option<Value>> {
-		if matches!(self.payload(handle)?, Payload::OtherRangeIterator(state) if matches!(state.kind,super::boxed_iterator::Kind::Chars(_)))
-		{
-			return self.chars_next(handle);
+		use super::boxed_iterator::Kind;
+		let Payload::OtherRangeIterator(state) = self.payload(handle)? else {
+			return Err(err(ErrorKind::InvalidCode));
+		};
+		match &state.kind {
+			Kind::Chars(_) => return self.chars_next(handle),
+			Kind::Split(_) => return self.split_next(handle),
+			// A lowered adapter can advance only through its charged pipeline.
+			Kind::Skip(_) | Kind::Take(_) => return Err(err(ErrorKind::InvalidCode)),
+			Kind::Range(_) => (),
 		}
-		if matches!(self.payload(handle)?, Payload::OtherRangeIterator(state) if matches!(state.kind,super::boxed_iterator::Kind::Split(_)))
-		{
-			return self.split_next(handle);
-		}
+
 		let Payload::OtherRangeIterator(state) = self.mutable(handle)? else {
 			return Err(err(ErrorKind::InvalidCode));
 		};

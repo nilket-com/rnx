@@ -274,6 +274,17 @@ pub enum Detail {
 	ExpectedChar {
 		found: TypeName,
 	},
+	NoLenProtocol {
+		found: TypeName,
+	},
+	SignedRangeLength {
+		start: i64,
+		end: i64,
+	},
+	UnsignedRangeLength {
+		start: u64,
+		end: u64,
+	},
 	NoCloneProtocol {
 		found: TypeName,
 	},
@@ -900,6 +911,19 @@ impl fmt::Display for Message<'_> {
 				access_message(f, access, Option::None, "it has been moved")
 			}
 			ExpectedChar { found } => write!(f, "Expected type `std::char` but found `{found}`"),
+			NoLenProtocol { found } => write!(f, "Missing protocol function `LEN` for `{found}`"),
+			SignedRangeLength { start, end } => {
+				write!(
+					f,
+					"Panicked: could not calculate length of range {start}..={end}"
+				)
+			}
+			UnsignedRangeLength { start, end } => {
+				write!(
+					f,
+					"Panicked: could not calculate length of range {start}..={end}"
+				)
+			}
 			NoCloneProtocol { found } => {
 				write!(f, "Missing protocol function `CLONE` for `{found}`")
 			}

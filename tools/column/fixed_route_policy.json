@@ -8,6 +8,18 @@
         "receiver": "Executor",
         "name": "invoke_args"
       },
+      "baseline": "0f5efd6bd57ed3f14a0b5b2818ead15fcfa21d33",
+      "old_sha256": "13cf89b0acc8d22d1a36d94025193ae9e0a65060865c4224912a0b375c1f8a36",
+      "new_sha256": "b91104cbc2ca372aae2650cebea9467c58ef3125d3869e27d77d7e9ca1ce3b0c",
+      "adr": "plans/adr/0349_held_iterators_match_the_old_core.md"
+    },
+    {
+      "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute.rs",
+        "kind": "method",
+        "receiver": "Executor",
+        "name": "invoke_args"
+      },
       "baseline": "2df16832574d8011a5c8360a2ea56754d91623b1",
       "old_sha256": "3ef5a2a221119e57ea9a6d47da116e85aa3fcdfa51a5b08d13b14f4228f9275e",
       "new_sha256": "13cf89b0acc8d22d1a36d94025193ae9e0a65060865c4224912a0b375c1f8a36",

@@ -454,7 +454,7 @@ impl Executor {
 												| super::super::value::Type::I64 | super::super::value::Type::U64
 												| super::super::value::Type::F64 | super::super::value::Type::Option
 												| super::super::value::Type::Result | super::super::value::Type::Function
-										) {
+										) && !store.option_iterator_receiver(value)? {
 										return Err(error(ErrorKind::Type));
 									}
 									let v = store.clone_value(value)?;
@@ -691,16 +691,17 @@ impl Executor {
 								}
 
 								Op::Len { out, value } => {
-									if !matches!(
+									let len = if matches!(
 										store.tag(get(value)?)?,
 										super::super::value::Type::Vec
 											| super::super::value::Type::Tuple | super::super::value::Type::String
 											| super::super::value::Type::Object | super::super::value::Type::Unit
 									) {
-										return Err(error(ErrorKind::Type));
-									}
-
-									let n = u64::try_from(store.len(get(value)?)?)
+										store.len(get(value)?)?
+									} else {
+										store.iterator_method_len(get(value)?)?
+									};
+									let n = u64::try_from(len)
 										.map_err(|_| error(ErrorKind::Overflow))?;
 									self.put(store, frame.base + out as usize, Value::U64(n))?;
 								}

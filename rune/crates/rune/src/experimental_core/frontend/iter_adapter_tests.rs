@@ -123,3 +123,105 @@ fn foreign_provider_registrations_fail_or_stay_uncertified() {
 		Some(Refusal::Method)
 	);
 }
+
+#[test]
+fn escaped_adapters_refuse_before_a_generic_advance() {
+	let context = Context::with_default_modules().unwrap();
+	for owner in [
+		r#""abc".chars()"#,
+		r#""a b".split(" ")"#,
+		r#""a b".split(' ')"#,
+		"[1,2].iter()",
+		"(1..4).iter()",
+	] {
+		for adapter in ["skip(1)", "take(2)", "skip(1).take(2)"] {
+			let cursor = std::format!("{owner}.{adapter}");
+			for consume in ["CUR.next()", "{for x in CUR {} 1}"] {
+				for (prefix, value) in [
+					("fn make(){CURSOR}", "make()"),
+					("fn pass(it){it}", "pass(CURSOR)"),
+					("", "[CURSOR][0]"),
+					("", "(CURSOR,).0"),
+					("", "#{it:CURSOR}.it"),
+					("", "{let it=CURSOR;let f=||it;f()}"),
+					("", "if true{CURSOR}else{CURSOR}"),
+					("", "match true {true=>CURSOR,_=>CURSOR}"),
+				] {
+					let body = consume.replace("CUR", value);
+					let source =
+						std::format!("{prefix} pub fn main(){{{body}}}").replace("CURSOR", &cursor);
+					assert_eq!(
+						refusal(&source, &context),
+						Some(Refusal::Method),
+						"{source}"
+					);
+				}
+			}
+		}
+	}
+}
+
+#[test]
+fn held_iterator_methods_compare_with_stock_on_dynamic_receivers() {
+	use super::vector_sort_and_held::check;
+	for body in [
+		r#"let a="abc".chars().skip(1);a.collect::<Vec>().len() as i64"#,
+		r#"let a="abc".chars().take(2);a.collect::<String>().len() as i64"#,
+		"let a=(0..5).iter();a.next();size(a)",
+		"let a=(1u64..=5u64).iter();a.next();size(a)",
+		"let a=(3..1).iter();size(a)",
+		"let a=#{x:1,y:2}.iter();a.next();size(a)",
+		"let a=[1,2].iter();size(a)",
+		"let a=Some([1]).iter();let c=copy(a);c.next().unwrap().push(2);a.next().unwrap().len() as i64",
+		"let a=None.iter();if std::clone::clone(a).next()==None{1}else{0}",
+		"let a=(0..3).iter();std::clone::clone(a);0",
+		"let a=\"abc\".chars().take(0);let b=a.skip(2);b.len() as i64",
+		"let a=\"abc\".chars().skip(1);a.len() as i64",
+		"let a=\"abc\".chars().take(1);let b=a.skip(1);drop(a);b.len() as i64",
+	] {
+		check(&std::format!("fn size(x){{x.len() as i64}} fn copy(x){{x.clone()}} pub fn main(){{{body}}}"));
+	}
+}
+
+#[test]
+fn held_iterator_len_and_clone_keep_the_concrete_receiver_after_advance() {
+	use super::vector_sort_and_held::check;
+	for advance in ["", "it.next();"] {
+		for receiver in [
+			"(0..5).iter()",
+			"(0u64..5u64).iter()",
+			"(0..=5).iter()",
+			"(0u64..=5u64).iter()",
+			"#{x:1,y:2}.iter()",
+		] {
+			check(&std::format!(
+				"fn size(x){{x.len()}} pub fn main(){{let it={receiver};{advance}size(it) as i64}}"
+			));
+		}
+		for receiver in ["None.iter()", "Some(1).iter()"] {
+			check(&std::format!("fn copy(x){{x.clone()}} pub fn main(){{let it={receiver};{advance}if copy(it).next()==it.next(){{1}}else{{0}}}}"));
+		}
+		for receiver in [
+			r#""abc".chars()"#,
+			r#""a,b".split(",")"#,
+			r#""a,b".split(',')"#,
+			r#""abc".chars().skip(1)"#,
+			r#""abc".chars().take(1)"#,
+			"[1,2].iter()",
+			"#{x:1}.iter()",
+			"(0..5).iter()",
+			"(0u64..5u64).iter()",
+			"('a'..'d').iter()",
+			"(0..=5).iter()",
+			"(0u64..=5u64).iter()",
+			"('a'..='d').iter()",
+			"(0..).iter()",
+			"(0u64..).iter()",
+			"('a'..).iter()",
+		] {
+			check(&std::format!(
+				"pub fn main(){{let it={receiver};{advance}std::clone::clone(it);0}}"
+			));
+		}
+	}
+}

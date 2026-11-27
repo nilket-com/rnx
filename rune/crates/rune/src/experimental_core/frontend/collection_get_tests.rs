@@ -171,8 +171,6 @@ fn collection_get_missing_providers_are_run_time_errors_not_refusals() {
 		"(0u64..).iter()",
 		"('a'..).iter()",
 		"\"abc\".chars()",
-		"\"abc\".chars().skip(1)",
-		"\"abc\".chars().take(1)",
 		"\"a,b\".split(\",\")",
 		"\"a,b\".split(',')",
 		"i64",
@@ -240,6 +238,21 @@ fn collection_get_missing_providers_are_run_time_errors_not_refusals() {
 			(store.live_entries(), store.payload_bytes()),
 			(0, 0),
 			"{receiver}"
+		);
+	}
+}
+
+#[test]
+fn collection_get_refuses_a_cursor_passed_to_an_unknown_receiver() {
+	let context = Context::with_default_modules().unwrap();
+	for adapter in ["skip(1)", "take(1)"] {
+		let source =
+			format!(r#"fn get(x){{x.get(0)}} pub fn main(){{get("abc".chars().{adapter})}}"#);
+		assert_eq!(
+			compile_source(&source, &context)
+				.err()
+				.and_then(|error| error.refusal),
+			Some(Refusal::Method)
 		);
 	}
 }

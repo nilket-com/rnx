@@ -1320,7 +1320,7 @@ impl Store {
 		})
 	}
 
-	/// Diagnostic classification only: never invoked on a successful execution path.
+	/// Concrete builtin identity for diagnostics and held iterator method dispatch.
 	pub(crate) fn diagnostic_type(&self, value: Value) -> Option<super::error::TypeName> {
 		use super::error::TypeName;
 		let Value::Heap(h) = value else {
