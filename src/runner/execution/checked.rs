@@ -112,13 +112,7 @@ pub(crate) fn render_outcome(
 			remaining,
 		} => {
 			if error.kind == ErrorKind::FuelExhausted {
-				unplaced(
-					"halted",
-					&format!(
-						"{budget} work units exceeded; {} N raises it",
-						budget_advice()
-					),
-				);
+				unplaced("halted", &crate::runner::budget_message(budget));
 			} else {
 				let source = error.location.and_then(|at| {
 					file.sources()

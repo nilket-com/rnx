@@ -2853,10 +2853,12 @@ fn enrich_error(
 						super::value::Type::I64 | super::value::Type::U64 | super::value::Type::F64
 					),
 				},
-				Op::StringFrom { value, .. } | Op::Panic { value } => Detail::ExpectedType {
-					expected: TypeName::String,
-					found: ty(value)?,
-				},
+				Op::StringFrom { value, .. } | Op::Panic { value } | Op::Print { value } => {
+					Detail::ExpectedType {
+						expected: TypeName::String,
+						found: ty(value)?,
+					}
+				}
 				Op::Branch { condition, .. } => Detail::ExpectedBool {
 					found: ty(condition)?,
 				},

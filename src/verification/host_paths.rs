@@ -2,6 +2,8 @@
 //! filesystem and instruction allowance for every invocation.
 mod engines;
 mod inputs;
+mod outcome;
+use outcome::Outcome;
 
 use super::{Result, write_new};
 use engines::Engines;
@@ -133,7 +135,7 @@ pub(super) fn exit_child(source: &str, mode: &str, output: &Path) -> Result<()> 
 	};
 	write_new(output, &json!(ok))
 }
-fn exit_status(root: &Path, source: &str, mode: &str) -> Result<bool> {
+fn exit_status(root: &Path, source: &str, mode: &str) -> Result<Outcome> {
 	let output = root.join("exit-outcome.json");
 	let status = Command::new(env::current_exe()?)
 		.args(["--child", "host-path-exit", source, mode])
@@ -148,12 +150,12 @@ fn exit_status(root: &Path, source: &str, mode: &str) -> Result<bool> {
 		return Ok(ok);
 	}
 	match status.code() {
-		Some(0) => Ok(true),
+		Some(0) => Ok(Outcome::Exit(0)),
 		// The only nonzero integral input in this fixture is one.
 		Some(1)
 			if source.contains("process::exit(1);") || source.contains("process::exit(1u64);") =>
 		{
-			Ok(false)
+			Ok(Outcome::Exit(1))
 		}
 		_ => Err(format!("exit worker terminated without a verdict: {status}, {source}").into()),
 	}
@@ -181,13 +183,14 @@ fn compare_all(root: &Path, receipt: &Path) -> Result<()> {
 	let mut admitted = 0usize;
 	let mut compared = 0usize;
 	let mut refused = 0usize;
-	let mut failing = BTreeSet::new();
+	let mut failing = Vec::new();
+	let mut allowed = BTreeMap::new();
 	let mut routes = Vec::new();
 	for row in &rows {
 		let discovery = row.source(&row.arguments, true);
 		qualified.insert(row.hash.to_string(), row.path.as_str());
 		if engines.compile(&discovery)?.is_some()
-			&& isolated(&root, || engines.stock(&discovery, 2048))?
+			&& isolated(&root, || engines.stock(&discovery, 2048))? == Outcome::Complete
 		{
 			admitted += 1;
 			routes.push(row.hash.to_string());
@@ -225,21 +228,25 @@ fn compare_all(root: &Path, receipt: &Path) -> Result<()> {
 				}
 			})?;
 			for native in [false, true] {
-				let success = isolated(&root, || {
+				let actual = isolated(&root, || {
 					if exit {
 						exit_status(&root, &text, if native { "on" } else { "off" })
 					} else {
 						engines.execution(&program, mode, native, fuel)
 					}
 				})?;
-				if stock && !success {
-					let i = slot.map_or_else(|| "-".into(), |slot| slot.to_string());
-					failing.insert(format!(
-						"{}\t{}\t{i}\t{kind}\t{}",
-						row.hash,
-						row.path,
-						if native { "on" } else { "off" }
-					));
+				match stock.compare(&actual, kind, fuel, text.find(&row.path)) {
+					Ok(None) => (),
+					Ok(Some(reason)) => *allowed.entry(reason).or_insert(0usize) += 1,
+					Err(()) => failing.push(json!({
+						"hash": row.hash.to_string(),
+						"path": row.path,
+						"position": slot,
+						"kind": kind,
+						"native": native,
+						"stock": stock,
+						"execution": actual,
+					})),
 				}
 			}
 		}
@@ -247,7 +254,7 @@ fn compare_all(root: &Path, receipt: &Path) -> Result<()> {
 	let pass = failing.is_empty();
 	write_new(
 		receipt,
-		&json!({"status":if pass {"PASS"} else {"FAIL"}, "registry":rows.len(),"admitted":admitted,"positions":positions,"probed_positions":probed_positions,"identities":qualified,"kinds":kinds.keys().collect::<Vec<_>>(),"compared":compared,"refused":refused,"routes":routes,"pinned":0,"unexpected":failing,"elapsed_seconds":started.elapsed().as_secs_f64()}),
+		&json!({"status":if pass {"PASS"} else {"FAIL"}, "registry":rows.len(),"admitted":admitted,"positions":positions,"probed_positions":probed_positions,"identities":qualified,"kinds":kinds.keys().collect::<Vec<_>>(),"compared":compared,"refused":refused,"routes":routes,"pinned":0,"unexpected":failing,"allowed_by_cause_both_modes":allowed,"elapsed_seconds":started.elapsed().as_secs_f64()}),
 	)?;
 	if !pass {
 		return Err(format!("host path sweep differs: {}", receipt.display()).into());

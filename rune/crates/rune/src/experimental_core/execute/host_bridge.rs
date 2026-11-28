@@ -2,15 +2,17 @@
 use super::super::value::Type;
 use super::*;
 use crate as rune;
+use crate::TypeHash;
 mod shared_producer;
 
 use crate::function::host::{HostOutputKind, HostSignature, HostType, OpaqueProducerLimit};
 use crate::runtime::{self as stock, FromValue};
 
-// Execution core Iterator diagnostics retain the listed differences from legacy VM diagnostics.
+// A private type which cannot satisfy a typed host conversion. Its conversion
+// error supplies the native expected type; the store supplies the actual type.
 #[derive(crate::Any)]
-#[rune(item = ::std::iter, name = Iterator)]
-struct IteratorWitness;
+#[rune(item = ::rnx::internal)]
+struct RejectedArgument;
 
 // Best-effort bounded diagnostic copy; failure never changes the primary.
 fn owned_message(value: &dyn core::fmt::Display, limit: usize) -> Option<Box<str>> {
@@ -61,7 +63,8 @@ fn input(store: &Store, value: Value, expected: HostType) -> Input {
 		match value {
 			Value::Function { .. } => return Input::Function,
 			Value::Type(_) => return Input::TypeValue,
-			_ => {}
+			Value::Heap(_) => {}
+			_ => return Input::Plain,
 		}
 		return match store.host_tag(value) {
 			Ok((Type::Host(_), true)) => Input::Plain,
@@ -130,7 +133,11 @@ fn prefix_conversion_succeeds(value: &stock::Value, kind: HostType) -> bool {
 		HostType::F64 => f64::from_value(value.clone()).is_ok(),
 		HostType::Char => char::from_value(value.clone()).is_ok(),
 		HostType::String => value.borrow_string_ref().is_ok(),
-		HostType::OwnedTreeInput => false,
+		HostType::OwnedTreeInput => {
+			// Downcasting an owned capsule would consume the prefix before the handler reads it.
+			value.type_hash() == crate::function::host::owned_tree::Capsule::HASH
+				|| crate::host::OwnedTreeInput::from_value(value.clone()).is_ok()
+		}
 		// Opaque enrollment is restricted to a sole shared receiver, so this
 		// marker never stands for a prefix whose expected TypeId is unavailable.
 		HostType::OpaqueShared => false,
@@ -158,7 +165,14 @@ fn witness(tag: Type) -> Result<stock::Value> {
 			stock::Value::from(0i64),
 			stock::Value::from(0i64),
 		))?,
-		Type::Iterator => stock::Value::new(IteratorWitness)?,
+		Type::Iterator
+		| Type::Function
+		| Type::RangeInclusive
+		| Type::RangeFull
+		| Type::RangeTo
+		| Type::RangeToInclusive
+		| Type::RangeFrom
+		| Type::Host(_) => stock::Value::new(RejectedArgument)?,
 		Type::Struct(nominal) => {
 			if let Some(rtti) = super::super::nominal::variant_rtti(nominal) {
 				return Ok(stock::Value::empty_struct(rtti)?);
@@ -317,6 +331,43 @@ impl Executor {
 			_ => owned_message(native.error(), self.format_limits.bytes),
 		};
 		error(kind).with_detail(detail)
+	}
+
+	// Preserve conversion order and the handler's expected type. Only the error
+	// for the private argument witness can acquire the stored value's identity.
+	#[cold]
+	fn host_argument_error(
+		&mut self,
+		native: stock::VmError,
+		store: &Store,
+		arguments: &[Value],
+	) -> Error {
+		use stock::VmErrorKind as K;
+		let actual = match native.error().kind() {
+			K::ExpectedType { actual, .. } | K::ExpectedNumber { actual } => actual,
+			_ => return self.host_error(native),
+		};
+		if actual.type_hash() != RejectedArgument::HASH {
+			return self.host_error(native);
+		}
+		let Some(arg) = native.chain().iter().find_map(|cause| match cause.kind() {
+			K::BadArgument { arg } => Some(*arg),
+			_ => None,
+		}) else {
+			return error(ErrorKind::InvalidCode);
+		};
+		let Some(value) = arguments.get(arg) else {
+			return error(ErrorKind::InvalidCode);
+		};
+		let actual = match store.host_diagnostic_type(*value) {
+			Ok(actual) => actual,
+			Err(error) => return error,
+		};
+		let kind = match native.into_kind() {
+			K::ExpectedType { expected, .. } => K::ExpectedType { expected, actual },
+			_ => K::ExpectedNumber { actual },
+		};
+		self.host_error(stock::VmError::new(kind).with_error(K::BadArgument { arg }))
 	}
 
 	#[cold]
@@ -651,7 +702,7 @@ impl Executor {
 			}
 			Ok(Err(native)) => {
 				clear(&mut scratch);
-				return Err(self.host_error(native));
+				return Err(self.host_argument_error(native, store, &values[..count as usize]));
 			}
 			Ok(Ok(())) => (),
 		}

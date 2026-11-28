@@ -299,13 +299,7 @@ fn located_error(kind: &str, program: &Program, location: Option<Location>, mess
 
 fn report_failure(error: &Failure, program: &Program, budget: usize) {
 	if error.error.kind == ErrorKind::FuelExhausted {
-		unplaced(
-			"halted",
-			&format!(
-				"{budget} work units exceeded; {} N raises it",
-				budget_advice()
-			),
-		);
+		unplaced("halted", &crate::runner::budget_message(budget));
 		return;
 	}
 	let message = crate::method::named_execution(error, program)

@@ -1,6 +1,6 @@
 //! A compiled caller is shared by the two execution modes. Its values and
 //! instruction allowance belong to one invocation.
-use super::Result;
+use super::{Result, outcome::Outcome};
 use crate::{execute, lifecycle::Lifecycle};
 use rune::experimental_core::{
 	execute::Executor,
@@ -58,16 +58,17 @@ impl Engines {
 		}
 	}
 
-	pub fn stock(&mut self, text: &str, fuel: usize) -> Result<bool> {
+	pub fn stock(&mut self, text: &str, fuel: usize) -> Result<Outcome> {
 		let mut source = sources(text)?;
 		let unit = match rune::prepare(&mut source)
 			.with_context(&self.context)
 			.build()
 		{
 			Ok(unit) => unit,
-			Err(_) => return Ok(false),
+			Err(_) => return Ok(Outcome::CompileError),
 		};
-		let mut vm = Vm::new(self.stock.clone(), Arc::try_new(unit)?);
+		let unit = Arc::try_new(unit)?;
+		let mut vm = Vm::new(self.stock.clone(), unit.clone());
 		self.lifecycle.begin()?;
 		let result = execute::drive_async(
 			&self.driver,
@@ -77,9 +78,26 @@ impl Engines {
 			fuel,
 			execute::WhenInterrupted::Finish,
 		);
-		let ok = matches!(result, execute::Outcome::Complete(_));
-		self.lifecycle.finish(!ok)?;
-		Ok(ok)
+		self.lifecycle
+			.finish(!matches!(result, execute::Outcome::Complete(_)))?;
+		Ok(match result {
+			execute::Outcome::Complete(_) => Outcome::Complete,
+			execute::Outcome::Failed { error, .. } => {
+				let offset = error
+					.first_location()
+					.filter(|l| Arc::ptr_eq(&unit, &l.unit))
+					.and_then(|l| l.unit.debug_info()?.instruction_at(l.ip))
+					.filter(|i| {
+						source
+							.get(i.source_id)
+							.is_some_and(|s| s.name() == "host-path.rn")
+					})
+					.map(|i| i.span.range().start);
+				Outcome::stock_error(&error, text, offset)
+			}
+			execute::Outcome::Budget => Outcome::budget(fuel),
+			_ => return Err("unexpected host-path stock outcome".into()),
+		})
 	}
 	pub fn execution(
 		&mut self,
@@ -87,7 +105,7 @@ impl Engines {
 		mode: FileEntry,
 		native: bool,
 		fuel: usize,
-	) -> Result<bool> {
+	) -> Result<Outcome> {
 		use super::super::census_execution::opaque_error;
 		let mut store = Store::new(Limits::default()).map_err(opaque_error)?;
 		let mut executor = Executor::new().map_err(opaque_error)?;
@@ -109,13 +127,16 @@ impl Engines {
 			FileEntry::Sync => self.driver.run_sync(|| prepared.invoke(fuel)),
 			FileEntry::Async => self.driver.with_host_wait(|| prepared.invoke(fuel))?,
 		};
-		let ok = result.is_ok();
-		self.lifecycle.finish(!ok)?;
-		if let Ok(root) = result {
-			store.root_release(root).map_err(opaque_error)?;
-		}
+		self.lifecycle.finish(result.is_err())?;
+		let outcome = match result {
+			Ok(root) => {
+				store.root_release(root).map_err(opaque_error)?;
+				Outcome::Complete
+			}
+			Err(failure) => Outcome::execution_error(&failure, program, fuel),
+		};
 		store.root_release(argv).map_err(opaque_error)?;
 		store.close().map_err(opaque_error)?;
-		Ok(ok)
+		Ok(outcome)
 	}
 }

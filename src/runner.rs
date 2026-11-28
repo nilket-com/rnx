@@ -51,6 +51,13 @@ fn budget_advice() -> &'static str {
 	}
 }
 
+pub(crate) fn budget_message(budget: usize) -> String {
+	format!(
+		"{budget} work units exceeded; {} N raises it",
+		budget_advice()
+	)
+}
+
 /// The largest number that is still a budget.
 ///
 /// `usize::MAX` is Rune's sentinel for having no budget at all:
@@ -411,13 +418,7 @@ pub(crate) fn legacy_file(
 			// The reader of this line is the person who can raise it, so
 			// it names the flag. It does not offer to remove the bound,
 			// because the bound cannot be removed.
-			unplaced(
-				"halted",
-				&format!(
-					"{budget} work units exceeded; {} N raises it",
-					budget_advice()
-				),
-			);
+			unplaced("halted", &crate::runner::budget_message(budget));
 			return 1;
 		}
 		crate::execute::Outcome::Yielded => {

@@ -303,6 +303,21 @@ fn node(
 	))
 }
 impl Store {
+	/// Concrete stock identity for a rejected host argument, without copying its payload.
+	pub(crate) fn host_diagnostic_type(&self, value: Value) -> Result<runtime::TypeInfo> {
+		let Some(name) = self.diagnostic_type(value) else {
+			// An adapter value retains its native identity in the host wrapper.
+			return Ok(self.host_snapshot(value)?.type_info());
+		};
+		type_info(
+			name,
+			&mut Budget {
+				used: 0,
+				limit: self.limits.bytes,
+			},
+		)
+	}
+
 	pub(crate) fn owned_host_input(&self, value: Value) -> Result<runtime::Value> {
 		let mut budget = Budget {
 			used: size_of::<Capsule>(),

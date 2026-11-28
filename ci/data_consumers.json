@@ -1148,8 +1148,8 @@
         "expression": "(root/'tools/column/fixed_route_policy.json').read_text()",
         "path": "tools/column/fixed_route_vectors.py"
       },
-      "max_bytes": 19266,
-      "reason": "Fixed-route measurement policy, reviewed setup references, host input identities and the declared ADR 0347 through 0350 source transitions. The observer reads it for every installed dispatch."
+      "max_bytes": 20279,
+      "reason": "Fixed-route measurement policy, reviewed setup references, host input identities and the declared ADR 0347 through 0353 source transitions. The observer reads it for every installed dispatch."
     },
     "tools/final/CONTROLS.txt": {
       "class": "source-configuration",

@@ -3,6 +3,30 @@
   "source_transitions": [
     {
       "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute.rs",
+        "kind": "fn",
+        "receiver": "",
+        "name": "enrich_error"
+      },
+      "baseline": "8f66ec4b0e7d83e98bdd3d0724d22bb8d6a3d4f9",
+      "old_sha256": "541890eb7ba89a9a2ffc1b56962bb2f74ad8d61eefe4ddf84e6792b04b2e4dfb",
+      "new_sha256": "4c3e871921cc9694fe8bd81faa857576492140ab22723912a0e35496a9eaaa17",
+      "adr": "plans/adr/0353_host_calls_keep_the_old_type_message.md"
+    },
+    {
+      "selector": {
+        "file": "rune/crates/rune/src/experimental_core/execute/host_bridge.rs",
+        "kind": "method",
+        "receiver": "Executor",
+        "name": "host_call"
+      },
+      "baseline": "8f66ec4b0e7d83e98bdd3d0724d22bb8d6a3d4f9",
+      "old_sha256": "80a14b5ad1d27ec082eb21518608672e15133667386095492d4cbeef561e44b8",
+      "new_sha256": "8709dc9553b7de8c7a5669a590c24f5c542c00312299e1d7f0757217727f4c14",
+      "adr": "plans/adr/0353_host_calls_keep_the_old_type_message.md"
+    },
+    {
+      "selector": {
         "file": "rune/crates/rune/src/experimental_core/execute/host_bridge.rs",
         "kind": "method",
         "receiver": "Executor",

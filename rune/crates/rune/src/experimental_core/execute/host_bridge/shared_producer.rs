@@ -1,6 +1,5 @@
 use super::*;
 use crate::host::{shared_producer::ProducerReceiver, ColumnSelection, FloatDtype, SelectionError};
-use crate::TypeHash;
 use std::string::String as Text;
 use std::vec::Vec as List;
 
@@ -231,22 +230,14 @@ impl Executor {
 				return Err(moved(2));
 			}
 			if tag != Type::String {
-				let actual = match dtype {
-					Value::Heap(_) if matches!(tag, Type::Host(_)) => {
-						store.host_snapshot(dtype)?.type_hash()
-					}
-					Value::Heap(_) => witness(tag)?.type_hash(),
-					Value::Function { .. } => stock::Function::HASH,
-					Value::Type(_) => stock::Type::HASH,
-					_ => snapshot(store, dtype)?.type_hash(),
-				};
-				return Err(
-					error(ErrorKind::Host).with_detail(Detail::HostExpectedType {
-						expected: crate::alloc::String::HASH,
+				let actual = store.host_diagnostic_type(dtype)?;
+				return Err(self.host_error(
+					stock::VmError::new(stock::VmErrorKind::ExpectedType {
+						expected: stock::TypeInfo::any::<crate::alloc::String>(),
 						actual,
-						arg: Some(2),
-					}),
-				);
+					})
+					.with_error(stock::VmErrorKind::BadArgument { arg: 2 }),
+				));
 			}
 			let initial = store.host_remaining_bytes()?;
 			let mut available = initial;
