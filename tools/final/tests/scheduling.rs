@@ -1795,3 +1795,140 @@ fn suite_release_wakes_only_the_debug_peer_before_completion() {
 	);
 	assert!(time(1, "started") >= time(2, "ended"));
 }
+
+#[test]
+fn ledger_writer_and_reader_agree_across_every_record_kind_and_reject_invalid_releases() {
+	use rnx_final::schedule::{GATES, Recorder, Schedule, validate};
+
+	// 1. Drive the real controller through the real debug-lane release path,
+	// lane waits, and blocked/woken controller events.
+	let fake = Arc::new(Fake::new(
+		vec![
+			("debug-peer", vec!["fixture-debug"]),
+			("engine-peer", vec!["fixture-engine"]),
+			("rune-suite", vec!["fixture-debug", "fixture-engine"]),
+		],
+		&[],
+	));
+	let (result, dir) = run(fake.clone(), 3);
+	assert_eq!(result["status"], "PASS", "{result}");
+	assert!(fake.flow.lock().unwrap().timeouts.is_empty());
+
+	let selected: Vec<String> = ["debug-peer", "engine-peer", "rune-suite"]
+		.into_iter()
+		.map(String::from)
+		.collect();
+	let schedule: Schedule =
+		serde_json::from_slice(&std::fs::read(dir.0.join("final/SCHEDULE.json")).unwrap()).unwrap();
+
+	let suite = schedule
+		.stages
+		.iter()
+		.find(|s| s.name == "rune-suite")
+		.expect("rune-suite trace");
+	assert!(
+		suite.debug_lane_released.is_some(),
+		"expected real debug_lane_released record on rune-suite before revalidation"
+	);
+	let observed_gates: BTreeSet<&str> = schedule
+		.stages
+		.iter()
+		.flat_map(|s| s.waits.iter().map(|w| w.gate.as_str()))
+		.collect();
+	assert!(
+		observed_gates.contains("lanes"),
+		"expected lanes wait in controller ledger: {observed_gates:?}"
+	);
+	assert!(
+		schedule.controller.iter().any(|e| e.event == "blocked")
+			&& schedule
+				.controller
+				.iter()
+				.any(|e| e.event == "woken" && e.by.as_deref() == Some("rune-suite")),
+		"expected blocked and rune-suite woken controller events"
+	);
+	validate(&schedule, &selected).expect("reader must accept controller-written ledger");
+
+	// 2. Negative: a writer-only change (debug_lane_released on a stage the
+	// reader does not allow) must fail validation.
+	let mut planted_stage = schedule.clone();
+	let peer = planted_stage
+		.stages
+		.iter_mut()
+		.find(|s| s.name == "debug-peer")
+		.unwrap();
+	peer.debug_lane_released = peer.started;
+	let err = validate(&planted_stage, &selected).unwrap_err().to_string();
+	assert!(
+		err.contains("invalid debug lane release"),
+		"unexpected error for planted stage release: {err}"
+	);
+
+	// 3. Negative: a debug_lane_released outside the stage's lifetime (before
+	// started or after ended) must fail validation.
+	let mut before_start = schedule.clone();
+	let s = before_start
+		.stages
+		.iter_mut()
+		.find(|s| s.name == "rune-suite")
+		.unwrap();
+	s.started = Some(s.started.unwrap() + 1.0);
+	s.ended = Some(s.ended.unwrap() + 1.0);
+	s.debug_lane_released = Some(s.started.unwrap() - 0.5);
+	let err = validate(&before_start, &selected).unwrap_err().to_string();
+	assert!(
+		err.contains("invalid debug lane release"),
+		"unexpected error for pre-start release: {err}"
+	);
+
+	let mut after_end = schedule.clone();
+	let s = after_end
+		.stages
+		.iter_mut()
+		.find(|s| s.name == "rune-suite")
+		.unwrap();
+	s.debug_lane_released = Some(s.ended.unwrap() + 0.5);
+	let err = validate(&after_end, &selected).unwrap_err().to_string();
+	assert!(
+		err.contains("invalid debug lane release"),
+		"unexpected error for post-end release: {err}"
+	);
+
+	// 4. Exhaustive Recorder round-trip: every gate in GATES, every terminal
+	// state (passed, failed, not started), debug_lane_released, and every
+	// controller wakeup source (stage, tokens, signal).
+	let all_names: Vec<String> = ["rune-suite", "failing-stage", "never-started"]
+		.into_iter()
+		.map(String::from)
+		.collect();
+	let mut rec = Recorder::new(&all_names);
+	for (i, gate) in GATES.iter().enumerate() {
+		let behind = match *gate {
+			"producers" | "lanes" | "alone" | "queued" => vec!["rune-suite".into()],
+			_ => vec![],
+		};
+		let evidence = match *gate {
+			"disk" => json!({"free": 100, "needed": 200}),
+			"tokens" => json!({"weight": 4}),
+			_ => Value::Null,
+		};
+		rec.wait(1, i as f64 + 0.1, gate, behind, evidence);
+	}
+	rec.ready(0, 0.0);
+	rec.start(0, 0.1);
+	rec.release_debug(0, 0.5);
+	rec.controller(0.2, "blocked", None);
+	rec.controller(0.5, "woken", Some("rune-suite".into()));
+	rec.controller(0.6, "blocked", None);
+	rec.controller(0.7, "woken", Some("tokens".into()));
+	rec.end(0, 1.0, true);
+	rec.ready(1, 6.0);
+	rec.start(1, 6.1);
+	rec.controller(6.2, "blocked", None);
+	rec.controller(6.5, "woken", Some("signal".into()));
+	rec.end(1, 7.0, false);
+	let full = rec.finish();
+	let encoded = serde_json::to_vec(&full).unwrap();
+	let decoded: Schedule = serde_json::from_slice(&encoded).unwrap();
+	validate(&decoded, &all_names).expect("reader must accept every record kind the writer emits");
+}

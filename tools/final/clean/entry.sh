@@ -83,12 +83,7 @@ install -m 755 -- "$proxy" "$run/tools/rustup"
 for name in cargo rustc rustdoc rustfmt cargo-fmt cargo-clippy clippy-driver rust-gdb rust-lldb; do ln -s rustup "$run/tools/$name"; done
 export HOME="$run/home" TMPDIR="$run/tmp" CARGO_HOME="$run/cargo"
 export XDG_CACHE_HOME="$HOME/.cache"
-IFS=: read -ra directories <<<"$PATH"
-PATH="$run/tools"
-for directory in "${directories[@]}"; do
-	[[ $directory == /* && $(realpath -m -- "$directory") != */.cargo/bin ]] || continue
-	PATH+=":$directory"
-done
+PATH=$(filter_path "$run/tools" "$PATH")
 export PATH PYTHONDONTWRITEBYTECODE=1
 unset RUSTUP_AUTO_INSTALL
 unset RNX_PROJECT_CACHE

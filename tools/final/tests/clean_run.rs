@@ -262,3 +262,34 @@ fn socket_path_admission_counts_bytes_before_claiming_the_area() {
 	"#,
 	);
 }
+
+#[test]
+fn entry_path_filter_removes_cargo_bin_and_links_before_usr_bin_and_fails_on_broken_realpath() {
+	shell(
+		r#"
+		source "$2/ownership.sh"
+		# Verify entry.sh invokes the same helper rather than mutating PATH mid-loop.
+		grep -Fq 'PATH=$(filter_path "$run/tools" "$PATH")' "$2/entry.sh"
+		tools=$1/run-tools
+		first=$1/first-dir
+		cargo_bin=$1/user/.cargo/bin
+		cargo_link=$1/cargo-link
+		last=$1/last-dir
+		mkdir -p "$tools" "$first" "$cargo_bin" "$last"
+		ln -s "$cargo_bin" "$cargo_link"
+
+		PATH="$first:$cargo_bin:$cargo_link:/usr/bin:$last"
+		filtered=$(filter_path "$tools" "$PATH")
+		[[ $filtered == "$tools:$first:/usr/bin:$last" ]]
+
+		# A failing realpath must stop the filter with an error instead of keeping the entry.
+		fail_bin=$1/fail-bin
+		mkdir -p "$fail_bin"
+		printf '#!/bin/sh\nexit 1\n' >"$fail_bin/realpath"
+		chmod 755 "$fail_bin/realpath"
+		if PATH="$fail_bin:$first:$cargo_bin:/usr/bin" filter_path "$tools" "$first:$cargo_bin:/usr/bin" >/dev/null 2>&1; then
+			exit 1
+		fi
+	"#,
+	);
+}

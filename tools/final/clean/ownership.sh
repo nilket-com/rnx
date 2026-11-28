@@ -155,3 +155,16 @@ read_limits() {
 			(.bytes|type=="object" and has("build") and has("memory") and all(.[]; type=="number" and floor==. and .>=0))' "$out" >/dev/null
 	fi
 }
+
+filter_path() {
+	local tools=$1 raw=$2 result=$1 directory resolved
+	local -a directories
+	IFS=: read -ra directories <<<"$raw"
+	for directory in "${directories[@]}"; do
+		[[ $directory == /* ]] || continue
+		resolved=$(realpath -m -- "$directory") && [[ -n $resolved ]] || return 1
+		[[ $resolved != */.cargo/bin ]] || continue
+		result+=":$directory"
+	done
+	printf '%s\n' "$result"
+}
