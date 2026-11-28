@@ -24,6 +24,7 @@ pub(super) fn kinds() -> Result<BTreeMap<String, &'static str>> {
 			"Char" => "'x'",
 			"Ordering" => "std::cmp::Ordering::Equal",
 			"String" => "\"probe\"",
+			"Bytes" => "b\"probe\"",
 			"Vec" => "[1,2]",
 			"Tuple" => "(1,2)",
 			"Object" => "#{a:1}",
