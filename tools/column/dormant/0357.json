@@ -1,0 +1,239 @@
+{
+  "schema": 1,
+  "record": "0357",
+  "kind": "representation_only",
+  "baseline": "1551d2c4676e90712daaca5f16c419eee7b4b9d5",
+  "baseline_publication": "2543c2443e65045b13b2af495c5008c956654de7",
+  "delta": [
+    {
+      "path": "rune/crates/rune/src/experimental_core/detail.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "7ec1d81c91c0ee6295efcef3a9dae27d6c956ed6",
+      "new_blob": "0ffbd42a72d9cd4d4536ca903f43ef9c9cd4de5d"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/frontend/missing_method_tests.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "986894d69701b08df7d60586d078b0a17c864765",
+      "new_blob": "9524a12e5f50bd2bd1b009a2b395c073a5017df0"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "cbf69ca66f3fb12f2a53b00281315c7a82d34337",
+      "new_blob": "4811571764f33406acad1eed60ef487e3f904f64"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/admission.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "0350fa571a5900632f335557c357de61781f8ef3",
+      "new_blob": "0702298acf129aee664a4ff7d6faa1f5eb7c5e15"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/children_tests.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "9083eafb2f7c3b9615e4f4ceea063a8dafb5c8a3",
+      "new_blob": "0cacfefbc013619593c537ed5d9105a43bc80edc"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/comparison.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "ba6bdbf1f2df6ff8df94b59297ebd34e1a036634",
+      "new_blob": "0f03c2f3f86a90735795e444c3dcd5faa9f3cf8a"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/owned_input.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "aa8f86094f9d828f3ff9789899fd644769947083",
+      "new_blob": "e67b429b5d76c0fbef2f8eff52d65235cf2789fc"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/receiver_domain.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "213ac56d2b6095c32834bdaa14a031986b022f9e",
+      "new_blob": "9a914d13bf66bc03e29bfc7af838156524cf6123"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms/error.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "574cdedaf649b3eaf8ad447ef0bb5f0b793c770d",
+      "new_blob": "f943a83009bb74e569bbc3150a20714e7a0aa6e8"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/value.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "173a5d90be37e84620d3a7085f5b7c19c4a95bd2",
+      "new_blob": "20590a47626fa1b37faaf298b8dc950b7d4a7511"
+    },
+    {
+      "path": "src/routing_inventory.rs",
+      "old_mode": "100644",
+      "new_mode": "100644",
+      "old_blob": "3d01a4dd378801a80d7e8d9b842428de5f154a4e",
+      "new_blob": "3d1872f5dfe06c47df7e28007958fef2f8557a19"
+    }
+  ],
+  "context": [
+    {
+      "path": "Cargo.toml",
+      "blob": "2d9fd8bc7ea6a8c28cf9f073280e606eb6673780"
+    },
+    {
+      "path": "rune/crates/rune/Cargo.toml",
+      "blob": "3bffecdd88908a3e507d4fe98d4f9719a2fab357"
+    },
+    {
+      "path": "rune/crates/rune/src/alloc.rs",
+      "blob": "d89e3c84b3549970d8afbba58d945f53b508a8cc"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/detail.rs",
+      "blob": "0ffbd42a72d9cd4d4536ca903f43ef9c9cd4de5d"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/error.rs",
+      "blob": "95ca0fca81e89bb7e16465857dd1e3a76f9f9caf"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/frontend.rs",
+      "blob": "3d0eee48f2b59d68aca694a87296f6f11021320f"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/frontend/missing_method_tests.rs",
+      "blob": "9524a12e5f50bd2bd1b009a2b395c073a5017df0"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap.rs",
+      "blob": "4811571764f33406acad1eed60ef487e3f904f64"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/admission.rs",
+      "blob": "0702298acf129aee664a4ff7d6faa1f5eb7c5e15"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/children_tests.rs",
+      "blob": "0cacfefbc013619593c537ed5d9105a43bc80edc"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/comparison.rs",
+      "blob": "0f03c2f3f86a90735795e444c3dcd5faa9f3cf8a"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/heap/owned_input.rs",
+      "blob": "e67b429b5d76c0fbef2f8eff52d65235cf2789fc"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/mod.rs",
+      "blob": "de42afe495262e669374e419e517d2112f90216d"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/receiver_domain.rs",
+      "blob": "9a914d13bf66bc03e29bfc7af838156524cf6123"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt.rs",
+      "blob": "27088aee9d6451a63fe4838d2fe6d17d71864dbe"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms.rs",
+      "blob": "2a317fc38dc73fc27c2760a989f38dcba262a623"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms/error.rs",
+      "blob": "f943a83009bb74e569bbc3150a20714e7a0aa6e8"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/tests/gap_hunt/small_forms/graph.rs",
+      "blob": "27c6cd787e40603dd2a40956463d53680a61f953"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/tests/mod.rs",
+      "blob": "97998f886ecd05197be12787ab04c084a7f07bff"
+    },
+    {
+      "path": "rune/crates/rune/src/experimental_core/value.rs",
+      "blob": "20590a47626fa1b37faaf298b8dc950b7d4a7511"
+    },
+    {
+      "path": "rune/crates/rune/src/lib.rs",
+      "blob": "d992f423a46e59c884c20f6e011220b28e8b6860"
+    },
+    {
+      "path": "rune/crates/rune/src/runtime/bytes.rs",
+      "blob": "e1c8215601abbf26ff65169585a3bb5821a9dd99"
+    },
+    {
+      "path": "rune/crates/rune/src/runtime/mod.rs",
+      "blob": "b8de315735c1a7c72c2ddb8e0e2ce62f436d5ed4"
+    },
+    {
+      "path": "src/lib.rs",
+      "blob": "f682c2843fddea17962466d186ac19205d112f74"
+    },
+    {
+      "path": "src/main.rs",
+      "blob": "5792d710919f2dd50abd5f20cc5af68369d94a05"
+    },
+    {
+      "path": "src/routing_inventory.rs",
+      "blob": "3d1872f5dfe06c47df7e28007958fef2f8557a19"
+    }
+  ],
+  "added_variants": [
+    "experimental_core::detail::TypeName::Bytes",
+    "experimental_core::heap::Payload::Bytes",
+    "experimental_core::value::Type::Bytes"
+  ],
+  "added_arms": [
+    {
+      "file": "rune/crates/rune/src/experimental_core/detail.rs",
+      "pattern": "Self : : Bytes"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/detail.rs",
+      "pattern": "Self : : Bytes"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/detail.rs",
+      "pattern": "Type : : Bytes"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap.rs",
+      "pattern": "Self : : Bytes ( _ )"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap.rs",
+      "pattern": "Self : : Bytes ( bytes )"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap.rs",
+      "pattern": "| Payload : : Bytes ( _ )"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap.rs",
+      "pattern": "| Self : : Bytes ( _ )"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap/admission.rs",
+      "pattern": "| Self : : Bytes ( _ )"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap/comparison.rs",
+      "pattern": "Type : : Bytes"
+    },
+    {
+      "file": "rune/crates/rune/src/experimental_core/heap/owned_input.rs",
+      "pattern": "TypeName : : Bytes"
+    }
+  ]
+}

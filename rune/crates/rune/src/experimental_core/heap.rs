@@ -193,6 +193,9 @@ enum Payload {
 		fields: Vec<(String, Value)>,
 		index: Option<Box<object_index::Index>>,
 	},
+	// This measured candidate deliberately has no production constructor.
+	#[cfg_attr(not(test), allow(dead_code))]
+	Bytes(Vec<u8>),
 }
 
 // Child values are inert copies; this iterator never acquires ownership.
@@ -281,6 +284,7 @@ impl Payload {
 			// Split reserves its separately boxed state in its cold constructor.
 			Self::OtherRangeIterator(_) => Some(size_of::<boxed_iterator::State>()),
 			Self::String(s) => Some(s.capacity()),
+			Self::Bytes(bytes) => Some(bytes.capacity()),
 			Self::Range { .. } => Some(16),
 			Self::ValueRange { .. } | Self::ValueRangeIterator { .. } => {
 				Some(2 * size_of::<Value>())
@@ -312,6 +316,7 @@ impl Payload {
 			Self::OtherRangeIterator(state) => Children::One(state.source.map(Value::Heap)),
 			Self::Moved(_)
 			| Self::String(_)
+			| Self::Bytes(_)
 			| Self::Range { .. }
 			| Self::RangeIterator { .. }
 			| Self::ValueRangeIterator { .. } => Children::Empty,
@@ -337,6 +342,7 @@ impl Payload {
 			Self::Object { .. } => Type::Object,
 			Self::Moved(tag) => *tag,
 			Self::String(_) => Type::String,
+			Self::Bytes(_) => Type::Bytes,
 			Self::Range { .. } => Type::Range,
 			Self::OtherRange(shape) => shape.tag,
 			Self::ValueRange { start, end } => {
@@ -645,6 +651,7 @@ impl Store {
 			| Payload::HostFunction { .. }
 			| Payload::Moved(_)
 			| Payload::String(_)
+			| Payload::Bytes(_)
 			| Payload::Range { .. }
 			| Payload::RangeIterator { .. }
 			| Payload::ValueRangeIterator { .. } => 0,

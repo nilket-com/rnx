@@ -998,6 +998,7 @@ fn synchronous_and_byte_boundaries() -> Result<Json> {
 			| Type::RangeTo => "range",
 			Type::Iterator => "builtin iterator",
 			Type::Function => "same-program function",
+			Type::Bytes => "builtin payload; no constructor or Root type",
 		}
 	}
 	assert_eq!(represented(Type::Function), "same-program function");

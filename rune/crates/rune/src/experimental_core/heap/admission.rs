@@ -80,6 +80,7 @@ impl Payload {
 			| Self::HostFunction { .. }
 			| Self::Moved(_)
 			| Self::String(_)
+			| Self::Bytes(_)
 			| Self::Range { .. }
 			| Self::RangeIterator { .. } => small(None, None, None),
 			Self::Variant { payload, .. } | Self::OptionIterator { payload } => {

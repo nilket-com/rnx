@@ -43,6 +43,7 @@ pub enum TypeName {
 	Skip,
 	Take,
 	ObjectIter,
+	Bytes,
 }
 
 #[allow(missing_docs)]
@@ -456,6 +457,7 @@ impl TypeName {
 			Self::Char => char::HASH,
 			Self::Ordering => core::cmp::Ordering::HASH,
 			Self::String => crate::alloc::String::HASH,
+			Self::Bytes => rt::Bytes::HASH,
 			Self::Vec => rt::Vec::HASH,
 			Self::Object => rt::Object::HASH,
 			Self::Option => Option::<rt::Value>::HASH,
@@ -508,6 +510,7 @@ impl TypeName {
 			Type::Char => Self::Char,
 			Type::Ordering => Self::Ordering,
 			Type::String => Self::String,
+			Type::Bytes => Self::Bytes,
 			Type::Vec => Self::Vec,
 			Type::Tuple => Self::Tuple,
 			Type::Object => Self::Object,
@@ -553,6 +556,7 @@ impl fmt::Display for TypeName {
 			Self::Char => "std::char",
 			Self::Ordering => "std::cmp::Ordering",
 			Self::String => "std::string::String",
+			Self::Bytes => "std::bytes::Bytes",
 			Self::Vec => "std::vec::Vec",
 			Self::Tuple => "std::tuple::Tuple",
 			Self::Object => "std::object::Object",

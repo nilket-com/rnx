@@ -260,7 +260,7 @@ fn every_builtin_identity_is_a_proven_receiver() {
 			| T::Skip
 			| T::Take
 			| T::ObjectIter => (),
-			T::Struct(_) => unreachable!(),
+			T::Struct(_) | T::Bytes => unreachable!(),
 		}
 		let hash = name.builtin_hash().unwrap();
 		assert!(

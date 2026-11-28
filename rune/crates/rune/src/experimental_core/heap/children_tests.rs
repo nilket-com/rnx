@@ -62,6 +62,7 @@ fn variant(payload: &Payload) -> &'static str {
 		Payload::SortGuard(_) => "SortGuard",
 		Payload::Moved(_) => "Moved",
 		Payload::String(_) => "String",
+		Payload::Bytes(_) => "Bytes",
 		Payload::Variant { .. } => "Variant",
 		Payload::Range { .. } => "Range",
 		Payload::ValueRange { .. } => "ValueRange",
@@ -106,6 +107,7 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		},
 		Payload::Moved(Type::Vec),
 		Payload::String(String::try_from("leaf").unwrap()),
+		Payload::Bytes(Vec::try_from(&b"leaf"[..]).unwrap()),
 		Payload::Range { start: -1, end: 3 },
 		Payload::RangeIterator { next: 1, end: 2 },
 		Payload::VectorIterator(Iter {
@@ -247,7 +249,7 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		}
 		s.edges = 0;
 	}
-	assert_eq!(seen.len(), 17);
+	assert_eq!(seen.len(), 18);
 	assert_eq!(
 		(size_of::<Payload>(), size_of::<Entry>(), size_of::<Slot>()),
 		(40, 72, 80)
@@ -257,6 +259,21 @@ fn every_payload_preserves_reference_sequence_edges_and_exhaustion() {
 		cases.len(),
 		core::mem::size_of_val(&cases[0].children())
 	);
+}
+
+#[test]
+fn byte_payload_is_a_childless_capacity_charged_root() {
+	let mut bytes = Vec::try_with_capacity(8).unwrap();
+	bytes.try_extend_from_slice(&[0, 128, 255]).unwrap();
+	let capacity = bytes.capacity();
+	let mut store = Store::new(Limits::default()).unwrap();
+	let before = (store.live_entries(), store.payload_bytes());
+	let value = store.admit(Payload::Bytes(bytes)).unwrap();
+	assert_eq!(store.tag(value).unwrap(), Type::Bytes);
+	assert_eq!(store.live_entries(), before.0 + 1);
+	assert_eq!(store.payload_bytes(), before.1 + capacity);
+	store.release(value).unwrap();
+	assert_eq!((store.live_entries(), store.payload_bytes()), before);
 }
 
 #[test]

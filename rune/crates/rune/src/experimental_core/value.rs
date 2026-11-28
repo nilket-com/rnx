@@ -84,6 +84,8 @@ pub enum Type {
 	RangeTo,
 	/// An enrolled native object. Its fields are never visible to the engine.
 	Host(Nominal),
+	/// A mutable sequence of bytes.
+	Bytes,
 }
 
 /// The executor's slot value. A `Heap` variant can only be produced by a

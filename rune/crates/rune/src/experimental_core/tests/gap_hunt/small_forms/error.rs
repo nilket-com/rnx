@@ -18,6 +18,7 @@ pub(super) fn type_info(
 		TypeName::F64 => TypeInfo::named::<f64>(),
 		TypeName::Char => TypeInfo::named::<char>(),
 		TypeName::String => TypeInfo::named::<crate::alloc::String>(),
+		TypeName::Bytes => TypeInfo::named::<rt::Bytes>(),
 		TypeName::Vec => TypeInfo::named::<rt::Vec>(),
 		TypeName::Object => TypeInfo::named::<rt::Object>(),
 		TypeName::Option => TypeInfo::named::<Option<rt::Value>>(),

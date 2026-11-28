@@ -62,6 +62,7 @@ fn collection_get_universe_covers_every_diagnostic_receiver_kind() {
 	fn covered(name: T) -> bool {
 		match name {
 			T::Struct(_) => true,
+			T::Bytes => name.builtin_hash().is_some_and(unreachable),
 			T::Unit
 			| T::Bool
 			| T::I64
@@ -143,6 +144,7 @@ fn collection_get_universe_covers_every_diagnostic_receiver_kind() {
 		T::Skip,
 		T::Take,
 		T::ObjectIter,
+		T::Bytes,
 	] {
 		assert!(covered(name), "{name:?}");
 	}

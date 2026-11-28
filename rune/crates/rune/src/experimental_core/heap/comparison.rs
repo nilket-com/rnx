@@ -663,6 +663,7 @@ pub(super) fn type_hash(tag: Type) -> Result<u64> {
 		Type::Char => char::HASH.into_inner(),
 		Type::Ordering => core::cmp::Ordering::HASH.into_inner(),
 		Type::String => String::HASH.into_inner(),
+		Type::Bytes => rt::Bytes::HASH.into_inner(),
 		Type::Vec => crate::runtime::Vec::HASH.into_inner(),
 		Type::Tuple => crate::runtime::OwnedTuple::HASH.into_inner(),
 		Type::Function => crate::runtime::Function::HASH.into_inner(),

@@ -199,6 +199,7 @@ fn type_info(
 		TypeName::F64 => TypeInfo::named::<f64>(),
 		TypeName::Char => TypeInfo::named::<char>(),
 		TypeName::String => TypeInfo::any::<crate::alloc::String>(),
+		TypeName::Bytes => TypeInfo::any::<rt::Bytes>(),
 		TypeName::Vec => TypeInfo::any::<rt::Vec>(),
 		TypeName::Object => TypeInfo::any::<rt::Object>(),
 		TypeName::Option => TypeInfo::any::<Option<rt::Value>>(),
