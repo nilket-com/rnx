@@ -15,6 +15,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::os::unix::fs::MetadataExt as _;
 use std::path::{Component, Path, PathBuf};
 
+#[path = "fixed_route_drift.rs"]
+pub mod drift;
 #[path = "fixed_route_phases.rs"]
 mod phases;
 pub(crate) use phases::validate_setup_context;

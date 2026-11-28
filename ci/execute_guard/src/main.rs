@@ -1,4 +1,5 @@
 //! Cheap standalone preflight: no Rune or rnx dependency or runtime build.
+mod dormant;
 use quote::ToTokens;
 use syn::{
 	visit::{self, Visit},
@@ -597,6 +598,56 @@ fn inventory_item(source: &str, kind: &str, receiver: &str, name: &str) -> Resul
 }
 fn main() {
 	let args: Vec<_> = std::env::args().collect();
+	if args.get(1).is_some_and(|s| s == "--dormant-structural") {
+		assert_eq!(args.len(), 3, "--dormant-structural SPEC_DIR");
+		let dir = std::path::Path::new(&args[2]);
+		let manifest = std::fs::read_to_string(dir.join("files.txt")).unwrap();
+		let mut all_paths = Vec::new();
+		let mut pairs = Vec::new();
+		for (idx, line) in manifest.lines().enumerate() {
+			if line.is_empty() {
+				continue;
+			}
+			all_paths.push(line.to_owned());
+			let base_p = dir.join(format!("base-{idx}.rs"));
+			let cand_p = dir.join(format!("cand-{idx}.rs"));
+			if base_p.is_file() && cand_p.is_file() {
+				pairs.push(dormant::FilePair {
+					rel_path: line.to_owned(),
+					base_src: std::fs::read_to_string(&base_p).unwrap(),
+					cand_src: std::fs::read_to_string(&cand_p).unwrap(),
+				});
+			}
+		}
+		let mut parent_sources = std::collections::BTreeMap::new();
+		if let Ok(parent_list) = std::fs::read_to_string(dir.join("parents.txt")) {
+			for (idx, line) in parent_list.lines().enumerate() {
+				if line.is_empty() {
+					continue;
+				}
+				let p = dir.join(format!("parent-{idx}.rs"));
+				if p.is_file() {
+					parent_sources.insert(line.to_owned(), std::fs::read_to_string(&p).unwrap());
+				}
+			}
+		}
+		match dormant::verify_structural_delta(&all_paths, &pairs, &parent_sources) {
+			Ok(proof) => {
+				println!("PASS");
+				for v in &proof.added_variants {
+					println!("VARIANT\t{v}");
+				}
+				for (file, pat) in &proof.added_arms {
+					println!("ARM\t{file}\t{pat}");
+				}
+			}
+			Err(e) => {
+				eprintln!("FAIL: {e}");
+				std::process::exit(1);
+			}
+		}
+		return;
+	}
 	if args.get(1).is_some_and(|s| s == "--item") {
 		assert_eq!(args.len(), 6, "--item FILE KIND RECEIVER NAME");
 		let source = std::fs::read_to_string(&args[2]).unwrap();

@@ -1973,6 +1973,14 @@ pub fn run(settings: &Settings) -> Result<Value> {
 	{
 		r["fix_subject"] = selection["record"]["subject"].clone();
 	}
+	if r["status"] == "PASS"
+		&& let Ok(gate_bytes) = std::fs::read(out.join("fixed-route/RESULT.json"))
+		&& let Ok(gate) = serde_json::from_slice::<Value>(&gate_bytes)
+		&& gate["effective_verdict"] == crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT
+	{
+		r["effective_verdict"] = json!(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT);
+		r["fixed_route_sha256"] = json!(digest(&out.join("fixed-route/RESULT.json"))?);
+	}
 	if let Some(row) = &failed_row {
 		r["failed_stage"] = row["name"].clone();
 		if let Some(f) = row.get("failure") {
@@ -2168,6 +2176,9 @@ pub fn successor(settings: &Settings, prior: &Path) -> Result<Value> {
 		r["plans_final_result_sha256"] = json!(digest(&plans_final.join("RESULT.json"))?);
 		r["status"] = json!("PASS");
 	}
+	if earlier["effective_verdict"] == crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT {
+		r["effective_verdict"] = json!(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT);
+	}
 	if let Some(run) = settings.clean_run() {
 		crate::clean::release(root, out, run)?;
 		r["cleanup_sha256"] = json!(digest(&out.join("CLEANUP.json"))?);
@@ -2209,6 +2220,21 @@ pub fn revalidate_successor(out: &Path, root: Option<&Path>) -> Result<Value> {
 	let earlier = evidence::revalidate(&prior)?;
 	if earlier["candidate"] != r["prior_candidate"] || earlier["complete_final"] != true {
 		return Err(value_error("prior final differs"));
+	}
+	let prior_drift =
+		earlier["effective_verdict"] == crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT;
+	let succ_verdict = typed.effective_verdict.value().map(String::as_str);
+	if !matches!(
+		succ_verdict,
+		None | Some(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT)
+	) {
+		return Err(value_error("invalid docs successor effective_verdict"));
+	}
+	let succ_drift = succ_verdict == Some(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT);
+	if prior_drift != succ_drift {
+		return Err(value_error(
+			"docs successor effective_verdict disagrees with prior final",
+		));
 	}
 	let plans_final = PathBuf::from(r["plans_final"].as_str().unwrap_or_default());
 	if Some(digest(&plans_final.join("RESULT.json"))?.as_str())

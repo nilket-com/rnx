@@ -441,6 +441,10 @@ pub struct FinalResult {
 	pub retirement_error: Field<String>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub wall_budget_error: Field<String>,
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub effective_verdict: Field<String>,
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub fixed_route_sha256: Field<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
@@ -458,6 +462,8 @@ pub struct Successor {
 	pub plans_final_result_sha256: Field<String>,
 	#[serde(default, skip_serializing_if = "Field::is_absent")]
 	pub cleanup_sha256: Field<String>,
+	#[serde(default, skip_serializing_if = "Field::is_absent")]
+	pub effective_verdict: Field<String>,
 }
 
 /// Read a receipt into its type, refusing any field the type lacks.

@@ -1355,9 +1355,54 @@ fn run_gate(
 		let base = both.pop().context("no baseline capture")?;
 		let base = verified(base)?;
 		let changed = verified(changed)?;
-		let scored = fr::score(&base, &changed, Some(&anchor), &policy)?;
+		let raw = fr::score(&base, &changed, Some(&anchor), &policy)?;
+		let mut refusal = None;
+		let witness = if raw["status"] != "PASS" {
+			let per_record = raw["per_record"].as_array();
+			let cumulative = raw["cumulative"].as_array();
+			if let (Some(per), Some(cum)) = (per_record, cumulative) {
+				let all_cum = cum.iter().all(|row| row["pass_all"] == true);
+				let failing: Vec<&Value> =
+					per.iter().filter(|row| row["pass_all"] != true).collect();
+				if all_cum
+					&& !failing.is_empty()
+					&& failing
+						.iter()
+						.all(|row| fr::drift::row_execution_only_failure(row))
+				{
+					let affected = fr::drift::failing_row_ids(per);
+					match fr::drift::structural_witness(
+						root, &baseline, &candidate, &guard, &base, &changed, &policy, &affected,
+					) {
+						Ok(w) => Some(w),
+						Err(err) => {
+							refusal = Some(format!("{err:#}"));
+							None
+						}
+					}
+				} else {
+					None
+				}
+			} else {
+				None
+			}
+		} else {
+			None
+		};
+		let scored = fr::drift::score_with_witness(
+			&base,
+			&changed,
+			Some(&anchor),
+			&policy,
+			witness.as_ref(),
+			root,
+			&guard,
+		)?;
 		for (k, v) in scored.as_object().into_iter().flatten() {
 			r.insert(k.clone(), v.clone());
+		}
+		if let Some(reason) = refusal {
+			r.insert("layout_drift_refusal".into(), json!(reason));
 		}
 		r.insert("baseline".into(), base);
 		r.insert("candidate".into(), changed);

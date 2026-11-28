@@ -772,6 +772,68 @@ pub fn revalidate(out: &Path) -> Result<Value> {
 		"status": "PASS", "candidate": m.candidate, "bulk": "released; not rehashed", "release": result.records["RELEASE"],
 		"acceptance_scope": scope.name(), "complete_final": result.complete_final, "publication_eligible": result.publication_eligible,
 	});
+	let gate_dir = out.join("fixed-route");
+	let gate_path = gate_dir.join("RESULT.json");
+	let claims_drift = result.effective_verdict.value().map(String::as_str)
+		== Some(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT)
+		|| result.fixed_route_sha256.value().is_some();
+	if claims_drift {
+		ensure!(
+			gate_path.is_file(),
+			"accepted_layout_drift final is missing fixed-route/RESULT.json"
+		);
+		let recorded_gate_sha = result
+			.fixed_route_sha256
+			.value()
+			.context("accepted_layout_drift final missing fixed_route_sha256")?;
+		ensure!(
+			digest(&gate_path)? == *recorded_gate_sha,
+			"fixed-route/RESULT.json digest disagrees with top-level fixed_route_sha256"
+		);
+	}
+	if gate_path.is_file() {
+		let gate = read(&gate_path)?;
+		let needs_structural = claims_drift
+			|| gate["effective_verdict"] == crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT
+			|| gate.get("layout_drift").is_some();
+		let replayed = if needs_structural {
+			let repo_root = std::env::current_dir()?;
+			crate::fixed_route::drift::revalidate_receipt(
+				&gate,
+				Some(&gate_dir),
+				Some(&repo_root),
+				None,
+			)?
+		} else {
+			crate::fixed_route::drift::revalidate_receipt(&gate, Some(&gate_dir), None, None)?
+		};
+		let gate_verdict = replayed["effective_verdict"]
+			.as_str()
+			.unwrap_or(crate::fixed_route::drift::VERDICT_PASS);
+		if gate_verdict == crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT {
+			ensure!(
+				result.effective_verdict.value().map(String::as_str)
+					== Some(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT),
+				"top-level RESULT.json missing accepted_layout_drift effective_verdict"
+			);
+			let selection: types::Selection = types::read(&out.join("SELECTION.json"))?;
+			let expected_baseline = match &selection.record {
+				types::Candidate::Numbered(rec) => rec.baseline.as_str(),
+				types::Candidate::Fix(fix) => fix.baseline.as_str(),
+			};
+			ensure!(
+				replayed["baseline_publication"].as_str() == Some(expected_baseline)
+					&& replayed["candidate"].as_str() == m.candidate.as_deref(),
+				"gate tested pair disagrees with enclosing final's baseline/candidate"
+			);
+			verdict["effective_verdict"] = json!(crate::fixed_route::drift::VERDICT_ACCEPTED_DRIFT);
+		} else {
+			ensure!(
+				!claims_drift,
+				"top-level RESULT.json claims accepted_layout_drift without gate witness"
+			);
+		}
+	}
 	if let Some(subject) = result.fix_subject.value() {
 		verdict["fix_subject"] = json!(subject);
 	}
